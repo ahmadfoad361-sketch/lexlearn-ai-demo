@@ -66,20 +66,25 @@ textarea,input[type=text]{width:100%;border:1px solid #d7d2cb;border-radius:12px
   </div>
 </section>
 
-<section id="entry" class="panel entry">
-  <div class="kicker">ابدأ من هنا</div><h2>اختر البيئة التعليمية</h2>
-  <div class="grid2">
-    <div><b>1) النظام القانوني</b><div class="grid2" style="margin-top:9px">
-      <div class="option" data-country="eg"><b>🇪🇬 مصر</b><small>Cairo University reference track</small></div>
-      <div class="option" data-country="qa"><b>🇶🇦 قطر</b><small>Qatar University reference track</small></div>
-    </div></div>
-    <div><b>2) نوع المستخدم</b><div class="grid2" style="margin-top:9px">
-      <div class="option" data-role="student"><b>🎓 طالب قانون</b><small>يدخل مباشرة إلى Academic Excellence</small></div>
-      <div class="option" data-role="graduate"><b>⚖️ خريج جديد</b><small>يدخل مباشرة إلى Practice Excellence</small></div>
-    </div></div>
+<section id="countryStep" class="panel entry">
+  <div class="kicker">الخطوة الأولى</div>
+  <h2>اختر النظام القانوني</h2>
+  <p style="color:#667085">أول ما يفتح LexLearn يختار المستخدم الدولة فقط. بعد الاختيار ينتقل مباشرة للخطوة التالية.</p>
+  <div class="grid2" style="margin-top:14px">
+    <div class="option" data-country="eg"><b>🇪🇬 مصر</b><small>المسار المصري — المرجع الجامعي يُحدد داخل المحتوى</small></div>
+    <div class="option" data-country="qa"><b>🇶🇦 قطر</b><small>المسار القطري — المرجع الجامعي يُحدد داخل المحتوى</small></div>
   </div>
-  <div id="trackBox" class="notice">اختر الدولة ونوع المستخدم لإظهار المسار.</div>
-  <div class="actions"><button id="beginBtn" class="btn primary" disabled>ابدأ التجربة العملية</button></div>
+</section>
+
+<section id="roleStep" class="panel entry hidden">
+  <div class="kicker">الخطوة الثانية</div>
+  <h2>أنت طالب أم خريج جديد؟</h2>
+  <div id="countryChosen" class="notice"></div>
+  <div class="grid2" style="margin-top:14px">
+    <div class="option" data-role="student"><b>🎓 طالب قانون</b><small>دخول مباشر إلى Academic Excellence</small></div>
+    <div class="option" data-role="graduate"><b>⚖️ خريج جديد</b><small>دخول مباشر إلى Practice Excellence</small></div>
+  </div>
+  <div class="actions"><button id="backCountry" class="btn ghost">رجوع لاختيار الدولة</button></div>
 </section>
 
 <section id="graduatePreview" class="panel screen hidden">
@@ -204,18 +209,38 @@ const $=id=>document.getElementById(id),show=id=>$(id).classList.remove('hidden'
 function selectGroup(attr,value){
  document.querySelectorAll('['+attr+']').forEach(x=>x.classList.toggle('selected',x.getAttribute(attr)===value));
 }
-function updateEntry(){
- const b=$('beginBtn');b.disabled=!(country&&role);
- if(country&&role){
-   const c=country==='eg'?'مصر — Cairo University reference':'قطر — Qatar University reference';
-   const r=role==='student'?'Academic Excellence':'Practice Excellence';
-   $('trackBox').innerHTML='<b>'+c+'</b> • '+r+(role==='student'?'<br>المثال العملي سيستخدم وحدة تجريبية من مفاهيم مصادر الالتزام.':'<br>سيظهر مثال مصغر لمسار الخريج؛ البناء الكامل مؤجل لمرحلة لاحقة.');
- }
+function countryLabel(){
+ return country==='eg'?'🇪🇬 مصر':'🇶🇦 قطر';
 }
-document.querySelectorAll('[data-country]').forEach(x=>x.onclick=()=>{country=x.dataset.country;selectGroup('data-country',country);updateEntry()});
-document.querySelectorAll('[data-role]').forEach(x=>x.onclick=()=>{role=x.dataset.role;selectGroup('data-role',role);updateEntry()});
-$('beginBtn').onclick=()=>{hide('entry'); if(role==='graduate')show('graduatePreview');else show('baseline');window.scrollTo({top:0,behavior:'smooth'})};
-$('backEntryG').onclick=()=>{hide('graduatePreview');show('entry')};
+document.querySelectorAll('[data-country]').forEach(x=>x.onclick=()=>{
+ country=x.dataset.country;
+ role=null;
+ selectGroup('data-country',country);
+ hide('countryStep');
+ $('countryChosen').innerHTML='<b>تم اختيار:</b> '+countryLabel()+' — اختر الآن نوع المستخدم.';
+ show('roleStep');
+ window.scrollTo({top:0,behavior:'smooth'});
+});
+$('backCountry').onclick=()=>{
+ role=null;
+ hide('roleStep');
+ show('countryStep');
+ window.scrollTo({top:0,behavior:'smooth'});
+};
+document.querySelectorAll('[data-role]').forEach(x=>x.onclick=()=>{
+ role=x.dataset.role;
+ selectGroup('data-role',role);
+ hide('roleStep');
+ if(role==='graduate') show('graduatePreview'); else show('baseline');
+ window.scrollTo({top:0,behavior:'smooth'});
+});
+$('backEntryG').onclick=()=>{
+ hide('graduatePreview');
+ role=null;
+ $('countryChosen').innerHTML='<b>تم اختيار:</b> '+countryLabel()+' — اختر الآن نوع المستخدم.';
+ show('roleStep');
+ window.scrollTo({top:0,behavior:'smooth'});
+};
 $('gradEval').onclick=()=>{
  const t=$('gradAnswer').value.trim();if(t.length<15){$('gradResult').innerHTML='<div class="resultMsg warn">اكتب على الأقل نقطتين أو ثلاثًا لنرى شكل التقييم.</div>';return}
  const words=['عقد','اتفاق','رسائل','واتساب','تحويل','إيصال','مبلغ','موعد','تنفيذ','مقاول','مستند','مراسلات'];
