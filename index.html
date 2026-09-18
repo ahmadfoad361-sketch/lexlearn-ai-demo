@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#8A1538">
-<title>LexLearn AI — Legal Learning Demo</title>
+<title>LexLearn AI — Adaptive Legal Learning Demo</title>
 <style>
 :root{--maroon:#8A1538;--maroon2:#65102A;--navy:#10233F;--gold:#C6A15B;--bg:#F7F4EF;--card:#fff;--ink:#17202A;--muted:#6B7280;--line:#E7E0D7;--green:#2D7A5E;--amber:#B37B18;--red:#B6424A}
 *{box-sizing:border-box}html{scroll-behavior:smooth}
@@ -12,66 +12,131 @@ body{margin:0;font-family:"Segoe UI",Tahoma,Arial,sans-serif;background:linear-g
 header{position:sticky;top:0;z-index:20;background:linear-gradient(90deg,var(--maroon),var(--maroon2));color:#fff;box-shadow:0 5px 24px #0002}
 .top{max-width:1180px;margin:auto;padding:15px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px}
 .brand{display:flex;align-items:center;gap:12px}.logo{width:44px;height:44px;border-radius:14px;background:#fff;color:var(--maroon);display:grid;place-items:center;font-weight:900;font-size:18px}
-.brand h1{margin:0;font-size:20px}.brand small{display:block;color:#edd8df;margin-top:3px}
-.pill{font-size:12px;border:1px solid #ffffff55;background:#ffffff14;border-radius:999px;padding:8px 12px}
-main{max-width:1180px;margin:auto;padding:24px 18px 60px}
-.hero{display:grid;grid-template-columns:1.25fr .75fr;gap:18px}
+.brand h1{margin:0;font-size:20px}.brand small{display:block;color:#edd8df;margin-top:3px}.pill{font-size:12px;border:1px solid #ffffff55;background:#ffffff14;border-radius:999px;padding:8px 12px}
+main{max-width:1180px;margin:auto;padding:24px 18px 60px}.hidden{display:none!important}
 .card{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:0 8px 28px #10233f0c;padding:21px}
 .kicker{font-size:12px;color:var(--maroon);font-weight:900;margin-bottom:8px}.card h2,.card h3{margin:0 0 12px;color:var(--navy)}
-.case{background:#fbf5ea;border-right:5px solid var(--gold);padding:16px;border-radius:13px;line-height:1.95;font-size:16px}
-.chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.chip{background:#eef1f5;color:var(--navy);border-radius:999px;padding:7px 10px;font-size:12px;font-weight:800}.chip.gold{background:#f4ead5;color:#775a19}
-textarea{width:100%;min-height:205px;border:1px solid #d8d2cb;border-radius:14px;padding:15px;font:inherit;line-height:1.9;resize:vertical;outline:none}
-textarea:focus{border-color:var(--maroon);box-shadow:0 0 0 3px #8a153816}
+.intro{display:grid;grid-template-columns:1.2fr .8fr;gap:18px}.hero{display:grid;grid-template-columns:1.25fr .75fr;gap:18px}
+.case,.rulebox{background:#fbf5ea;border-right:5px solid var(--gold);padding:16px;border-radius:13px;line-height:1.95;font-size:16px}
+.progressWrap{display:flex;gap:8px;margin:15px 0}.dot{height:7px;flex:1;border-radius:99px;background:#e7e7e7}.dot.on{background:var(--maroon)}
+.q{border:1px solid var(--line);border-radius:14px;padding:15px;margin-top:12px}.q b{color:var(--navy)}
+.choice{display:block;border:1px solid #ded8d0;border-radius:11px;padding:11px 12px;margin:8px 0;cursor:pointer;background:#fff}.choice:hover{background:#faf8f4}.choice input{margin-left:8px}
+textarea,input[type=text]{width:100%;border:1px solid #d8d2cb;border-radius:14px;padding:14px;font:inherit;line-height:1.8;outline:none}
+textarea{min-height:160px;resize:vertical}textarea:focus,input[type=text]:focus{border-color:var(--maroon);box-shadow:0 0 0 3px #8a153816}
 .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}.btn{border:0;border-radius:12px;padding:12px 15px;font-weight:900;cursor:pointer;font-size:14px}.btn:active{transform:translateY(1px)}
 .primary{background:var(--maroon);color:#fff}.secondary{background:var(--navy);color:#fff}.ghost{background:#eef0f3;color:var(--navy)}.goldbtn{background:var(--gold);color:#2e2513}
-.note{font-size:12px;color:var(--muted);line-height:1.7;margin-top:11px}
-.status{display:grid;gap:10px}.statusbox{border:1px solid var(--line);border-radius:13px;padding:14px}.statusbox b{color:var(--navy)}
-.grid{display:grid;grid-template-columns:1.15fr .85fr;gap:18px;margin-top:18px}.hidden{display:none}
-.scoreTop{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.note{font-size:12px;color:var(--muted);line-height:1.7;margin-top:11px}.status{display:grid;gap:10px}.statusbox{border:1px solid var(--line);border-radius:13px;padding:14px}.statusbox b{color:var(--navy)}
+.profileBox{background:linear-gradient(135deg,#10233F,#17365f);color:#fff;border-radius:18px;padding:20px}.profileBox h2{color:#fff}.split{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:15px}
+.profileMetric{background:#ffffff13;border:1px solid #ffffff25;border-radius:14px;padding:14px}.profileMetric strong{display:block;font-size:27px}.profileMetric span{font-size:12px;color:#e2e8f0}
+.resultTag{display:inline-block;background:var(--gold);color:#302612;border-radius:999px;padding:8px 12px;font-weight:900;margin:8px 0}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.chip{background:#eef1f5;color:var(--navy);border-radius:999px;padding:7px 10px;font-size:12px;font-weight:800}.chip.gold{background:#f4ead5;color:#775a19}
+.grid{display:grid;grid-template-columns:1.15fr .85fr;gap:18px;margin-top:18px}.scoreTop{display:flex;align-items:center;justify-content:space-between;gap:12px}
 .total{width:86px;height:86px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--maroon) var(--deg),#eee 0);position:relative}
 .total:after{content:"";position:absolute;width:67px;height:67px;border-radius:50%;background:#fff}.total span{z-index:2;font-size:20px;font-weight:900;color:var(--navy)}
 .metric{margin:15px 0}.metricHead{display:flex;justify-content:space-between;font-size:13px;font-weight:800;color:var(--navy);margin-bottom:7px}.bar{height:10px;background:#eceef1;border-radius:99px;overflow:hidden}.fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--maroon),var(--gold));width:0;transition:.5s}
 .feedback{display:grid;gap:10px;margin-top:15px}.fb{border-radius:12px;padding:12px 13px;font-size:13px;line-height:1.7}.good{background:#edf7f2;color:#205f49}.warn{background:#fff5df;color:#7a5612}.bad{background:#fdebed;color:#88343b}
-.nextcase{background:#f7f0e7;border-right:5px solid var(--maroon);border-radius:13px;padding:16px;line-height:1.9}
-.smallcaps{font-size:11px;font-weight:900;color:var(--muted);letter-spacing:.4px}
+.nextcase{background:#f7f0e7;border-right:5px solid var(--maroon);border-radius:13px;padding:16px;line-height:1.9}.smallcaps{font-size:11px;font-weight:900;color:var(--muted);letter-spacing:.4px}
 .footer{margin-top:22px;text-align:center;color:var(--muted);font-size:12px}
-@media(max-width:850px){.hero,.grid{grid-template-columns:1fr}.pill{display:none}.top{padding:12px 14px}.brand h1{font-size:18px}main{padding:17px 12px 45px}.card{padding:16px}.case{font-size:15px}.scoreTop{align-items:flex-start}}
+@media(max-width:850px){.intro,.hero,.grid,.split{grid-template-columns:1fr}.pill{display:none}.top{padding:12px 14px}.brand h1{font-size:18px}main{padding:17px 12px 45px}.card{padding:16px}.case,.rulebox{font-size:15px}.scoreTop{align-items:flex-start}}
 </style>
 </head>
 <body>
 <header><div class="top">
-<div class="brand"><div class="logo">Lx</div><div><h1>LexLearn AI</h1><small>نموذج أولي للتعلّم القانوني التكيفي</small></div></div>
-<div class="pill">Demo • Civil Law • Arabic</div>
+<div class="brand"><div class="logo">Lx</div><div><h1>LexLearn AI</h1><small>تشخيص نمط التعلّم ثم تدريب قانوني تكيفي</small></div></div>
+<div class="pill">Demo • Learning Profile • Civil Law</div>
 </div></header>
 
 <main>
-<section class="hero">
+
+<section id="stage0" class="intro">
 <div class="card">
-<div class="kicker">المسألة القانونية رقم 1</div>
-<h2>مسؤولية مدنية — تطبيق القاعدة على الوقائع</h2>
+<div class="kicker">المرحلة الأولى — قبل التدريب القانوني</div>
+<h2>هل يميل الطالب إلى الحفظ أم إلى الفهم والتطبيق؟</h2>
+<p>نبدأ بقياس طريقتين مختلفتين: <b>الاسترجاع</b> من جهة، و<b>فهم القاعدة ونقلها إلى واقعة جديدة</b> من جهة أخرى. النتيجة ليست وصفًا ثابتًا للشخص، بل مؤشر أولي يتغير مع الأداء.</p>
+<div class="rulebox">
+<b>اقرأ القاعدة التالية جيدًا:</b><br>
+تقوم المسؤولية المدنية متى وُجد خطأ ترتب عليه ضرر للغير، وكانت هناك علاقة سببية بين الخطأ والضرر. وقد يؤثر خطأ المضرور في مقدار التعويض إذا ساهم في وقوع الضرر.
+</div>
+<div class="actions"><button class="btn primary" id="startDiag">قرأت القاعدة — ابدأ التشخيص</button></div>
+<div class="note">لن نطلب حفظ النص حرفيًا؛ سنقارن بين القدرة على استرجاع عناصره والقدرة على استخدامه في موقف جديد.</div>
+</div>
+<aside class="card">
+<div class="kicker">فكرة التشخيص</div><h3>قياس سلوك تعلّم لا “نوع شخصية”</h3>
+<div class="status">
+<div class="statusbox"><b>الحفظ/الاسترجاع</b><br><span class="note">تذكر العناصر والمصطلحات بعد إخفاء القاعدة.</span></div>
+<div class="statusbox"><b>الفهم</b><br><span class="note">شرح المعنى بكلمات مختلفة وربط العناصر ببعضها.</span></div>
+<div class="statusbox"><b>النقل والتطبيق</b><br><span class="note">استخدام القاعدة في واقعة لم يرها الطالب من قبل.</span></div>
+</div>
+</aside>
+</section>
+
+<section id="diagnostic" class="card hidden">
+<div class="kicker">اختبار تشخيصي قصير</div>
+<h2>أجب من ذاكرتك وفهمك</h2>
+<div class="progressWrap"><div class="dot on"></div><div class="dot on"></div><div class="dot on"></div><div class="dot on"></div></div>
+
+<div class="q"><b>1) استرجاع: ما العناصر الأساسية التي تتذكرها لقيام المسؤولية المدنية؟</b>
+<input id="recallText" type="text" placeholder="اكتب العناصر التي تتذكرها..."></div>
+
+<div class="q"><b>2) استرجاع: أي عبارة كانت جزءًا من القاعدة التي قرأتها؟</b>
+<label class="choice"><input type="radio" name="recallMcq" value="1"> وجود علاقة سببية بين الخطأ والضرر</label>
+<label class="choice"><input type="radio" name="recallMcq" value="0"> يشترط دائمًا وجود عقد مكتوب</label>
+<label class="choice"><input type="radio" name="recallMcq" value="0"> لا يؤثر خطأ المضرور مطلقًا في التعويض</label>
+</div>
+
+<div class="q"><b>3) فهم وتطبيق: شخص قاد بسرعة قانونية، وفجأة سقط جسم من شرفة وأصاب أحد المارة. أي سؤال يجب فحصه أولًا قبل تقرير مسؤولية السائق؟</b>
+<label class="choice"><input type="radio" name="transferMcq" value="1"> هل صدر من السائق خطأ يمكن ربطه بالضرر؟</label>
+<label class="choice"><input type="radio" name="transferMcq" value="0"> هل يملك السائق السيارة؟</label>
+<label class="choice"><input type="radio" name="transferMcq" value="0"> ما لون السيارة؟</label>
+</div>
+
+<div class="q"><b>4) فهم: اشرح بكلماتك لماذا قد ينخفض التعويض إذا ساهم المضرور في وقوع الضرر.</b>
+<textarea id="understandText" placeholder="اشرح الفكرة بطريقتك، من غير محاولة تكرار النص حرفيًا..."></textarea>
+</div>
+
+<div class="actions"><button class="btn primary" id="calcProfile">اعرض نمطي المبدئي</button><button class="btn ghost" id="backRule">العودة للقاعدة</button></div>
+</section>
+
+<section id="profile" class="profileBox hidden">
+<div class="kicker" style="color:#e8c98e">نتيجة التشخيص الأولي</div>
+<h2 id="profileTitle">ملف التعلّم المبدئي</h2>
+<div id="profileTag" class="resultTag"></div>
+<div class="split">
+<div class="profileMetric"><strong id="memoryScore">0%</strong><span>مؤشر الحفظ والاسترجاع</span></div>
+<div class="profileMetric"><strong id="understandingScore">0%</strong><span>مؤشر الفهم والنقل والتطبيق</span></div>
+</div>
+<p id="profileExplain"></p>
+<div class="actions"><button class="btn goldbtn" id="continueTraining">انتقل إلى التدريب المخصص</button><button class="btn ghost" id="redoDiag">أعد التشخيص</button></div>
+<div class="note" style="color:#d8e2ef">هذا المؤشر مبدئي ومبني على أداء قصير. لا يُستخدم كتصنيف دائم أو حكم على قدرات الطالب.</div>
+</section>
+
+<section id="training" class="hero hidden" style="margin-top:18px">
+<div class="card">
+<div class="kicker">المرحلة الثانية — تدريب مخصص</div>
+<h2 id="trainingTitle">مسؤولية مدنية — تطبيق القاعدة على الوقائع</h2>
+<div id="personalHint" class="fb warn" style="margin-bottom:14px"></div>
 <div class="case">
 قاد سائق سيارة بسرعة تجاوزت الحد المسموح به في شارع مزدحم. فوجئ بطفل يعبر الطريق من مكان غير مخصص للمشاة، فاصطدم به وأصابه. يطلب ولي الطفل تعويضًا كاملًا عن الضرر.
 <br><br><b>المطلوب:</b> حلّل المسؤولية المدنية، وحدد أثر خطأ كل طرف على التعويض.
 </div>
 <div class="chips"><span class="chip gold">Fact Pattern</span><span class="chip">المسؤولية التقصيرية</span><span class="chip">السببية</span><span class="chip">الخطأ المشترك</span></div>
 <h3 style="margin-top:18px">اكتب تحليلك القانوني</h3>
-<textarea id="answer" placeholder="ابدأ بتحديد المسألة القانونية، ثم القاعدة، ثم طبّقها على الوقائع، وانتهِ إلى نتيجة مبررة..."></textarea>
+<textarea id="answer" placeholder="حدد المسألة القانونية، ثم القاعدة، ثم طبّقها على الوقائع، وانتهِ إلى نتيجة مبررة..."></textarea>
 <div class="actions">
 <button class="btn primary" id="analyzeBtn">تحليل الإجابة</button>
 <button class="btn ghost" id="sampleBtn">إدخال إجابة تجريبية</button>
 <button class="btn ghost" id="resetBtn">إعادة</button>
 </div>
-<div class="note">هذه نسخة MVP تجريبية. محرك التحليل الحالي محلي ومحاكي لعرض منطق المنتج، وليس متصلًا بعد بنموذج لغوي خارجي.</div>
+<div class="note">محرك التحليل في هذه النسخة محلي ومحاكي لعرض منطق المنتج. الربط بنموذج لغوي خارجي سيكون في المرحلة التالية.</div>
 </div>
 
 <aside class="card">
-<div class="kicker">كيف يعمل النموذج؟</div>
-<h3>حلقة تعلّم تكيفية بسيطة</h3>
+<div class="kicker">المسار الشخصي</div>
+<h3>ماذا يفعل LexLearn بعد التشخيص؟</h3>
 <div class="status">
-<div class="statusbox"><b>1. الطالب يجيب</b><br><span class="note">على مسألة واقعية قصيرة بدل سؤال حفظ مباشر.</span></div>
-<div class="statusbox"><b>2. النظام يحلل</b><br><span class="note">Issue • Rule • Application • Conclusion</span></div>
-<div class="statusbox"><b>3. يحدد الضعف</b><br><span class="note">ليس تصنيفًا دائمًا، بل قراءة قابلة للتحديث.</span></div>
-<div class="statusbox"><b>4. يغيّر التمرين</b><br><span class="note">يعطي Fact Pattern جديدًا يستهدف المهارة الأضعف.</span></div>
+<div class="statusbox"><b>إذا مال الطالب للحفظ</b><br><span class="note">يزيد تمارين النقل، المقارنة، وتغيير الوقائع.</span></div>
+<div class="statusbox"><b>إذا مال للفهم</b><br><span class="note">يزيد تمارين الاسترجاع المنظم وتثبيت المصطلحات والقواعد.</span></div>
+<div class="statusbox"><b>إذا كان متوازنًا</b><br><span class="note">يمزج بين الاسترجاع والتطبيق ويراقب الأداء اللاحق.</span></div>
 </div>
 </aside>
 </section>
@@ -79,7 +144,7 @@ textarea:focus{border-color:var(--maroon);box-shadow:0 0 0 3px #8a153816}
 <section id="results" class="grid hidden">
 <div class="card">
 <div class="scoreTop">
-<div><div class="kicker">تحليل الإجابة</div><h2>الملف التعليمي القانوني</h2><div class="note">الدرجات هنا توضيحية لإثبات تجربة المستخدم في الـMVP.</div></div>
+<div><div class="kicker">تحليل الإجابة</div><h2>الملف التعليمي القانوني</h2><div class="note">تتحدّث هذه البيانات مع كل محاولة لاحقة.</div></div>
 <div class="total" id="totalCircle" style="--deg:0deg"><span id="totalScore">0%</span></div>
 </div>
 <div class="metric"><div class="metricHead"><span>تحديد المسألة القانونية</span><span id="issueNum">0%</span></div><div class="bar"><div class="fill" id="issueBar"></div></div></div>
@@ -88,7 +153,6 @@ textarea:focus{border-color:var(--maroon);box-shadow:0 0 0 3px #8a153816}
 <div class="metric"><div class="metricHead"><span>النتيجة والتسبيب</span><span id="conclusionNum">0%</span></div><div class="bar"><div class="fill" id="conclusionBar"></div></div></div>
 <div class="feedback" id="feedback"></div>
 </div>
-
 <div class="card">
 <div class="kicker">النشاط التالي</div>
 <h2>تمرين يتغير حسب نقطة الضعف</h2>
@@ -96,71 +160,104 @@ textarea:focus{border-color:var(--maroon);box-shadow:0 0 0 3px #8a153816}
 <div id="nextWrap" class="hidden">
 <div class="smallcaps" id="weakLabel"></div>
 <div class="nextcase" id="nextCase" style="margin-top:10px"></div>
-<div class="actions"><button class="btn goldbtn" id="loadNextBtn">حمّل التمرين التالي في مربع الإجابة</button></div>
+<div class="actions"><button class="btn goldbtn" id="loadNextBtn">حمّل التمرين التالي</button></div>
 </div>
 </div>
 </section>
 
-<div class="footer">LexLearn AI • Founder-led prototype • Designed for adaptive legal education</div>
+<div class="footer">LexLearn AI • Diagnose first, adapt second • Founder-led prototype</div>
 </main>
 
 <script>
 (function(){
 'use strict';
-var answer=document.getElementById('answer');
-var results=document.getElementById('results');
-var nextText='';
+var learningProfile=null, answer=document.getElementById('answer'), results=document.getElementById('results'), nextText='';
 
-function hasAny(text,words){return words.some(function(w){return text.indexOf(w)!==-1;});}
-function clamp(n){return Math.max(20,Math.min(96,n));}
+function show(id){document.getElementById(id).classList.remove('hidden')}
+function hide(id){document.getElementById(id).classList.add('hidden')}
+function selected(name){var x=document.querySelector('input[name="'+name+'"]:checked');return x?Number(x.value):null}
+function hasAny(t,ws){return ws.some(function(w){return t.indexOf(w)!==-1})}
+function clamp(n){return Math.max(20,Math.min(96,n))}
+
+document.getElementById('startDiag').onclick=function(){hide('stage0');show('diagnostic');window.scrollTo({top:0,behavior:'smooth'})};
+document.getElementById('backRule').onclick=function(){hide('diagnostic');show('stage0');window.scrollTo({top:0,behavior:'smooth'})};
+
+document.getElementById('calcProfile').onclick=function(){
+ var r=document.getElementById('recallText').value.trim(), u=document.getElementById('understandText').value.trim();
+ var rm=selected('recallMcq'), tm=selected('transferMcq');
+ if(r.length<5 || u.length<12 || rm===null || tm===null){alert('أكمل الأسئلة الأربعة أولًا حتى تكون النتيجة مفيدة.');return}
+ var recallTerms=['خطأ','ضرر','سببية','علاقة','تعويض','المضرور'];
+ var recalled=recallTerms.filter(function(w){return r.indexOf(w)!==-1}).length;
+ var memory=Math.min(100,Math.round(35 + recalled*8 + rm*25 + Math.min(8,r.length/10)));
+ var understandingWords=['لأن','يساهم','سبب','نتيجة','تخفيض','تقليل','تعويض','مسؤولية','يتحمل','نسبة','اشتراك','عادل'];
+ var understood=understandingWords.filter(function(w){return u.indexOf(w)!==-1}).length;
+ var understand=Math.min(100,Math.round(30 + tm*32 + understood*6 + Math.min(14,u.length/18)));
+
+ var type,tag,explain;
+ if(memory-understand>=12){type='memory';tag='يميل إلى الحفظ والاسترجاع';explain='أداؤك في تذكر عناصر القاعدة أعلى من أدائك في نقلها إلى موقف جديد. لذلك سيبدأ المسار التالي بتمارين تطبيق ومقارنة وتغيير الوقائع، مع الحفاظ على قوتك في الاسترجاع.'}
+ else if(understand-memory>=12){type='understanding';tag='يميل إلى الفهم والتطبيق';explain='أداؤك في تفسير القاعدة وتطبيقها أعلى من استرجاع عناصرها. لذلك سيضيف المسار التالي فترات استرجاع قصيرة وتثبيتًا للمصطلحات بجانب المسائل التطبيقية.'}
+ else{type='balanced';tag='نمط متوازن مبدئيًا';explain='أداؤك متقارب بين الاسترجاع والفهم. لذلك سيستخدم المسار التالي مزيجًا من التذكر والتطبيق ويعيد تحديث الملف بعد كل مجموعة تمارين.'}
+
+ learningProfile={type:type,memory:memory,understanding:understand};
+ document.getElementById('memoryScore').textContent=memory+'%';
+ document.getElementById('understandingScore').textContent=understand+'%';
+ document.getElementById('profileTag').textContent=tag;
+ document.getElementById('profileExplain').textContent=explain;
+ hide('diagnostic');show('profile');window.scrollTo({top:0,behavior:'smooth'});
+};
+
+document.getElementById('redoDiag').onclick=function(){
+ document.getElementById('recallText').value='';document.getElementById('understandText').value='';
+ document.querySelectorAll('#diagnostic input[type=radio]').forEach(function(x){x.checked=false});
+ hide('profile');show('stage0');window.scrollTo({top:0,behavior:'smooth'});
+};
+
+document.getElementById('continueTraining').onclick=function(){
+ if(!learningProfile)return;
+ var hint='';
+ if(learningProfile.type==='memory') hint='<b>مسارك الآن:</b> سنضغط على الفهم والنقل. لا يكفي ذكر القاعدة؛ اربط كل عنصر بواقعة محددة وفسّر لماذا ينطبق.';
+ else if(learningProfile.type==='understanding') hint='<b>مسارك الآن:</b> فهمك جيد مبدئيًا. سنضيف تركيزًا على استرجاع القاعدة وعناصرها بدقة قبل التطبيق.';
+ else hint='<b>مسارك الآن:</b> سنمزج بين الاسترجاع والتطبيق ونراقب أي جانب يتراجع عند صعوبة السؤال.';
+ document.getElementById('personalHint').innerHTML=hint;
+ hide('profile');show('training');window.scrollTo({top:0,behavior:'smooth'});
+};
+
 function score(text){
-  var t=text.trim();
-  var len=Math.min(t.length,900);
-  var issue=30 + (hasAny(t,['المسألة','المسؤولية','خطأ','تعويض','السببية'])?28:0) + (hasAny(t,['السائق','الطفل','ولي'])?16:0) + Math.min(18,len/45);
-  var rule=28 + (hasAny(t,['القاعدة','أركان','خطأ','ضرر','علاقة سببية','سببية','مسؤولية تقصيرية'])?34:0) + (hasAny(t,['التعويض','المضرور'])?14:0) + Math.min(15,len/55);
-  var apply=25 + (hasAny(t,['لأن','حيث','وبتطبيق','بالنسبة','في الواقعة','سرعة','يعبر','مخصص'])?35:0) + (hasAny(t,['ساهم','مشترك','توزيع','تخفيض','نسبة'])?22:0) + Math.min(14,len/60);
-  var conclusion=28 + (hasAny(t,['لذلك','وعليه','وبناء','ينتهي','أرى','النتيجة','يستحق','يخفض'])?34:0) + (hasAny(t,['تعويض','تخفيض','مسؤولية'])?18:0) + Math.min(14,len/65);
-  return {issue:clamp(Math.round(issue)),rule:clamp(Math.round(rule)),apply:clamp(Math.round(apply)),conclusion:clamp(Math.round(conclusion))};
+ var t=text.trim(),len=Math.min(t.length,900);
+ var issue=30+(hasAny(t,['المسألة','المسؤولية','خطأ','تعويض','السببية'])?28:0)+(hasAny(t,['السائق','الطفل','ولي'])?16:0)+Math.min(18,len/45);
+ var rule=28+(hasAny(t,['القاعدة','أركان','خطأ','ضرر','علاقة سببية','سببية','مسؤولية تقصيرية'])?34:0)+(hasAny(t,['التعويض','المضرور'])?14:0)+Math.min(15,len/55);
+ var apply=25+(hasAny(t,['لأن','حيث','وبتطبيق','بالنسبة','في الواقعة','سرعة','يعبر','مخصص'])?35:0)+(hasAny(t,['ساهم','مشترك','توزيع','تخفيض','نسبة'])?22:0)+Math.min(14,len/60);
+ var conclusion=28+(hasAny(t,['لذلك','وعليه','وبناء','ينتهي','أرى','النتيجة','يستحق','يخفض'])?34:0)+(hasAny(t,['تعويض','تخفيض','مسؤولية'])?18:0)+Math.min(14,len/65);
+ if(learningProfile&&learningProfile.type==='memory') apply+=5;
+ if(learningProfile&&learningProfile.type==='understanding') rule+=5;
+ return {issue:clamp(Math.round(issue)),rule:clamp(Math.round(rule)),apply:clamp(Math.round(apply)),conclusion:clamp(Math.round(conclusion))};
 }
-function weakest(s){var pairs=[['issue',s.issue],['rule',s.rule],['apply',s.apply],['conclusion',s.conclusion]];pairs.sort(function(a,b){return a[1]-b[1];});return pairs[0][0];}
+function weakest(s){var p=[['issue',s.issue],['rule',s.rule],['apply',s.apply],['conclusion',s.conclusion]];p.sort(function(a,b){return a[1]-b[1]});return p[0][0]}
 function nextFor(key){
- if(key==='issue') return {label:'نقطة التركيز: اكتشاف المسألة القانونية',text:'استأجر شخص محلًا تجاريًا، ثم أجره من الباطن رغم وجود شرط يمنع ذلك. بعد أشهر طالب المؤجر الأصلي بإخلائه. قبل ذكر أي حكم، حدّد أولًا المسائل القانونية التي يجب فحصها ورتبها بحسب الأولوية.'};
- if(key==='rule') return {label:'نقطة التركيز: صياغة القاعدة القانونية',text:'تسبب شخص بإهماله في إتلاف مال مملوك للغير. صغ القاعدة القانونية العامة التي يلزم فحصها لتقرير المسؤولية، وبيّن عناصرها من دون تطبيقها على الواقعة.'};
- if(key==='apply') return {label:'نقطة التركيز: تطبيق القاعدة على الوقائع',text:'ترك متجر أرضيته مبللة بلا علامة تحذير، فانزلق عميل كان ينظر إلى هاتفه وسقط. طبّق كل عنصر من عناصر المسؤولية على واقعة محددة في السؤال، وبيّن أثر سلوك العميل.'};
- return {label:'نقطة التركيز: النتيجة والتسبيب',text:'توافرت أركان المسؤولية في واقعة ما، لكن المضرور ساهم بخطئه في حدوث الضرر. اكتب نتيجة قانونية قصيرة ومسببة تشرح أثر هذه المساهمة على مقدار التعويض.'};
+ if(key==='issue')return{label:'نقطة التركيز: اكتشاف المسألة القانونية',text:'استأجر شخص محلًا تجاريًا، ثم أجره من الباطن رغم وجود شرط يمنع ذلك. بعد أشهر طالب المؤجر الأصلي بإخلائه. قبل ذكر أي حكم، حدّد المسائل القانونية التي يجب فحصها ورتبها.'};
+ if(key==='rule')return{label:'نقطة التركيز: استرجاع وصياغة القاعدة',text:'تسبب شخص بإهماله في إتلاف مال مملوك للغير. اكتب القاعدة العامة وعناصرها أولًا، ثم اشرح باختصار وظيفة كل عنصر.'};
+ if(key==='apply')return{label:'نقطة التركيز: الفهم ونقل القاعدة إلى واقعة جديدة',text:'ترك متجر أرضيته مبللة بلا علامة تحذير، فانزلق عميل كان ينظر إلى هاتفه. طبّق كل عنصر من عناصر المسؤولية على واقعة محددة وبيّن أثر سلوك العميل.'};
+ return{label:'نقطة التركيز: النتيجة والتسبيب',text:'توافرت أركان المسؤولية، لكن المضرور ساهم بخطئه في الضرر. اكتب نتيجة قانونية قصيرة ومسببة تشرح أثر ذلك على مقدار التعويض.'};
 }
-function setMetric(id,val){document.getElementById(id+'Num').textContent=val+'%';document.getElementById(id+'Bar').style.width=val+'%';}
-function feedbackBox(cls,title,body){return '<div class="fb '+cls+'"><b>'+title+'</b><br>'+body+'</div>';}
+function setMetric(id,val){document.getElementById(id+'Num').textContent=val+'%';document.getElementById(id+'Bar').style.width=val+'%'}
+function fb(c,t,b){return '<div class="fb '+c+'"><b>'+t+'</b><br>'+b+'</div>'}
 function analyze(){
- var t=answer.value.trim();
- if(t.length<25){alert('اكتب إجابة قصيرة على الأقل، أو اضغط «إدخال إجابة تجريبية».');answer.focus();return;}
- var s=score(t);var total=Math.round((s.issue+s.rule+s.apply+s.conclusion)/4);
- setMetric('issue',s.issue);setMetric('rule',s.rule);setMetric('apply',s.apply);setMetric('conclusion',s.conclusion);
- document.getElementById('totalScore').textContent=total+'%';
- document.getElementById('totalCircle').style.setProperty('--deg',(total*3.6)+'deg');
- var w=weakest(s);var f='';
- var strongest=Object.keys(s).sort(function(a,b){return s[b]-s[a];})[0];
- var labels={issue:'تحديد المسألة',rule:'صياغة القاعدة',apply:'التطبيق على الوقائع',conclusion:'النتيجة والتسبيب'};
- f+=feedbackBox('good','نقطة قوة ظاهرة',labels[strongest]+' هي أعلى مهارة ظهرت في هذه المحاولة.');
- f+=feedbackBox('warn','أولوية التدريب التالية',labels[w]+' تحتاج إلى تمرين موجه بدل تكرار السؤال نفسه.');
- if(total<55) f+=feedbackBox('bad','اقتراح تعليمي','جرّب تنظيم الإجابة إلى: المسألة ← القاعدة ← التطبيق ← النتيجة، مع ربط كل استنتاج بواقعة محددة.');
- else f+=feedbackBox('good','اقتراح تطوير','الإجابة منظمة مبدئيًا. الخطوة التالية هي زيادة الدقة في ربط الوقائع بالعناصر القانونية وتقوية التسبيب.');
+ var t=answer.value.trim();if(t.length<25){alert('اكتب إجابة قصيرة على الأقل، أو استخدم الإجابة التجريبية.');return}
+ var s=score(t),total=Math.round((s.issue+s.rule+s.apply+s.conclusion)/4);
+ ['issue','rule','apply','conclusion'].forEach(function(k){setMetric(k,s[k])});
+ document.getElementById('totalScore').textContent=total+'%';document.getElementById('totalCircle').style.setProperty('--deg',(total*3.6)+'deg');
+ var w=weakest(s),strong=Object.keys(s).sort(function(a,b){return s[b]-s[a]})[0],labels={issue:'تحديد المسألة',rule:'صياغة القاعدة',apply:'التطبيق على الوقائع',conclusion:'النتيجة والتسبيب'};
+ var f=fb('good','نقطة قوة ظاهرة',labels[strong]+' هي أعلى مهارة في هذه المحاولة.')+fb('warn','أولوية التدريب التالية',labels[w]+' تحتاج إلى تدريب موجه.');
+ if(learningProfile&&learningProfile.type==='memory')f+=fb('warn','ربط النتيجة بالتشخيص الأول','بما أنك تميل للاسترجاع، سنعطي وزنًا أكبر لتمارين التطبيق وتغيير الوقائع.');
+ if(learningProfile&&learningProfile.type==='understanding')f+=fb('good','ربط النتيجة بالتشخيص الأول','بما أنك تميل للفهم، سنضيف استرجاعًا قصيرًا للقواعد حتى يظل الأداء متوازنًا.');
  document.getElementById('feedback').innerHTML=f;
- var nx=nextFor(w);nextText=nx.text;
- document.getElementById('weakLabel').textContent=nx.label;
- document.getElementById('nextCase').textContent=nx.text;
- document.getElementById('nextPlaceholder').classList.add('hidden');
- document.getElementById('nextWrap').classList.remove('hidden');
- results.classList.remove('hidden');
- setTimeout(function(){results.scrollIntoView({behavior:'smooth',block:'start'});},60);
+ var nx=nextFor(w);nextText=nx.text;document.getElementById('weakLabel').textContent=nx.label;document.getElementById('nextCase').textContent=nx.text;
+ hide('nextPlaceholder');show('nextWrap');show('results');setTimeout(function(){results.scrollIntoView({behavior:'smooth',block:'start'})},60);
 }
-document.getElementById('analyzeBtn').addEventListener('click',analyze);
-document.getElementById('sampleBtn').addEventListener('click',function(){
- answer.value='تتمثل المسألة في مدى قيام المسؤولية التقصيرية للسائق وأثر خطأ الطفل في مقدار التعويض. تقوم المسؤولية على الخطأ والضرر وعلاقة السببية. تجاوز السائق السرعة المقررة في شارع مزدحم، وهو ما يشكل خطأً يمكن ربطه بالإصابة. وفي المقابل عبر الطفل من مكان غير مخصص للمشاة، وقد يعد ذلك مساهمة في حدوث الضرر بحسب ظروف سنه وقدرته على التمييز. وبناء على ذلك، يمكن أن تثبت مسؤولية السائق مع بحث أثر الخطأ المشترك في تخفيض التعويض بدل استبعاده كليًا.';
- answer.focus();
-});
-document.getElementById('resetBtn').addEventListener('click',function(){answer.value='';results.classList.add('hidden');document.getElementById('nextWrap').classList.add('hidden');document.getElementById('nextPlaceholder').classList.remove('hidden');answer.focus();});
-document.getElementById('loadNextBtn').addEventListener('click',function(){answer.value='المسألة الجديدة:\\n'+nextText+'\\n\\nإجابتي:\\n';results.classList.add('hidden');window.scrollTo({top:220,behavior:'smooth'});setTimeout(function(){answer.focus();},400);});
+document.getElementById('analyzeBtn').onclick=analyze;
+document.getElementById('sampleBtn').onclick=function(){answer.value='تتمثل المسألة في مدى قيام المسؤولية التقصيرية للسائق وأثر خطأ الطفل في مقدار التعويض. تقوم المسؤولية على الخطأ والضرر وعلاقة السببية. تجاوز السائق السرعة المقررة، وهو خطأ يرتبط بالإصابة. وفي المقابل عبر الطفل من مكان غير مخصص للمشاة، وقد يعد ذلك مساهمة في حدوث الضرر. لذلك قد تثبت مسؤولية السائق مع تخفيض التعويض إذا ثبتت مساهمة المضرور.'};
+document.getElementById('resetBtn').onclick=function(){answer.value='';hide('results');hide('nextWrap');show('nextPlaceholder')};
+document.getElementById('loadNextBtn').onclick=function(){answer.value='المسألة الجديدة:\n'+nextText+'\n\nإجابتي:\n';hide('results');training.scrollIntoView({behavior:'smooth'});setTimeout(function(){answer.focus()},400)};
 })();
 </script>
 </body></html>
