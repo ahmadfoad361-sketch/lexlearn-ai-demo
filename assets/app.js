@@ -2,19 +2,26 @@
 "use strict";
 
 var C = window.LEX_CONTENT;
+var E = window.LEX_ENGINE;
 var APP = document.getElementById("app");
 var LEGACY_STORAGE = "lexlearn_v4_grouped";
 var AUTH_KEY = "lexlearn_auth_v1";
 var STUDENT_PREFIX = "lexlearn_student_v6_";
 var SESSION = {answers:{},pending:null,confidence:null,activity:null,activityAnswer:null,activityFeedback:null,transition:null};
 var ADMIN = {selectedStudentId:null,lastCreated:null};
+var DATA_REPO = {
+  get:function(key){return localStorage.getItem(key);},
+  set:function(key,value){localStorage.setItem(key,value);},
+  remove:function(key){localStorage.removeItem(key);}
+};
 
 var DIM_LABELS = {
   recall:"الاسترجاع",
   understanding:"الفهم",
   legal_precision:"الدقة القانونية",
   transfer:"التطبيق",
-  exam_execution:"الاختبار الامتحاني"
+  exam_execution:"الاختبار الامتحاني",
+  observation:"الملاحظة الدقيقة"
 };
 
 function hashPass(v){
@@ -25,26 +32,26 @@ function hashPass(v){
 function uid(prefix){return (prefix||"u")+"-"+Date.now().toString(36)+"-"+Math.random().toString(36).slice(2,7);}
 function loadAuth(){
   try{
-    var a=JSON.parse(localStorage.getItem(AUTH_KEY));
+    var a=JSON.parse(DATA_REPO.get(AUTH_KEY));
     if(a&&Array.isArray(a.accounts))return a;
   }catch(e){}
   return {schema:1,accounts:[],currentId:null};
 }
 var auth=loadAuth();
-function saveAuth(){localStorage.setItem(AUTH_KEY,JSON.stringify(auth));}
+function saveAuth(){DATA_REPO.set(AUTH_KEY,JSON.stringify(auth));}
 function activeAccount(){return auth.accounts.find(function(x){return x.id===auth.currentId;})||null;}
 function accountById(id){return auth.accounts.find(function(x){return x.id===id;})||null;}
 function hasAdmin(){return auth.accounts.some(function(x){return x.role==="admin";});}
 function studentStateKey(id){return STUDENT_PREFIX+id;}
 function freshCourseState(){
-  return {groupIndex:0,groupResults:[],mastery:{},route:null,xp:0,streak:0,lastActive:null,reviews:[],activityHistory:[],skillPaths:{},completed:false};
+  return {groupIndex:0,groupResults:[],mastery:{},unitMastery:{},conceptMastery:{},calibration:{status:"insufficient_data",value:null,evidence:0},observationResults:[],route:null,xp:0,streak:0,lastActive:null,reviews:[],activityHistory:[],skillPaths:{},completed:false};
 }
 function freshState(){
   return {schema:6,country:null,courseId:null,screen:"country",courses:{},createdAt:new Date().toISOString()};
 }
 function readStudentState(id){
   try{
-    var s=JSON.parse(localStorage.getItem(studentStateKey(id)));
+    var s=JSON.parse(DATA_REPO.get(studentStateKey(id)));
     if(s&&s.courses)return s;
   }catch(e){}
   return freshState();
@@ -58,7 +65,7 @@ var state=load();
 
 function save(){
   var a=activeAccount();
-  if(a&&a.role==="student")localStorage.setItem(studentStateKey(a.id),JSON.stringify(state));
+  if(a&&a.role==="student")DATA_REPO.set(studentStateKey(a.id),JSON.stringify(state));
 }
 function esc(v){return String(v==null?"":v).replace(/[&<>"']/g,function(c){return({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"})[c];});}
 function norm(v){return String(v||"").toLowerCase().replace(/[أإآ]/g,"ا").replace(/ة/g,"ه").replace(/ى/g,"ي").replace(/[ًٌٍَُِّْـ]/g,"").replace(/[^\u0600-\u06FFa-z0-9 ]/gi," ").replace(/\s+/g," ").trim();}
@@ -67,9 +74,14 @@ function cs(){
   if(!state.courseId)return null;
   if(!state.courses[state.courseId])state.courses[state.courseId]=freshCourseState();
   var s=state.courses[state.courseId];
+  s=E&&E.migrateCourseState?E.migrateCourseState(s):s;
+  state.courses[state.courseId]=s;
   if(!s.skillPaths)s.skillPaths={};
   if(!s.reviews)s.reviews=[];
   if(!s.activityHistory)s.activityHistory=[];
+  if(!s.observationResults)s.observationResults=[];
+  if(!s.unitMastery)s.unitMastery={};
+  if(!s.conceptMastery)s.conceptMastery={};
   return s;
 }
 function go(screen){
@@ -109,10 +121,11 @@ function criterionResult(text,r){
   return {ok:score>0,matched:score>0?1:0,total:1,need:1};
 }
 function evaluateWritten(item,answer){
-  if(answer==="__DONT_KNOW__")return {score:0,criteria:[]};
+  if(E&&E.gradeAnswer)return E.gradeAnswer(answer,item.rubric||[],{itemId:item.id,conceptId:item.conceptId||null});
+  if(answer==="__DONT_KNOW__")return {score:0,criteria:[],gradingMethod:"keyword_fallback"};
   var rs=(item.rubric||[]).map(function(r){var cr=criterionResult(answer,r);return {label:r.label,ok:cr.ok,matched:cr.matched,total:cr.total,need:cr.need};});
   var hit=rs.filter(function(x){return x.ok;}).length;
-  return {score:rs.length?hit/rs.length:0,criteria:rs};
+  return {score:rs.length?hit/rs.length:0,criteria:rs,gradingMethod:"keyword_fallback"};
 }
 function evalItem(item,answer){
   if(item.type==="mcq"){
@@ -125,6 +138,21 @@ function evalItem(item,answer){
 function pct(v){return Math.round(v||0)+"%";}
 function confidenceLabel(v){return v===1?"غير متأكد":v===2?"إلى حد ما":"واثق";}
 function dimensionLabel(d){return DIM_LABELS[d]||d;}
+function allCourseItems(){
+  var c=course(),out=[];if(!c)return out;
+  (c.groups||[]).forEach(function(g){(g.items||[]).forEach(function(it){out.push(it);});});
+  return out;
+}
+function unitLabel(id){
+  var c=course(),u=c&&(c.units||[]).find(function(x){return x.id===id;});
+  return u?u.title:id;
+}
+function dimensionExamWeight(d){
+  var items=allCourseItems().filter(function(it){return it.dimension===d;});
+  if(!items.length||!E)return 0;
+  var total=items.reduce(function(n,it){return n+(it.examImportanceWeight!=null?Number(it.examImportanceWeight):E.examTagWeight(it.examFrequencyTag));},0);
+  return total/items.length;
+}
 
 function touchStreak(){
   var s=cs();if(!s)return;
@@ -137,27 +165,22 @@ function touchStreak(){
   s.lastActive=today;
 }
 function addXP(n){var s=cs();touchStreak();s.xp+=n;save();}
-function scheduleReview(item,score){
-  var s=cs();if(score>=.85)return;
-  var existing=s.reviews.find(function(r){return r.itemId===item.id;});
-  var days=score<.5?1:3;
-  var due=new Date();due.setDate(due.getDate()+days);
-  if(existing){existing.due=due.toISOString();existing.score=score;}
-  else s.reviews.push({id:"rev-"+Date.now()+"-"+item.id,itemId:item.id,topic:item.prompt.slice(0,70),due:due.toISOString(),score:score});
+function scheduleReview(item,score,confidence,errorType){
+  var s=cs();if(!item||score>=.85)return;
+  errorType=errorType||(E?E.classifyError(item,score,confidence):"knowledge_gap");
+  var existing=s.reviews.find(function(r){return r.itemId===item.id&&r.reviewReason===errorType;});
+  var plan=E?E.buildReview(item,score,errorType,confidence,Date.now(),existing?(existing.attempts||1)+1:1):null;
+  if(!plan)return;
+  if(existing){Object.keys(plan).forEach(function(k){existing[k]=plan[k];});}
+  else s.reviews.push(Object.assign({id:"rev-"+Date.now()+"-"+item.id},plan));
 }
 function computeMastery(){
-  var s=cs();var sums={},counts={};
-  s.groupResults.forEach(function(g){
-    (g.items||[]).forEach(function(x){
-      var item=findItem(x.itemId);if(!item)return;
-      var d=item.dimension;
-      var weight=1+(Math.max(1,item.difficulty||1)-1)*.08;
-      sums[d]=(sums[d]||0)+(x.score*100*weight);
-      counts[d]=(counts[d]||0)+weight;
-    });
-  });
-  s.mastery={};
-  Object.keys(sums).forEach(function(d){s.mastery[d]={value:Math.min(100,sums[d]/counts[d]),evidence:Math.round(counts[d])};});
+  var s=cs();
+  if(E&&E.computeMastery){
+    var agg=E.computeMastery(s.groupResults,findItem,s.observationResults||[]);
+    s.mastery=agg.mastery;s.unitMastery=agg.unitMastery;s.conceptMastery=agg.conceptMastery;
+    s.calibration=E.calibration(s.groupResults,8);
+  }
   s.route=deriveRoute(s.mastery);
   save();
 }
@@ -751,7 +774,7 @@ function bind(){
     if(auth.accounts.some(function(x){return x.username.toLowerCase()===username;})){toast("اسم المستخدم موجود بالفعل.");return;}
     if(!courseIds.length){toast("اختر مقررًا واحدًا على الأقل.");return;}
     var a={id:uid("student"),role:"student",name:name,username:username,passwordHash:hashPass(pass),courseIds:courseIds,createdAt:new Date().toISOString()};
-    auth.accounts.push(a);saveAuth();localStorage.setItem(studentStateKey(a.id),JSON.stringify(freshState()));
+    auth.accounts.push(a);saveAuth();DATA_REPO.set(studentStateKey(a.id),JSON.stringify(freshState()));
     ADMIN.lastCreated={id:a.id,username:username,password:pass};render();
   };
   document.querySelectorAll("[data-student-detail]").forEach(function(el){el.onclick=function(){ADMIN.selectedStudentId=el.getAttribute("data-student-detail");render();window.scrollTo({top:0,behavior:"smooth"});};});
