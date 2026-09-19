@@ -493,38 +493,80 @@ function resultsScreen(){
   var s=cs(),c=course(),ri=routeInfo(),goals=growthGoals(),errors=errorMemory(3);
   var dims=["recall","understanding","legal_precision","transfer","exam_execution"];
   var metrics=dims.map(function(d){
-    var m=s.mastery[d];return '<div class="metric"><div class="metricHead"><span>'+dimensionLabel(d)+'</span><span>'+(m?pct(m.value):"لم يُقاس")+'</span></div>'+(m?'<div class="bar"><span style="width:'+m.value+'%"></span></div><div class="reliability">'+m.evidence+' دليل</div>':'<div class="reliability">لا توجد إجابة كافية لهذا البُعد.</div>')+'</div>';
+    var m=s.mastery[d];
+    return '<div class="metric"><div class="metricHead"><span>'+dimensionLabel(d)+'</span><span>'+(m?pct(m.value):"لم يُقاس")+'</span></div>'+(m?'<div class="bar"><span style="width:'+m.value+'%"></span></div><div class="reliability">'+m.evidence+' دليل</div>':'<div class="reliability">لا توجد أدلة كافية لهذا البُعد.</div>')+'</div>';
   }).join("");
   var exam=s.groupResults.find(function(g){return g.groupId===c.groups[c.groups.length-1].id;});
-  var examDetail=exam?'<div class="examdetail"><h3>من أين جاءت درجة الاختبار الامتحاني؟</h3><p class="small">كل سؤال ظاهر هنا بنتيجته؛ لا توجد درجة غامضة.</p>'+exam.items.map(function(x,i){var it=findItem(x.itemId);return '<div class="evidencecard"><b>سؤال '+(i+1)+': '+esc(it.prompt)+'</b><span>'+Math.round(x.score*100)+'%</span></div>';}).join("")+'</div>':'';
-  var goalCards='<div class="goalGrid">'+goals.map(function(g,i){return '<div class="goalCard"><div class="goalNum">'+(i+1)+'</div><div class="goalIcon">'+g.icon+'</div><h3>'+esc(g.title)+'</h3>'+(g.score!=null?'<span class="miniScore">'+g.score+'%</span>':'')+'<p>'+esc(g.why)+'</p><small>الخطوة التالية: '+esc(g.next)+'</small></div>';}).join("")+'</div>';
-  var err='<div class="errorMemory"><h3>🧠 ذاكرة الأخطاء الذكية</h3><p class="small">مش هنكرر الغلط؛ هنفهم نوعه ونرجع له بصيغة مختلفة.</p>'+(errors.length?errors.map(function(e){return '<div class="errorChip"><b>'+esc(e.type)+'</b><span>'+esc(e.item.prompt.slice(0,90))+(e.item.prompt.length>90?"…":"")+'</span></div>';}).join(""):'<div class="goodbox">لا توجد أخطاء بارزة في التشخيص الحالي.</div>')+'</div>';
-  return '<section class="screen"><div class="resultHero"><div><div class="kicker">تحليل أدائك</div><h1>مش “درجة” وبس… دي خريطة تطويرك.</h1><p>حددنا أين أنت قوي، وأين يحتاج العقل القانوني إلى تدريب مختلف.</p></div><img src="assets/visual-study.svg" alt=""></div><div class="dashboard"><div class="panel">'+journey("results")+'<h2>'+esc(c.code)+' — '+esc(c.title_ar)+'</h2><div class="notice">كل نسبة لها أدلة فعلية. «لم يُقاس» لا تتحول إلى 0%. والتصحيح المقالي الحالي مفاهيمي، وليس درجة جامعية رسمية.</div><div class="metricGrid">'+metrics+'<div class="metric"><div class="metricHead"><span>الاحتفاظ المؤجل</span><span>لم يُقاس بعد</span></div><div class="reliability">سيُقاس من مراجعة حقيقية لاحقة.</div></div></div>'+examDetail+'</div><div class="pathcard"><div class="kicker" style="color:#e8c986">المسار الحالي</div><h2>'+esc(ri.title)+'</h2><p>'+esc(ri.why)+'</p>'+ri.steps.map(function(x,i){return '<div class="pathstep"><b>'+(i+1)+'.</b> '+esc(x)+'</div>';}).join("")+'</div></div><div class="panel growthPlan"><div class="screenhead"><div><div class="kicker">خطة تطويرك</div><h2>3 أهداف فقط الآن</h2><p class="small">عشان ما نغرقكش. عندما تتحسن، تتغير الأهداف تلقائيًا.</p></div><span class="stepbadge">🎯 شخصية حسب أدائك</span></div>'+goalCards+err+'<div class="actions"><button class="btn primary" id="enterTraining">ابدأ جلسة اليوم</button></div></div></section>';
+  var examDetail=exam?'<div class="examdetail"><h3>تفصيل نتيجة الاختبار الامتحاني</h3><p class="small">تظهر نتيجة كل سؤال على حدة ليتضح أساس التقييم.</p>'+exam.items.map(function(x,i){var it=findItem(x.itemId);return '<div class="evidencecard"><b>سؤال '+(i+1)+': '+esc(it.prompt)+'</b><span>'+Math.round(x.score*100)+'%</span></div>';}).join("")+'</div>':'';
+  var plan=goals.length?'<div class="focusPlan">'+goals.map(function(g,i){return '<div class="focusPlanRow '+(i===0?"primary":"")+'"><span class="goalIcon">'+g.icon+'</span><div><b>'+(i===0?"الأولوية الحالية: ":"أولوية لاحقة: ")+esc(g.title)+'</b><p>'+esc(g.why)+'</p><small>الخطوة التالية: '+esc(g.next)+'</small></div><span class="miniScore">'+g.score+'%</span></div>';}).join("")+'</div>':'<div class="goodbox"><b>لا توجد فجوة أساسية تستلزم مسارًا علاجيًا حاليًا.</b><br>ستقتصر الخطة على المراجعات المؤجلة والتحديات المتقدمة عند الحاجة.</div>';
+  var err='<div class="errorMemory"><h3>🧠 ذاكرة الأخطاء</h3><p class="small">يستخدم النظام نوع الخطأ لتحديد التدريب المناسب، بدل إعادة السؤال نفسه بصورة آلية.</p>'+(errors.length?errors.map(function(e){return '<div class="errorChip"><b>'+esc(e.type)+'</b><span>'+esc(e.item.prompt.slice(0,90))+(e.item.prompt.length>90?"…":"")+'</span></div>';}).join(""):'<div class="goodbox">لا توجد أخطاء بارزة في التشخيص الحالي.</div>')+'</div>';
+  return '<section class="screen studentSimple"><div class="resultHero simplifiedHero"><div><div class="kicker">تحليل الأداء</div><h1>نتيجتك تحولت إلى خطة تدريب واضحة.</h1><p>لن تظهر لك تدريبات لا تحتاج إليها. يبدأ النظام بأضعف بُعد، ثم يغلق مساره بعد اجتياز الاختبار وينتقل إلى الأولوية التالية.</p></div><img src="assets/visual-study.svg" alt="تعلم قانوني ذكي"></div><div class="dashboard"><div class="panel">'+journey("results")+'<h2>'+esc(c.code)+' — '+esc(c.title_ar)+'</h2><div class="notice">هذه مؤشرات تدريبية مبنية على إجاباتك، وليست درجات جامعية رسمية. «لم يُقاس» لا يتحول إلى صفر.</div><div class="metricGrid">'+metrics+'<div class="metric"><div class="metricHead"><span>الاحتفاظ المؤجل</span><span>لم يُقاس بعد</span></div><div class="reliability">يُقاس في مراجعة لاحقة بعد مرور وقت مناسب.</div></div></div>'+examDetail+'</div><div class="pathcard"><div class="kicker" style="color:#e8c986">منطق المسار</div><h2>'+esc(ri.title)+'</h2><p>'+esc(ri.why)+'</p><div class="pathstep"><b>1.</b> تعلم موجّه</div><div class="pathstep"><b>2.</b> تدريب على نقطة الضعف</div><div class="pathstep"><b>3.</b> اختبار قصير للمسار</div><div class="pathstep"><b>4.</b> إغلاق المسار عند الاجتياز</div></div></div><div class="panel growthPlan"><div class="screenhead"><div><div class="kicker">خطة التدريب</div><h2>الأولويات التي تحتاجها فقط</h2><p class="small">لن تظهر التحديات غير المرتبطة بفجواتك الحالية.</p></div><span class="stepbadge">🎯 مخصصة حسب أدائك</span></div>'+plan+err+'<div class="actions"><button class="btn primary" id="enterTraining">ابدأ خطة التدريب</button></div></div></section>';
 }
 function stats(){
-  var s=cs();return '<div class="statgrid"><div class="stat"><strong>'+s.xp+'</strong><small>XP</small></div><div class="stat"><strong>'+s.streak+'</strong><small>أيام متتالية</small></div><div class="stat"><strong>'+s.groupResults.length+'</strong><small>مجموعات تشخيص</small></div><div class="stat"><strong>'+s.activityHistory.length+'</strong><small>تدريبات مكتملة</small></div></div>';
+  var s=cs();
+  return '<div class="statgrid compactStats"><div class="stat"><strong>'+s.xp+'</strong><small>نقاط التقدم</small></div><div class="stat"><strong>'+s.streak+'</strong><small>أيام متتالية</small></div><div class="stat"><strong>'+completedPathCount()+'</strong><small>مسارات أُنجزت</small></div><div class="stat"><strong>'+s.activityHistory.length+'</strong><small>تدريبات مكتملة</small></div></div>';
+}
+function focusedPathCard(d){
+  var def=goalDefinition(d),p=pathState(d),steps=skillPathProgress(d);
+  return '<div class="focusedPath"><div class="focusedPathHead"><span class="focusBigIcon">'+def.icon+'</span><div><div class="kicker">المسار الحالي</div><h2>'+esc(def.title)+'</h2><p>'+esc(def.why)+'</p></div></div><div class="pathStages">'+steps.map(function(x,i){return '<div class="pathStage '+(x.done?"done ":"")+(x.active?"active":"")+'"><span>'+(x.done?"✓":i+1)+'</span><b>'+esc(x.label)+'</b></div>';}).join("")+'</div></div>';
 }
 function todayScreen(){
-  var s=cs(),c=course(),ri=routeInfo(),due=dueReviews(),lesson=chosenMicroLesson(),goals=growthGoals(),errors=errorMemory(2);
-  var lessonHtml=lesson?'<div class="microLesson"><div class="microTop"><span class="microIcon">'+lesson.icon+'</span><div><div class="kicker">فكرة اليوم • '+lesson.minutes+' دقائق</div><h2>'+esc(lesson.title)+'</h2></div></div><p>'+esc(lesson.explain)+'</p><div class="workedExample"><b>مثال سريع</b><span>'+esc(lesson.example)+'</span></div><div class="microChallenge"><b>جرّب بعقلك</b><span>'+esc(lesson.challenge)+'</span></div></div>':'';
-  return '<section class="screen">'+journey("training")+'<div class="dailyHero"><div><span class="eyebrow">جلسة اليوم • حوالي 7 دقائق</span><h1>مش هنذاكر كل حاجة. هنضرب في المكان الصح.</h1><p>'+esc(ri.why)+'</p><div class="sessionSteps"><span>1️⃣ افهم</span><span>2️⃣ ميّز</span><span>3️⃣ طبّق</span><span>4️⃣ ثبّت</span></div></div><img src="assets/visual-study.svg" alt=""></div>'+stats()+'<div class="todayLayout"><div>'+lessonHtml+'<div class="panel" style="margin-top:14px"><div class="screenhead"><div><div class="kicker">تدريب متنوع</div><h2>اختر تحديًا قصيرًا</h2></div><span class="stepbadge">'+due.length+' مراجعات مستحقة</span></div><div class="grid3">'+c.activities.map(activityCard).join("")+'<div class="activityCard"><div class="activityIcon">✍️</div><h3>تحدي امتحاني</h3><p>إجابة قصيرة تُصحح وفق عناصر مفاهيمية.</p><button class="btn primary" data-examactivity="1">ابدأ</button></div></div></div></div><aside class="panel coachRail"><div class="kicker">🎯 تركيزك الحالي</div>'+goals.map(function(g){return '<div class="coachGoal"><span>'+g.icon+'</span><div><b>'+esc(g.title)+'</b><small>'+esc(g.next)+'</small></div></div>';}).join("")+'<div class="coachBreak"></div><div class="kicker">🧠 أخطاء سنعالجها</div>'+(errors.length?errors.map(function(e){return '<div class="coachError"><b>'+esc(e.type)+'</b><small>'+esc(e.item.prompt.slice(0,65))+'…</small></div>';}).join(""):'<div class="goodbox">بداية قوية — سنرفع مستوى التحدي.</div>')+'</aside></div></section>';
+  var s=cs(),c=course(),due=dueReviews(),w=primaryWeakness();
+  if(!w){
+    return '<section class="screen studentSimple">'+journey("training")+'<div class="panel allClear"><div class="allClearIcon">✓</div><div class="kicker">اكتملت المسارات المطلوبة حاليًا</div><h1>لا يوجد تدريب علاجي إضافي مطلوب الآن.</h1><p>تم إخفاء التحديات غير الضرورية. ستظهر مراجعات مؤجلة أو مسارات جديدة فقط إذا كشفت الأدلة اللاحقة عن حاجة فعلية إليها.</p>'+stats()+(due.length?'<div class="actions"><button class="btn primary" data-nav="reviews">عرض المراجعات المستحقة ('+due.length+')</button></div>':'')+'</div></section>';
+  }
+  var d=w.d,p=pathState(d),def=goalDefinition(d),lesson=chosenMicroLesson(),acts=recommendedActivities(d);
+  var body="";
+  if(p.stage==="learn"){
+    body='<div class="panel focusWork"><div class="phaseLabel">المرحلة 1 من 3 • التعلم الموجّه</div>'+(lesson?'<div class="microLesson simpleLesson"><div class="microTop"><span class="microIcon">'+lesson.icon+'</span><div><h2>'+esc(lesson.title)+'</h2><small>'+lesson.minutes+' دقائق تقريبًا</small></div></div><p>'+esc(lesson.explain)+'</p><div class="workedExample"><b>مثال</b><span>'+esc(lesson.example)+'</span></div><div class="microChallenge"><b>فكر في هذا السؤال</b><span>'+esc(lesson.challenge)+'</span></div></div>':'<div class="info">راجع المفهوم الأساسي المرتبط بهذا البُعد قبل الانتقال إلى التدريب.</div>')+'<div class="actions"><button class="btn primary" id="markLearnDone" data-dimension="'+d+'">انتهيت من التعلم — انتقل إلى التدريب</button></div></div>';
+  }else if(p.stage==="practice"){
+    var cards="";
+    if(d==="exam_execution"){
+      cards='<div class="activityCard recommended"><div class="activityIcon">✍️</div><h3>تدريب على بناء الإجابة</h3><p>إجابة قانونية قصيرة وفق معايير التصحيح المعتمدة في النموذج.</p><button class="btn primary" data-examactivity="1" data-target-dimension="'+d+'">ابدأ التدريب</button></div>';
+    }else{
+      cards=acts.map(function(a){return activityCard(a,d);}).join("");
+    }
+    body='<div class="panel focusWork"><div class="phaseLabel">المرحلة 2 من 3 • التدريب الموجّه</div><h2>تحديات مرتبطة بهذه الفجوة فقط</h2><p class="small">أخفى النظام بقية التحديات لأنها لا تخدم الأولوية الحالية.</p><div class="focusedChallenges">'+cards+'</div><div class="info">بعد أداء جيد في التدريب، سيفتح اختبار المسار تلقائيًا.</div></div>';
+  }else if(p.stage==="assessment"){
+    body='<div class="panel focusWork assessmentReady"><div class="phaseLabel">المرحلة 3 من 3 • اختبار المسار</div><div class="assessmentIcon">⚖️</div><h2>هل أصبحت هذه المهارة مستقرة؟</h2><p>اختبار قصير مستقل عن التدريب السابق. إذا حققت 80% أو أكثر، يُغلق هذا المسار ولا يظهر مرة أخرى ضمن الأولويات النشطة.</p><button class="btn primary bigbtn" data-skillcheck="'+d+'">ابدأ اختبار المسار</button></div>';
+  }
+  var later=activeWeaknesses().slice(1,3);
+  return '<section class="screen studentSimple">'+journey("training")+'<div class="studentPlanHeader"><div><span class="eyebrow">خطة التدريب الحالية</span><h1>هدف واحد في كل مرة.</h1><p>يركز النظام الآن على '+esc(def.title)+'، ويخفي التدريبات التي لا تحتاج إليها.</p></div><span class="stepbadge">'+due.length+' مراجعات مستحقة</span></div>'+focusedPathCard(d)+body+(later.length?'<div class="panel laterPriorities"><div class="kicker">أولويات لاحقة</div><p class="small">لن تُفتح قبل إنهاء المسار الحالي.</p>'+later.map(function(x){var z=goalDefinition(x.d);return '<span class="laterChip">'+z.icon+' '+esc(z.title)+'</span>';}).join("")+'</div>':'')+'</section>';
 }
-function activityCard(a){
-  return '<div class="activityCard"><div class="activityIcon">'+a.icon+'</div><h3>'+esc(a.title)+'</h3><p>'+esc(a.prompt)+'</p><button class="btn secondary" data-activity="'+a.id+'">ابدأ</button></div>';
+function activityCard(a,targetDimension){
+  return '<div class="activityCard recommended"><div class="activityIcon">'+a.icon+'</div><h3>'+esc(a.title)+'</h3><p>'+esc(a.prompt)+'</p><button class="btn secondary" data-activity="'+a.id+'" data-target-dimension="'+esc(targetDimension||"")+'">ابدأ التدريب</button></div>';
 }
 function activitiesScreen(){
-  var c=course(),s=cs();
-  var hist=s.activityHistory.slice().reverse().slice(0,8);
-  return '<section class="panel screen">'+journey("training")+'<div class="screenhead"><div><div class="kicker">التدريبات</div><h2>تدريب قصير ومتنوع</h2></div><span class="stepbadge">النقاط لا تساوي الإتقان</span></div><div class="grid2">'+c.activities.map(activityCard).join("")+'<div class="activityCard"><div class="activityIcon">✍️</div><h3>تحدي امتحاني</h3><p>إجابة واحدة قصيرة مع Rubric واضح.</p><button class="btn primary" data-examactivity="1">ابدأ</button></div></div>'+(hist.length?'<h3 style="margin-top:20px">آخر التدريبات</h3><div class="timeline">'+hist.map(function(h){return '<div class="timelineItem"><b>'+esc(h.title)+' • '+Math.round(h.score*100)+'%</b><div class="small">'+new Date(h.at).toLocaleString("ar-EG",{dateStyle:"medium",timeStyle:"short"})+'</div></div>';}).join("")+'</div>':'')+'</section>';
+  var w=primaryWeakness(),s=cs();
+  if(!w)return '<section class="panel screen studentSimple"><div class="allClearIcon">✓</div><h2>لا توجد تدريبات موجهة مطلوبة حاليًا.</h2><p>تظهر التدريبات هنا فقط عندما تكون مرتبطة بحاجة تعليمية مثبتة.</p><div class="actions"><button class="btn ghost" data-nav="today">العودة إلى الخطة</button></div></section>';
+  var d=w.d,p=pathState(d),acts=recommendedActivities(d),cards="";
+  if(p.stage==="assessment")return todayScreen();
+  if(p.stage==="learn")return todayScreen();
+  if(d==="exam_execution")cards='<div class="activityCard recommended"><div class="activityIcon">✍️</div><h3>تدريب على الإجابة القانونية</h3><p>تدريب كتابي واحد يخدم ضعف بناء الإجابة.</p><button class="btn primary" data-examactivity="1" data-target-dimension="'+d+'">ابدأ التدريب</button></div>';
+  else cards=acts.map(function(a){return activityCard(a,d);}).join("");
+  var hist=s.activityHistory.filter(function(h){return h.targetDimension===d;}).slice().reverse().slice(0,5);
+  return '<section class="panel screen studentSimple">'+journey("training")+'<div class="screenhead"><div><div class="kicker">التدريب الموجّه</div><h2>'+esc(goalDefinition(d).title)+'</h2><p class="small">لا تظهر هنا إلا التحديات المرتبطة بالمسار الحالي.</p></div><button class="btn ghost" data-nav="today">العودة إلى الخطة</button></div><div class="focusedChallenges">'+cards+'</div>'+(hist.length?'<h3 style="margin-top:20px">آخر تدريبات هذا المسار</h3><div class="timeline">'+hist.map(function(h){return '<div class="timelineItem"><b>'+esc(h.title)+' • '+Math.round(h.score*100)+'%</b><div class="small">'+new Date(h.at).toLocaleString("ar-EG",{dateStyle:"medium",timeStyle:"short"})+'</div></div>';}).join("")+'</div>':'')+'</section>';
 }
 function findActivity(id){return (course().activities||[]).find(function(a){return a.id===id;});}
-function startActivity(id,exam){
+function startActivity(id,exam,targetDimension){
   if(exam){
     var eg=course().groups[course().groups.length-1];
-    SESSION.activity={id:"exam-practice",title:"تحدي امتحاني",icon:"✍️",examItem:eg.items[Math.floor(Math.random()*eg.items.length)]};
-  }else SESSION.activity=findActivity(id);
+    SESSION.activity={id:"exam-practice",title:"تدريب على الإجابة القانونية",icon:"✍️",examItem:eg.items[Math.floor(Math.random()*eg.items.length)],targetDimension:targetDimension||"exam_execution"};
+  }else{
+    var base=findActivity(id);
+    SESSION.activity=base?Object.assign({},base,{targetDimension:targetDimension||((primaryWeakness()||{}).d)}):null;
+  }
   SESSION.activityAnswer=null;SESSION.activityFeedback=null;state.screen="activity_play";save();render();
 }
+function startSkillCheck(d){
+  var item=skillCheckItem(d);if(!item)return;
+  var p=pathState(d);p.testAttempts=(p.testAttempts||0)+0;
+  var a={id:"skillcheck-"+d,title:"اختبار المسار: "+goalDefinition(d).title,icon:"⚖️",isSkillCheck:true,targetDimension:d,prompt:item.prompt,sourceItem:item};
+  if(item.type==="build_answer")a.examItem=item;
+  else if(item.type==="mcq")a.options=item.options.map(function(o){return {text:o.text,score:o.score};});
+  SESSION.activity=a;SESSION.activityAnswer=null;SESSION.activityFeedback=null;state.screen="activity_play";save();render();
+}
+
 function activityPlay(){
   var a=SESSION.activity;if(!a){go("activities");return"";}
   var item=a.examItem;
@@ -547,18 +589,31 @@ function submitActivity(){
   if(a.examItem){
     var ans=SESSION.activityAnswer||"";if(norm(ans).length<3){toast("اكتب إجابة قصيرة أولًا.");return;}
     var wr=evaluateWritten(a.examItem,ans);score=wr.score;
-    detail='<div class="rubricbox"><div class="small" style="margin-bottom:6px">التقييم هنا مفاهيمي، فيقبل أكثر من صياغة للفكرة نفسها.</div>'+wr.criteria.map(function(r){return '<div class="rubricrow '+(r.ok?"hit":"miss")+'"><span>'+(r.ok?"✓":"○")+'</span><b>'+esc(r.label)+'</b><small>'+r.matched+'/'+r.need+' مفهوم مطلوب</small></div>';}).join("")+'</div>';
+    detail='<div class="rubricbox"><div class="small" style="margin-bottom:6px">التقييم مفاهيمي ويقبل الصياغات المختلفة التي تحقق المعنى القانوني المطلوب.</div>'+wr.criteria.map(function(r){return '<div class="rubricrow '+(r.ok?"hit":"miss")+'"><span>'+(r.ok?"✓":"○")+'</span><b>'+esc(r.label)+'</b><small>'+r.matched+'/'+r.need+' مفهوم مطلوب</small></div>';}).join("")+'</div>';
   }else if(a.options){
     if(SESSION.activityAnswer==null){toast("اختر إجابة أولًا.");return;}
     score=a.options[SESSION.activityAnswer].score;
-    detail='<p>'+(score?"اختيار صحيح.":"راجع الفرق بين البدائل القانونية.")+'</p>';
+    detail='<p>'+(score?"إجابة صحيحة.":"راجع الفروق القانونية بين البدائل ثم أعد التدريب.")+'</p>';
   }else{
     var ans2=norm(SESSION.activityAnswer);if(!ans2){toast("اكتب الإجابة أولًا.");return;}
     score=(a.accepted||[]).some(function(x){return ans2.indexOf(norm(x))>=0;})?1:0;
     detail='<p>الإجابة المرجعية: <b>'+esc(a.answer)+'</b></p>';
   }
+
+  if(a.isSkillCheck){
+    finishSkillCheck(a.targetDimension,score);
+    if(score>=.8){
+      detail+='<div class="pathPassed"><b>تم اجتياز المسار.</b><span>أُغلق هذا المسار ولن يظهر ضمن التدريبات النشطة. ستنتقل الخطة إلى الحاجة التالية، إن وجدت.</span></div>';
+    }else{
+      detail+='<div class="notice"><b>لم يُغلق المسار بعد.</b> ستعود إلى تدريب موجّه إضافي قبل إعادة الاختبار.</div>';
+    }
+  }else if(a.targetDimension){
+    advancePathAfterPractice(a.targetDimension,score);
+  }
+
   SESSION.activityFeedback={score:score,detail:detail};
-  var s=cs();s.activityHistory.push({title:a.title,score:score,at:new Date().toISOString()});addXP(8+(score>=.8?4:0));save();render();
+  var s=cs();s.activityHistory.push({title:a.title,score:score,targetDimension:a.targetDimension||null,isSkillCheck:!!a.isSkillCheck,at:new Date().toISOString()});
+  addXP(8+(score>=.8?4:0));save();render();
 }
 function dueReviews(){var s=cs(),now=Date.now();return s.reviews.filter(function(r){return new Date(r.due).getTime()<=now;});}
 function reviewsScreen(){
