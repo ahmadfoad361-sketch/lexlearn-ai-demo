@@ -517,7 +517,58 @@ function render(){
   html+='</main><div class="footer">LexLearn AI • Adaptive Legal Learning • v6 Prototype</div>';
   APP.innerHTML=html;bind();
 }
+function exportStudent(id){
+  var a=accountById(id);if(!a)return;
+  var payload={student:{id:a.id,name:a.name,username:a.username,courseIds:a.courseIds,createdAt:a.createdAt},learning:readStudentState(id),exportedAt:new Date().toISOString()};
+  var blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"});
+  var url=URL.createObjectURL(blob);
+  var link=document.createElement("a");
+  link.href=url;
+  link.download=("LexLearn-"+(a.username||"student")+".json").replace(/[^a-zA-Z0-9_.-]/g,"_");
+  document.body.appendChild(link);link.click();link.remove();
+  setTimeout(function(){URL.revokeObjectURL(url);},500);
+}
+
 function bind(){
+  var co=document.getElementById("createOwner");if(co)co.onclick=function(){
+    var name=(document.getElementById("ownerName").value||"").trim();
+    var username=(document.getElementById("ownerUser").value||"").trim().toLowerCase();
+    var pass=document.getElementById("ownerPass").value||"";
+    if(name.length<2||username.length<3||pass.length<6){toast("اكتب اسمًا واسم مستخدم 3 أحرف على الأقل وكلمة مرور 6 أحرف على الأقل.");return;}
+    var a={id:uid("admin"),role:"admin",name:name,username:username,passwordHash:hashPass(pass),createdAt:new Date().toISOString()};
+    auth.accounts.push(a);auth.currentId=a.id;saveAuth();render();
+  };
+  var li=document.getElementById("loginBtn");if(li)li.onclick=function(){
+    var username=(document.getElementById("loginUser").value||"").trim().toLowerCase();
+    var pass=document.getElementById("loginPass").value||"";
+    var a=auth.accounts.find(function(x){return x.username.toLowerCase()===username&&x.passwordHash===hashPass(pass);});
+    if(!a){toast("اسم المستخدم أو كلمة المرور غير صحيحين.");return;}
+    auth.currentId=a.id;saveAuth();ADMIN.selectedStudentId=null;
+    if(a.role==="student"){state=readStudentState(a.id);if(!state.screen)state.screen="country";}else state=freshState();
+    render();
+  };
+  var lo=document.getElementById("logoutBtn");if(lo)lo.onclick=function(){save();auth.currentId=null;saveAuth();state=freshState();ADMIN.selectedStudentId=null;render();};
+
+  var csb=document.getElementById("createStudent");if(csb)csb.onclick=function(){
+    var name=(document.getElementById("studentName").value||"").trim();
+    var username=(document.getElementById("studentUser").value||"").trim().toLowerCase();
+    var pass=document.getElementById("studentPass").value||"";
+    var courseIds=Array.from(document.querySelectorAll("[data-course-assign]:checked")).map(function(x){return x.getAttribute("data-course-assign");});
+    if(name.length<2||username.length<3||pass.length<6){toast("أكمل الاسم واسم المستخدم وكلمة مرور 6 أحرف على الأقل.");return;}
+    if(auth.accounts.some(function(x){return x.username.toLowerCase()===username;})){toast("اسم المستخدم موجود بالفعل.");return;}
+    if(!courseIds.length){toast("اختر مقررًا واحدًا على الأقل.");return;}
+    var a={id:uid("student"),role:"student",name:name,username:username,passwordHash:hashPass(pass),courseIds:courseIds,createdAt:new Date().toISOString()};
+    auth.accounts.push(a);saveAuth();localStorage.setItem(studentStateKey(a.id),JSON.stringify(freshState()));toast("تم إنشاء حساب "+name);render();
+  };
+  document.querySelectorAll("[data-student-detail]").forEach(function(el){el.onclick=function(){ADMIN.selectedStudentId=el.getAttribute("data-student-detail");render();window.scrollTo({top:0,behavior:"smooth"});};});
+  document.querySelectorAll("[data-admin-home]").forEach(function(el){el.onclick=function(){ADMIN.selectedStudentId=null;render();window.scrollTo({top:0,behavior:"smooth"});};});
+  document.querySelectorAll("[data-export-student]").forEach(function(el){el.onclick=function(){exportStudent(el.getAttribute("data-export-student"));};});
+  document.querySelectorAll("[data-reset-pass]").forEach(function(el){el.onclick=function(){
+    var id=el.getAttribute("data-reset-pass"),p=document.getElementById("resetStudentPass").value||"";
+    if(p.length<6){toast("كلمة المرور الجديدة 6 أحرف على الأقل.");return;}
+    var a=accountById(id);if(!a)return;a.passwordHash=hashPass(p);saveAuth();document.getElementById("resetStudentPass").value="";toast("تم تحديث كلمة المرور في النسخة التجريبية.");
+  };});
+
   document.querySelectorAll("[data-country]").forEach(function(el){el.onclick=function(){state.country=el.getAttribute("data-country");go("course");};});
   document.querySelectorAll("[data-course]").forEach(function(el){el.onclick=function(){
     state.courseId=el.getAttribute("data-course");var s=cs();
