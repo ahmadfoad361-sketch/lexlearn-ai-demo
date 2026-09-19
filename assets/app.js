@@ -52,16 +52,40 @@ function scoreKeywords(text,words,needed){
   (words||[]).forEach(function(w){if(n.indexOf(norm(w))>=0)hits++;});
   return Math.min(1,hits/(needed||1));
 }
+function phraseSimilarity(text,phrase){
+  var t=norm(text),p=norm(phrase);
+  if(!p)return false;
+  if(t.indexOf(p)>=0)return true;
+  var pt=p.split(" ").filter(Boolean),tt=t.split(" ").filter(Boolean);
+  if(pt.length<2)return tt.indexOf(p)>=0;
+  var found=0;pt.forEach(function(w){if(tt.indexOf(w)>=0)found++;});
+  return found/pt.length>=0.72;
+}
+function criterionResult(text,r){
+  if(r.concepts){
+    var matched=0,total=r.concepts.length;
+    r.concepts.forEach(function(group){
+      var alts=Array.isArray(group)?group:[group];
+      if(alts.some(function(a){return phraseSimilarity(text,a);})){matched++;}
+    });
+    var need=r.min||1;
+    return {ok:matched>=need,matched:matched,total:total,need:need};
+  }
+  var score=scoreKeywords(text,r.keywords||[],1);
+  return {ok:score>0,matched:score>0?1:0,total:1,need:1};
+}
+function evaluateWritten(item,answer){
+  if(answer==="__DONT_KNOW__")return {score:0,criteria:[]};
+  var rs=(item.rubric||[]).map(function(r){var cr=criterionResult(answer,r);return {label:r.label,ok:cr.ok,matched:cr.matched,total:cr.total,need:cr.need};});
+  var hit=rs.filter(function(x){return x.ok;}).length;
+  return {score:rs.length?hit/rs.length:0,criteria:rs};
+}
 function evalItem(item,answer){
   if(item.type==="mcq"){
     var o=(item.options||[]).find(function(x){return x.id===answer;});
     return o?o.score:0;
   }
-  if(item.type==="build_answer"){
-    if(answer==="__DONT_KNOW__")return 0;
-    var hit=0;(item.rubric||[]).forEach(function(r){if(scoreKeywords(answer,r.keywords,1)>0)hit++;});
-    return item.rubric && item.rubric.length?hit/item.rubric.length:0;
-  }
+  if(item.type==="build_answer")return evaluateWritten(item,answer).score;
   return 0;
 }
 function pct(v){return Math.round(v||0)+"%";}
@@ -158,13 +182,14 @@ function courseScreen(){
   var courses=C.courses.filter(function(x){return x.jurisdiction==="QA";});
   return '<section class="panel screen onboarding">'+journey("course")+'<div class="screenhead"><div><div class="kicker">اختيار المقرر</div><h2>ادخل المقرر الذي تريد العمل عليه</h2><p class="small">كل مقرر له تشخيصه وأسئلته ونتيجته ومساره المستقل.</p></div><span class="stepbadge">🇶🇦 جامعة قطر</span></div><div class="grid2">'+courses.map(function(c){
     var saved=state.courses[c.id];
-    var progress=saved&&saved.completed?'تم التشخيص • '+(saved.groupResults.length)+' مجموعات':'ابدأ تشخيصًا جديدًا';
+    var progress=saved&&saved.completed?'تم التشخيص • '+(saved.groupResults.length)+' مجموعات':'5 مستويات: Easy → Medium → Difficult → Transfer → Exam';
     return '<div class="coursecard clickable" data-course="'+c.id+'"><div class="coursecode">'+esc(c.code)+'</div><h3>'+esc(c.title_ar)+'</h3><p>'+esc(c.description)+'</p>'+(c.prerequisite?'<div class="small"><b>متطلب سابق بحسب دليل الجامعة:</b> '+esc(c.prerequisite)+'</div>':'')+'<div class="courseprogress">'+progress+'</div><button class="btn primary">'+(saved&&saved.completed?'ادخل المقرر':'ابدأ المقرر')+'</button></div>';
   }).join("")+'</div><div class="sourcebox">المقرران ووصفهما مستندان إلى صفحات جامعة قطر الرسمية ودليل الطالب الجامعي 2025/2026.</div></section>';
 }
 function diagnosticIntro(){
   var c=course();
-  return '<section class="panel screen">'+journey("diagnostic")+'<div class="screenhead"><div><div class="kicker">'+esc(c.code)+'</div><h2>تشخيص البداية — 4 مجموعات بدل أسئلة منفصلة مملة</h2></div><span class="stepbadge">حوالي 10–11 سؤالًا</span></div><div class="info"><b>التغيير المهم:</b> لن نسألك عن درجة ثقتك بعد كل سؤال. تجيب مجموعة كاملة، ثم نطلب <b>ثقة واحدة للمجموعة كلها</b> قبل عرض النتيجة.</div><div class="grid2">'+c.groups.map(function(g,i){return '<div class="option"><b>'+(i+1)+'. '+esc(g.title.replace(/^المجموعة \d+ — /,""))+'</b><small>'+esc(g.purpose)+'</small></div>';}).join("")+'</div><div class="notice">الأسئلة الموضوعية كلها داخل المجال القانوني، ولا نستخدم مشتتات من علوم أخرى. الكتابة الحرة مؤجلة للمجموعة الأخيرة فقط: الاختبار الامتحاني المصغّر.</div><div class="actions"><button class="btn primary" id="startDiagnostic">ابدأ المجموعة الأولى</button><button class="btn ghost" data-nav="course">رجوع للمقررات</button></div></section>';
+  var total=c.groups.reduce(function(s,g){return s+g.items.length;},0);
+  return '<section class="panel screen">'+journey("diagnostic")+'<div class="screenhead"><div><div class="kicker">'+esc(c.code)+'</div><h2>تشخيص البداية — 5 مستويات واضحة</h2></div><span class="stepbadge">'+total+' سؤالًا في مجموعات</span></div><div class="info"><b>Easy → Medium → Difficult → Transfer → Exam</b><br>الأسئلة مجمعة، ونطلب ثقة واحدة فقط بعد كل مجموعة. الكتابة الحرة موجودة في مجموعة الامتحان فقط.</div><div class="grid2">'+c.groups.map(function(g,i){return '<div class="option"><div class="questionMeta"><span class="tag maroon">'+esc(g.subtitle)+'</span></div><b>'+(i+1)+'. '+esc(g.title.replace(/^المجموعة \d+ — /,""))+'</b><small>'+esc(g.purpose)+'</small></div>';}).join("")+'</div><div class="notice"><b>جودة المحتوى:</b> كل المشتتات قانونية، والتدرج أصبح جزءًا صريحًا من بنية المقرر. أسئلة الـPilot ما زالت تحتاج اعتمادًا متخصصًا قبل الإطلاق العام.</div><div class="actions"><button class="btn primary" id="startDiagnostic">ابدأ المجموعة الأولى</button><button class="btn ghost" data-nav="course">رجوع للمقررات</button></div></section>';
 }
 
 function currentGroup(){var c=course(),s=cs();return c.groups[s.groupIndex]||null;}
@@ -196,7 +221,8 @@ function groupScreen(){
       var item=g.items.find(function(q){return q.id===x.itemId;});
       var rh='';
       if(item.type==="build_answer"){
-        rh='<div class="rubricbox">'+item.rubric.map(function(r){var ok=scoreKeywords(x.answer==="__DONT_KNOW__"?"":x.answer,r.keywords,1)>0;return '<div class="rubricrow '+(ok?"hit":"miss")+'"><span>'+(ok?"✓":"○")+'</span><b>'+esc(r.label)+'</b></div>';}).join("")+'</div>';
+        var wr=evaluateWritten(item,x.answer);
+        rh='<div class="rubricbox"><div class="small" style="margin-bottom:6px">تصحيح مفاهيمي: نقبل بدائل صياغية متعددة، ولا نعتمد على كلمة واحدة حرفيًا.</div>'+wr.criteria.map(function(r){return '<div class="rubricrow '+(r.ok?"hit":"miss")+'"><span>'+(r.ok?"✓":"○")+'</span><b>'+esc(r.label)+'</b><small>'+r.matched+'/'+r.need+' مفهوم مطلوب</small></div>';}).join("")+'</div>';
       }
       return '<div class="answerreview"><div class="answerhead"><b>سؤال '+(i+1)+'</b><span>'+Math.round(x.score*100)+'%</span></div><p>'+esc(item.explanation)+'</p>'+rh+'</div>';
     }).join("")+(avg<.55?'<div class="notice"><b>قرار تكيفي:</b> لن نعتبر هذه المجموعة مستقرة. أخطاؤها أضيفت للمراجعة، وسيعطيك مسار التعلم أنشطة أبسط قبل رفع التحدي.</div>':avg>=.8?'<div class="goodbox"><b>قرار تكيفي:</b> المجموعة مستقرة بما يكفي للانتقال إلى مستوى أكثر تطبيقًا.</div>':'<div class="info"><b>قرار تكيفي:</b> ننتقل، مع إبقاء الموضوعات الجزئية في المراجعة.</div>')+'<div class="actions"><button class="btn primary" id="nextGroup">'+(s.groupIndex===total-1?"اعرض النتيجة الشاملة":"المجموعة التالية")+'</button></div></div></section>';
@@ -243,7 +269,7 @@ function resultsScreen(){
   }).join("");
   var exam=s.groupResults.find(function(g){return g.groupId===c.groups[c.groups.length-1].id;});
   var examDetail=exam?'<div class="examdetail"><h3>من أين جاءت درجة الاختبار الامتحاني؟</h3><p class="small">كل سؤال ظاهر هنا بنتيجته، لذلك لا توجد درجة صفر غامضة.</p>'+exam.items.map(function(x,i){var it=findItem(x.itemId);return '<div class="evidencecard"><b>سؤال '+(i+1)+': '+esc(it.prompt)+'</b><span>'+Math.round(x.score*100)+'%</span></div>';}).join("")+'</div>':'';
-  return '<section class="dashboard screen"><div class="panel">'+journey("results")+'<div class="kicker">النتيجة الشاملة</div><h2>'+esc(c.code)+' — '+esc(c.title_ar)+'</h2><div class="notice">كل نسبة هنا لها أسئلة فعلية ظهرت لك. «لم يُقاس» لا تتحول إلى 0%.</div><div class="metricGrid">'+metrics+'<div class="metric"><div class="metricHead"><span>الاحتفاظ المؤجل</span><span>لم يُقاس بعد</span></div><div class="reliability">يظهر بعد مراجعة لاحقة، وليس في جلسة البداية.</div></div></div>'+examDetail+'</div><div class="pathcard"><div class="kicker" style="color:#e8c986">المسار الناتج</div><h2>'+esc(ri.title)+'</h2><p>'+esc(ri.why)+'</p>'+ri.steps.map(function(x,i){return '<div class="pathstep"><b>'+(i+1)+'.</b> '+esc(x)+'</div>';}).join("")+'<div class="actions"><button class="btn gold" id="enterTraining">ابدأ التدريب</button></div></div></section>';
+  return '<section class="dashboard screen"><div class="panel">'+journey("results")+'<div class="kicker">النتيجة الشاملة</div><h2>'+esc(c.code)+' — '+esc(c.title_ar)+'</h2><div class="notice">كل نسبة هنا لها أسئلة فعلية ظهرت لك. «لم يُقاس» لا تتحول إلى 0%. الإجابات المقالية تُصحح حاليًا بمحرك مفاهيمي يقبل بدائل لغوية متعددة، وليس بمجرد مطابقة كلمة واحدة.</div><div class="metricGrid">'+metrics+'<div class="metric"><div class="metricHead"><span>الاحتفاظ المؤجل</span><span>لم يُقاس بعد</span></div><div class="reliability">يظهر بعد مراجعة لاحقة، وليس في جلسة البداية.</div></div></div>'+examDetail+'</div><div class="pathcard"><div class="kicker" style="color:#e8c986">المسار الناتج</div><h2>'+esc(ri.title)+'</h2><p>'+esc(ri.why)+'</p>'+ri.steps.map(function(x,i){return '<div class="pathstep"><b>'+(i+1)+'.</b> '+esc(x)+'</div>';}).join("")+'<div class="actions"><button class="btn gold" id="enterTraining">ابدأ التدريب</button></div></div></section>';
 }
 
 function stats(){
@@ -290,8 +316,8 @@ function submitActivity(){
   var a=SESSION.activity,score=0,detail="";
   if(a.examItem){
     var ans=SESSION.activityAnswer||"";if(norm(ans).length<3){toast("اكتب إجابة قصيرة أولًا.");return;}
-    score=evalItem(a.examItem,ans);
-    detail='<div class="rubricbox">'+a.examItem.rubric.map(function(r){var ok=scoreKeywords(ans,r.keywords,1)>0;return '<div class="rubricrow '+(ok?"hit":"miss")+'"><span>'+(ok?"✓":"○")+'</span><b>'+esc(r.label)+'</b></div>';}).join("")+'</div>';
+    var wr=evaluateWritten(a.examItem,ans);score=wr.score;
+    detail='<div class="rubricbox"><div class="small" style="margin-bottom:6px">التقييم هنا مفاهيمي، فيقبل أكثر من صياغة للفكرة نفسها.</div>'+wr.criteria.map(function(r){return '<div class="rubricrow '+(r.ok?"hit":"miss")+'"><span>'+(r.ok?"✓":"○")+'</span><b>'+esc(r.label)+'</b><small>'+r.matched+'/'+r.need+' مفهوم مطلوب</small></div>';}).join("")+'</div>';
   }else if(a.options){
     if(SESSION.activityAnswer==null){toast("اختر إجابة أولًا.");return;}
     score=a.options[SESSION.activityAnswer].score;
