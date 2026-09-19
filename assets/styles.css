@@ -191,3 +191,33 @@ code.inline{background:#f2f3f5;border-radius:6px;padding:2px 5px;font-size:11px}
   .journeystep span{margin:0 auto 3px}
   .journeystep b{font-size:9px}
 }
+
+.coursecard{border:1px solid var(--line);background:#fff;border-radius:18px;padding:20px;box-shadow:0 8px 24px rgba(19,35,61,.05);transition:.16s}
+.coursecard.clickable:hover{transform:translateY(-2px);border-color:#cda9b4;box-shadow:0 12px 30px rgba(123,23,52,.08)}
+.coursecode{display:inline-block;background:#f4e9ee;color:var(--maroon);font-weight:950;border-radius:999px;padding:5px 9px;font-size:11px;margin-bottom:8px}
+.coursecard h3{margin:3px 0 7px}
+.coursecard p{color:var(--muted);font-size:12px;min-height:46px}
+.courseprogress{margin:12px 0;padding:8px 10px;border-radius:10px;background:#f6f7f9;color:var(--navy);font-size:11px;font-weight:800}
+.groupProgress{height:9px;background:#eceef1;border-radius:999px;overflow:hidden;margin:12px 0 16px}
+.groupProgress span{display:block;height:100%;background:linear-gradient(90deg,var(--maroon),var(--gold))}
+.batch{display:grid;gap:14px}
+.batchq{display:grid;grid-template-columns:42px 1fr;gap:12px;border:1px solid var(--line);border-radius:16px;padding:16px;background:#fff}
+.qnumber{width:36px;height:36px;border-radius:11px;background:#f2e8ec;color:var(--maroon);display:grid;place-items:center;font-weight:950}
+.qbody h3{font-size:16px;line-height:1.55;margin:6px 0 10px}
+.compactchoices{display:grid;gap:7px}
+.compactchoices .choice{margin:0}
+.dontknow{display:inline-flex;align-items:center;gap:7px;margin-top:8px;font-size:11px;color:var(--muted);cursor:pointer}
+.confidenceBox{margin-top:16px;padding:15px;border:1px solid #d5dfeb;background:#f4f8fc;border-radius:14px}
+.confidenceBox h3{margin:0 0 3px;font-size:15px}
+.groupScore{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.groupScore strong{font-size:30px;color:var(--navy)}
+.groupScore span{font-size:12px;color:var(--muted)}
+.answerreview{border-top:1px solid rgba(0,0,0,.07);padding-top:11px;margin-top:11px}
+.answerhead{display:flex;justify-content:space-between;gap:10px}
+.answerhead span{font-weight:950;color:var(--maroon)}
+.answerreview p{font-size:12px;margin:5px 0;color:#586273}
+@media(max-width:620px){
+  .batchq{grid-template-columns:1fr}
+  .qnumber{width:30px;height:30px}
+  .coursecard p{min-height:0}
+}
