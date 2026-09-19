@@ -33,7 +33,7 @@ jobs:
         run: node tests/adaptive-engine.test.js
 
   deploy:
-    needs: test:
+    needs: test
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
