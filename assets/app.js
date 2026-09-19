@@ -293,7 +293,7 @@ function diagnosticScreen(){
   var html='<section class="panel screen"><div class="screenhead"><div><div class="kicker">Diagnostic in progress</div><h2>التشخيص التكيفي</h2></div><span class="stepbadge">محاولة '+(n+1)+'</span></div><div class="progress"><div style="width:'+Math.min(100,(n/10)*100)+'%"></div></div><div class="progressmeta"><span>الهدف المعتاد 10 محاولات</span><span>الحد الأقصى 15</span></div><div class="questionCard" id="questionCard">';
   if(SESSION.pending && !SESSION.feedback){
     html+=renderQuestionBody(item);
-    html+='<div class="info"><b>تم تثبيت إجابتك.</b> قبل أن نعرض التصحيح: ما مدى ثقتك فيها؟</div><div class="confidence">'+[["1","مش متأكد"],["2","متردد"],["3","شبه متأكد"],["4","متأكد جدًا"]].map(function(x){return'<button class="conf '+(SESSION.confidence===Number(x[0])?"active":"")+'" data-conf="'+x[0]+'">'+x[1]+'</button>';}).join("")+'</div><div class="actions"><button class="btn primary" id="revealFeedback" '+(!SESSION.confidence?"disabled":"")+'>اعرض التغذية الراجعة</button></div>';
+    html+='<div class="info"><b>تم تثبيت إجابتك.</b> قبل أن نعرض التصحيح: ما مدى ثقتك فيها؟</div><div class="confidence">'+[["1","مش متأكد"],["2","متردد"],["3","شبه متأكد"],["4","متأكد جدًا"]].map(function(x){return'<button type="button" class="conf '+(SESSION.confidence===Number(x[0])?"active":"")+'" data-conf="'+x[0]+'">'+x[1]+'</button>';}).join("")+'</div><div class="actions"><button class="btn primary" id="revealFeedback" '+(!SESSION.confidence?"disabled":"")+'>اعرض التغذية الراجعة</button></div>';
   }else if(SESSION.feedback){
     var a=SESSION.feedback.attempt;var cls=a.raw_score>=.85?"good":a.raw_score>=.55?"warn":"bad";
     html+=renderQuestionBody(item);
@@ -331,7 +331,9 @@ function activityCard(id){
   var a=C.activities[id];return'<div class="activityCard"><div class="activityIcon">'+a.icon+'</div><h3>'+esc(a.title)+'</h3><p>'+esc(a.description)+'</p><button class="btn secondary" data-activity="'+id+'">ابدأ</button></div>';
 }
 function activitiesScreen(){
-  return '<section class="panel screen"><div class="screenhead"><div><div class="kicker">Practice Lab</div><h2>الأنشطة الأربعة الأساسية</h2></div><span class="stepbadge">Mastery ≠ XP</span></div><div class="info">النقاط والتحفيز منفصلان عن الإتقان. كسب XP لا يرفع Mastery وحده.</div><div class="grid2">'+Object.keys(C.activities).map(activityCard).join("")+'</div></section>';
+  var recent=state.activityHistory.slice().reverse().slice(0,6);
+  var history=recent.length?'<h3 style="margin-top:20px">آخر التدريبات</h3><div class="timeline">'+recent.map(function(x){var a=C.activities[x.activity];return '<div class="timelineItem"><b>'+esc(a?a.title:x.activity)+' • '+Math.round(x.raw*100)+'%</b><div class="small">'+esc(x.topic)+' • '+new Date(x.at).toLocaleString("ar-EG",{dateStyle:"medium",timeStyle:"short"})+'</div></div>';}).join("")+'</div>':'<div class="empty" style="margin-top:18px">لم تنفذ تدريبًا بعد. أول نشاط مكتمل سيظهر هنا.</div>';
+  return '<section class="panel screen"><div class="screenhead"><div><div class="kicker">Practice Lab</div><h2>الأنشطة الأربعة الأساسية</h2></div><span class="stepbadge">Mastery ≠ XP</span></div><div class="info">النقاط والتحفيز منفصلان عن الإتقان. كسب XP لا يرفع Mastery وحده.</div><div class="grid2">'+Object.keys(C.activities).map(activityCard).join("")+'</div>'+history+'</section>';
 }
 function startActivity(id,daily){
   var a=C.activities[id];if(!a)return;
@@ -354,7 +356,8 @@ function activityPlay(){
   else html+='<textarea id="actText" placeholder="اكتب إجابتك...">'+esc(SESSION.reason)+'</textarea>';
   if(SESSION.feedback){
     var cls=SESSION.feedback.raw>=.85?"good":SESSION.feedback.raw>=.55?"warn":"bad";
-    html+='<div class="feedback '+cls+'"><h3>'+ (SESSION.feedback.raw>=.85?"ممتاز":"راجع الفكرة") +'</h3><p>'+esc(it.explanation||"")+'</p><div class="small">النتيجة التدريبية: '+Math.round(SESSION.feedback.raw*100)+'%</div></div><div class="actions"><button class="btn primary" id="finishActivity">ارجع لمسار اليوم</button></div>';
+    var ref=''; if(it.answer)ref='<div class="goodbox"><b>الإجابة المرجعية:</b> '+esc(it.answer)+'</div>'; else if(it.options){var correct=it.options.find(function(o){return o.score===1;}); if(correct)ref='<div class="goodbox"><b>الإجابة الأقرب:</b> '+esc(correct.text)+'</div>';} else if(it.rubric)ref='<div class="info"><b>عناصر الإجابة الجيدة:</b> '+it.rubric.map(function(r){return esc(r.label);}).join(' • ')+'</div>';
+    html+='<div class="feedback '+cls+'"><h3>'+ (SESSION.feedback.raw>=.85?"ممتاز":"راجع الفكرة") +'</h3><p>'+esc(it.explanation||"")+'</p>'+ref+'<div class="small">النتيجة التدريبية: '+Math.round(SESSION.feedback.raw*100)+'%</div></div><div class="actions"><button class="btn primary" id="finishActivity">ارجع لمسار اليوم</button></div>';
   }else html+='<div class="actions"><button class="btn primary" id="submitActivity">قيّم التدريب</button><button class="btn ghost" data-nav="activities">خروج</button></div>';
   html+='</div></section>';return html;
 }
@@ -458,7 +461,7 @@ function bindDiagnostic(){
     SESSION.pending={raw:evaluateItem(item,response),response:response,latency_ms:Math.max(1000,Date.now()-(window.__itemShownAt||Date.now()-5000))};
     renderDiagnostic();
   };
-  document.querySelectorAll("[data-conf]").forEach(function(el){el.onclick=function(){SESSION.confidence=Number(el.getAttribute("data-conf"));renderDiagnostic();};});
+  document.querySelectorAll("[data-conf]").forEach(function(el){el.onclick=function(){SESSION.confidence=Number(el.getAttribute("data-conf"));document.querySelectorAll("[data-conf]").forEach(function(x){x.classList.toggle("active",x===el);});var b=document.getElementById("revealFeedback");if(b)b.disabled=false;};});
   var rf=document.getElementById("revealFeedback");if(rf)rf.onclick=finalizeAttempt;
   var nx=document.getElementById("nextDiagnostic");if(nx)nx.onclick=function(){
     SESSION={pending:null,selected:null,reason:"",confidence:null,hintLevel:0,loadHidden:false,feedback:null,activity:null,activityItem:null};
