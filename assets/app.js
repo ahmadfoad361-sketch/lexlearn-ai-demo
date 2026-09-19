@@ -37,7 +37,7 @@ function accountById(id){return auth.accounts.find(function(x){return x.id===id;
 function hasAdmin(){return auth.accounts.some(function(x){return x.role==="admin";});}
 function studentStateKey(id){return STUDENT_PREFIX+id;}
 function freshCourseState(){
-  return {groupIndex:0,groupResults:[],mastery:{},route:null,xp:0,streak:0,lastActive:null,reviews:[],activityHistory:[],completed:false};
+  return {groupIndex:0,groupResults:[],mastery:{},route:null,xp:0,streak:0,lastActive:null,reviews:[],activityHistory:[],skillPaths:{},completed:false};
 }
 function freshState(){
   return {schema:6,country:null,courseId:null,screen:"country",courses:{},createdAt:new Date().toISOString()};
@@ -66,7 +66,11 @@ function course(){return C.courses.find(function(x){return x.id===state.courseId
 function cs(){
   if(!state.courseId)return null;
   if(!state.courses[state.courseId])state.courses[state.courseId]=freshCourseState();
-  return state.courses[state.courseId];
+  var s=state.courses[state.courseId];
+  if(!s.skillPaths)s.skillPaths={};
+  if(!s.reviews)s.reviews=[];
+  if(!s.activityHistory)s.activityHistory=[];
+  return s;
 }
 function go(screen){
   state.screen=screen;save();
@@ -179,6 +183,89 @@ function routeInfo(){
   return map[(cs()&&cs().route)||"BALANCED"];
 }
 
+
+function levelLabel(level){
+  var map={easy:"سهل",medium:"متوسط",difficult:"متقدم",transfer:"تطبيق",exam:"اختبار"};
+  return map[level]||level||"";
+}
+function goalDefinition(d){
+  var defs={
+    recall:{icon:"🧠",title:"تثبيت الاسترجاع",why:"تحتاج إلى استدعاء المفهوم القانوني بدقة من دون الاعتماد على ظهور الإجابة أمامك.",next:"شرح موجز ثم تدريب استرجاع"},
+    understanding:{icon:"💡",title:"تعميق الفهم",why:"تحتاج إلى ربط القاعدة بمكانها داخل البناء القانوني وفهم علاقتها بالمفاهيم القريبة.",next:"مثال محلول ثم مقارنة"},
+    legal_precision:{icon:"🔍",title:"رفع الدقة القانونية",why:"تحتاج إلى مزيد من الدقة في التمييز بين المصطلحات والبدائل القانونية المتقاربة.",next:"تمييز مفاهيم ثم سؤال دقيق"},
+    transfer:{icon:"🕵️",title:"تقوية التطبيق على الوقائع",why:"تحتاج إلى نقل المعرفة من السؤال المباشر إلى واقعة جديدة لا تذكر اسم الباب القانوني صراحة.",next:"واقعة قصيرة ثم تغيير عنصر حاسم"},
+    exam_execution:{icon:"✍️",title:"بناء الإجابة الامتحانية",why:"تحتاج إلى تنظيم المعرفة في إجابة تغطي العناصر القانونية المطلوبة بوضوح.",next:"خطة إجابة ثم اختبار قصير"}
+  };
+  return defs[d]||{icon:"🎯",title:dimensionLabel(d),why:"تدريب موجه وفق أدائك.",next:"تدريب قصير"};
+}
+function pathState(d){
+  var s=cs();if(!s)return null;
+  if(!s.skillPaths[d])s.skillPaths[d]={stage:"learn",practiceAttempts:0,testAttempts:0,completedAt:null,lastScore:null};
+  return s.skillPaths[d];
+}
+function isPathCompleted(d){
+  var p=pathState(d);return !!(p&&p.stage==="completed");
+}
+function weaknessThreshold(d){
+  return d==="exam_execution"?72:75;
+}
+function activeWeaknesses(){
+  var s=cs();if(!s)return[];
+  var dims=["recall","understanding","legal_precision","transfer","exam_execution"];
+  return dims.map(function(d){return {d:d,v:s.mastery[d]?s.mastery[d].value:null};})
+    .filter(function(x){return x.v!=null&&x.v<weaknessThreshold(x.d)&&!isPathCompleted(x.d);})
+    .sort(function(a,b){return a.v-b.v;});
+}
+function primaryWeakness(){
+  var w=activeWeaknesses();return w.length?w[0]:null;
+}
+function recommendedActivities(d){
+  var c=course();if(!c)return[];
+  return (c.activities||[]).filter(function(a){
+    return Array.isArray(a.targetDimensions)&&a.targetDimensions.indexOf(d)>=0;
+  });
+}
+function skillCheckItem(d){
+  var c=course(),items=[];
+  (c.groups||[]).forEach(function(g){(g.items||[]).forEach(function(it){if(it.dimension===d)items.push(it);});});
+  if(!items.length)return null;
+  return items[Math.min(items.length-1,Math.max(0,(pathState(d).testAttempts||0)%items.length))];
+}
+function skillPathLabel(stage){
+  return stage==="learn"?"التعلم":stage==="practice"?"التدريب":stage==="assessment"?"اختبار المسار":"مكتمل";
+}
+function skillPathProgress(d){
+  var p=pathState(d);
+  return ["learn","practice","assessment","completed"].map(function(st,i){
+    var order={learn:0,practice:1,assessment:2,completed:3};
+    var cur=order[p.stage],idx=order[st];
+    return {stage:st,label:skillPathLabel(st),done:idx<cur||p.stage==="completed",active:idx===cur&&p.stage!=="completed"};
+  });
+}
+function advancePathAfterPractice(d,score){
+  var p=pathState(d);if(!p||p.stage==="completed")return;
+  p.practiceAttempts=(p.practiceAttempts||0)+1;p.lastScore=score;
+  if(score>=.7)p.stage="assessment";
+  else p.stage="practice";
+  save();
+}
+function finishSkillCheck(d,score){
+  var p=pathState(d);if(!p)return;
+  p.testAttempts=(p.testAttempts||0)+1;p.lastScore=score;
+  if(score>=.8){
+    p.stage="completed";p.completedAt=new Date().toISOString();
+  }else{
+    p.stage="practice";
+  }
+  save();
+}
+function markLearningDone(d){
+  var p=pathState(d);if(p&&p.stage==="learn"){p.stage="practice";save();}
+}
+function completedPathCount(){
+  var s=cs();if(!s)return 0;
+  return Object.keys(s.skillPaths||{}).filter(function(d){return s.skillPaths[d]&&s.skillPaths[d].stage==="completed";}).length;
+}
 
 function growthGoals(){
   var s=cs();if(!s)return[];
