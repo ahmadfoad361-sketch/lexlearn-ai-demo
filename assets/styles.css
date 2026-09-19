@@ -348,3 +348,40 @@ input[type=password]:focus{border-color:var(--maroon);box-shadow:0 0 0 3px rgba(
   .loginMode .authHeroPanel{padding-right:500px}
   .loginMode .authHeroPanel .visualFrame{width:390px;height:180px}
 }
+
+
+/* v6.3 — focused student plan */
+.studentSimple{max-width:1040px;margin:18px auto 0}
+.simplifiedHero{grid-template-columns:1.35fr .65fr}
+.focusPlan{display:grid;gap:10px;margin-top:12px}
+.focusPlanRow{display:grid;grid-template-columns:48px 1fr auto;gap:12px;align-items:center;border:1px solid var(--line);border-radius:15px;padding:13px;background:#fff}
+.focusPlanRow.primary{border-color:#cda9b4;background:#fff8fb;box-shadow:0 7px 18px rgba(123,23,52,.05)}
+.focusPlanRow .goalIcon{font-size:26px}.focusPlanRow b{display:block;color:var(--navy);font-size:13px}.focusPlanRow p{margin:3px 0;color:var(--muted);font-size:11px}.focusPlanRow small{font-size:10px;color:#72541c}
+.studentPlanHeader{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin:16px 0 12px;padding:0 3px}
+.studentPlanHeader h1{font-size:32px;margin:4px 0 5px}.studentPlanHeader p{margin:0;color:var(--muted);font-size:12px}
+.focusedPath{background:linear-gradient(145deg,#13233d,#1b3559);color:#fff;border-radius:20px;padding:19px;box-shadow:var(--shadow);margin-bottom:14px}
+.focusedPathHead{display:grid;grid-template-columns:56px 1fr;gap:12px;align-items:start}
+.focusBigIcon{width:52px;height:52px;border-radius:15px;display:grid;place-items:center;background:rgba(255,255,255,.10);font-size:28px}
+.focusedPath h2{color:#fff;margin:2px 0 4px}.focusedPath p{margin:0;color:#dce5f0;font-size:12px;max-width:720px}
+.pathStages{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-top:16px}
+.pathStage{display:flex;align-items:center;gap:7px;padding:9px;border-radius:11px;background:rgba(255,255,255,.06);color:#bfcadb;font-size:10px;font-weight:800}
+.pathStage span{width:23px;height:23px;border-radius:8px;display:grid;place-items:center;background:rgba(255,255,255,.10);font-weight:950}
+.pathStage.active{background:rgba(201,163,90,.20);color:#fff;border:1px solid rgba(201,163,90,.28)}
+.pathStage.active span{background:var(--gold);color:#2e2618}.pathStage.done{color:#cce7db}.pathStage.done span{background:var(--green);color:#fff}
+.focusWork{padding:20px}.phaseLabel{display:inline-flex;padding:6px 9px;border-radius:999px;background:#f4e9ee;color:var(--maroon);font-size:10px;font-weight:950;margin-bottom:10px}
+.simpleLesson{box-shadow:none;border-radius:16px;background:linear-gradient(145deg,#172a47,#213e66)}
+.focusedChallenges{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px;margin-top:12px}
+.focusedChallenges .activityCard{min-height:210px;display:flex;flex-direction:column}.focusedChallenges .activityCard .btn{margin-top:auto}
+.activityCard.recommended{border-color:#ddc7ce;box-shadow:0 9px 24px rgba(123,23,52,.05)}
+.assessmentReady{text-align:center;padding:30px}.assessmentIcon{font-size:48px;margin:4px 0}.assessmentReady h2{font-size:25px}.assessmentReady p{max-width:620px;margin:0 auto 16px;color:var(--muted)}
+.laterPriorities{margin-top:14px}.laterPriorities p{margin-top:0}.laterChip{display:inline-flex;margin:5px 5px 0 0;padding:7px 10px;border-radius:999px;background:#f3f4f6;color:#687181;font-size:10px;font-weight:850}
+.allClear{text-align:center;padding:42px 28px;max-width:760px;margin:30px auto}.allClearIcon{width:70px;height:70px;border-radius:50%;background:#edf7f2;color:var(--green);display:grid;place-items:center;margin:0 auto 14px;font-size:35px;font-weight:950}.allClear p{color:var(--muted);max-width:650px;margin:0 auto}
+.pathPassed{display:grid;gap:4px;margin-top:12px;padding:13px;border-radius:13px;background:#edf7f2;border:1px solid #c8e4d6;color:#205f49}.pathPassed b{font-size:14px}.pathPassed span{font-size:11px}
+.completedPathList{display:grid;gap:8px}.completedPathRow{display:grid;grid-template-columns:36px 1fr auto;align-items:center;gap:9px;padding:10px 11px;border:1px solid #c8e4d6;background:#f5fbf8;border-radius:12px}.completedPathRow>span{font-size:22px}.completedPathRow b,.completedPathRow small{display:block}.completedPathRow small{font-size:9px;color:#607168}.completedPathRow strong{color:var(--green);font-size:18px}
+.compactStats{margin-top:12px}
+@media(max-width:760px){
+  .simplifiedHero{grid-template-columns:1fr}.simplifiedHero img{display:none}
+  .studentPlanHeader{display:block}.studentPlanHeader .stepbadge{margin-top:8px}
+  .pathStages{grid-template-columns:1fr 1fr}.focusedChallenges{grid-template-columns:1fr}
+  .focusPlanRow{grid-template-columns:42px 1fr}.focusPlanRow .miniScore{grid-column:2}
+}
