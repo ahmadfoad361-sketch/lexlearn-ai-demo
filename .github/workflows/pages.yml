@@ -15,7 +15,25 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Syntax check
+        run: |
+          node --check assets/adaptive-engine.js
+          node --check assets/content.js
+          node --check assets/app.js
+      - name: Adaptive engine tests
+        run: node tests/adaptive-engine.test.js
+
   deploy:
+    needs: test:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
