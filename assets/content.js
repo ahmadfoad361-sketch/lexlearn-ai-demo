@@ -62,7 +62,7 @@ window.LEX_CONTENT = {
       sourceIds:["QU-LAWC101-DETAILED"]
     },
     {
-      id:"r03",course:"QA-QU-LAWC101",topic:"نظرية الحق",dimension:"recall",difficulty:3,type:"mcq",
+      id:"r03",course:"QA-QU-LAWC101",topic:"نظرية الحق",dimension:"recall",difficulty:1,type:"mcq",
       prompt:"أي مجموعة تقع كلها داخل محور نظرية الحق كما يصفه المقرر؟",
       options:[
         {id:"a",text:"مصادر الحق، أطرافه، محله، وحدود استعماله.",score:1},
@@ -100,7 +100,7 @@ window.LEX_CONTENT = {
       sourceIds:["QU-LAWC101-DETAILED"]
     },
     {
-      id:"u03",course:"QA-QU-LAWC101",topic:"مصادر الحق",dimension:"understanding",difficulty:3,type:"mcq_reason",
+      id:"u03",course:"QA-QU-LAWC101",topic:"مصادر الحق",dimension:"understanding",difficulty:1,type:"mcq_reason",
       prompt:"أي عبارة تبيّن الفرق بصورة أدق بين «مصدر القانون» و«مصدر الحق» داخل هذا المقرر؟",
       options:[
         {id:"a",text:"الأول يبحث من أين تستمد القاعدة القانونية وجودها، والثاني يبحث عن الواقعة أو التصرف الذي ينشأ عنه الحق.",score:1},
@@ -133,7 +133,7 @@ window.LEX_CONTENT = {
       sourceIds:["QU-LAWC101-DETAILED"]
     },
     {
-      id:"p03",course:"QA-QU-LAWC101",topic:"أشخاص الحق ومحل الحق",dimension:"legal_precision",difficulty:3,type:"mcq_reason",
+      id:"p03",course:"QA-QU-LAWC101",topic:"أشخاص الحق ومحل الحق",dimension:"legal_precision",difficulty:1,type:"mcq_reason",
       prompt:"في عبارة «الشركة تملك عقارًا»، ما الوصف الأدق للعلاقة بين «الشركة» و«العقار» في لغة نظرية الحق؟",
       options:[
         {id:"a",text:"الشركة من أشخاص الحق، والعقار يمكن أن يكون محلًا للحق.",score:1},
@@ -173,7 +173,7 @@ window.LEX_CONTENT = {
       sourceIds:["QU-LAWC101-DETAILED"]
     },
     {
-      id:"t03",course:"QA-QU-LAWC101",topic:"تفسير القانون",dimension:"transfer",difficulty:3,type:"mcq_reason",
+      id:"t03",course:"QA-QU-LAWC101",topic:"تفسير القانون",dimension:"transfer",difficulty:1,type:"mcq_reason",
       prompt:"في نزاع واحد، الجميع متفق على أن النص نافذ وعلى الواقعة التي حدثت، لكن الخلاف كله حول معنى لفظ ورد في النص. أين تتركز المشكلة؟",
       options:[
         {id:"a",text:"تفسير القانون.",score:1},
@@ -211,7 +211,7 @@ window.LEX_CONTENT = {
       sourceIds:["QU-LAWC101-DETAILED","SEED-REVIEW-REQUIRED"]
     },
     {
-      id:"e03",course:"QA-QU-LAWC101",topic:"محورا المقرر",dimension:"exam_execution",difficulty:3,type:"build_answer",
+      id:"e03",course:"QA-QU-LAWC101",topic:"محورا المقرر",dimension:"exam_execution",difficulty:1,type:"build_answer",
       prompt:"اختبار امتحاني مصغّر (3): رتّب مخطط إجابة لسؤال «اعرض بإيجاز المحورين الرئيسيين لمقرر مدخل إلى القانون، واذكر موضوعين من كل محور».",
       rubric:[
         {key:"law_theory",label:"ذكر نظرية القانون",keywords:["نظريه القانون","القاعده القانونيه","مصادر القانون","تفسير","تطبيق","الغاء"]},
