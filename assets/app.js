@@ -55,7 +55,8 @@ function toast(msg){
 function course(){return C.courses.find(function(x){return x.id===state.courseId;})||C.courses[0];}
 function pct(v){return Math.round(v||0)+"%";}
 function relLabel(r){return r==="HIGH"?"أدلة كافية مبدئيًا":r==="MEDIUM"?"أدلة متوسطة":"دليل أولي";}
-function dimLabel(d){return DIM_LABELS[d]||d;}\nfunction actionLabel(a){var m={ADVANCE:"ارفع الصعوبة",HOLD:"ثبّت المستوى",HOLD_TARGETED_FOLLOWUP:"سؤال متابعة بنفس المستوى",MISCONCEPTION_REPAIR:"صحّح الفكرة أولًا",STEP_BACK_REMEDIATE:"ارجع خطوة وعالج النقص",REMEDIATE:"علاج قصير قبل الاستمرار"};return m[a]||a;}
+function dimLabel(d){return DIM_LABELS[d]||d;}
+function actionLabel(a){var m={ADVANCE:"ارفع الصعوبة",HOLD:"ثبّت المستوى",HOLD_TARGETED_FOLLOWUP:"سؤال متابعة بنفس المستوى",MISCONCEPTION_REPAIR:"صحّح الفكرة أولًا",STEP_BACK_REMEDIATE:"ارجع خطوة وعالج النقص",REMEDIATE:"علاج قصير قبل الاستمرار"};return m[a]||a;}
 function dateKey(d){return d.toISOString().slice(0,10);}
 function touchStreak(){
   var today=dateKey(new Date());
