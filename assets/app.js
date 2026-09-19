@@ -297,6 +297,37 @@ function chosenMicroLesson(){
   if(!c||!w||!c.microLessons||!c.microLessons.length)return null;
   return c.microLessons.find(function(l){return l.dimension===w.d;})||c.microLessons[0];
 }
+function dimensionInfo(d){
+  var map={
+    recall:{icon:"🧠",desc:"قدرتك على استدعاء المفهوم أو القاعدة القانونية من الذاكرة دون الاعتماد على ظهور الإجابة أمامك."},
+    understanding:{icon:"💡",desc:"قدرتك على فهم معنى القاعدة وعلاقتها بالمفاهيم القانونية القريبة، لا مجرد حفظها."},
+    legal_precision:{icon:"🔍",desc:"قدرتك على التمييز بين المصطلحات والبدائل القانونية المتشابهة واختيار الوصف الأدق."},
+    transfer:{icon:"🕵️",desc:"قدرتك على اكتشاف المسألة القانونية وتطبيق ما تعلمته على واقعة جديدة."},
+    exam_execution:{icon:"✍️",desc:"قدرتك على تنظيم الإجابة القانونية وتغطية عناصرها الأساسية بصورة واضحة ومتماسكة."}
+  };
+  return map[d]||{icon:"🎯",desc:"بُعد تدريبي من أبعاد الأداء القانوني."};
+}
+function masteryStatus(d,m){
+  if(!m)return {label:"لم يُقاس",className:"neutral",note:"لا توجد إجابات كافية للحكم على هذا البُعد."};
+  var v=m.value;
+  if(v>=80)return {label:"قوي",className:"strong",note:"لا يحتاج إلى تدريب علاجي نشط حاليًا."};
+  if(v>=65)return {label:"مستقر جزئيًا",className:"steady",note:"الأداء مقبول، وقد يعود هذا البُعد للمراجعة إذا ظهرت أخطاء لاحقة."};
+  return {label:"يحتاج إلى تطوير",className:"needs",note:"يُعطى أولوية في خطة التدريب إذا كان من أضعف الأبعاد الحالية."};
+}
+function nextActionForDimension(d){
+  if(isPathCompleted(d))return "اكتمل المسار بعد اجتياز اختباره، ولذلك لا يظهر ضمن التدريبات النشطة.";
+  var w=primaryWeakness();
+  if(w&&w.d===d){
+    var p=pathState(d);
+    if(p.stage==="learn")return "هذا هو المسار الحالي: تعلم موجّه أولًا.";
+    if(p.stage==="practice")return "هذا هو المسار الحالي: تدريب موجّه على نقطة الضعف.";
+    if(p.stage==="assessment")return "هذا هو المسار الحالي: اختبار قصير لتحديد ما إذا كان يمكن إغلاقه.";
+  }
+  var m=cs().mastery[d];
+  if(m&&m.value<weaknessThreshold(d))return "فجوة مثبتة، لكنها تأتي بعد المسار الحالي في ترتيب الأولويات.";
+  return "لا يوجد إجراء علاجي مطلوب الآن؛ يظل البُعد تحت المتابعة.";
+}
+
 function masteryLadder(){
   var s=cs();
   var avg=0,n=0;Object.keys(s.mastery||{}).forEach(function(k){avg+=s.mastery[k].value;n++;});avg=n?avg/n:0;
@@ -483,7 +514,7 @@ function transitionScreen(){
   var t=SESSION.transition;
   if(!t){state.screen="diagnostic_group";save();return groupScreen();}
   var msg=t.score>=.8?"أداء قوي. سنرفع مستوى التحدي في المرحلة التالية.":t.score>=.55?"أداء جيد. سنواصل مع تركيز أكبر على الدقة.":"تحددت الفجوة بوضوح. سنعالجها بتدريب مناسب بدل تكرار السؤال نفسه.";
-  return '<section class="transitionScreen screen"><div class="transitionVisual"><img src="assets/visual-gavel.svg" alt="مطرقة قانونية"><div class="impactRing"></div></div><div class="kicker">اكتملت المرحلة ✓</div><h1>'+Math.round(t.score*100)+'%</h1><p>'+esc(msg)+'</p><div class="nextStage"><span>التالي</span><b>'+esc(levelLabel(t.next.level))+' • '+esc(t.next.title.replace(/^المجموعة \d+ — /,""))+'</b></div><button class="btn primary" id="continueTransition">انتقل إلى المرحلة التالية</button></section>';
+  return '<section class="transitionScreen screen"><div class="stageCompleteMark"><span>✓</span></div><div class="kicker">اكتملت المرحلة</div><h1>'+Math.round(t.score*100)+'%</h1><p>'+esc(msg)+'</p><div class="nextStage"><span>المرحلة التالية</span><b>'+esc(levelLabel(t.next.level))+' • '+esc(t.next.title.replace(/^المجموعة \d+ — /,""))+'</b></div><button class="btn primary" id="continueTransition">انتقل إلى المرحلة التالية</button></section>';
 }
 function finishDiagnostic(){
   var s=cs();s.completed=true;computeMastery();state.screen="results";save();render();window.scrollTo({top:0,behavior:"smooth"});
@@ -628,9 +659,34 @@ function startReview(id){
   SESSION.activityAnswer=null;SESSION.activityFeedback=null;state.screen="activity_play";save();render();
 }
 function dashboardScreen(){
-  var s=cs(),c=course(),ri=routeInfo(),ladder=masteryLadder(),errors=errorMemory(6),completedPaths=Object.keys(s.skillPaths||{}).filter(function(d){return s.skillPaths[d]&&s.skillPaths[d].stage==="completed";});
-  var dims=["recall","understanding","legal_precision","transfer","exam_execution"];
-  return '<section class="screen"><div class="panel">'+journey("training")+'<div class="screenhead"><div><div class="kicker">لوحة تقدمي</div><h2>'+esc(c.code)+' — '+esc(c.title_ar)+'</h2></div><span class="stepbadge">'+esc(ri.title)+'</span></div>'+stats()+'<div class="metricGrid" style="margin-top:15px">'+dims.map(function(d){var m=s.mastery[d];return '<div class="metric"><div class="metricHead"><span>'+dimensionLabel(d)+'</span><span>'+(m?pct(m.value):"لم يُقاس")+'</span></div>'+(m?'<div class="bar"><span style="width:'+m.value+'%"></span></div><div class="reliability">'+m.evidence+' دليل</div>':'')+'</div>';}).join("")+'<div class="metric"><div class="metricHead"><span>الاحتفاظ المؤجل</span><span>لم يُقاس بعد</span></div><div class="reliability">يحتاج مراجعة فعلية لاحقة.</div></div></div></div><div class="panel" style="margin-top:16px"><div class="kicker">سُلَّم العمق القانوني</div><h2>مستوى التقدم</h2><div class="masteryLadder">'+ladder.map(function(x,i){return '<div class="ladderStep '+(x.done?"done":"")+'"><span>'+x.icon+'</span><b>'+esc(x.title)+'</b><small>'+(x.done?"تم إثباته مبدئيًا":"المرحلة التالية")+'</small></div>';}).join("")+'</div></div><div class="panel" style="margin-top:16px"><div class="kicker">المسارات المكتملة</div><h2>ما تم إنجازه</h2>'+(completedPaths.length?'<div class="completedPathList">'+completedPaths.map(function(d){var z=goalDefinition(d),p=pathState(d);return '<div class="completedPathRow"><span>'+z.icon+'</span><div><b>'+esc(z.title)+'</b><small>أُغلق المسار بعد اجتياز اختبار المسار'+(p.completedAt?' • '+new Date(p.completedAt).toLocaleDateString("ar-EG",{dateStyle:"medium"}):'')+'</small></div><strong>✓</strong></div>';}).join("")+'</div>':'<div class="empty">لم يكتمل مسار تدريبي بعد.</div>')+'</div><div class="panel" style="margin-top:16px"><div class="kicker">ذاكرة الأخطاء</div><h2>يتتبع النظام نمط الخطأ، لا الإجابة وحدها</h2>'+(errors.length?'<div class="attemptList">'+errors.map(function(e){return '<div class="attemptRow"><div><b>'+esc(e.type)+'</b><small>'+dimensionLabel(e.item.dimension)+'</small><p>'+esc(e.item.prompt)+'</p></div><strong>'+Math.round(e.score*100)+'%</strong></div>';}).join("")+'</div>':'<div class="goodbox">لا توجد أخطاء مسجلة حاليًا.</div>')+'<div class="notice"><b>مهم:</b> هذه مؤشرات تدريبية وليست درجات جامعية رسمية.</div></div></section>';
+  var s=cs(),c=course(),ri=routeInfo(),ladder=masteryLadder(),errors=errorMemory(6),
+      completedPaths=Object.keys(s.skillPaths||{}).filter(function(d){return s.skillPaths[d]&&s.skillPaths[d].stage==="completed";}),
+      dims=["recall","understanding","legal_precision","transfer","exam_execution"],
+      current=primaryWeakness();
+
+  var dimensionCards=dims.map(function(d){
+    var m=s.mastery[d],info=dimensionInfo(d),status=masteryStatus(d,m);
+    return '<div class="progressExplainCard '+status.className+'"><div class="progressExplainHead"><span class="progressExplainIcon">'+info.icon+'</span><div><h3>'+dimensionLabel(d)+'</h3><span class="statusBadge '+status.className+'">'+status.label+'</span></div><strong>'+(m?pct(m.value):"—")+'</strong></div><p>'+esc(info.desc)+'</p>'+(m?'<div class="bar"><span style="width:'+m.value+'%"></span></div><div class="progressEvidence"><span><b>'+m.evidence+'</b> أدلة من إجاباتك</span><span>'+esc(status.note)+'</span></div>':'<div class="progressEvidence"><span>لم تتوافر أدلة كافية بعد.</span></div>')+'<div class="progressNext"><b>ماذا يعني ذلك الآن؟</b><span>'+esc(nextActionForDimension(d))+'</span></div></div>';
+  }).join("");
+
+  var currentPlan=current?'<div class="currentProgressPlan"><div class="currentProgressIcon">'+goalDefinition(current.d).icon+'</div><div><div class="kicker">الأولوية الحالية في التدريب</div><h2>'+esc(goalDefinition(current.d).title)+'</h2><p>'+esc(goalDefinition(current.d).why)+'</p><span class="stagePill">المرحلة الحالية: '+esc(skillPathLabel(pathState(current.d).stage))+'</span></div><button class="btn primary" data-nav="today">متابعة الخطة</button></div>':'<div class="currentProgressPlan complete"><div class="currentProgressIcon">✓</div><div><div class="kicker">الحالة الحالية</div><h2>لا توجد فجوة علاجية نشطة.</h2><p>المسارات المطلوبة وفق الأدلة الحالية مكتملة. ستظهر مراجعات أو مسارات جديدة فقط إذا كشفت النتائج اللاحقة عن حاجة إليها.</p></div></div>';
+
+  var completed=completedPaths.length?'<div class="completedPathList">'+completedPaths.map(function(d){var z=goalDefinition(d),p=pathState(d);return '<div class="completedPathRow"><span>'+z.icon+'</span><div><b>'+esc(z.title)+'</b><small>أُغلق المسار بعد اجتياز اختبار المسار'+(p.completedAt?' • '+new Date(p.completedAt).toLocaleDateString("ar-EG",{dateStyle:"medium"}):'')+'</small></div><strong>✓</strong></div>';}).join("")+'</div>':'<div class="empty">لم يكتمل مسار تدريبي بعد.</div>';
+
+  return '<section class="screen studentSimple progressDashboard">'+
+    '<div class="panel progressIntro">'+journey("training")+
+      '<div class="screenhead"><div><div class="kicker">لوحة التقدم</div><h1>'+esc(c.code)+' — '+esc(c.title_ar)+'</h1><p>هذه الصفحة تشرح ما يقيسه كل بُعد، وما الذي تعنيه النتيجة، وما الخطوة التي يتخذها النظام بناءً عليها.</p></div><span class="stepbadge">'+esc(ri.title)+'</span></div>'+
+      '<div class="howToRead"><div><b>1</b><span><strong>النسبة</strong> تلخص أداءك في الأسئلة التي تقيس هذا البُعد.</span></div><div><b>2</b><span><strong>الأدلة</strong> هي عدد الإجابات التي بُني عليها المؤشر.</span></div><div><b>3</b><span><strong>الحالة</strong> توضح هل يحتاج البُعد إلى تدريب الآن.</span></div><div><b>4</b><span><strong>الخطوة التالية</strong> توضح ما سيفعله النظام بدل ترك النسبة بلا تفسير.</span></div></div>'+
+      '<div class="notice"><b>تنبيه:</b> هذه مؤشرات تدريبية وليست درجات جامعية. لا يعني انخفاض بُعد معين ضعف الطالب بصفة عامة؛ بل يحدد المهارة التي تحتاج إلى تدريب في هذا المقرر.</div>'+
+    '</div>'+
+    currentPlan+
+    '<div class="panel" style="margin-top:16px"><div class="screenhead"><div><div class="kicker">أبعاد الأداء</div><h2>ماذا تعني كل نتيجة؟</h2></div></div><div class="progressExplainGrid">'+dimensionCards+
+      '<div class="progressExplainCard neutral"><div class="progressExplainHead"><span class="progressExplainIcon">⏳</span><div><h3>الاحتفاظ المؤجل</h3><span class="statusBadge neutral">لم يُقاس بعد</span></div><strong>—</strong></div><p>يقيس ما إذا كانت المعرفة بقيت مستقرة بعد مرور وقت، وليس في الجلسة نفسها.</p><div class="progressNext"><b>متى يظهر؟</b><span>بعد مراجعة لاحقة في موعد مختلف. لذلك لا نحوله إلى صفر ولا ندخله في الحكم الحالي.</span></div></div>'+
+    '</div></div>'+
+    '<div class="panel" style="margin-top:16px"><div class="kicker">سُلَّم العمق القانوني</div><h2>كيف يتطور الأداء القانوني؟</h2><p class="small">هذا السلم يوضح الانتقال من معرفة المفهوم إلى استخدامه في واقعة وإجابة امتحانية. العلامة الخضراء تعني أن لديك دليلًا مبدئيًا على اجتياز المرحلة، وليست شهادة نهائية بالإتقان.</p><div class="masteryLadder">'+ladder.map(function(x,i){return '<div class="ladderStep '+(x.done?"done":"")+'"><span>'+x.icon+'</span><b>'+esc(x.title)+'</b><small>'+(x.done?"ثبت مبدئيًا من أدائك":"لم يثبت بعد")+'</small></div>';}).join("")+'</div></div>'+
+    '<div class="panel" style="margin-top:16px"><div class="kicker">المسارات المكتملة</div><h2>المهارات التي انتهى تدريبها النشط</h2><p class="small">بعد اجتياز اختبار المسار يُغلق المسار ويختفي من التدريبات النشطة، لكنه يبقى هنا كسجل للتقدم.</p>'+completed+'</div>'+
+    '<div class="panel" style="margin-top:16px"><div class="kicker">ذاكرة الأخطاء</div><h2>ما الذي يتعلمه النظام من أخطائك؟</h2><p class="small">لا يسجل النظام أن الإجابة كانت خاطئة فقط؛ بل يحاول تحديد نوع الفجوة حتى يختار تدريبًا أنسب.</p>'+(errors.length?'<div class="attemptList">'+errors.map(function(e){return '<div class="attemptRow"><div><b>'+esc(e.type)+'</b><small>'+dimensionLabel(e.item.dimension)+'</small><p>'+esc(e.item.prompt)+'</p></div><strong>'+Math.round(e.score*100)+'%</strong></div>';}).join("")+'</div>':'<div class="goodbox">لا توجد أخطاء مسجلة حاليًا.</div>')+'</div>'+
+  '</section>';
 }
 function render(){
   var html=header()+'<main class="app">';
