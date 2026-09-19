@@ -3,8 +3,11 @@
 
 var C = window.LEX_CONTENT;
 var APP = document.getElementById("app");
-var STORAGE = "lexlearn_v4_grouped";
-var SESSION = {answers:{},pending:null,confidence:null,activity:null,activityAnswer:null,activityFeedback:null};
+var LEGACY_STORAGE = "lexlearn_v4_grouped";
+var AUTH_KEY = "lexlearn_auth_v1";
+var STUDENT_PREFIX = "lexlearn_student_v6_";
+var SESSION = {answers:{},pending:null,confidence:null,activity:null,activityAnswer:null,activityFeedback:null,transition:null};
+var ADMIN = {selectedStudentId:null};
 
 var DIM_LABELS = {
   recall:"الاسترجاع",
@@ -14,22 +17,49 @@ var DIM_LABELS = {
   exam_execution:"الاختبار الامتحاني"
 };
 
+function hashPass(v){
+  var h=2166136261,s=String(v||"");
+  for(var i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}
+  return (h>>>0).toString(16);
+}
+function uid(prefix){return (prefix||"u")+"-"+Date.now().toString(36)+"-"+Math.random().toString(36).slice(2,7);}
+function loadAuth(){
+  try{
+    var a=JSON.parse(localStorage.getItem(AUTH_KEY));
+    if(a&&Array.isArray(a.accounts))return a;
+  }catch(e){}
+  return {schema:1,accounts:[],currentId:null};
+}
+var auth=loadAuth();
+function saveAuth(){localStorage.setItem(AUTH_KEY,JSON.stringify(auth));}
+function activeAccount(){return auth.accounts.find(function(x){return x.id===auth.currentId;})||null;}
+function accountById(id){return auth.accounts.find(function(x){return x.id===id;})||null;}
+function hasAdmin(){return auth.accounts.some(function(x){return x.role==="admin";});}
+function studentStateKey(id){return STUDENT_PREFIX+id;}
 function freshCourseState(){
   return {groupIndex:0,groupResults:[],mastery:{},route:null,xp:0,streak:0,lastActive:null,reviews:[],activityHistory:[],completed:false};
 }
 function freshState(){
-  return {schema:4,country:null,courseId:null,screen:"country",courses:{},createdAt:new Date().toISOString()};
+  return {schema:6,country:null,courseId:null,screen:"country",courses:{},createdAt:new Date().toISOString()};
+}
+function readStudentState(id){
+  try{
+    var s=JSON.parse(localStorage.getItem(studentStateKey(id)));
+    if(s&&s.courses)return s;
+  }catch(e){}
+  return freshState();
 }
 function load(){
-  try{
-    var s=JSON.parse(localStorage.getItem(STORAGE));
-    if(!s || s.schema!==4)return freshState();
-    return s;
-  }catch(e){return freshState();}
+  var a=activeAccount();
+  if(a&&a.role==="student")return readStudentState(a.id);
+  return freshState();
 }
 var state=load();
 
-function save(){localStorage.setItem(STORAGE,JSON.stringify(state));}
+function save(){
+  var a=activeAccount();
+  if(a&&a.role==="student")localStorage.setItem(studentStateKey(a.id),JSON.stringify(state));
+}
 function esc(v){return String(v==null?"":v).replace(/[&<>"']/g,function(c){return({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"})[c];});}
 function norm(v){return String(v||"").toLowerCase().replace(/[أإآ]/g,"ا").replace(/ة/g,"ه").replace(/ى/g,"ي").replace(/[ًٌٍَُِّْـ]/g,"").replace(/[^\u0600-\u06FFa-z0-9 ]/gi," ").replace(/\s+/g," ").trim();}
 function course(){return C.courses.find(function(x){return x.id===state.courseId;})||null;}
