@@ -118,3 +118,19 @@ Student can see only own experience and assigned courses.
 - backup/export/admin recovery process
 
 Do not call the local prototype “secure multi-user authentication.” It demonstrates the workflow only.
+
+
+## v6.4 focused-path refinement
+Student-facing language is formal Modern Standard Arabic. Colloquial wording is not permitted in production UI.
+
+The active training plan now follows a single-focus rule:
+1. Select the weakest active skill dimension supported by evidence.
+2. Show only the lesson and challenges relevant to that dimension.
+3. Hide unrelated challenges while that path is active.
+4. Progress through: guided learning -> targeted practice -> path assessment.
+5. A path closes when the learner passes its assessment at the current prototype threshold.
+6. Once closed, it disappears from active training and the next demonstrated weakness becomes the active path.
+7. Completed paths remain visible only in progress/history, not as active tasks.
+8. If no active weakness remains, show an all-clear state and only necessary delayed reviews.
+
+The student navigation should remain intentionally small: training plan, progress, courses. Separate challenge/review libraries should not compete with the active plan.
