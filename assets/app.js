@@ -14,17 +14,17 @@ var DIM_LABELS = {
   legal_precision:"الدقة القانونية",
   transfer:"النقل والتطبيق",
   legal_reasoning:"الاستدلال القانوني",
-  exam_execution:"تنفيذ إجابة الامتحان"
+  exam_execution:"الاختبار الامتحاني المصغّر"
 };
 var DIFF_FACTOR={1:.80,2:.90,3:1,4:1.10,5:1.20};
 var HINT_FACTOR={0:1,1:.85,2:.65,3:.45};
 
 function freshState(){
   return {
-    schema:2,
+    schema:3,
     userId:"local-"+Math.random().toString(36).slice(2,10),
     country:null,courseId:null,screen:"country",
-    diagnostic:{started:false,completed:false,used:[],attempts:[],targetDifficulty:{recall:2,understanding:2,legal_precision:2,transfer:2,exam_execution:2}},
+    diagnostic:{started:false,completed:false,used:[],attempts:[],targetDifficulty:{recall:1,understanding:1,legal_precision:1,transfer:1,exam_execution:1}},
     mastery:{},
     flags:[],
     route:null,
@@ -39,7 +39,7 @@ function freshState(){
 function load(){
   try{
     var s=JSON.parse(localStorage.getItem(STORAGE));
-    if(!s || s.schema!==2) return freshState();
+    if(!s || s.schema!==3) return freshState();
     return s;
   }catch(e){return freshState();}
 }
@@ -54,7 +54,7 @@ function toast(msg){
 }
 function course(){return C.courses.find(function(x){return x.id===state.courseId;})||C.courses[0];}
 function pct(v){return Math.round(v||0)+"%";}
-function relLabel(r){return r==="HIGH"?"ثقة عالية":r==="MEDIUM"?"ثقة متوسطة":"ثقة أولية";}
+function relLabel(r){return r==="HIGH"?"أدلة كافية مبدئيًا":r==="MEDIUM"?"أدلة متوسطة":"دليل أولي";}
 function dimLabel(d){return DIM_LABELS[d]||d;}
 function dateKey(d){return d.toISOString().slice(0,10);}
 function touchStreak(){
@@ -72,8 +72,8 @@ function reliability(dim){
   var a=state.diagnostic.attempts.filter(function(x){return x.dimension===dim && x.valid!==false;});
   var ids={}; a.forEach(function(x){ids[x.item_id]=1;});
   var n=a.length, unique=Object.keys(ids).length;
-  if(n>=6 && unique>=4)return"HIGH";
-  if(n>=3 && unique>=2)return"MEDIUM";
+  if(n>=3 && unique>=3)return"HIGH";
+  if(n>=2 && unique>=2)return"MEDIUM";
   return"LOW";
 }
 function updateMastery(dim){
@@ -100,31 +100,53 @@ function currentQuestion(){
   if(!state.diagnostic.currentId)return null;
   return itemById(state.diagnostic.currentId);
 }
+function blueprint(dim){return (C.diagnosticBlueprint||[]).find(function(x){return x.dimension===dim;});}
+function dimAttempts(dim){return state.diagnostic.attempts.filter(function(a){return a.dimension===dim && a.valid!==false;});}
+function dimensionNeedsMore(bp){
+  var arr=dimAttempts(bp.dimension);
+  if(arr.length<bp.min)return true;
+  if(arr.length>=bp.max)return false;
+  if(arr.length===bp.min){
+    var vals=arr.slice(-2).map(function(a){return a.raw_score;});
+    return vals.length===2 && Math.abs(vals[0]-vals[1])>=0.35;
+  }
+  return false;
+}
 function chooseDimension(){
-  var core=["recall","understanding","transfer","legal_precision"];
-  var counts={};core.forEach(function(d){counts[d]=state.diagnostic.attempts.filter(function(a){return a.dimension===d;}).length;});
-  var total=state.diagnostic.attempts.length;
-  if(total>=7 && state.diagnostic.attempts.filter(function(a){return a.dimension==="exam_execution";}).length<1)return"exam_execution";
-  core.sort(function(a,b){return counts[a]-counts[b];});
-  return core[0];
+  var plan=C.diagnosticBlueprint||[];
+  for(var i=0;i<plan.length;i++) if(dimensionNeedsMore(plan[i])) return plan[i].dimension;
+  return null;
 }
 function chooseNextItem(){
   var used=state.diagnostic.used;
-  var total=state.diagnostic.attempts.length;
-  var coreOk=["recall","understanding","transfer"].every(function(d){
-    return state.diagnostic.attempts.filter(function(a){return a.dimension===d;}).length>=2;
-  });
-  if(total>=10 && coreOk)return null;
-  if(total>=15)return null;
   var dim=chooseDimension();
-  var target=state.diagnostic.targetDifficulty[dim]||2;
+  if(!dim)return null;
+  var target=state.diagnostic.targetDifficulty[dim]||1;
   var pool=C.diagnosticItems.filter(function(i){return i.dimension===dim && used.indexOf(i.id)<0;});
-  if(!pool.length){
-    pool=C.diagnosticItems.filter(function(i){return used.indexOf(i.id)<0;});
-    if(!pool.length)return null;
-  }
-  pool.sort(function(a,b){return Math.abs(a.difficulty-target)-Math.abs(b.difficulty-target);});
+  if(!pool.length)return null;
+  pool.sort(function(a,b){
+    var da=Math.abs(a.difficulty-target),db=Math.abs(b.difficulty-target);
+    if(da!==db)return da-db;
+    return a.difficulty-b.difficulty;
+  });
   return pool[0];
+}
+function phaseTracker(activeDim){
+  var plan=C.diagnosticBlueprint||[];
+  return '<div class="diagsteps">'+plan.map(function(bp,i){
+    var n=dimAttempts(bp.dimension).length;
+    var done=!dimensionNeedsMore(bp) && n>=bp.min;
+    var cls=bp.dimension===activeDim?'active':(done?'done':'');
+    return '<div class="diagstep '+cls+'"><span>'+(i+1)+'</span><b>'+esc(bp.short)+'</b><small>'+n+'/'+bp.min+(n>bp.min?' +تأكيد':'')+'</small></div>';
+  }).join("")+'</div>';
+}
+function rubricFeedback(item,response){
+  if(item.type!=="build_answer" || !item.rubric)return"";
+  var rows=item.rubric.map(function(r){
+    var ok=scoreKeywords(response.text||"",r.keywords||[],1)>0;
+    return '<div class="rubricrow '+(ok?'hit':'miss')+'"><span>'+(ok?'✓':'○')+'</span><b>'+esc(r.label)+'</b></div>';
+  }).join("");
+  return '<div class="rubricbox"><b>عناصر التصحيح التدريبية:</b>'+rows+'</div>';
 }
 function ensureCurrentItem(){
   if(state.diagnostic.currentId)return;
@@ -139,12 +161,10 @@ function priorSame(item){
   return arr.length?arr[arr.length-1]:null;
 }
 function nextAction(item,raw,conf,hint){
-  var p=priorSame(item);
-  if(raw>=.85 && hint===0 && p && p.raw_score>=.85 && p.hint_level===0)return"ADVANCE";
-  if(raw>=.85)return"HOLD";
-  if(raw>=.55)return"HOLD_TARGETED_FOLLOWUP";
+  if(raw>=.85 && hint===0)return"ADVANCE";
+  if(raw>=.60)return"HOLD_TARGETED_FOLLOWUP";
   if(raw<.55 && conf===4)return"MISCONCEPTION_REPAIR";
-  if(raw<.55 && p && p.raw_score<.55)return"STEP_BACK_REMEDIATE";
+  if(raw<.55)return"STEP_BACK_REMEDIATE";
   return"REMEDIATE";
 }
 function applyDifficulty(item,action){
@@ -186,11 +206,11 @@ function finalizeAttempt(){
     evaluator:"local-rubric-demo",ai_confidence:1,evidence_value:ev,action:action,valid:true,created_at:new Date().toISOString()
   };
   state.diagnostic.attempts.push(a);
-  if(raw<.55 && SESSION.confidence===4 && state.flags.indexOf("MISCONCEPTION_HIGH_CONFIDENCE")<0)state.flags.push("MISCONCEPTION_HIGH_CONFIDENCE");
+  if(raw<.55 && SESSION.confidence===4 && state.flags.indexOf("ثقة مرتفعة مع إجابة غير دقيقة")<0)state.flags.push("ثقة مرتفعة مع إجابة غير دقيقة");
   if(item.type==="load_recall" && raw<.55){
     var normal=state.diagnostic.attempts.filter(function(x){return x.dimension==="recall" && x.item_id!==item.id && itemById(x.item_id) && itemById(x.item_id).type!=="load_recall";});
     var avg=normal.length?normal.reduce(function(s,x){return s+x.evidence_value;},0)/normal.length:0;
-    if(avg>=70 && state.flags.indexOf("LOAD_SENSITIVE")<0)state.flags.push("LOAD_SENSITIVE");
+    if(avg>=70 && state.flags.indexOf("الأداء يتأثر بزيادة الحمل")<0)state.flags.push("الأداء يتأثر بزيادة الحمل");
   }
   applyDifficulty(item,action);allMastery();scheduleReview(item.topic,item.id,raw);
   SESSION.feedback={item:item,attempt:a};
@@ -262,7 +282,8 @@ function contextScreen(){
   return hero()+'<section class="panel screen"><div class="screenhead"><div><div class="kicker">الخطوة الثانية</div><h2>السياق الدراسي</h2></div><span class="stepbadge">🇶🇦 قطر</span></div><div class="grid2"><div class="option active"><b>'+esc(c.university)+'</b><small>الجامعة المرجعية للـPilot</small></div><div class="option active"><b>'+esc(c.code)+' — '+esc(c.title_ar)+'</b><small>لغة المحتوى: العربية</small></div></div><div class="notice"><b>مهم:</b> أسئلة التدريب الحالية Seed تشغيلية لبناء المحرك واختباره، وليست بنك أسئلة جامعيًا رسميًا. يجب اعتمادها قانونيًا وتربويًا قبل الإطلاق العام.</div><div class="actions"><button class="btn primary" id="startCourse">ابدأ التشخيص التكيفي</button><button class="btn ghost" id="backCountry">رجوع</button></div><div class="sourcebox">المرجع البنيوي للمقرر: <a href="'+esc(c.officialSource)+'" target="_blank" rel="noopener">الوصف الرسمي المنشور من جامعة قطر</a>.</div></section>';
 }
 function diagnosticIntro(){
-  return '<section class="panel screen"><div class="screenhead"><div><div class="kicker">Adaptive Diagnostic</div><h2>تشخيص قصير — سؤال واحد في كل مرة</h2></div><span class="stepbadge">8–15 سؤالًا حسب الأدلة</span></div><p>لا يوجد ترتيب إجباري للمهارات. نقيس أبعادًا مستقلة، ونغيّر صعوبة السؤال التالي فور تقييم المحاولة الحالية. تغيير المسار الكامل لا يحدث من إجابة واحدة؛ يحتاج أدلة كافية.</p><div class="grid3"><div class="option"><b>🧠 الاسترجاع</b><small>هل تستدعي الفكرة أو المصطلح؟</small></div><div class="option"><b>💡 الفهم</b><small>هل تفهم المعنى والفرق؟</small></div><div class="option"><b>⚖️ التطبيق</b><small>هل تكتشف القاعدة داخل واقعة؟</small></div><div class="option"><b>🎯 الدقة القانونية</b><small>هل تستخدم العنصر والمصطلح بدقة؟</small></div><div class="option"><b>✍️ تنفيذ الامتحان</b><small>هل تبني إجابة مرتبة؟</small></div><div class="option"><b>🕒 الاحتفاظ</b><small>يظل Pending حتى مراجعة لاحقة.</small></div></div><div class="info">بعد كتابة/اختيار الإجابة، سنسألك عن مدى ثقتك <b>قبل إظهار التصحيح</b>.</div><div class="actions"><button class="btn primary" id="beginDiagnostic">ابدأ أول سؤال</button><button class="btn ghost" id="backContext">رجوع</button></div></section>';
+  var cards=(C.diagnosticBlueprint||[]).map(function(bp,i){return '<div class="option"><b>'+(i+1)+'. '+esc(bp.label)+'</b><small>'+esc(bp.description)+'</small></div>';}).join("");
+  return '<section class="panel screen"><div class="screenhead"><div><div class="kicker">تشخيص البداية</div><h2>خمس مجموعات قياس واضحة — سؤال واحد في كل مرة</h2></div><span class="stepbadge">10–15 سؤالًا حسب الحاجة</span></div><p>الترتيب التالي <b>لتنظيم القياس فقط</b>، وليس سلمًا يجب أن تتعلم به. كل بُعد يُقاس مستقلًا، وكل إجابة تحدد صعوبة السؤال التالي داخل نفس المجموعة. إذا كانت النتيجتان متعارضتين يظهر سؤال ثالث للتأكيد.</p><div class="grid3">'+cards+'</div><div class="info"><b>الجزء الخامس ظاهر بوضوح كاختبار امتحاني مصغّر.</b> لن تظهر له نسبة قبل أن تجيب على أسئلته. وبعد كل إجابة نطلب درجة ثقتك قبل عرض التصحيح.</div><div class="notice">الاحتفاظ المؤجل ليس جزءًا من هذه الجلسة؛ لا يُقاس إلا عند مراجعة لاحقة بعد مرور وقت فعلي.</div><div class="actions"><button class="btn primary" id="beginDiagnostic">ابدأ التشخيص</button><button class="btn ghost" id="backContext">رجوع</button></div></section>';
 }
 function renderQuestionBody(item){
   var html='<div class="questionMeta"><span class="tag maroon">'+esc(dimLabel(item.dimension))+'</span><span class="tag">صعوبة '+item.difficulty+'/5</span><span class="tag">'+esc(item.topic)+'</span></div>';
@@ -289,29 +310,34 @@ function renderQuestionBody(item){
 function diagnosticScreen(){
   ensureCurrentItem();var item=currentQuestion();if(!item)return"";
   var n=state.diagnostic.attempts.length;
-  var target=Math.min(15,Math.max(10,n+1));
-  var html='<section class="panel screen"><div class="screenhead"><div><div class="kicker">Diagnostic in progress</div><h2>التشخيص التكيفي</h2></div><span class="stepbadge">محاولة '+(n+1)+'</span></div><div class="progress"><div style="width:'+Math.min(100,(n/10)*100)+'%"></div></div><div class="progressmeta"><span>الهدف المعتاد 10 محاولات</span><span>الحد الأقصى 15</span></div><div class="questionCard" id="questionCard">';
+  var bp=blueprint(item.dimension)||{label:dimLabel(item.dimension),description:""};
+  var isExam=item.dimension==="exam_execution";
+  var html='<section class="panel screen"><div class="screenhead"><div><div class="kicker">تشخيص البداية</div><h2>'+esc(bp.label)+'</h2><p class="small">'+esc(bp.description)+'</p></div><span class="stepbadge">السؤال '+(dimAttempts(item.dimension).length+1)+' في هذه المجموعة</span></div>'+phaseTracker(item.dimension);
+  if(isExam)html+='<div class="examcallout"><b>📝 الاختبار الامتحاني المصغّر</b><p>أنت الآن في الجزء الذي يقيس بناء الإجابة. النسبة التي ستظهر لاحقًا لهذا البُعد تأتي من هذه الأسئلة تحديدًا، وليست درجة جامعية رسمية.</p></div>';
+  html+='<div class="questionCard" id="questionCard">';
   if(SESSION.pending && !SESSION.feedback){
     html+=renderQuestionBody(item);
-    html+='<div class="info"><b>تم تثبيت إجابتك.</b> قبل أن نعرض التصحيح: ما مدى ثقتك فيها؟</div><div class="confidence">'+[["1","مش متأكد"],["2","متردد"],["3","شبه متأكد"],["4","متأكد جدًا"]].map(function(x){return'<button type="button" class="conf '+(SESSION.confidence===Number(x[0])?"active":"")+'" data-conf="'+x[0]+'">'+x[1]+'</button>';}).join("")+'</div><div class="actions"><button class="btn primary" id="revealFeedback" '+(!SESSION.confidence?"disabled":"")+'>اعرض التغذية الراجعة</button></div>';
+    html+='<div class="info"><b>تم تثبيت إجابتك.</b> قبل التصحيح: ما مدى ثقتك فيها؟</div><div class="confidence">'+[["1","مش متأكد"],["2","متردد"],["3","شبه متأكد"],["4","متأكد جدًا"]].map(function(x){return'<button type="button" class="conf '+(SESSION.confidence===Number(x[0])?"active":"")+'" data-conf="'+x[0]+'">'+x[1]+'</button>';}).join("")+'</div><div class="actions"><button class="btn primary" id="revealFeedback" '+(!SESSION.confidence?"disabled":"")+'>اعرض التصحيح</button></div>';
   }else if(SESSION.feedback){
     var a=SESSION.feedback.attempt;var cls=a.raw_score>=.85?"good":a.raw_score>=.55?"warn":"bad";
     html+=renderQuestionBody(item);
-    html+='<div class="feedback '+cls+'"><h3>'+(a.raw_score>=.85?"إجابة قوية":a.raw_score>=.55?"إجابة جزئية":"تحتاج مراجعة")+'</h3><p>'+esc(item.explanation||"")+'</p><div class="small">Evidence: '+Math.round(a.evidence_value)+' • القرار التالي: <b>'+esc(a.action)+'</b> • الثقة: '+a.confidence_pre_feedback+'/4</div></div><div class="actions"><button class="btn primary" id="nextDiagnostic">'+(state.diagnostic.attempts.length>=10?"حدّث التقييم واستمر":"السؤال التالي")+'</button></div>';
+    html+='<div class="feedback '+cls+'"><h3>'+(a.raw_score>=.85?"إجابة قوية":a.raw_score>=.55?"إجابة جزئية":"الإجابة تحتاج مراجعة")+'</h3><p>'+esc(item.explanation||"")+'</p>'+rubricFeedback(item,a.response_payload||{})+'<div class="scoreline"><b>نتيجة هذا السؤال التدريبية: '+Math.round(a.raw_score*100)+'%</b><span> • الدليل المعدّل: '+Math.round(a.evidence_value)+'</span></div><div class="small">القرار للسؤال التالي: '+esc(a.action)+' • الثقة قبل التصحيح: '+a.confidence_pre_feedback+'/4</div></div><div class="actions"><button class="btn primary" id="nextDiagnostic">'+(chooseDimension()===null?"اعرض النتيجة الكاملة":"السؤال التالي")+'</button></div>';
   }else{
     html+=renderQuestionBody(item);
-    if(!(item.type==="load_recall" && !SESSION.loadHidden)){
-      html+='<div class="actions"><button class="btn primary" id="submitAnswer">ثبّت إجابتي</button><button class="btn ghost" id="hintBtn">تلميح</button></div>';
-    }
+    html+='<div class="actions"><button class="btn primary" id="submitAnswer">ثبّت إجابتي</button><button class="btn ghost" id="hintBtn">تلميح</button></div>';
   }
-  html+='</div><div class="small" style="margin-top:10px">لن يتم اختيار السؤال الأصعب التالي إلا بعد حفظ هذه المحاولة وتقييمها.</div></section>';
+  html+='</div><div class="small" style="margin-top:10px">لا ننتقل للسؤال التالي قبل تقييم هذه المحاولة. الصعود في الصعوبة يتم فقط بعد أداء قوي دون تلميح.</div></section>';
   return html;
 }
 function masteryScreen(){
   allMastery();var info=routeInfo();
   var dims=["recall","understanding","legal_precision","transfer","exam_execution"];
-  var metrics=dims.map(function(d){var m=state.mastery[d];var v=m?m.value:0;return'<div class="metric"><div class="metricHead"><span>'+dimLabel(d)+'</span><span>'+(m?pct(v):"غير مقاس")+'</span></div><div class="bar"><span style="width:'+v+'%"></span></div><div class="reliability">'+(m?rawBand(v)+" • "+relLabel(m.reliability)+" • "+m.count+" دليل":"بانتظار الأدلة")+'</div></div>';}).join("");
-  return '<section class="dashboard screen"><div class="panel"><div class="kicker">Initial Mastery Map</div><h2>الخريطة الأولية لإتقانك</h2><div class="notice">المؤشرات الأولية ليست «شخصية» ثابتة. تتغير مع كل دليل جديد، ولا نقارن الدرجات الخام بين مهارات مختلفة دون مراعاة صعوبة السؤال.</div><div class="metricGrid">'+metrics+'<div class="metric"><div class="metricHead"><span>الاحتفاظ المؤجل</span><span>Pending</span></div><div class="bar"><span style="width:0"></span></div><div class="reliability">لن يُحدّث قبل مراجعة مجدولة في وقت لاحق.</div></div></div></div><div class="pathcard"><div class="kicker" style="color:#e8c986">Today Path</div><h2>'+esc(info.title)+'</h2><p>'+esc(info.why)+'</p>'+info.steps.map(function(s,i){return'<div class="pathstep"><b>'+(i+1)+'.</b> '+esc(s)+'</div>';}).join("")+'<div class="actions"><button class="btn gold" id="enterToday">ابدأ مسار اليوم</button></div></div></section>';
+  var metrics=dims.map(function(d){
+    var m=state.mastery[d]; if(!m)return '<div class="metric"><div class="metricHead"><span>'+dimLabel(d)+'</span><span>لم يُقاس</span></div><div class="reliability">لن نعرض 0% لبُعد لم يُختبر.</div></div>';
+    var v=m.value;var extra=d==="exam_execution"?'<div class="metricnote">مصدر النسبة: الاختبار الامتحاني المصغّر • '+m.count+' سؤال</div>':'';
+    return '<div class="metric"><div class="metricHead"><span>'+dimLabel(d)+'</span><span>'+pct(v)+'</span></div><div class="bar"><span style="width:'+v+'%"></span></div><div class="reliability">'+rawBand(v)+' • '+relLabel(m.reliability)+' • '+m.count+' دليل</div>'+extra+'</div>';
+  }).join("");
+  return '<section class="dashboard screen"><div class="panel"><div class="kicker">نتيجة تشخيص البداية</div><h2>خريطة الإتقان الأولية</h2><div class="notice">هذه ليست «شخصية» ثابتة. كل نسبة مرتبطة بأسئلة ظهرت لك فعلًا. إذا كانت النتيجة 0% في الاختبار المصغّر، فهذا يعني أن عناصر التصحيح التدريبية لم تظهر في الإجابات التي كتبتها — ويمكن مراجعتها في سجل الأدلة.</div><div class="metricGrid">'+metrics+'<div class="metric"><div class="metricHead"><span>الاحتفاظ المؤجل</span><span>لم يُقاس بعد</span></div><div class="reliability">يُقاس في مراجعة لاحقة بعد مرور وقت فعلي، وليس في جلسة البداية.</div></div></div></div><div class="pathcard"><div class="kicker" style="color:#e8c986">مسارك المقترح</div><h2>'+esc(info.title)+'</h2><p>'+esc(info.why)+'</p>'+info.steps.map(function(s,i){return'<div class="pathstep"><b>'+(i+1)+'.</b> '+esc(s)+'</div>';}).join("")+'<div class="actions"><button class="btn gold" id="enterToday">ابدأ مسار اليوم</button></div></div></section>';
 }
 function stats(){
   return '<div class="statgrid"><div class="stat"><strong>'+state.xp+'</strong><small>XP</small></div><div class="stat"><strong>'+state.streak+'</strong><small>Streak</small></div><div class="stat"><strong>'+state.diagnostic.attempts.length+'</strong><small>محاولات تشخيصية</small></div><div class="stat"><strong>'+state.activityHistory.length+'</strong><small>أنشطة تدريب</small></div></div>';
@@ -319,7 +345,7 @@ function stats(){
 function todayScreen(){
   var info=routeInfo();var due=dueReviews().length;
   var acts=routeActivities();
-  return '<section class="panel screen"><div class="screenhead"><div><div class="kicker">Today Path</div><h2>مسارك اليوم</h2><p class="small">'+esc(info.why)+'</p></div><span class="stepbadge">'+(due?due+" مراجعة مستحقة":"لا توجد مراجعات مستحقة")+'</span></div>'+stats()+'<div class="grid3" style="margin-top:14px">'+acts.map(activityCard).join("")+'<div class="activityCard"><div class="activityIcon">🎯</div><h3>تحدي اليوم</h3><p>سؤال واحد متغير يمنح XP إضافية، من غير Leaderboard عام في النسخة الأولى.</p><button class="btn primary" data-daily="1">ابدأ التحدي</button></div></div><div class="actions"><button class="btn ghost" data-nav="dashboard">اعرض لوحة التقدم</button><button class="btn ghost" data-nav="reviews">المراجعات المجدولة</button></div></section>';
+  return '<section class="panel screen"><div class="screenhead"><div><div class="kicker">مسار اليوم</div><h2>مسارك اليوم</h2><p class="small">'+esc(info.why)+'</p></div><span class="stepbadge">'+(due?due+" مراجعة مستحقة":"لا توجد مراجعات مستحقة")+'</span></div>'+stats()+'<div class="grid3" style="margin-top:14px">'+acts.map(activityCard).join("")+'<div class="activityCard"><div class="activityIcon">🎯</div><h3>تحدي اليوم</h3><p>سؤال واحد متغير يمنح XP إضافية، من غير Leaderboard عام في النسخة الأولى.</p><button class="btn primary" data-daily="1">ابدأ التحدي</button></div></div><div class="actions"><button class="btn ghost" data-nav="dashboard">اعرض لوحة التقدم</button><button class="btn ghost" data-nav="reviews">المراجعات المجدولة</button></div></section>';
 }
 function routeActivities(){
   if(state.route==="FOUNDATION")return["MISSING_ELEMENT","CASE_DETECTIVE"];
@@ -333,7 +359,7 @@ function activityCard(id){
 function activitiesScreen(){
   var recent=state.activityHistory.slice().reverse().slice(0,6);
   var history=recent.length?'<h3 style="margin-top:20px">آخر التدريبات</h3><div class="timeline">'+recent.map(function(x){var a=C.activities[x.activity];return '<div class="timelineItem"><b>'+esc(a?a.title:x.activity)+' • '+Math.round(x.raw*100)+'%</b><div class="small">'+esc(x.topic)+' • '+new Date(x.at).toLocaleString("ar-EG",{dateStyle:"medium",timeStyle:"short"})+'</div></div>';}).join("")+'</div>':'<div class="empty" style="margin-top:18px">لم تنفذ تدريبًا بعد. أول نشاط مكتمل سيظهر هنا.</div>';
-  return '<section class="panel screen"><div class="screenhead"><div><div class="kicker">Practice Lab</div><h2>الأنشطة الأربعة الأساسية</h2></div><span class="stepbadge">Mastery ≠ XP</span></div><div class="info">النقاط والتحفيز منفصلان عن الإتقان. كسب XP لا يرفع Mastery وحده.</div><div class="grid2">'+Object.keys(C.activities).map(activityCard).join("")+'</div>'+history+'</section>';
+  return '<section class="panel screen"><div class="screenhead"><div><div class="kicker">التدريبات</div><h2>الأنشطة الأربعة الأساسية</h2></div><span class="stepbadge">النقاط ≠ الإتقان</span></div><div class="info">النقاط والتحفيز منفصلان عن الإتقان. كسب XP لا يرفع Mastery وحده.</div><div class="grid2">'+Object.keys(C.activities).map(activityCard).join("")+'</div>'+history+'</section>';
 }
 function startActivity(id,daily){
   var a=C.activities[id];if(!a)return;
@@ -364,7 +390,7 @@ function activityPlay(){
 function dueReviews(){var now=Date.now();return state.reviews.filter(function(r){return new Date(r.due).getTime()<=now;});}
 function reviewsScreen(){
   var due=dueReviews();var upcoming=state.reviews.filter(function(r){return new Date(r.due).getTime()>Date.now();}).sort(function(a,b){return new Date(a.due)-new Date(b.due);});
-  var html='<section class="panel screen"><div class="screenhead"><div><div class="kicker">Spaced Review • SM-2</div><h2>المراجعات المجدولة</h2></div><span class="stepbadge">'+due.length+' مستحقة</span></div>';
+  var html='<section class="panel screen"><div class="screenhead"><div><div class="kicker">المراجعة الذكية</div><h2>المراجعات المجدولة</h2></div><span class="stepbadge">'+due.length+' مستحقة</span></div>';
   if(due.length)html+='<div class="grid2">'+due.map(function(r){return'<div class="activityCard"><h3>'+esc(r.topic)+'</h3><p>موعد المراجعة حلّ الآن. الإتقان المؤجل لن يتحدث قبل محاولة فعلية.</p><button class="btn primary" data-review="'+r.id+'">راجع الآن</button></div>';}).join("")+'</div>';
   else html+='<div class="empty">لا توجد مراجعات مستحقة الآن. أول مراجعاتك ستظهر في موعدها بدل اختبار الاحتفاظ فورًا.</div>';
   if(upcoming.length)html+='<h3 style="margin-top:18px">القادم</h3><div class="timeline">'+upcoming.slice(0,6).map(function(r){return'<div class="timelineItem"><b>'+esc(r.topic)+'</b><div class="small">'+new Date(r.due).toLocaleString("ar-EG",{dateStyle:"medium",timeStyle:"short"})+' • interval '+r.interval+' يوم</div></div>';}).join("")+'</div>';
@@ -395,7 +421,7 @@ function renderGenericItem(it,prefix){
 function dashboardScreen(){
   allMastery();var dims=["recall","understanding","legal_precision","transfer","exam_execution"];var info=routeInfo();
   var attempts=state.diagnostic.attempts.slice().reverse().slice(0,6);
-  return '<section class="panel screen"><div class="screenhead"><div><div class="kicker">Course Dashboard</div><h2>'+esc(course().code)+' — '+esc(course().title_ar)+'</h2></div><span class="stepbadge">'+esc(info.title)+'</span></div>'+stats()+'<div class="metricGrid" style="margin-top:14px">'+dims.map(function(d){var m=state.mastery[d];var v=m?m.value:0;return'<div class="metric"><div class="metricHead"><span>'+dimLabel(d)+'</span><span>'+(m?pct(v):"—")+'</span></div><div class="bar"><span style="width:'+v+'%"></span></div><div class="reliability">'+(m?relLabel(m.reliability)+" • "+m.count+" دليل":"بانتظار الأدلة")+'</div></div>';}).join("")+'<div class="metric"><div class="metricHead"><span>الاحتفاظ المؤجل</span><span>'+(state.mastery.retention?pct(state.mastery.retention.value):"Pending")+'</span></div><div class="bar"><span style="width:'+(state.mastery.retention?state.mastery.retention.value:0)+'%"></span></div><div class="reliability">يتحدث فقط من المراجعات المؤجلة.</div></div></div><div class="grid2" style="margin-top:16px"><div><h3>Flags الحالية</h3><div class="badges">'+(state.flags.length?state.flags.map(function(f){return'<span class="badgeitem">'+esc(f)+'</span>';}).join(""):'<span class="small">لا توجد إشارات خاصة حاليًا.</span>')+'</div><h3 style="margin-top:18px">الشارات</h3><div class="badges">'+(state.badges.length?state.badges.map(function(f){return'<span class="badgeitem">🏅 '+esc(f)+'</span>';}).join(""):'<span class="small">ستظهر شارات محدودة مع الاستمرار.</span>')+'</div></div><div><h3>آخر الأدلة</h3><div class="timeline">'+attempts.map(function(a){return'<div class="timelineItem"><b>'+esc(dimLabel(a.dimension))+' • '+Math.round(a.evidence_value)+'</b><div class="small">'+esc(a.topic_id)+' • '+esc(a.action)+'</div></div>';}).join("")+'</div></div></div><div class="notice" style="margin-top:18px"><b>Exam Readiness هنا مؤشر تدريبي، وليس توقعًا رسميًا لدرجتك.</b> لاحقًا تتم معايرته ببيانات حقيقية وبعد موافقة المستخدم على إدخال نتيجته الفعلية.</div></section>';
+  return '<section class="panel screen"><div class="screenhead"><div><div class="kicker">لوحة التقدم</div><h2>'+esc(course().code)+' — '+esc(course().title_ar)+'</h2></div><span class="stepbadge">'+esc(info.title)+'</span></div>'+stats()+'<div class="metricGrid" style="margin-top:14px">'+dims.map(function(d){var m=state.mastery[d];var v=m?m.value:0;return'<div class="metric"><div class="metricHead"><span>'+dimLabel(d)+'</span><span>'+(m?pct(v):"—")+'</span></div><div class="bar"><span style="width:'+v+'%"></span></div><div class="reliability">'+(m?relLabel(m.reliability)+" • "+m.count+" دليل":"بانتظار الأدلة")+'</div></div>';}).join("")+'<div class="metric"><div class="metricHead"><span>الاحتفاظ المؤجل</span><span>'+(state.mastery.retention?pct(state.mastery.retention.value):"Pending")+'</span></div><div class="bar"><span style="width:'+(state.mastery.retention?state.mastery.retention.value:0)+'%"></span></div><div class="reliability">يتحدث فقط من المراجعات المؤجلة.</div></div></div><div class="grid2" style="margin-top:16px"><div><h3>ملاحظات التعلّم</h3><div class="badges">'+(state.flags.length?state.flags.map(function(f){return'<span class="badgeitem">'+esc(f)+'</span>';}).join(""):'<span class="small">لا توجد إشارات خاصة حاليًا.</span>')+'</div><h3 style="margin-top:18px">الشارات</h3><div class="badges">'+(state.badges.length?state.badges.map(function(f){return'<span class="badgeitem">🏅 '+esc(f)+'</span>';}).join(""):'<span class="small">ستظهر شارات محدودة مع الاستمرار.</span>')+'</div></div><div><h3>آخر الأدلة</h3><div class="timeline">'+attempts.map(function(a){return'<div class="timelineItem"><b>'+esc(dimLabel(a.dimension))+' • '+Math.round(a.evidence_value)+'</b><div class="small">'+esc(a.topic_id)+' • '+esc(a.action)+'</div></div>';}).join("")+'</div></div></div><div class="notice" style="margin-top:18px"><b>درجة الاختبار المصغّر تدريبية وليست درجة جامعية.</b> وهي مرتبطة بالأسئلة الامتحانية التي ظهرت لك وعناصر التصحيح الموضحة بعد كل إجابة.</div></section>';
 }
 function aboutScreen(){
   var c=course();
