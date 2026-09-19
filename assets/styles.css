@@ -329,3 +329,22 @@ input[type=password]:focus{border-color:var(--maroon);box-shadow:0 0 0 3px rgba(
 @keyframes cardFloat{from{transform:translateY(0)}to{transform:translateY(-8px)}}
 @media(max-width:1050px){.authExperience{grid-template-columns:1fr}.authHeroPanel{min-height:540px}.authFormPanel{box-shadow:none}.adminWorkspace{grid-template-columns:1fr}.adminSidebar{display:none}.kpiGrid{grid-template-columns:1fr 1fr}.adminColumns,.adminLower{grid-template-columns:1fr}}
 @media(max-width:680px){.authHeroPanel{padding:24px 20px;min-height:500px}.heroCopy{margin-top:34px}.heroCopy h1{font-size:32px}.authFormPanel{padding:30px 20px}.visualFrame{height:220px}.kpiGrid{grid-template-columns:1fr 1fr}.adminMain{padding:18px 12px}.adminTop{display:block}.adminTop .btn{margin-top:10px}.credentialGrid{grid-template-columns:1fr!important}.prototypeBanner{display:block}.prototypeBanner b{display:block;margin-bottom:4px}}
+
+
+/* v6.2 — cinematic access screen */
+@media(min-width:1051px){
+  .authExperience{display:block;min-height:690px;background:
+    linear-gradient(90deg,rgba(9,18,32,.88) 0%,rgba(9,18,32,.58) 43%,rgba(93,16,39,.22) 100%),
+    url("visual-study.svg") center/cover no-repeat}
+  .authExperience .authBackdrop{z-index:0}
+  .authHeroPanel{min-height:690px;padding:38px 500px 34px 42px;background:transparent!important}
+  .authHeroPanel .heroCopy{margin-top:86px;max-width:650px}
+  .authHeroPanel .heroCopy h1{font-size:50px;text-shadow:0 4px 24px rgba(0,0,0,.25)}
+  .authHeroPanel .heroCopy p{font-size:16px;max-width:590px}
+  .authHeroPanel .visualFrame{position:absolute;right:34px;bottom:34px;width:420px;height:190px;margin:0;background:rgba(255,255,255,.05);backdrop-filter:blur(7px);border-color:rgba(255,255,255,.15)}
+  .authHeroPanel .visualFrame img{opacity:.48}
+  .authFormPanel{position:absolute;z-index:4;left:38px;top:50%;transform:translateY(-50%);width:405px;max-height:610px;overflow:auto;border-radius:26px;background:rgba(255,255,255,.95);backdrop-filter:blur(18px);box-shadow:0 28px 90px rgba(5,12,25,.34);padding:34px 32px;border:1px solid rgba(255,255,255,.62)}
+  .authFormPanel:before{content:"";position:absolute;inset:0 0 auto 0;height:5px;border-radius:26px 26px 0 0;background:linear-gradient(90deg,var(--maroon),var(--gold))}
+  .loginMode .authHeroPanel{padding-right:500px}
+  .loginMode .authHeroPanel .visualFrame{width:390px;height:180px}
+}
