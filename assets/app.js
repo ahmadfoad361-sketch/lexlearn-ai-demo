@@ -179,6 +179,72 @@ function routeInfo(){
   return map[(cs()&&cs().route)||"BALANCED"];
 }
 
+
+function growthGoals(){
+  var s=cs();if(!s)return[];
+  var defs={
+    recall:{icon:"🧠",title:"ثبّت الأساس",why:"نقوّي استدعاء المفهوم بدون الاعتماد على رؤية الإجابة.",next:"استرجاع قصير ثم مثال مباشر"},
+    understanding:{icon:"💡",title:"افهم العلاقة بين المفاهيم",why:"نربط القاعدة بمكانها داخل الخريطة القانونية بدل الحفظ المنفصل.",next:"شرح دقيقتين + مقارنة"},
+    legal_precision:{icon:"🔍",title:"ارفع الدقة القانونية",why:"نستهدف الخلط بين المصطلحات والبدائل القانونية المتقاربة.",next:"تمييز زوج مفاهيم + سؤال دقيق"},
+    transfer:{icon:"🕵️",title:"اكتشف القاعدة من الوقائع",why:"ننقل المعرفة من السؤال المباشر إلى واقعة جديدة لا تذكر اسم الباب.",next:"قضية قصيرة + غيّر واقعة واحدة"},
+    exam_execution:{icon:"✍️",title:"ابنِ إجابة امتحانية",why:"نحوّل المعرفة إلى إجابة منظمة تغطي العناصر المطلوبة.",next:"خطة إجابة + Rubric + تحسين"}
+  };
+  var dims=Object.keys(defs).map(function(d){return {d:d,v:s.mastery[d]?s.mastery[d].value:-1};})
+    .filter(function(x){return x.v>=0;}).sort(function(a,b){return a.v-b.v;});
+  var goals=dims.slice(0,3).map(function(x){var z=defs[x.d];return {dimension:x.d,icon:z.icon,title:z.title,why:z.why,next:z.next,score:Math.round(x.v)};});
+  if(goals.length<3){
+    ["understanding","legal_precision","transfer"].forEach(function(d){if(goals.length<3&&!goals.some(function(g){return g.dimension===d;})){var z=defs[d];goals.push({dimension:d,icon:z.icon,title:z.title,why:z.why,next:z.next,score:null});}});
+  }
+  return goals;
+}
+function errorMemory(limit){
+  var s=cs();if(!s)return[];
+  var out=[];
+  s.groupResults.forEach(function(g){
+    (g.items||[]).forEach(function(x){
+      if(x.score>=.999)return;
+      var it=findItem(x.itemId);if(!it)return;
+      var type="فجوة معرفية";
+      if(g.confidence===3&&x.score<.5)type="تصور خاطئ بثقة عالية";
+      else if(it.dimension==="transfer")type="صعوبة في التطبيق على الوقائع";
+      else if(it.dimension==="legal_precision")type="خلط بين مفاهيم متقاربة";
+      else if(it.dimension==="exam_execution")type="نقص في بناء الإجابة";
+      else if(it.dimension==="understanding")type="فهم غير مكتمل";
+      out.push({item:it,score:x.score,type:type,at:g.at,confidence:g.confidence});
+    });
+  });
+  return out.reverse().slice(0,limit||6);
+}
+function chosenMicroLesson(){
+  var c=course(),s=cs();if(!c||!c.microLessons||!c.microLessons.length)return null;
+  var goals=growthGoals();
+  for(var i=0;i<goals.length;i++){
+    var hit=c.microLessons.find(function(l){return l.dimension===goals[i].dimension;});
+    if(hit)return hit;
+  }
+  return c.microLessons[(s.activityHistory.length||0)%c.microLessons.length];
+}
+function masteryLadder(){
+  var s=cs();
+  var avg=0,n=0;Object.keys(s.mastery||{}).forEach(function(k){avg+=s.mastery[k].value;n++;});avg=n?avg/n:0;
+  return [
+    {icon:"📚",title:"أعرفه",done:avg>=35},
+    {icon:"🔍",title:"أميّزه",done:(s.mastery.legal_precision&&s.mastery.legal_precision.value>=55)||avg>=50},
+    {icon:"💬",title:"أشرحه",done:(s.mastery.understanding&&s.mastery.understanding.value>=65)||avg>=60},
+    {icon:"🕵️",title:"أكتشفه في واقعة",done:s.mastery.transfer&&s.mastery.transfer.value>=60},
+    {icon:"⚖️",title:"أطبقه",done:s.mastery.transfer&&s.mastery.transfer.value>=72},
+    {icon:"✍️",title:"أكتبه امتحانيًا",done:s.mastery.exam_execution&&s.mastery.exam_execution.value>=70}
+  ];
+}
+function assignedCourseIds(){
+  var a=activeAccount();return a&&a.role==="student"&&Array.isArray(a.courseIds)&&a.courseIds.length?a.courseIds:C.courses.map(function(x){return x.id;});
+}
+function answerDisplay(item,answer){
+  if(answer==="__DONT_KNOW__")return"لا أعرف";
+  if(item&&item.type==="mcq"){var o=(item.options||[]).find(function(z){return z.id===answer;});return o?o.text:String(answer||"");}
+  return String(answer||"");
+}
+
 function findItem(id){
   for(var i=0;i<C.courses.length;i++){
     for(var g=0;g<C.courses[i].groups.length;g++){
@@ -198,18 +264,62 @@ function journey(stage){
   }).join("")+'</div>';
 }
 function header(){
-  var s=cs();var nav="";
-  if(s&&s.completed){
-    nav='<button class="iconbtn" data-nav="today">مسار اليوم</button><button class="iconbtn" data-nav="activities">التدريبات</button><button class="iconbtn" data-nav="reviews">المراجعات</button><button class="iconbtn" data-nav="dashboard">لوحة التقدم</button><button class="iconbtn" data-nav="course">تغيير المقرر</button>';
+  var a=activeAccount(),s=a&&a.role==="student"?cs():null,nav="";
+  if(a&&a.role==="admin"){
+    nav='<button class="iconbtn" data-admin-home="1">👥 لوحة الإدارة</button><span class="pill">مدير المنصة</span><button class="iconbtn" id="logoutBtn">خروج</button>';
+  }else if(a&&a.role==="student"){
+    if(s&&s.completed){
+      nav='<button class="iconbtn" data-nav="today">🎯 مسار اليوم</button><button class="iconbtn" data-nav="activities">🧩 التدريبات</button><button class="iconbtn" data-nav="reviews">🔄 المراجعات</button><button class="iconbtn" data-nav="dashboard">📈 تقدمي</button><button class="iconbtn" data-nav="course">📚 المقررات</button>';
+    }
+    nav+='<span class="pill">'+esc(a.name)+'</span>'+(s&&s.completed?'<span class="pill gold">⭐ '+s.xp+' XP</span><span class="pill">🔥 '+s.streak+'</span>':'')+'<button class="iconbtn" id="logoutBtn">خروج</button>';
   }
-  return '<header class="topbar"><div class="topin"><div class="brand"><div class="logo">Lx</div><div class="brandtext"><b>LexLearn AI</b><small>طلاب القانون • تعلم تكيفي</small></div></div><div class="topactions">'+nav+(s&&s.completed?'<span class="pill gold">⭐ '+s.xp+' XP</span><span class="pill">🔥 '+s.streak+'</span>':'')+'</div></div></header>';
+  return '<header class="topbar"><div class="topin"><div class="brand"><div class="logo">Lx</div><div class="brandtext"><b>LexLearn AI</b><small>تعلم قانوني ذكي • مسار يتكيف معك</small></div></div><div class="topactions">'+nav+'</div></div></header>';
+}
+
+function ownerSetupScreen(){
+  return '<section class="authshell"><div class="authvisual"><img src="assets/visual-study.svg" alt="تعلم قانوني ذكي"><div><span class="eyebrow">LexLearn AI</span><h1>ابدأ بمنصة لها عقل تعليمي… ولوحة تحكم حقيقية في الطريق</h1><p>أنشئ حساب مدير النسخة التجريبية على هذا الجهاز، ثم أنشئ حسابات الطلاب بنفسك.</p></div></div><div class="panel authcard"><div class="kicker">إعداد أول مرة</div><h2>إنشاء حساب مدير المنصة</h2><p class="small">هذه النسخة تستخدم تخزينًا محليًا للعرض والتجربة فقط. قبل الـPilot الحقيقي سننقل الحسابات إلى Backend آمن.</p><label class="fieldlabel">الاسم</label><input id="ownerName" type="text" placeholder="مثال: مدير LexLearn"><label class="fieldlabel">اسم المستخدم</label><input id="ownerUser" type="text" placeholder="admin"><label class="fieldlabel">كلمة المرور</label><input id="ownerPass" type="password" placeholder="اختر كلمة مرور للتجربة"><button class="btn primary fullbtn" id="createOwner">إنشاء لوحة التحكم</button></div></section>';
+}
+function loginScreen(){
+  return '<section class="authshell"><div class="authvisual"><img src="assets/visual-study.svg" alt="طلاب قانون يتعلمون"><div><span class="eyebrow">تعلم أقل مللًا • فهم أعمق</span><h1>كل طالب له مسار… وكل تقدم له دليل.</h1><p>جلسات قصيرة، حالات قانونية، مراجعة ذكية، ولوحة تقدم شخصية.</p><div class="visualchips"><span>🧠 فهم</span><span>⚖️ تطبيق</span><span>🕵️ قضايا</span><span>✍️ امتحان</span></div></div></div><div class="panel authcard"><div class="kicker">تسجيل الدخول</div><h2>أهلًا بك</h2><label class="fieldlabel">اسم المستخدم</label><input id="loginUser" type="text" autocomplete="username" placeholder="اسم المستخدم"><label class="fieldlabel">كلمة المرور</label><input id="loginPass" type="password" autocomplete="current-password" placeholder="••••••••"><button class="btn primary fullbtn" id="loginBtn">دخول</button><div class="sourcebox">حساب الطالب يرى بياناته فقط داخل الواجهة. العزل الأمني الحقيقي بين الحسابات يتطلب Backend وقواعد صلاحيات قبل الاستخدام الفعلي مع الطلاب.</div></div></section>';
+}
+function students(){
+  return auth.accounts.filter(function(x){return x.role==="student";});
+}
+function studentSummary(acc){
+  var st=readStudentState(acc.id),scores=[],completed=0,groups=0,activities=0,last=null,needs=false;
+  Object.keys(st.courses||{}).forEach(function(cid){
+    var csx=st.courses[cid];if(csx.completed)completed++;groups+=(csx.groupResults||[]).length;activities+=(csx.activityHistory||[]).length;
+    Object.keys(csx.mastery||{}).forEach(function(d){scores.push(csx.mastery[d].value);if(csx.mastery[d].value<55)needs=true;});
+    (csx.groupResults||[]).forEach(function(g){if(!last||new Date(g.at)>new Date(last))last=g.at;});
+  });
+  var avg=scores.length?Math.round(scores.reduce(function(a,b){return a+b;},0)/scores.length):null;
+  return {state:st,avg:avg,completed:completed,groups:groups,activities:activities,last:last,needs:needs};
+}
+function adminStudentDetail(acc){
+  var sum=studentSummary(acc),st=sum.state;
+  var courseBlocks=C.courses.filter(function(c){return (acc.courseIds||[]).indexOf(c.id)>=0;}).map(function(c){
+    var sx=st.courses[c.id]||freshCourseState();
+    var dims=["recall","understanding","legal_precision","transfer","exam_execution"];
+    var attempts=[];
+    (sx.groupResults||[]).forEach(function(g){(g.items||[]).forEach(function(x){var it=findItem(x.itemId);attempts.push({g:g,it:it,x:x});});});
+    return '<div class="adminCourse"><div class="screenhead"><div><span class="coursecode">'+esc(c.code)+'</span><h3>'+esc(c.title_ar)+'</h3></div><span class="stepbadge">'+(sx.completed?"تم التشخيص":"لم يكتمل التشخيص")+'</span></div><div class="metricGrid">'+dims.map(function(d){var m=sx.mastery[d];return '<div class="metric"><div class="metricHead"><span>'+dimensionLabel(d)+'</span><span>'+(m?Math.round(m.value)+"%":"لم يُقاس")+'</span></div>'+(m?'<div class="bar"><span style="width:'+m.value+'%"></span></div>':'')+'</div>';}).join("")+'</div><h3 class="sectiontitle">المحاولات والأسئلة</h3>'+(attempts.length?'<div class="attemptList">'+attempts.map(function(a){return '<div class="attemptRow"><div><b>'+esc(a.it?a.it.prompt:a.x.itemId)+'</b><small>'+esc(a.g.title)+' • الثقة: '+confidenceLabel(a.g.confidence)+'</small><p>'+esc(answerDisplay(a.it,a.x.answer))+'</p></div><strong>'+Math.round(a.x.score*100)+'%</strong></div>';}).join("")+'</div>':'<div class="empty">لا توجد محاولات بعد.</div>')+'</div>';
+  }).join("");
+  return '<section class="panel screen adminShell"><div class="screenhead"><div><button class="btn ghost" data-admin-home="1">← كل الطلاب</button><div class="kicker" style="margin-top:12px">ملف الطالب</div><h2>'+esc(acc.name)+'</h2><p class="small">@'+esc(acc.username)+' • الحساب منشأ بواسطة مدير المنصة</p></div><button class="btn outline" data-export-student="'+acc.id+'">تصدير بيانات الطالب JSON</button></div><div class="statgrid"><div class="stat"><strong>'+(sum.avg==null?"—":sum.avg+"%")+'</strong><small>متوسط الأبعاد المقاسة</small></div><div class="stat"><strong>'+sum.completed+'</strong><small>مقررات مكتملة التشخيص</small></div><div class="stat"><strong>'+sum.groups+'</strong><small>مجموعات تشخيص</small></div><div class="stat"><strong>'+sum.activities+'</strong><small>تدريبات مكتملة</small></div></div><div class="adminReset"><label class="fieldlabel">إعادة تعيين كلمة المرور</label><div class="inlineform"><input id="resetStudentPass" type="password" placeholder="كلمة مرور جديدة"><button class="btn secondary" data-reset-pass="'+acc.id+'">تحديث</button></div></div>'+courseBlocks+'</section>';
+}
+function adminScreen(){
+  if(ADMIN.selectedStudentId){var a=accountById(ADMIN.selectedStudentId);if(a)return adminStudentDetail(a);ADMIN.selectedStudentId=null;}
+  var list=students(),summaries=list.map(function(a){return {a:a,s:studentSummary(a)};});
+  var avgs=summaries.filter(function(x){return x.s.avg!=null;}).map(function(x){return x.s.avg;});
+  var overall=avgs.length?Math.round(avgs.reduce(function(a,b){return a+b;},0)/avgs.length):null;
+  return '<section class="screen adminShell"><div class="adminHero"><div><div class="kicker">لوحة تحكم المدير</div><h1>طلابك أمامك… من الصورة العامة إلى كل إجابة.</h1><p>أنشئ الحسابات، راقب التطور، وافتح تفاصيل أي طالب حتى مستوى السؤال والإجابة والثقة.</p></div><img src="assets/visual-study.svg" alt=""></div><div class="statgrid adminstats"><div class="stat"><strong>'+list.length+'</strong><small>طلاب</small></div><div class="stat"><strong>'+(overall==null?"—":overall+"%")+'</strong><small>متوسط الأداء المقاس</small></div><div class="stat"><strong>'+summaries.filter(function(x){return x.s.needs;}).length+'</strong><small>يحتاجون متابعة</small></div><div class="stat"><strong>'+summaries.reduce(function(n,x){return n+x.s.groups;},0)+'</strong><small>مجموعات مكتملة</small></div></div><div class="adminGrid"><div class="panel"><div class="screenhead"><div><div class="kicker">الحسابات</div><h2>الطلاب</h2></div></div>'+(list.length?'<div class="studentCards">'+summaries.map(function(x){return '<button class="studentCard" data-student-detail="'+x.a.id+'"><span class="avatar">'+esc((x.a.name||"ط").slice(0,1))+'</span><span class="studentMain"><b>'+esc(x.a.name)+'</b><small>@'+esc(x.a.username)+' • '+(x.s.avg==null?"لم يبدأ":x.s.avg+"% متوسط")+'</small></span><span class="statusdot '+(x.s.needs?"warn":"good")+'"></span></button>';}).join("")+'</div>':'<div class="empty">لسه ما فيش طلاب. أنشئ أول حساب من النموذج المجاور.</div>')+'</div><div class="panel"><div class="kicker">حساب جديد</div><h2>أضف طالبًا</h2><label class="fieldlabel">اسم الطالب</label><input id="studentName" type="text" placeholder="الاسم"><label class="fieldlabel">اسم المستخدم</label><input id="studentUser" type="text" placeholder="username"><label class="fieldlabel">كلمة المرور</label><input id="studentPass" type="password" placeholder="كلمة مرور مؤقتة"><div class="fieldlabel">المقررات المتاحة</div><div class="checkgrid">'+C.courses.map(function(cc){return '<label class="checkcard"><input type="checkbox" data-course-assign="'+cc.id+'" checked> <span><b>'+esc(cc.code)+'</b><small>'+esc(cc.title_ar)+'</small></span></label>';}).join("")+'</div><button class="btn primary fullbtn" id="createStudent">إنشاء حساب الطالب</button><div class="notice"><b>نسخة تجريبية:</b> كلمات المرور هنا محفوظة محليًا بصورة غير مناسبة للإطلاق الحقيقي. قبل الـPilot سنستخدم Auth آمن وقاعدة بيانات وصلاحيات Server-side.</div></div></div></section>';
 }
 
 function countryScreen(){
   return '<section class="panel screen onboarding">'+journey("country")+'<div class="screenhead"><div><div class="kicker">البداية</div><h2>اختر النظام القانوني</h2><p class="small">النسخة التجريبية الحالية مفعّلة لقطر.</p></div></div><div class="grid2"><div class="option clickable" data-country="QA"><span class="countryflag">🇶🇦</span><b>قطر</b><small>جامعة قطر — مقرران متاحان للتجربة.</small></div><div class="option disabled"><span class="countryflag">🇪🇬</span><b>مصر</b><small>قريبًا بعد مراجعة المحتوى المصري.</small></div></div></section>';
 }
 function courseScreen(){
-  var courses=C.courses.filter(function(x){return x.jurisdiction==="QA";});
+  var allowed=assignedCourseIds();
+  var courses=C.courses.filter(function(x){return x.jurisdiction==="QA"&&allowed.indexOf(x.id)>=0;});
   return '<section class="panel screen onboarding">'+journey("course")+'<div class="screenhead"><div><div class="kicker">اختيار المقرر</div><h2>ادخل المقرر الذي تريد العمل عليه</h2><p class="small">كل مقرر له تشخيصه وأسئلته ونتيجته ومساره المستقل.</p></div><span class="stepbadge">🇶🇦 جامعة قطر</span></div><div class="grid2">'+courses.map(function(c){
     var saved=state.courses[c.id];
     var progress=saved&&saved.completed?'تم التشخيص • '+(saved.groupResults.length)+' مجموعات':'5 مستويات: Easy → Medium → Difficult → Transfer → Exam';
