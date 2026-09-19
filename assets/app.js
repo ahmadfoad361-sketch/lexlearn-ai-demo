@@ -587,6 +587,8 @@ function bind(){
   var sg=document.getElementById("submitGroup");if(sg)sg.onclick=submitGroup;
   document.querySelectorAll("[data-groupconf]").forEach(function(el){el.onclick=function(){SESSION.confidence=Number(el.getAttribute("data-groupconf"));render();};});
   var ng=document.getElementById("nextGroup");if(ng)ng.onclick=commitGroup;
+  var ct=document.getElementById("continueTransition");if(ct)ct.onclick=function(){go("diagnostic_group");};
+  if(state.screen==="transition"&&SESSION.transition){setTimeout(function(){if(state.screen==="transition")go("diagnostic_group");},2200);}
   var et=document.getElementById("enterTraining");if(et)et.onclick=function(){go("today");};
 
   document.querySelectorAll("[data-activity]").forEach(function(el){el.onclick=function(){startActivity(el.getAttribute("data-activity"),false);};});
