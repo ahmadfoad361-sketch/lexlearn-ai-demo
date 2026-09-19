@@ -150,9 +150,9 @@ window.LEX_CONTENT = {
         {id:"101-l3",icon:"⏳",title:"غيّر الزمن تتغيّر المسألة",dimension:"transfer",minutes:4,topic:"تطبيق القانون وتفسيره",explain:"إذا كان النزاع عن توقيت الواقعة بالنسبة إلى نفاذ النص، فالمشكلة زمنية. أما إذا اتفق الجميع على النفاذ واختلفوا على معنى اللفظ، فالمشكلة تفسيرية.",example:"واقعة حدثت قبل نفاذ تشريع جديد ≠ خلاف حول معنى كلمة داخل تشريع نافذ.",challenge:"غيّر واقعة واحدة في المثال بحيث تتحول المشكلة من زمنية إلى تفسيرية."}
       ],
       activities:[
-        {id:"101-a1",kind:"MISSING_ELEMENT",title:"العنصر الناقص",icon:"🧩",prompt:"يدرس العرف بأركانه المادي و____.",answer:"المعنوي",accepted:["المعنوي","معنوي"],topic:"العرف"},
-        {id:"101-a2",kind:"CHANGE_ONE_FACT",title:"غيّر واقعة واحدة",icon:"🔁",prompt:"كان الخلاف على معنى النص، ثم تغيّر وأصبح على تاريخ سريانه. أي موضوع أصبح الأهم؟",options:[{text:"تطبيق القانون من حيث الزمان",score:1},{text:"تفسير القانون",score:0},{text:"أشخاص الحق",score:0}],topic:"تطبيق القانون"},
-        {id:"101-a3",kind:"CASE_DETECTIVE",title:"محقق القضية",icon:"🕵️",prompt:"النزاع عن كيان يريد اكتساب حق قانوني. أي باب تبحث أولًا؟",options:[{text:"أشخاص الحق",score:1},{text:"محل الحق",score:0},{text:"إلغاء القانون",score:0}],topic:"أشخاص الحق"}
+        {id:"101-a1",kind:"MISSING_ELEMENT",targetDimensions:["recall","legal_precision"],title:"العنصر الناقص",icon:"🧩",prompt:"يدرس العرف بأركانه المادي و____.",answer:"المعنوي",accepted:["المعنوي","معنوي"],topic:"العرف"},
+        {id:"101-a2",kind:"CHANGE_ONE_FACT",targetDimensions:["transfer","understanding"],title:"غيّر واقعة واحدة",icon:"🔁",prompt:"كان الخلاف على معنى النص، ثم تغيّر وأصبح على تاريخ سريانه. أي موضوع أصبح الأهم؟",options:[{text:"تطبيق القانون من حيث الزمان",score:1},{text:"تفسير القانون",score:0},{text:"أشخاص الحق",score:0}],topic:"تطبيق القانون"},
+        {id:"101-a3",kind:"CASE_DETECTIVE",targetDimensions:["transfer","legal_precision"],title:"محقق القضية",icon:"🕵️",prompt:"النزاع عن كيان يريد اكتساب حق قانوني. أي باب تبحث أولًا؟",options:[{text:"أشخاص الحق",score:1},{text:"محل الحق",score:0},{text:"إلغاء القانون",score:0}],topic:"أشخاص الحق"}
       ]
     },
 
@@ -270,9 +270,9 @@ window.LEX_CONTENT = {
         {id:"213-l3",icon:"🕵️",title:"اكتشف المصدر من الواقعة",dimension:"transfer",minutes:4,topic:"التطبيق على الوقائع",explain:"في السؤال التطبيقي لا تنتظر أن يذكر لك اسم المصدر. التقط الواقعة الحاسمة: إعلان مكافأة، إضرار بغير عقد، منفعة بلا سند، أو تدخل نافع دون تكليف.",example:"دفع مبلغ غير مستحق يوجهك إلى رد غير المستحق، بينما القيام بعمل نافع لشخص دون تكليف يفتح باب الفضالة.",challenge:"ما الكلمة أو الواقعة الحاسمة التي غيّرت التكييف في كل مثال؟"}
       ],
       activities:[
-        {id:"213-a1",kind:"MISSING_ELEMENT",title:"العنصر الناقص",icon:"🧩",prompt:"من تطبيقات الإرادة المنفردة في وصف المقرر: الوعد ب____.",answer:"جائزة",accepted:["جائزة","الجائزة"],topic:"الإرادة المنفردة"},
-        {id:"213-a2",kind:"CHANGE_ONE_FACT",title:"غيّر واقعة واحدة",icon:"🔁",prompt:"لو اختفت العلاقة العقدية وبقي فعل ضار تسبب في ضرر، أي مسار يصبح أقرب؟",options:[{text:"المسؤولية التقصيرية",score:1},{text:"المسؤولية العقدية",score:0},{text:"الإرادة المنفردة",score:0}],topic:"الفعل الضار"},
-        {id:"213-a3",kind:"CASE_DETECTIVE",title:"محقق القضية",icon:"🕵️",prompt:"منفعة تحققت لشخص على حساب آخر دون عقد. أي موضوع تبدأ بفحصه؟",options:[{text:"الإثراء بلا سبب",score:1},{text:"عيوب الإرادة",score:0},{text:"المسؤولية العقدية",score:0}],topic:"الإثراء بلا سبب"}
+        {id:"213-a1",kind:"MISSING_ELEMENT",targetDimensions:["recall","legal_precision"],title:"العنصر الناقص",icon:"🧩",prompt:"من تطبيقات الإرادة المنفردة في وصف المقرر: الوعد ب____.",answer:"جائزة",accepted:["جائزة","الجائزة"],topic:"الإرادة المنفردة"},
+        {id:"213-a2",kind:"CHANGE_ONE_FACT",targetDimensions:["transfer","understanding"],title:"غيّر واقعة واحدة",icon:"🔁",prompt:"لو اختفت العلاقة العقدية وبقي فعل ضار تسبب في ضرر، أي مسار يصبح أقرب؟",options:[{text:"المسؤولية التقصيرية",score:1},{text:"المسؤولية العقدية",score:0},{text:"الإرادة المنفردة",score:0}],topic:"الفعل الضار"},
+        {id:"213-a3",kind:"CASE_DETECTIVE",targetDimensions:["transfer","legal_precision"],title:"محقق القضية",icon:"🕵️",prompt:"منفعة تحققت لشخص على حساب آخر دون عقد. أي موضوع تبدأ بفحصه؟",options:[{text:"الإثراء بلا سبب",score:1},{text:"عيوب الإرادة",score:0},{text:"المسؤولية العقدية",score:0}],topic:"الإثراء بلا سبب"}
       ]
     }
   ]
