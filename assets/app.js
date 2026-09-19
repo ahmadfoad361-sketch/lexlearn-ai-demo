@@ -497,18 +497,24 @@ function dashboardScreen(){
 }
 function render(){
   var html=header()+'<main class="app">';
-  if(state.screen==="country")html+=countryScreen();
-  else if(state.screen==="course")html+=courseScreen();
-  else if(state.screen==="diagnostic_intro")html+=diagnosticIntro();
-  else if(state.screen==="diagnostic_group")html+=groupScreen();
-  else if(state.screen==="results")html+=resultsScreen();
-  else if(state.screen==="today")html+=todayScreen();
-  else if(state.screen==="activities")html+=activitiesScreen();
-  else if(state.screen==="activity_play")html+=activityPlay();
-  else if(state.screen==="reviews")html+=reviewsScreen();
-  else if(state.screen==="dashboard")html+=dashboardScreen();
-  else html+=countryScreen();
-  html+='</main><div class="footer">LexLearn AI • Student Edition • Prototype with local scoring</div>';
+  if(!hasAdmin())html+=ownerSetupScreen();
+  else if(!activeAccount())html+=loginScreen();
+  else if(activeAccount().role==="admin")html+=adminScreen();
+  else{
+    if(state.screen==="country")html+=countryScreen();
+    else if(state.screen==="course")html+=courseScreen();
+    else if(state.screen==="diagnostic_intro")html+=diagnosticIntro();
+    else if(state.screen==="diagnostic_group")html+=groupScreen();
+    else if(state.screen==="transition")html+=transitionScreen();
+    else if(state.screen==="results")html+=resultsScreen();
+    else if(state.screen==="today")html+=todayScreen();
+    else if(state.screen==="activities")html+=activitiesScreen();
+    else if(state.screen==="activity_play")html+=activityPlay();
+    else if(state.screen==="reviews")html+=reviewsScreen();
+    else if(state.screen==="dashboard")html+=dashboardScreen();
+    else html+=countryScreen();
+  }
+  html+='</main><div class="footer">LexLearn AI • Adaptive Legal Learning • v6 Prototype</div>';
   APP.innerHTML=html;bind();
 }
 function bind(){
