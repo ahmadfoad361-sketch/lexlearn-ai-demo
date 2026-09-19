@@ -268,21 +268,11 @@ function completedPathCount(){
 }
 
 function growthGoals(){
-  var s=cs();if(!s)return[];
-  var defs={
-    recall:{icon:"🧠",title:"ثبّت الأساس",why:"نقوّي استدعاء المفهوم بدون الاعتماد على رؤية الإجابة.",next:"استرجاع قصير ثم مثال مباشر"},
-    understanding:{icon:"💡",title:"افهم العلاقة بين المفاهيم",why:"نربط القاعدة بمكانها داخل الخريطة القانونية بدل الحفظ المنفصل.",next:"شرح دقيقتين + مقارنة"},
-    legal_precision:{icon:"🔍",title:"ارفع الدقة القانونية",why:"نستهدف الخلط بين المصطلحات والبدائل القانونية المتقاربة.",next:"تمييز زوج مفاهيم + سؤال دقيق"},
-    transfer:{icon:"🕵️",title:"اكتشف القاعدة من الوقائع",why:"ننقل المعرفة من السؤال المباشر إلى واقعة جديدة لا تذكر اسم الباب.",next:"قضية قصيرة + غيّر واقعة واحدة"},
-    exam_execution:{icon:"✍️",title:"ابنِ إجابة امتحانية",why:"نحوّل المعرفة إلى إجابة منظمة تغطي العناصر المطلوبة.",next:"خطة إجابة + Rubric + تحسين"}
-  };
-  var dims=Object.keys(defs).map(function(d){return {d:d,v:s.mastery[d]?s.mastery[d].value:-1};})
-    .filter(function(x){return x.v>=0;}).sort(function(a,b){return a.v-b.v;});
-  var goals=dims.slice(0,3).map(function(x){var z=defs[x.d];return {dimension:x.d,icon:z.icon,title:z.title,why:z.why,next:z.next,score:Math.round(x.v)};});
-  if(goals.length<3){
-    ["understanding","legal_precision","transfer"].forEach(function(d){if(goals.length<3&&!goals.some(function(g){return g.dimension===d;})){var z=defs[d];goals.push({dimension:d,icon:z.icon,title:z.title,why:z.why,next:z.next,score:null});}});
-  }
-  return goals;
+  var weaknesses=activeWeaknesses();
+  return weaknesses.slice(0,3).map(function(x){
+    var z=goalDefinition(x.d);
+    return {dimension:x.d,icon:z.icon,title:z.title,why:z.why,next:z.next,score:Math.round(x.v),stage:pathState(x.d).stage};
+  });
 }
 function errorMemory(limit){
   var s=cs();if(!s)return[];
@@ -303,13 +293,9 @@ function errorMemory(limit){
   return out.reverse().slice(0,limit||6);
 }
 function chosenMicroLesson(){
-  var c=course(),s=cs();if(!c||!c.microLessons||!c.microLessons.length)return null;
-  var goals=growthGoals();
-  for(var i=0;i<goals.length;i++){
-    var hit=c.microLessons.find(function(l){return l.dimension===goals[i].dimension;});
-    if(hit)return hit;
-  }
-  return c.microLessons[(s.activityHistory.length||0)%c.microLessons.length];
+  var c=course(),w=primaryWeakness();
+  if(!c||!w||!c.microLessons||!c.microLessons.length)return null;
+  return c.microLessons.find(function(l){return l.dimension===w.d;})||c.microLessons[0];
 }
 function masteryLadder(){
   var s=cs();
