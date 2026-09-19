@@ -221,3 +221,67 @@ code.inline{background:#f2f3f5;border-radius:6px;padding:2px 5px;font-size:11px}
   .qnumber{width:30px;height:30px}
   .coursecard p{min-height:0}
 }
+
+
+/* v6 — lively learning experience + role dashboards */
+input[type=password]{width:100%;border:1px solid #d8d2ca;background:#fff;color:var(--ink);border-radius:12px;padding:11px 12px;outline:none}
+input[type=password]:focus{border-color:var(--maroon);box-shadow:0 0 0 3px rgba(123,23,52,.08)}
+.fieldlabel{display:block;font-size:11px;font-weight:900;color:var(--navy);margin:11px 0 5px}
+.fullbtn{width:100%;margin-top:15px}
+.authshell{min-height:calc(100vh - 150px);display:grid;grid-template-columns:1.15fr .85fr;gap:18px;align-items:stretch;margin-top:22px}
+.authvisual{position:relative;overflow:hidden;border-radius:28px;min-height:520px;background:linear-gradient(135deg,var(--navy),var(--maroon));box-shadow:var(--shadow);color:#fff}
+.authvisual>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.64;transform:scale(1.02);animation:slowFloat 9s ease-in-out infinite alternate}
+.authvisual:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(8,18,34,.08),rgba(8,18,34,.75))}
+.authvisual>div{position:absolute;z-index:2;inset:auto 34px 34px 34px}
+.authvisual h1{color:#fff;max-width:680px;font-size:42px}
+.authvisual p{max-width:620px;color:#eef2f7}
+.eyebrow{display:inline-flex;padding:7px 11px;border-radius:999px;background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.18);font-size:11px;font-weight:900;margin-bottom:10px}
+.visualchips{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.visualchips span{padding:8px 10px;border-radius:999px;background:rgba(255,255,255,.11);font-size:11px;font-weight:800}
+.authcard{align-self:center;padding:28px}
+.adminShell{max-width:1180px;margin:18px auto 0}
+.adminHero,.resultHero,.dailyHero{display:grid;grid-template-columns:1.15fr .85fr;align-items:center;gap:20px;border-radius:24px;overflow:hidden;padding:24px;background:linear-gradient(135deg,#fff,#f7efe9);border:1px solid var(--line);box-shadow:var(--shadow);margin-bottom:16px}
+.adminHero img,.resultHero img,.dailyHero img{width:100%;height:220px;object-fit:cover;border-radius:18px;box-shadow:0 14px 32px rgba(19,35,61,.12)}
+.adminHero h1,.resultHero h1,.dailyHero h1{font-size:32px;margin-bottom:8px}
+.adminHero p,.resultHero p,.dailyHero p{color:var(--muted)}
+.adminstats{margin:14px 0}
+.adminGrid{display:grid;grid-template-columns:1.3fr .7fr;gap:16px}
+.studentCards{display:grid;gap:9px}
+.studentCard{width:100%;display:grid;grid-template-columns:44px 1fr 14px;align-items:center;gap:11px;text-align:right;border:1px solid var(--line);background:#fff;border-radius:14px;padding:11px;transition:.16s}
+.studentCard:hover{transform:translateY(-1px);border-color:#cda9b4;box-shadow:0 8px 18px rgba(123,23,52,.07)}
+.avatar{width:42px;height:42px;border-radius:13px;background:linear-gradient(135deg,var(--maroon),var(--gold));color:#fff;display:grid;place-items:center;font-weight:950;font-size:18px}
+.studentMain b,.studentMain small{display:block}.studentMain small{color:var(--muted);font-size:10px}
+.statusdot{width:10px;height:10px;border-radius:50%}.statusdot.good{background:var(--green)}.statusdot.warn{background:var(--amber)}
+.checkgrid{display:grid;gap:7px}
+.checkcard{display:flex;gap:9px;align-items:flex-start;border:1px solid var(--line);border-radius:12px;padding:9px;cursor:pointer}
+.checkcard b,.checkcard small{display:block}.checkcard small{font-size:10px;color:var(--muted)}
+.adminCourse{margin-top:18px;padding-top:16px;border-top:1px solid var(--line)}
+.sectiontitle{margin-top:18px}
+.attemptList{display:grid;gap:8px}
+.attemptRow{display:grid;grid-template-columns:1fr auto;gap:10px;border:1px solid var(--line);background:#fff;border-radius:13px;padding:11px}
+.attemptRow b{display:block;font-size:12px;color:var(--navy)}.attemptRow small{display:block;color:var(--muted);font-size:10px}.attemptRow p{font-size:11px;margin:5px 0;color:#586273}.attemptRow>strong{color:var(--maroon);font-size:17px}
+.adminReset{margin-top:16px;max-width:520px}.inlineform{display:grid;grid-template-columns:1fr auto;gap:8px}
+.goalGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:14px}
+.goalCard{position:relative;border:1px solid var(--line);border-radius:16px;padding:16px;background:linear-gradient(180deg,#fff,#fbfaf8);min-height:190px}
+.goalNum{position:absolute;top:12px;inset-inline-end:12px;width:26px;height:26px;border-radius:9px;background:#f1e7eb;color:var(--maroon);display:grid;place-items:center;font-weight:950}
+.goalIcon{font-size:30px}.goalCard h3{margin:4px 0}.goalCard p{font-size:12px;color:var(--muted)}.goalCard small{display:block;color:#72541c;background:#fff6e4;border-radius:9px;padding:8px}.miniScore{display:inline-block;font-size:10px;font-weight:900;color:var(--maroon);background:#f8eaf0;border-radius:999px;padding:4px 7px}
+.errorMemory{margin-top:18px;padding:16px;border-radius:16px;background:#f8f7fb;border:1px solid #dedbea}
+.errorMemory>h3{margin-bottom:2px}.errorChip{display:grid;grid-template-columns:210px 1fr;gap:10px;border-top:1px dashed #d7d5e0;padding:9px 0;font-size:11px}.errorChip b{color:var(--maroon)}.errorChip span{color:#56606d}
+.todayLayout{display:grid;grid-template-columns:1fr 300px;gap:16px;margin-top:16px}
+.microLesson{border-radius:20px;padding:20px;background:linear-gradient(145deg,#13233d,#1e3b61);color:#fff;box-shadow:var(--shadow)}
+.microLesson h2{color:#fff;margin-bottom:8px}.microLesson p{color:#dce5f0}
+.microTop{display:flex;gap:12px;align-items:center}.microIcon{width:54px;height:54px;border-radius:16px;background:rgba(255,255,255,.1);display:grid;place-items:center;font-size:28px}
+.workedExample,.microChallenge{display:grid;gap:4px;border-radius:13px;padding:11px;margin-top:10px;font-size:12px}.workedExample{background:rgba(255,255,255,.08)}.microChallenge{background:rgba(201,163,90,.18);border:1px solid rgba(201,163,90,.3)}
+.workedExample span,.microChallenge span{color:#eef2f7}
+.sessionSteps{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}.sessionSteps span{background:#fff;border:1px solid var(--line);border-radius:999px;padding:7px 10px;font-size:11px;font-weight:850}
+.coachRail{align-self:start;position:sticky;top:88px}.coachGoal{display:grid;grid-template-columns:34px 1fr;gap:8px;padding:10px 0;border-bottom:1px dashed var(--line)}.coachGoal>span{font-size:24px}.coachGoal b,.coachGoal small{display:block}.coachGoal small{font-size:10px;color:var(--muted)}.coachBreak{height:14px}.coachError{padding:9px;border-radius:11px;background:#fff5f1;margin-top:7px}.coachError b,.coachError small{display:block}.coachError b{font-size:11px;color:var(--maroon)}.coachError small{font-size:10px;color:var(--muted)}
+.masteryLadder{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;position:relative}.ladderStep{border:1px solid var(--line);background:#f7f7f8;border-radius:14px;padding:12px;text-align:center;opacity:.66}.ladderStep.done{background:#edf7f2;border-color:#c9e6d8;opacity:1}.ladderStep span{display:block;font-size:24px}.ladderStep b{display:block;font-size:11px}.ladderStep small{display:block;font-size:9px;color:var(--muted);margin-top:3px}
+.transitionScreen{max-width:650px;margin:50px auto;text-align:center;background:#fff;border:1px solid var(--line);border-radius:28px;box-shadow:var(--shadow);padding:34px;overflow:hidden}
+.transitionVisual{position:relative;width:220px;height:165px;margin:0 auto}.transitionVisual img{width:100%;height:100%;object-fit:contain;transform-origin:55% 68%;animation:gavelHit 1.15s cubic-bezier(.2,.8,.3,1) both}.impactRing{position:absolute;left:50%;bottom:22px;width:26px;height:10px;border:3px solid var(--gold);border-radius:50%;transform:translateX(-50%);animation:impact .8s .55s ease-out both}
+.transitionScreen h1{font-size:52px;margin:0;color:var(--maroon)}.transitionScreen p{color:var(--muted)}.nextStage{display:flex;justify-content:center;gap:8px;align-items:center;margin:16px 0}.nextStage span{font-size:10px;text-transform:uppercase;color:var(--muted)}.nextStage b{color:var(--navy)}
+@keyframes gavelHit{0%{transform:rotate(-20deg) translateY(-14px)}55%{transform:rotate(3deg) translateY(5px)}70%{transform:rotate(-3deg)}100%{transform:rotate(0)}}
+@keyframes impact{0%{opacity:0;transform:translateX(-50%) scale(.3)}40%{opacity:.9}100%{opacity:0;transform:translateX(-50%) scale(4.2)}}
+@keyframes slowFloat{from{transform:scale(1.02) translateY(0)}to{transform:scale(1.06) translateY(-8px)}}
+@media(max-width:900px){.authshell,.adminGrid,.todayLayout,.adminHero,.resultHero,.dailyHero{grid-template-columns:1fr}.authvisual{min-height:390px}.goalGrid{grid-template-columns:1fr 1fr}.masteryLadder{grid-template-columns:repeat(3,1fr)}.coachRail{position:static}}
+@media(max-width:620px){.authvisual{min-height:340px}.authvisual>div{inset:auto 20px 20px}.authvisual h1{font-size:29px}.goalGrid{grid-template-columns:1fr}.errorChip{grid-template-columns:1fr}.masteryLadder{grid-template-columns:1fr 1fr}.adminHero img,.resultHero img,.dailyHero img{height:170px}.adminHero h1,.resultHero h1,.dailyHero h1{font-size:25px}.inlineform{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
