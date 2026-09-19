@@ -223,21 +223,30 @@ function goalDefinition(d){
 }
 function pathState(d){
   var s=cs();if(!s)return null;
-  if(!s.skillPaths[d])s.skillPaths[d]={stage:"learn",practiceAttempts:0,testAttempts:0,completedAt:null,lastScore:null};
+  if(!s.skillPaths[d])s.skillPaths[d]={stage:"learn",practiceAttempts:0,testAttempts:0,retentionAttempts:0,retentionFailures:0,retentionStatus:"not_started",completedAt:null,lastScore:null,learnCheckPassed:false};
+  if(E&&E.ensurePath)s.skillPaths[d]=E.ensurePath(s.skillPaths[d]);
   return s.skillPaths[d];
 }
 function isPathCompleted(d){
   var p=pathState(d);return !!(p&&p.stage==="completed");
 }
 function weaknessThreshold(d){
-  return d==="exam_execution"?72:75;
+  if(d==="exam_execution")return 72;
+  if(d==="observation")return 70;
+  return 75;
 }
 function activeWeaknesses(){
   var s=cs();if(!s)return[];
-  var dims=["recall","understanding","legal_precision","transfer","exam_execution"];
-  return dims.map(function(d){return {d:d,v:s.mastery[d]?s.mastery[d].value:null};})
-    .filter(function(x){return x.v!=null&&x.v<weaknessThreshold(x.d)&&!isPathCompleted(x.d);})
-    .sort(function(a,b){return a.v-b.v;});
+  var dims=["recall","understanding","legal_precision","transfer","exam_execution","observation"];
+  var errors=errorMemory(30);
+  return dims.map(function(d){
+    var v=s.mastery[d]?s.mastery[d].value:null,p=pathState(d);
+    var related=errors.filter(function(e){return e.item&&e.item.dimension===d;});
+    var latest=related[0];
+    var pr=E?E.priorityScore({mastery:v,examImportanceWeight:dimensionExamWeight(d),errorType:latest?latest.code:null,repeatErrors:related.length,retentionStatus:p.retentionStatus}):{score:(v==null?0:100-v),reasons:[]};
+    return {d:d,v:v,priority:pr.score,reasons:pr.reasons};
+  }).filter(function(x){return x.v!=null&&x.v<weaknessThreshold(x.d)&&!isPathCompleted(x.d);})
+    .sort(function(a,b){return b.priority-a.priority;});
 }
 function primaryWeakness(){
   var w=activeWeaknesses();return w.length?w[0]:null;
@@ -255,12 +264,11 @@ function skillCheckItem(d){
   return items[Math.min(items.length-1,Math.max(0,(pathState(d).testAttempts||0)%items.length))];
 }
 function skillPathLabel(stage){
-  return stage==="learn"?"التعلم":stage==="practice"?"التدريب":stage==="assessment"?"اختبار المسار":"مكتمل";
+  return stage==="learn"?"التعلم":stage==="practice"?"التدريب":stage==="assessment"?"اختبار المسار":stage==="retention_check_pending"?"اختبار التثبيت":"مكتمل";
 }
 function skillPathProgress(d){
-  var p=pathState(d);
-  return ["learn","practice","assessment","completed"].map(function(st,i){
-    var order={learn:0,practice:1,assessment:2,completed:3};
+  var p=pathState(d),order={learn:0,practice:1,assessment:2,retention_check_pending:3,completed:4};
+  return ["learn","practice","assessment","retention_check_pending","completed"].map(function(st,i){
     var cur=order[p.stage],idx=order[st];
     return {stage:st,label:skillPathLabel(st),done:idx<cur||p.stage==="completed",active:idx===cur&&p.stage!=="completed"};
   });
@@ -272,18 +280,18 @@ function advancePathAfterPractice(d,score){
   else p.stage="practice";
   save();
 }
-function finishSkillCheck(d,score){
-  var p=pathState(d);if(!p)return;
-  p.testAttempts=(p.testAttempts||0)+1;p.lastScore=score;
-  if(score>=.8){
-    p.stage="completed";p.completedAt=new Date().toISOString();
-  }else{
-    p.stage="practice";
+function finishSkillCheck(d,score,item){
+  var p=pathState(d);if(!p)return {status:"missing_path"};
+  var result=E?E.applyRetentionResult(p,score,Date.now()):{status:score>=.8?"confirmed":"assessment_failed",path:p};
+  if(result.status==="first_pass"&&item)p.firstPassItemId=item.id;
+  if(result.status==="retention_failed"){
+    var original=item||findItem(p.firstPassItemId);
+    if(original)scheduleReview(original,score,3,"retention_failure");
   }
-  save();
+  save();return result;
 }
 function markLearningDone(d){
-  var p=pathState(d);if(p&&p.stage==="learn"){p.stage="practice";save();}
+  var p=pathState(d);if(p&&p.stage==="learn"&&p.learnCheckPassed){p.stage="practice";save();}
 }
 function completedPathCount(){
   var s=cs();if(!s)return 0;
@@ -304,13 +312,8 @@ function errorMemory(limit){
     (g.items||[]).forEach(function(x){
       if(x.score>=.999)return;
       var it=findItem(x.itemId);if(!it)return;
-      var type="فجوة معرفية";
-      if(g.confidence===3&&x.score<.5)type="تصور خاطئ بثقة عالية";
-      else if(it.dimension==="transfer")type="صعوبة في التطبيق على الوقائع";
-      else if(it.dimension==="legal_precision")type="خلط بين مفاهيم متقاربة";
-      else if(it.dimension==="exam_execution")type="نقص في بناء الإجابة";
-      else if(it.dimension==="understanding")type="فهم غير مكتمل";
-      out.push({item:it,score:x.score,type:type,at:g.at,confidence:g.confidence});
+      var code=E?E.classifyError(it,x.score,g.confidence):"knowledge_gap";
+      out.push({item:it,score:x.score,code:code,type:E?E.errorLabel(code):code,at:g.at,confidence:g.confidence});
     });
   });
   return out.reverse().slice(0,limit||6);
@@ -344,7 +347,8 @@ function nextActionForDimension(d){
     var p=pathState(d);
     if(p.stage==="learn")return "هذا هو المسار الحالي: تعلم موجّه أولًا.";
     if(p.stage==="practice")return "هذا هو المسار الحالي: تدريب موجّه على نقطة الضعف.";
-    if(p.stage==="assessment")return "هذا هو المسار الحالي: اختبار قصير لتحديد ما إذا كان يمكن إغلاقه.";
+    if(p.stage==="assessment")return "هذا هو المسار الحالي: اختبار أولي. النجاح لا يغلق المسار قبل اختبار التثبيت المؤجل.";
+    if(p.stage==="retention_check_pending")return "تم الاجتياز الأولي، ويُنتظر اختبار تثبيت مستقل بعد مرور 24 ساعة على الأقل.";
   }
   var m=cs().mastery[d];
   if(m&&m.value<weaknessThreshold(d))return "فجوة مثبتة، لكنها تأتي بعد المسار الحالي في ترتيب الأولويات.";
@@ -525,7 +529,7 @@ function commitGroup(){
   var s=cs(),g=currentGroup();
   var result={groupId:g.id,title:g.title,confidence:SESSION.confidence,avg:SESSION.pending.avg,items:SESSION.pending.items,at:new Date().toISOString()};
   s.groupResults.push(result);
-  result.items.forEach(function(x){var it=findItem(x.itemId);scheduleReview(it,x.score);});
+  result.items.forEach(function(x){var it=findItem(x.itemId);var et=E?E.classifyError(it,x.score,SESSION.confidence):"knowledge_gap";scheduleReview(it,x.score,SESSION.confidence,et);});
   addXP(10+(result.avg>=.8?5:0));
   s.groupIndex++;
   computeMastery();
