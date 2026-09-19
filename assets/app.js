@@ -217,7 +217,8 @@ function goalDefinition(d){
     understanding:{icon:"💡",title:"تعميق الفهم",why:"تحتاج إلى ربط القاعدة بمكانها داخل البناء القانوني وفهم علاقتها بالمفاهيم القريبة.",next:"مثال محلول ثم مقارنة"},
     legal_precision:{icon:"🔍",title:"رفع الدقة القانونية",why:"تحتاج إلى مزيد من الدقة في التمييز بين المصطلحات والبدائل القانونية المتقاربة.",next:"تمييز مفاهيم ثم سؤال دقيق"},
     transfer:{icon:"🕵️",title:"تقوية التطبيق على الوقائع",why:"تحتاج إلى نقل المعرفة من السؤال المباشر إلى واقعة جديدة لا تذكر اسم الباب القانوني صراحة.",next:"واقعة قصيرة ثم تغيير عنصر حاسم"},
-    exam_execution:{icon:"✍️",title:"بناء الإجابة الامتحانية",why:"تحتاج إلى تنظيم المعرفة في إجابة تغطي العناصر القانونية المطلوبة بوضوح.",next:"خطة إجابة ثم اختبار قصير"}
+    exam_execution:{icon:"✍️",title:"بناء الإجابة الامتحانية",why:"تحتاج إلى تنظيم المعرفة في إجابة تغطي العناصر القانونية المطلوبة بوضوح.",next:"خطة إجابة ثم اختبار قصير"},
+    observation:{icon:"👁️",title:"رفع الملاحظة القانونية",why:"تحتاج إلى التقاط التفاصيل الصغيرة التي تغيّر التكييف أو تكشف العنصر الناقص.",next:"عنصر ناقص ثم تغيير واقعة واحدة"}
   };
   return defs[d]||{icon:"🎯",title:dimensionLabel(d),why:"تدريب موجه وفق أدائك.",next:"تدريب قصير"};
 }
@@ -259,6 +260,12 @@ function recommendedActivities(d){
 }
 function skillCheckItem(d){
   var c=course(),items=[];
+  if(d==="observation"){
+    var oa=(c.activities||[]).filter(function(a){return Array.isArray(a.targetDimensions)&&a.targetDimensions.indexOf("observation")>=0&&Array.isArray(a.options);});
+    if(!oa.length)return null;
+    var ax=oa[Math.min(oa.length-1,Math.max(0,(pathState(d).testAttempts||0)%oa.length))];
+    return {id:ax.id+"-obscheck",dimension:"observation",difficulty:2,type:"mcq",prompt:ax.prompt,unitId:ax.unitId,conceptId:ax.conceptId,variantGroupId:ax.courseId+"-observation",options:ax.options.map(function(o,i){return{id:"o"+i,text:o.text,score:o.score};})};
+  }
   (c.groups||[]).forEach(function(g){(g.items||[]).forEach(function(it){if(it.dimension===d)items.push(it);});});
   if(!items.length)return null;
   return items[Math.min(items.length-1,Math.max(0,(pathState(d).testAttempts||0)%items.length))];
@@ -329,7 +336,8 @@ function dimensionInfo(d){
     understanding:{icon:"💡",desc:"قدرتك على فهم معنى القاعدة وعلاقتها بالمفاهيم القانونية القريبة، لا مجرد حفظها."},
     legal_precision:{icon:"🔍",desc:"قدرتك على التمييز بين المصطلحات والبدائل القانونية المتشابهة واختيار الوصف الأدق."},
     transfer:{icon:"🕵️",desc:"قدرتك على اكتشاف المسألة القانونية وتطبيق ما تعلمته على واقعة جديدة."},
-    exam_execution:{icon:"✍️",desc:"قدرتك على تنظيم الإجابة القانونية وتغطية عناصرها الأساسية بصورة واضحة ومتماسكة."}
+    exam_execution:{icon:"✍️",desc:"قدرتك على تنظيم الإجابة القانونية وتغطية عناصرها الأساسية بصورة واضحة ومتماسكة."},
+    observation:{icon:"👁️",desc:"قدرتك على ملاحظة التفاصيل الدقيقة والعناصر المفقودة والتغييرات الصغيرة التي تبدّل التكييف القانوني."}
   };
   return map[d]||{icon:"🎯",desc:"بُعد تدريبي من أبعاد الأداء القانوني."};
 }
@@ -576,7 +584,7 @@ function todayScreen(){
   var d=w.d,p=pathState(d),def=goalDefinition(d),lesson=chosenMicroLesson(),acts=recommendedActivities(d);
   var body="";
   if(p.stage==="learn"){
-    body='<div class="panel focusWork"><div class="phaseLabel">المرحلة 1 من 3 • التعلم الموجّه</div>'+(lesson?'<div class="microLesson simpleLesson"><div class="microTop"><span class="microIcon">'+lesson.icon+'</span><div><h2>'+esc(lesson.title)+'</h2><small>'+lesson.minutes+' دقائق تقريبًا</small></div></div><p>'+esc(lesson.explain)+'</p><div class="workedExample"><b>مثال</b><span>'+esc(lesson.example)+'</span></div><div class="microChallenge"><b>فكر في هذا السؤال</b><span>'+esc(lesson.challenge)+'</span></div></div>':'<div class="info">راجع المفهوم الأساسي المرتبط بهذا البُعد قبل الانتقال إلى التدريب.</div>')+'<div class="actions"><button class="btn primary" id="markLearnDone" data-dimension="'+d+'">انتهيت من التعلم — انتقل إلى التدريب</button></div></div>';
+    body='<div class="panel focusWork"><div class="phaseLabel">المرحلة 1 من 4 • التعلم الموجّه</div>'+(lesson?'<div class="microLesson simpleLesson"><div class="microTop"><span class="microIcon">'+lesson.icon+'</span><div><h2>'+esc(lesson.title)+'</h2><small>'+lesson.minutes+' دقائق تقريبًا</small></div></div><p>'+esc(lesson.explain)+'</p><div class="workedExample"><b>مثال</b><span>'+esc(lesson.example)+'</span></div><div class="microChallenge"><b>تحقق سريع — غير مُقيّم</b><span>'+esc(lesson.challenge)+'</span><textarea id="learnCheckInput" placeholder="اكتب إجابة قصيرة أو أعد صياغة الفكرة..."></textarea>'+(p.learnCheckPassed?'<div class="goodbox">✓ تم التفاعل مع الفكرة. يمكنك الانتقال إلى التدريب.</div>':'<button class="btn secondary" id="checkLearnUnderstanding" data-dimension="'+d+'">تحقق من التفاعل</button>')+'</div></div>':'<div class="info">راجع المفهوم الأساسي المرتبط بهذا البُعد قبل الانتقال إلى التدريب.</div>')+'<div class="actions">'+(p.learnCheckPassed?'<button class="btn primary" id="markLearnDone" data-dimension="'+d+'">انتقل إلى التدريب</button>':'<span class="small">أكمل التحقق السريع أولًا.</span>')+'</div></div>';
   }else if(p.stage==="practice"){
     var cards="";
     if(d==="exam_execution"){
@@ -584,9 +592,12 @@ function todayScreen(){
     }else{
       cards=acts.map(function(a){return activityCard(a,d);}).join("");
     }
-    body='<div class="panel focusWork"><div class="phaseLabel">المرحلة 2 من 3 • التدريب الموجّه</div><h2>تحديات مرتبطة بهذه الفجوة فقط</h2><p class="small">أخفى النظام بقية التحديات لأنها لا تخدم الأولوية الحالية.</p><div class="focusedChallenges">'+cards+'</div><div class="info">بعد أداء جيد في التدريب، سيفتح اختبار المسار تلقائيًا.</div></div>';
+    body='<div class="panel focusWork"><div class="phaseLabel">المرحلة 2 من 4 • التدريب الموجّه</div><h2>تحديات مرتبطة بهذه الفجوة فقط</h2><p class="small">أخفى النظام بقية التحديات لأنها لا تخدم الأولوية الحالية.</p><div class="focusedChallenges">'+cards+'</div><div class="info">بعد أداء جيد في التدريب، سيفتح اختبار المسار تلقائيًا.</div></div>';
   }else if(p.stage==="assessment"){
-    body='<div class="panel focusWork assessmentReady"><div class="phaseLabel">المرحلة 3 من 3 • اختبار المسار</div><div class="assessmentIcon">⚖️</div><h2>هل أصبحت هذه المهارة مستقرة؟</h2><p>اختبار قصير مستقل عن التدريب السابق. إذا حققت 80% أو أكثر، يُغلق هذا المسار ولا يظهر مرة أخرى ضمن الأولويات النشطة.</p><button class="btn primary bigbtn" data-skillcheck="'+d+'">ابدأ اختبار المسار</button></div>';
+    body='<div class="panel focusWork assessmentReady"><div class="phaseLabel">المرحلة 3 من 4 • اختبار أولي</div><div class="assessmentIcon">⚖️</div><h2>هل أتقنت المهارة الآن؟</h2><p>تحقيق 80% أو أكثر يسجل اجتيازًا أوليًا فقط. لن تُعتبر المهارة مكتملة قبل اختبار تثبيت مستقل بعد 24 ساعة على الأقل.</p><button class="btn primary bigbtn" data-skillcheck="'+d+'">ابدأ الاختبار الأولي</button></div>';
+  }else if(p.stage==="retention_check_pending"){
+    var ready=E&&E.retentionReady(p,Date.now()),dueAt=p.retentionDueAt?new Date(p.retentionDueAt):null;
+    body='<div class="panel focusWork assessmentReady"><div class="phaseLabel">المرحلة 4 من 4 • اختبار التثبيت</div><div class="assessmentIcon">⏳</div><h2>الاجتياز الأولي تم — نختبر الاحتفاظ الحقيقي.</h2>'+(ready?'<p>مرّ الفاصل الزمني المطلوب. سيظهر سؤال مختلف يقيس نفس المهارة قدر الإمكان.</p><button class="btn primary bigbtn" data-skillcheck="'+d+'">ابدأ اختبار التثبيت</button>':'<p>سيُفتح اختبار التثبيت بعد '+(dueAt?dueAt.toLocaleString("ar-EG",{dateStyle:"medium",timeStyle:"short"}):"24 ساعة")+'. لن نعتبر الأداء اللحظي إتقانًا نهائيًا.</p>')+'</div>';
   }
   var later=activeWeaknesses().slice(1,3);
   return '<section class="screen studentSimple">'+journey("training")+'<div class="studentPlanHeader"><div><span class="eyebrow">خطة التدريب الحالية</span><h1>هدف واحد في كل مرة.</h1><p>يركز النظام الآن على '+esc(def.title)+'، ويخفي التدريبات التي لا تحتاج إليها.</p></div><span class="stepbadge">'+due.length+' مراجعات مستحقة</span></div>'+focusedPathCard(d)+body+(later.length?'<div class="panel laterPriorities"><div class="kicker">أولويات لاحقة</div><p class="small">لن تُفتح قبل إنهاء المسار الحالي.</p>'+later.map(function(x){var z=goalDefinition(x.d);return '<span class="laterChip">'+z.icon+' '+esc(z.title)+'</span>';}).join("")+'</div>':'')+'</section>';
@@ -617,9 +628,15 @@ function startActivity(id,exam,targetDimension){
   SESSION.activityAnswer=null;SESSION.activityFeedback=null;state.screen="activity_play";save();render();
 }
 function startSkillCheck(d){
-  var item=skillCheckItem(d);if(!item)return;
-  var p=pathState(d);p.testAttempts=(p.testAttempts||0)+0;
-  var a={id:"skillcheck-"+d,title:"اختبار المسار: "+goalDefinition(d).title,icon:"⚖️",isSkillCheck:true,targetDimension:d,prompt:item.prompt,sourceItem:item};
+  var p=pathState(d),item=null,isRetention=p.stage==="retention_check_pending";
+  if(isRetention){
+    if(E&&!E.retentionReady(p,Date.now())){toast("اختبار التثبيت لم يحن موعده بعد.");return;}
+    var original=findItem(p.firstPassItemId)||skillCheckItem(d);
+    item=E?E.selectVariant(original,allCourseItems()):null;
+    if(!item)item=skillCheckItem(d);
+  }else item=skillCheckItem(d);
+  if(!item)return;
+  var a={id:"skillcheck-"+d,title:(isRetention?"اختبار التثبيت: ":"اختبار المسار: ")+goalDefinition(d).title,icon:isRetention?"⏳":"⚖️",isSkillCheck:true,isRetentionCheck:isRetention,targetDimension:d,prompt:item.prompt,sourceItem:item};
   if(item.type==="build_answer")a.examItem=item;
   else if(item.type==="mcq")a.options=item.options.map(function(o){return {text:o.text,score:o.score};});
   SESSION.activity=a;SESSION.activityAnswer=null;SESSION.activityFeedback=null;state.screen="activity_play";save();render();
@@ -659,18 +676,34 @@ function submitActivity(){
   }
 
   if(a.isSkillCheck){
-    finishSkillCheck(a.targetDimension,score);
-    if(score>=.8){
-      detail+='<div class="pathPassed"><b>تم اجتياز المسار.</b><span>أُغلق هذا المسار ولن يظهر ضمن التدريبات النشطة. ستنتقل الخطة إلى الحاجة التالية، إن وجدت.</span></div>';
+    var outcome=finishSkillCheck(a.targetDimension,score,a.sourceItem);
+    if(outcome.status==="first_pass"){
+      detail+='<div class="pathPassed"><b>اجتياز أولي — لم يُغلق المسار بعد.</b><span>سيظهر اختبار تثبيت مختلف بعد مرور 24 ساعة على الأقل.</span></div>';
+    }else if(outcome.status==="confirmed"){
+      detail+='<div class="pathPassed"><b>تم تأكيد الاحتفاظ.</b><span>أُغلق المسار بعد اجتيازين منفصلين زمنيًا.</span></div>';
+    }else if(outcome.status==="retention_failed"){
+      detail+='<div class="notice"><b>الاحتفاظ لم يثبت بعد.</b> ستعود إلى تدريب موجّه ومراجعة أسرع قبل محاولة جديدة.</div>';
     }else{
       detail+='<div class="notice"><b>لم يُغلق المسار بعد.</b> ستعود إلى تدريب موجّه إضافي قبل إعادة الاختبار.</div>';
+    }
+  }else if(a.reviewId){
+    var srev=cs(),review=srev.reviews.find(function(r){return r.id===a.reviewId;});
+    srev.reviews=srev.reviews.filter(function(r){return r.id!==a.reviewId;});
+    if(score<.8&&a.sourceItem){
+      var rt=E?E.classifyError(a.sourceItem,score,review?review.confidence:null):"knowledge_gap";
+      scheduleReview(a.sourceItem,score,review?review.confidence:null,rt);
     }
   }else if(a.targetDimension){
     advancePathAfterPractice(a.targetDimension,score);
   }
 
   SESSION.activityFeedback={score:score,detail:detail};
-  var s=cs();s.activityHistory.push({title:a.title,score:score,targetDimension:a.targetDimension||null,isSkillCheck:!!a.isSkillCheck,at:new Date().toISOString()});
+  var s=cs();
+  if(a.kind==="MISSING_ELEMENT"||a.kind==="CHANGE_ONE_FACT"){
+    s.observationResults.push({activityId:a.id,score:score,unitId:a.unitId||null,conceptId:a.conceptId||null,at:new Date().toISOString()});
+    computeMastery();
+  }
+  s.activityHistory.push({title:a.title,score:score,targetDimension:a.targetDimension||null,isSkillCheck:!!a.isSkillCheck,isRetentionCheck:!!a.isRetentionCheck,gradingMethod:a.examItem?"keyword_fallback":null,at:new Date().toISOString()});
   addXP(8+(score>=.8?4:0));save();render();
 }
 function dueReviews(){var s=cs(),now=Date.now();return s.reviews.filter(function(r){return new Date(r.due).getTime()<=now;});}
@@ -680,8 +713,10 @@ function reviewsScreen(){
 }
 function startReview(id){
   var r=cs().reviews.find(function(x){return x.id===id;});if(!r)return;
-  var item=findItem(r.itemId);if(!item)return;
-  SESSION.activity={id:"review",title:"مراجعة",icon:"🔄",examItem:item.type==="build_answer"?item:null,reviewItem:item,reviewId:id};
+  var original=findItem(r.itemId);if(!original)return;
+  var item=E?E.selectVariant(original,allCourseItems()):null;
+  if(!item)item=original;
+  SESSION.activity={id:"review",title:"مراجعة مفهومية",icon:"🔄",examItem:item.type==="build_answer"?item:null,reviewItem:item,sourceItem:item,reviewId:id,prompt:item.prompt};
   if(item.type==="mcq")SESSION.activity.options=item.options.map(function(o){return{text:o.text,score:o.score};});
   SESSION.activityAnswer=null;SESSION.activityFeedback=null;state.screen="activity_play";save();render();
 }
