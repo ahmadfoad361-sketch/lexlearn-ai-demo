@@ -707,7 +707,7 @@ function render(){
     else if(state.screen==="dashboard")html+=dashboardScreen();
     else html+=countryScreen();
   }
-  html+='</main><div class="footer">LexLearn AI • تعلم قانوني تكيفي • النسخة التجريبية v6.4.3</div><div id="toast" class="toast"></div>';
+  html+='</main><div class="footer">LexLearn AI • تعلم قانوني تكيفي • النسخة التجريبية v6.5</div><div id="toast" class="toast"></div>';
   APP.innerHTML=html;bind();
 }
 function exportStudent(id){
