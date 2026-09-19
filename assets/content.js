@@ -277,3 +277,62 @@ window.LEX_CONTENT = {
     }
   ]
 };
+
+
+/* v7 adaptive metadata: backward-compatible enrichment for unit/concept mastery,
+   observation evidence, review variants, and the Exam Intelligence MVP schema.
+   Exam frequency remains "unknown" until verified past-exam/professor evidence is entered. */
+(function enrichAdaptiveMetadata(){
+  var root=window.LEX_CONTENT;if(!root||!Array.isArray(root.courses))return;
+  var maps={
+    "QA-QU-LAWC101":{
+      "101-e1":["u1","sources-law"],"101-e2":["u1","legislation"],"101-e3":["u2","theory-right"],
+      "101-m1":["u1","source-law-v-right"],"101-m2":["u1","legislation"],"101-m3":["u2","sources-right"],
+      "101-d1":["u2","persons-subject"],"101-d2":["u1","custom"],"101-d3":["u1","repeal"],
+      "101-t1":["u1","temporal-application"],"101-t2":["u1","interpretation"],"101-t3":["u2","exercise-right"],
+      "101-x1":["u1","source-law-v-right"],"101-x2":["u2","persons-subject"]
+    },
+    "QA-QU-LAWC213":{
+      "213-e1":["u1","obligation-sources"],"213-e2":["u1","unilateral-will"],"213-e3":["u2","nonvoluntary-sources"],
+      "213-m1":["u1","contract-formation"],"213-m2":["u1","consent"],"213-m3":["u1","contract-v-tort"],
+      "213-d1":["u2","unjust-enrichment"],"213-d2":["u2","agency"],"213-d3":["u2","law-source"],
+      "213-t1":["u1","unilateral-will"],"213-t2":["u2","tort"],"213-t3":["u2","unjust-enrichment"],
+      "213-x1":["u1","obligation-sources"],"213-x2":["u1","contract-v-tort"]
+    }
+  };
+  root.courses.forEach(function(c){
+    c.examIntelligenceVersion=1;
+    (c.units||[]).forEach(function(u,i){if(!u.id)u.id=c.id+"-u"+(i+1);});
+    var map=maps[c.id]||{};
+    (c.groups||[]).forEach(function(g){
+      (g.items||[]).forEach(function(it){
+        var meta=map[it.id]||["u1",it.id];
+        it.courseId=c.id;
+        it.unitId=c.id+"-"+meta[0];
+        it.conceptId=c.id+"-"+meta[1];
+        it.variantGroupId=c.id+"-"+it.dimension+"-"+meta[1];
+        if(!it.examFrequencyTag)it.examFrequencyTag="unknown";
+        if(it.examImportanceWeight==null)it.examImportanceWeight=0;
+        if(!it.frequencySource)it.frequencySource="unknown";
+      });
+    });
+    (c.activities||[]).forEach(function(a){
+      if(a.kind==="MISSING_ELEMENT"||a.kind==="CHANGE_ONE_FACT"){
+        if(a.targetDimensions.indexOf("observation")<0)a.targetDimensions.push("observation");
+      }
+      a.courseId=c.id;
+      var unitHint=c.id==="QA-QU-LAWC101"?(a.id==="101-a3"?"u2":"u1"):(a.id==="213-a1"?"u1":"u2");
+      a.unitId=c.id+"-"+unitHint;
+      a.conceptId=c.id+"-activity-"+a.id;
+      a.examFrequencyTag="unknown";
+      a.examImportanceWeight=0;
+      a.frequencySource="unknown";
+    });
+    if(c.id==="QA-QU-LAWC101"){
+      c.microLessons.push({id:"101-l4",icon:"👁️",title:"لاحظ الواقعة الصغيرة",dimension:"observation",minutes:2,topic:"الملاحظة القانونية",explain:"قبل اختيار القاعدة، ابحث عن الكلمة أو الواقعة الصغيرة التي تغيّر التكييف: زمن الواقعة، وجود شخص معنوي، أو عنصر مفقود في المفهوم.",example:"تغيير السؤال من معنى النص إلى تاريخ سريانه ينقل التحليل من التفسير إلى التطبيق الزمني.",challenge:"اذكر واقعة واحدة صغيرة يمكن أن تغيّر الباب القانوني في مثال تعرفه."});
+    }
+    if(c.id==="QA-QU-LAWC213"){
+      c.microLessons.push({id:"213-l4",icon:"👁️",title:"التقط الواقعة الحاسمة",dimension:"observation",minutes:2,topic:"الملاحظة القانونية",explain:"تمييز مصدر الالتزام يبدأ من تفاصيل صغيرة: هل توجد علاقة عقدية؟ هل هناك فعل ضار؟ هل تحققت منفعة بلا سند؟",example:"اختفاء العلاقة العقدية مع بقاء الضرر يغيّر مسار التحليل إلى المسؤولية التقصيرية.",challenge:"اكتب تفصيلًا واحدًا لو تغيّر سيغيّر مصدر الالتزام في المثال."});
+    }
+  });
+})();

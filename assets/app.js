@@ -2,19 +2,26 @@
 "use strict";
 
 var C = window.LEX_CONTENT;
+var E = window.LEX_ENGINE;
 var APP = document.getElementById("app");
 var LEGACY_STORAGE = "lexlearn_v4_grouped";
 var AUTH_KEY = "lexlearn_auth_v1";
 var STUDENT_PREFIX = "lexlearn_student_v6_";
 var SESSION = {answers:{},pending:null,confidence:null,activity:null,activityAnswer:null,activityFeedback:null,transition:null};
 var ADMIN = {selectedStudentId:null,lastCreated:null};
+var DATA_REPO = {
+  get:function(key){return localStorage.getItem(key);},
+  set:function(key,value){localStorage.setItem(key,value);},
+  remove:function(key){localStorage.removeItem(key);}
+};
 
 var DIM_LABELS = {
   recall:"الاسترجاع",
   understanding:"الفهم",
   legal_precision:"الدقة القانونية",
   transfer:"التطبيق",
-  exam_execution:"الاختبار الامتحاني"
+  exam_execution:"الاختبار الامتحاني",
+  observation:"الملاحظة الدقيقة"
 };
 
 function hashPass(v){
@@ -25,26 +32,26 @@ function hashPass(v){
 function uid(prefix){return (prefix||"u")+"-"+Date.now().toString(36)+"-"+Math.random().toString(36).slice(2,7);}
 function loadAuth(){
   try{
-    var a=JSON.parse(localStorage.getItem(AUTH_KEY));
+    var a=JSON.parse(DATA_REPO.get(AUTH_KEY));
     if(a&&Array.isArray(a.accounts))return a;
   }catch(e){}
   return {schema:1,accounts:[],currentId:null};
 }
 var auth=loadAuth();
-function saveAuth(){localStorage.setItem(AUTH_KEY,JSON.stringify(auth));}
+function saveAuth(){DATA_REPO.set(AUTH_KEY,JSON.stringify(auth));}
 function activeAccount(){return auth.accounts.find(function(x){return x.id===auth.currentId;})||null;}
 function accountById(id){return auth.accounts.find(function(x){return x.id===id;})||null;}
 function hasAdmin(){return auth.accounts.some(function(x){return x.role==="admin";});}
 function studentStateKey(id){return STUDENT_PREFIX+id;}
 function freshCourseState(){
-  return {groupIndex:0,groupResults:[],mastery:{},route:null,xp:0,streak:0,lastActive:null,reviews:[],activityHistory:[],skillPaths:{},completed:false};
+  return {groupIndex:0,groupResults:[],mastery:{},unitMastery:{},conceptMastery:{},calibration:{status:"insufficient_data",value:null,evidence:0},observationResults:[],route:null,xp:0,streak:0,lastActive:null,reviews:[],activityHistory:[],skillPaths:{},completed:false};
 }
 function freshState(){
   return {schema:6,country:null,courseId:null,screen:"country",courses:{},createdAt:new Date().toISOString()};
 }
 function readStudentState(id){
   try{
-    var s=JSON.parse(localStorage.getItem(studentStateKey(id)));
+    var s=JSON.parse(DATA_REPO.get(studentStateKey(id)));
     if(s&&s.courses)return s;
   }catch(e){}
   return freshState();
@@ -58,7 +65,7 @@ var state=load();
 
 function save(){
   var a=activeAccount();
-  if(a&&a.role==="student")localStorage.setItem(studentStateKey(a.id),JSON.stringify(state));
+  if(a&&a.role==="student")DATA_REPO.set(studentStateKey(a.id),JSON.stringify(state));
 }
 function esc(v){return String(v==null?"":v).replace(/[&<>"']/g,function(c){return({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"})[c];});}
 function norm(v){return String(v||"").toLowerCase().replace(/[أإآ]/g,"ا").replace(/ة/g,"ه").replace(/ى/g,"ي").replace(/[ًٌٍَُِّْـ]/g,"").replace(/[^\u0600-\u06FFa-z0-9 ]/gi," ").replace(/\s+/g," ").trim();}
@@ -67,9 +74,14 @@ function cs(){
   if(!state.courseId)return null;
   if(!state.courses[state.courseId])state.courses[state.courseId]=freshCourseState();
   var s=state.courses[state.courseId];
+  s=E&&E.migrateCourseState?E.migrateCourseState(s):s;
+  state.courses[state.courseId]=s;
   if(!s.skillPaths)s.skillPaths={};
   if(!s.reviews)s.reviews=[];
   if(!s.activityHistory)s.activityHistory=[];
+  if(!s.observationResults)s.observationResults=[];
+  if(!s.unitMastery)s.unitMastery={};
+  if(!s.conceptMastery)s.conceptMastery={};
   return s;
 }
 function go(screen){
@@ -109,10 +121,11 @@ function criterionResult(text,r){
   return {ok:score>0,matched:score>0?1:0,total:1,need:1};
 }
 function evaluateWritten(item,answer){
-  if(answer==="__DONT_KNOW__")return {score:0,criteria:[]};
+  if(E&&E.gradeAnswer)return E.gradeAnswer(answer,item.rubric||[],{itemId:item.id,conceptId:item.conceptId||null});
+  if(answer==="__DONT_KNOW__")return {score:0,criteria:[],gradingMethod:"keyword_fallback"};
   var rs=(item.rubric||[]).map(function(r){var cr=criterionResult(answer,r);return {label:r.label,ok:cr.ok,matched:cr.matched,total:cr.total,need:cr.need};});
   var hit=rs.filter(function(x){return x.ok;}).length;
-  return {score:rs.length?hit/rs.length:0,criteria:rs};
+  return {score:rs.length?hit/rs.length:0,criteria:rs,gradingMethod:"keyword_fallback"};
 }
 function evalItem(item,answer){
   if(item.type==="mcq"){
@@ -125,6 +138,21 @@ function evalItem(item,answer){
 function pct(v){return Math.round(v||0)+"%";}
 function confidenceLabel(v){return v===1?"غير متأكد":v===2?"إلى حد ما":"واثق";}
 function dimensionLabel(d){return DIM_LABELS[d]||d;}
+function allCourseItems(){
+  var c=course(),out=[];if(!c)return out;
+  (c.groups||[]).forEach(function(g){(g.items||[]).forEach(function(it){out.push(it);});});
+  return out;
+}
+function unitLabel(id){
+  var c=course(),u=c&&(c.units||[]).find(function(x){return x.id===id;});
+  return u?u.title:id;
+}
+function dimensionExamWeight(d){
+  var items=allCourseItems().filter(function(it){return it.dimension===d;});
+  if(!items.length||!E)return 0;
+  var total=items.reduce(function(n,it){return n+(it.examImportanceWeight!=null?Number(it.examImportanceWeight):E.examTagWeight(it.examFrequencyTag));},0);
+  return total/items.length;
+}
 
 function touchStreak(){
   var s=cs();if(!s)return;
@@ -137,27 +165,22 @@ function touchStreak(){
   s.lastActive=today;
 }
 function addXP(n){var s=cs();touchStreak();s.xp+=n;save();}
-function scheduleReview(item,score){
-  var s=cs();if(score>=.85)return;
-  var existing=s.reviews.find(function(r){return r.itemId===item.id;});
-  var days=score<.5?1:3;
-  var due=new Date();due.setDate(due.getDate()+days);
-  if(existing){existing.due=due.toISOString();existing.score=score;}
-  else s.reviews.push({id:"rev-"+Date.now()+"-"+item.id,itemId:item.id,topic:item.prompt.slice(0,70),due:due.toISOString(),score:score});
+function scheduleReview(item,score,confidence,errorType){
+  var s=cs();if(!item||score>=.85)return;
+  errorType=errorType||(E?E.classifyError(item,score,confidence):"knowledge_gap");
+  var existing=s.reviews.find(function(r){return r.itemId===item.id&&r.reviewReason===errorType;});
+  var plan=E?E.buildReview(item,score,errorType,confidence,Date.now(),existing?(existing.attempts||1)+1:1):null;
+  if(!plan)return;
+  if(existing){Object.keys(plan).forEach(function(k){existing[k]=plan[k];});}
+  else s.reviews.push(Object.assign({id:"rev-"+Date.now()+"-"+item.id},plan));
 }
 function computeMastery(){
-  var s=cs();var sums={},counts={};
-  s.groupResults.forEach(function(g){
-    (g.items||[]).forEach(function(x){
-      var item=findItem(x.itemId);if(!item)return;
-      var d=item.dimension;
-      var weight=1+(Math.max(1,item.difficulty||1)-1)*.08;
-      sums[d]=(sums[d]||0)+(x.score*100*weight);
-      counts[d]=(counts[d]||0)+weight;
-    });
-  });
-  s.mastery={};
-  Object.keys(sums).forEach(function(d){s.mastery[d]={value:Math.min(100,sums[d]/counts[d]),evidence:Math.round(counts[d])};});
+  var s=cs();
+  if(E&&E.computeMastery){
+    var agg=E.computeMastery(s.groupResults,findItem,s.observationResults||[]);
+    s.mastery=agg.mastery;s.unitMastery=agg.unitMastery;s.conceptMastery=agg.conceptMastery;
+    s.calibration=E.calibration(s.groupResults,8);
+  }
   s.route=deriveRoute(s.mastery);
   save();
 }
@@ -194,27 +217,37 @@ function goalDefinition(d){
     understanding:{icon:"💡",title:"تعميق الفهم",why:"تحتاج إلى ربط القاعدة بمكانها داخل البناء القانوني وفهم علاقتها بالمفاهيم القريبة.",next:"مثال محلول ثم مقارنة"},
     legal_precision:{icon:"🔍",title:"رفع الدقة القانونية",why:"تحتاج إلى مزيد من الدقة في التمييز بين المصطلحات والبدائل القانونية المتقاربة.",next:"تمييز مفاهيم ثم سؤال دقيق"},
     transfer:{icon:"🕵️",title:"تقوية التطبيق على الوقائع",why:"تحتاج إلى نقل المعرفة من السؤال المباشر إلى واقعة جديدة لا تذكر اسم الباب القانوني صراحة.",next:"واقعة قصيرة ثم تغيير عنصر حاسم"},
-    exam_execution:{icon:"✍️",title:"بناء الإجابة الامتحانية",why:"تحتاج إلى تنظيم المعرفة في إجابة تغطي العناصر القانونية المطلوبة بوضوح.",next:"خطة إجابة ثم اختبار قصير"}
+    exam_execution:{icon:"✍️",title:"بناء الإجابة الامتحانية",why:"تحتاج إلى تنظيم المعرفة في إجابة تغطي العناصر القانونية المطلوبة بوضوح.",next:"خطة إجابة ثم اختبار قصير"},
+    observation:{icon:"👁️",title:"رفع الملاحظة القانونية",why:"تحتاج إلى التقاط التفاصيل الصغيرة التي تغيّر التكييف أو تكشف العنصر الناقص.",next:"عنصر ناقص ثم تغيير واقعة واحدة"}
   };
   return defs[d]||{icon:"🎯",title:dimensionLabel(d),why:"تدريب موجه وفق أدائك.",next:"تدريب قصير"};
 }
 function pathState(d){
   var s=cs();if(!s)return null;
-  if(!s.skillPaths[d])s.skillPaths[d]={stage:"learn",practiceAttempts:0,testAttempts:0,completedAt:null,lastScore:null};
+  if(!s.skillPaths[d])s.skillPaths[d]={stage:"learn",practiceAttempts:0,testAttempts:0,retentionAttempts:0,retentionFailures:0,retentionStatus:"not_started",completedAt:null,lastScore:null,learnCheckPassed:false};
+  if(E&&E.ensurePath)s.skillPaths[d]=E.ensurePath(s.skillPaths[d]);
   return s.skillPaths[d];
 }
 function isPathCompleted(d){
   var p=pathState(d);return !!(p&&p.stage==="completed");
 }
 function weaknessThreshold(d){
-  return d==="exam_execution"?72:75;
+  if(d==="exam_execution")return 72;
+  if(d==="observation")return 70;
+  return 75;
 }
 function activeWeaknesses(){
   var s=cs();if(!s)return[];
-  var dims=["recall","understanding","legal_precision","transfer","exam_execution"];
-  return dims.map(function(d){return {d:d,v:s.mastery[d]?s.mastery[d].value:null};})
-    .filter(function(x){return x.v!=null&&x.v<weaknessThreshold(x.d)&&!isPathCompleted(x.d);})
-    .sort(function(a,b){return a.v-b.v;});
+  var dims=["recall","understanding","legal_precision","transfer","exam_execution","observation"];
+  var errors=errorMemory(30);
+  return dims.map(function(d){
+    var v=s.mastery[d]?s.mastery[d].value:null,p=pathState(d);
+    var related=errors.filter(function(e){return e.item&&e.item.dimension===d;});
+    var latest=related[0];
+    var pr=E?E.priorityScore({mastery:v,examImportanceWeight:dimensionExamWeight(d),errorType:latest?latest.code:null,repeatErrors:related.length,retentionStatus:p.retentionStatus}):{score:(v==null?0:100-v),reasons:[]};
+    return {d:d,v:v,priority:pr.score,reasons:pr.reasons};
+  }).filter(function(x){return x.v!=null&&x.v<weaknessThreshold(x.d)&&!isPathCompleted(x.d);})
+    .sort(function(a,b){return b.priority-a.priority;});
 }
 function primaryWeakness(){
   var w=activeWeaknesses();return w.length?w[0]:null;
@@ -227,17 +260,22 @@ function recommendedActivities(d){
 }
 function skillCheckItem(d){
   var c=course(),items=[];
+  if(d==="observation"){
+    var oa=(c.activities||[]).filter(function(a){return (a.kind==="CHANGE_ONE_FACT"||a.kind==="CASE_DETECTIVE")&&Array.isArray(a.options);});
+    if(!oa.length)return null;
+    var ax=oa[Math.min(oa.length-1,Math.max(0,(pathState(d).testAttempts||0)%oa.length))];
+    return {id:ax.id+"-obscheck",dimension:"observation",difficulty:2,type:"mcq",prompt:ax.prompt,unitId:ax.unitId,conceptId:ax.conceptId,variantGroupId:ax.courseId+"-observation",options:ax.options.map(function(o,i){return{id:"o"+i,text:o.text,score:o.score};})};
+  }
   (c.groups||[]).forEach(function(g){(g.items||[]).forEach(function(it){if(it.dimension===d)items.push(it);});});
   if(!items.length)return null;
   return items[Math.min(items.length-1,Math.max(0,(pathState(d).testAttempts||0)%items.length))];
 }
 function skillPathLabel(stage){
-  return stage==="learn"?"التعلم":stage==="practice"?"التدريب":stage==="assessment"?"اختبار المسار":"مكتمل";
+  return stage==="learn"?"التعلم":stage==="practice"?"التدريب":stage==="assessment"?"اختبار المسار":stage==="retention_check_pending"?"اختبار التثبيت":"مكتمل";
 }
 function skillPathProgress(d){
-  var p=pathState(d);
-  return ["learn","practice","assessment","completed"].map(function(st,i){
-    var order={learn:0,practice:1,assessment:2,completed:3};
+  var p=pathState(d),order={learn:0,practice:1,assessment:2,retention_check_pending:3,completed:4};
+  return ["learn","practice","assessment","retention_check_pending","completed"].map(function(st,i){
     var cur=order[p.stage],idx=order[st];
     return {stage:st,label:skillPathLabel(st),done:idx<cur||p.stage==="completed",active:idx===cur&&p.stage!=="completed"};
   });
@@ -249,18 +287,18 @@ function advancePathAfterPractice(d,score){
   else p.stage="practice";
   save();
 }
-function finishSkillCheck(d,score){
-  var p=pathState(d);if(!p)return;
-  p.testAttempts=(p.testAttempts||0)+1;p.lastScore=score;
-  if(score>=.8){
-    p.stage="completed";p.completedAt=new Date().toISOString();
-  }else{
-    p.stage="practice";
+function finishSkillCheck(d,score,item){
+  var p=pathState(d);if(!p)return {status:"missing_path"};
+  var result=E?E.applyRetentionResult(p,score,Date.now()):{status:score>=.8?"confirmed":"assessment_failed",path:p};
+  if(result.status==="first_pass"&&item)p.firstPassItemId=item.id;
+  if(result.status==="retention_failed"){
+    var original=item||findItem(p.firstPassItemId);
+    if(original)scheduleReview(original,score,3,"retention_failure");
   }
-  save();
+  save();return result;
 }
 function markLearningDone(d){
-  var p=pathState(d);if(p&&p.stage==="learn"){p.stage="practice";save();}
+  var p=pathState(d);if(p&&p.stage==="learn"&&p.learnCheckPassed){p.stage="practice";save();}
 }
 function completedPathCount(){
   var s=cs();if(!s)return 0;
@@ -281,13 +319,8 @@ function errorMemory(limit){
     (g.items||[]).forEach(function(x){
       if(x.score>=.999)return;
       var it=findItem(x.itemId);if(!it)return;
-      var type="فجوة معرفية";
-      if(g.confidence===3&&x.score<.5)type="تصور خاطئ بثقة عالية";
-      else if(it.dimension==="transfer")type="صعوبة في التطبيق على الوقائع";
-      else if(it.dimension==="legal_precision")type="خلط بين مفاهيم متقاربة";
-      else if(it.dimension==="exam_execution")type="نقص في بناء الإجابة";
-      else if(it.dimension==="understanding")type="فهم غير مكتمل";
-      out.push({item:it,score:x.score,type:type,at:g.at,confidence:g.confidence});
+      var code=E?E.classifyError(it,x.score,g.confidence):"knowledge_gap";
+      out.push({item:it,score:x.score,code:code,type:E?E.errorLabel(code):code,at:g.at,confidence:g.confidence});
     });
   });
   return out.reverse().slice(0,limit||6);
@@ -303,7 +336,8 @@ function dimensionInfo(d){
     understanding:{icon:"💡",desc:"قدرتك على فهم معنى القاعدة وعلاقتها بالمفاهيم القانونية القريبة، لا مجرد حفظها."},
     legal_precision:{icon:"🔍",desc:"قدرتك على التمييز بين المصطلحات والبدائل القانونية المتشابهة واختيار الوصف الأدق."},
     transfer:{icon:"🕵️",desc:"قدرتك على اكتشاف المسألة القانونية وتطبيق ما تعلمته على واقعة جديدة."},
-    exam_execution:{icon:"✍️",desc:"قدرتك على تنظيم الإجابة القانونية وتغطية عناصرها الأساسية بصورة واضحة ومتماسكة."}
+    exam_execution:{icon:"✍️",desc:"قدرتك على تنظيم الإجابة القانونية وتغطية عناصرها الأساسية بصورة واضحة ومتماسكة."},
+    observation:{icon:"👁️",desc:"قدرتك على ملاحظة التفاصيل الدقيقة والعناصر المفقودة والتغييرات الصغيرة التي تبدّل التكييف القانوني."}
   };
   return map[d]||{icon:"🎯",desc:"بُعد تدريبي من أبعاد الأداء القانوني."};
 }
@@ -321,7 +355,8 @@ function nextActionForDimension(d){
     var p=pathState(d);
     if(p.stage==="learn")return "هذا هو المسار الحالي: تعلم موجّه أولًا.";
     if(p.stage==="practice")return "هذا هو المسار الحالي: تدريب موجّه على نقطة الضعف.";
-    if(p.stage==="assessment")return "هذا هو المسار الحالي: اختبار قصير لتحديد ما إذا كان يمكن إغلاقه.";
+    if(p.stage==="assessment")return "هذا هو المسار الحالي: اختبار أولي. النجاح لا يغلق المسار قبل اختبار التثبيت المؤجل.";
+    if(p.stage==="retention_check_pending")return "تم الاجتياز الأولي، ويُنتظر اختبار تثبيت مستقل بعد مرور 24 ساعة على الأقل.";
   }
   var m=cs().mastery[d];
   if(m&&m.value<weaknessThreshold(d))return "فجوة مثبتة، لكنها تأتي بعد المسار الحالي في ترتيب الأولويات.";
@@ -384,7 +419,7 @@ function ownerSetupScreen(){
   return '<section class="authExperience"><div class="authBackdrop"><div class="orb orb1"></div><div class="orb orb2"></div><div class="legalMark">⚖</div></div><div class="authHeroPanel"><div class="brandLockup"><div class="brandSeal">Lx</div><div><span>LexLearn AI</span><small>تعلم قانوني تكيفي</small></div></div><div class="heroCopy"><span class="eyebrow">منصة قانونية تتعلم من الطالب</span><h1>أنت لا تنشئ حساب إدارة فقط.<br><em>أنت تنشئ مركز متابعة للتعلم القانوني.</em></h1><p>من هنا تُنشئ حسابات الطلاب، وتتابع أداءهم، وتحدد احتياج كل طالب إلى تدريب مناسب.</p><div class="heroFeatureRow"><span>🧠 تحليل أداء</span><span>⚖️ تعلم قانوني تكيفي</span><span>📈 تتبع تطور</span></div></div><div class="visualFrame"><img src="assets/visual-study.svg" alt="بيئة تعلم قانوني ذكية"><div class="floatingCard fc1">🎯 3 أهداف شخصية</div><div class="floatingCard fc2">🔍 تحليل الأخطاء</div><div class="floatingCard fc3">✍️ تدريب امتحاني</div></div></div><div class="authFormPanel"><div class="authStep">01</div><div class="kicker">إعداد المنصة لأول مرة</div><h2>أنشئ حساب المدير</h2><p class="authLead">بيانات المدير تفتح لوحة تحكم منفصلة عن تجربة الطالب.</p><div id="authError" class="authError hidden"></div><label class="fieldlabel">اسم المدير</label><input id="ownerName" type="text" placeholder="مثال: أحمد الفقي"><label class="fieldlabel">اسم المستخدم</label><input id="ownerUser" type="text" placeholder="مثال: admin"><label class="fieldlabel">كلمة المرور</label><input id="ownerPass" type="password" placeholder="6 أحرف على الأقل"><button class="btn primary fullbtn bigbtn" id="createOwner">إنشاء لوحة الإدارة</button><div class="securityNote"><span>🔒</span><p><b>نسخة تجريبية محلية:</b> الحسابات الآن محفوظة على هذا الجهاز فقط. قبل استخدام المنصة مع طلاب حقيقيين سننقل الدخول والبيانات إلى خادم آمن ومتزامن بين الأجهزة.</p></div></div></section>';
 }
 function loginScreen(){
-  return '<section class="authExperience loginMode"><div class="authBackdrop"><div class="orb orb1"></div><div class="orb orb2"></div><div class="legalMark">⚖</div></div><div class="authHeroPanel"><div class="brandLockup"><div class="brandSeal">Lx</div><div><span>LexLearn AI</span><small>تعلم قانوني يتكيف مع أدائك</small></div></div><div class="heroCopy"><span class="eyebrow">مرحبًا بعودتك</span><h1>كل جلسة أقصر.<br><em>لكنها أذكى من سابقتها.</em></h1><p>ادخل إلى مسارك، وراجع نقاط التحسين، وتابع تقدمك الفعلي بدل الاكتفاء بعدد الأسئلة التي أجبت عنها.</p><div class="heroFeatureRow"><span>🧭 مسار شخصي</span><span>🧩 تدريبات قصيرة</span><span>🔥 تقدم مستمر</span></div></div><div class="visualFrame loginVisual"><img src="assets/visual-study.svg" alt="طلاب قانون يتعلمون"><div class="floatingCard fc1">اليوم • 7 دقائق</div><div class="floatingCard fc2">🧠 خطأ متكرر تم اكتشافه</div></div></div><div class="authFormPanel"><div class="authStep">↳</div><div class="kicker">تسجيل الدخول</div><h2>ادخل إلى حسابك</h2><p class="authLead">استخدم اسم المستخدم وكلمة المرور المخصصين لك.</p><div id="authError" class="authError hidden"></div><label class="fieldlabel">اسم المستخدم</label><input id="loginUser" type="text" autocomplete="username" placeholder="اسم المستخدم"><label class="fieldlabel">كلمة المرور</label><input id="loginPass" type="password" autocomplete="current-password" placeholder="••••••••"><button class="btn primary fullbtn bigbtn" id="loginBtn">دخول إلى LexLearn</button><div class="securityNote"><span>ℹ️</span><p>إذا أُنشئ حساب الطالب على جهاز مختلف فلن يظهر في هذه النسخة المحلية. يحتاج الدخول من أجهزة متعددة إلى خادم آمن وقاعدة بيانات سحابية.</p></div></div></section>';
+  return '<section class="authExperience loginMode"><div class="authBackdrop"><div class="orb orb1"></div><div class="orb orb2"></div><div class="legalMark">⚖</div></div><div class="authHeroPanel"><div class="brandLockup"><div class="brandSeal">Lx</div><div><span>LexLearn AI</span><small>تعلم قانوني يتكيف مع أدائك</small></div></div><div class="heroCopy"><span class="eyebrow">مرحبًا بعودتك</span><h1>كل جلسة أقصر.<br><em>لكنها أذكى من سابقتها.</em></h1><p>ادخل إلى مسارك، وراجع نقاط التحسين، وتابع تقدمك الفعلي بدل الاكتفاء بعدد الأسئلة التي أجبت عنها.</p><div class="heroFeatureRow"><span>🧭 مسار شخصي</span><span>🧩 تدريبات قصيرة</span><span>🔥 تقدم مستمر</span></div></div><div class="visualFrame loginVisual"><img src="assets/visual-study.svg" alt="طلاب قانون يتعلمون"><div class="floatingCard fc1">اليوم • 7 دقائق</div><div class="floatingCard fc2">🧠 خطأ متكرر تم اكتشافه</div></div></div><div class="authFormPanel"><div class="authStep">↳</div><div class="kicker">تسجيل الدخول</div><h2>ادخل إلى حسابك</h2><p class="authLead">استخدم اسم المستخدم وكلمة المرور المخصصين لك.</p><div id="authError" class="authError hidden"></div><label class="fieldlabel">اسم المستخدم</label><input id="loginUser" type="text" autocomplete="username" placeholder="اسم المستخدم"><label class="fieldlabel">كلمة المرور</label><input id="loginPass" type="password" autocomplete="current-password" placeholder="••••••••"><button class="btn primary fullbtn bigbtn" id="loginBtn">دخول إلى LexLearn</button><div class="securityNote"><span>ℹ️</span><p>تنبيه أمني: تسجيل الدخول الحالي محلي وتجريبي ويستخدم hash غير مناسب للاستخدام الحقيقي مع الطلاب. لا تستخدم كلمة مرور حساسة هنا. قبل أي Pilot حقيقي يجب نقل المصادقة والصلاحيات إلى Backend آمن ومتزامن بين الأجهزة.</p></div></div></section>';
 }
 function showAuthError(msg){
   var el=document.getElementById("authError");
@@ -409,10 +444,10 @@ function adminStudentDetail(acc){
   var sum=studentSummary(acc),st=sum.state;
   var courseBlocks=C.courses.filter(function(c){return (acc.courseIds||[]).indexOf(c.id)>=0;}).map(function(c){
     var sx=st.courses[c.id]||freshCourseState();
-    var dims=["recall","understanding","legal_precision","transfer","exam_execution"];
+    var dims=["recall","understanding","legal_precision","transfer","exam_execution","observation"];
     var attempts=[];
     (sx.groupResults||[]).forEach(function(g){(g.items||[]).forEach(function(x){var it=findItem(x.itemId);attempts.push({g:g,it:it,x:x});});});
-    return '<div class="adminCourse"><div class="screenhead"><div><span class="coursecode">'+esc(c.code)+'</span><h3>'+esc(c.title_ar)+'</h3></div><span class="stepbadge">'+(sx.completed?"تم التشخيص":"لم يكتمل التشخيص")+'</span></div><div class="metricGrid">'+dims.map(function(d){var m=sx.mastery[d];return '<div class="metric"><div class="metricHead"><span>'+dimensionLabel(d)+'</span><span>'+(m?Math.round(m.value)+"%":"لم يُقاس")+'</span></div>'+(m?'<div class="bar"><span style="width:'+m.value+'%"></span></div>':'')+'</div>';}).join("")+'</div><h3 class="sectiontitle">المحاولات والأسئلة</h3>'+(attempts.length?'<div class="attemptList">'+attempts.map(function(a){return '<div class="attemptRow"><div><b>'+esc(a.it?a.it.prompt:a.x.itemId)+'</b><small>'+esc(a.g.title)+' • الثقة: '+confidenceLabel(a.g.confidence)+'</small><p>'+esc(answerDisplay(a.it,a.x.answer))+'</p></div><strong>'+Math.round(a.x.score*100)+'%</strong></div>';}).join("")+'</div>':'<div class="empty">لا توجد محاولات بعد.</div>')+'</div>';
+    return '<div class="adminCourse"><div class="screenhead"><div><span class="coursecode">'+esc(c.code)+'</span><h3>'+esc(c.title_ar)+'</h3></div><span class="stepbadge">'+(sx.completed?"تم التشخيص":"لم يكتمل التشخيص")+'</span></div><div class="metricGrid">'+dims.map(function(d){var m=sx.mastery[d];return '<div class="metric"><div class="metricHead"><span>'+dimensionLabel(d)+'</span><span>'+(m?Math.round(m.value)+"%":"لم يُقاس")+'</span></div>'+(m?'<div class="bar"><span style="width:'+m.value+'%"></span></div>':'')+'</div>';}).join("")+'<div class="metric"><div class="metricHead"><span>دقة تقدير الذات</span><span>'+(E?esc(E.calibrationLabel((sx.calibration||{}).status)):"—")+'</span></div><div class="reliability">'+((sx.calibration||{}).evidence||0)+' مجموعات</div></div></div><div class="unitAdminSummary"><h3 class="sectiontitle">الأداء حسب الوحدة</h3>'+(Object.keys(sx.unitMastery||{}).length?Object.keys(sx.unitMastery).map(function(uid){var u=(c.units||[]).find(function(x){return x.id===uid;});return '<div class="attemptRow"><div><b>'+esc(u?u.title:uid)+'</b><small>'+sx.unitMastery[uid].evidence+' أدلة</small></div><strong>'+Math.round(sx.unitMastery[uid].value)+'%</strong></div>';}).join(""):'<div class="empty">لم تُقاس وحدات بعد.</div>')+'</div><h3 class="sectiontitle">المحاولات والأسئلة</h3>'+(attempts.length?'<div class="attemptList">'+attempts.map(function(a){return '<div class="attemptRow"><div><b>'+esc(a.it?a.it.prompt:a.x.itemId)+'</b><small>'+esc(a.g.title)+' • الثقة: '+confidenceLabel(a.g.confidence)+'</small><p>'+esc(answerDisplay(a.it,a.x.answer))+'</p></div><strong>'+Math.round(a.x.score*100)+'%</strong></div>';}).join("")+'</div>':'<div class="empty">لا توجد محاولات بعد.</div>')+'</div>';
   }).join("");
   return '<section class="panel screen adminShell"><div class="screenhead"><div><button class="btn ghost" data-admin-home="1">← كل الطلاب</button><div class="kicker" style="margin-top:12px">ملف الطالب</div><h2>'+esc(acc.name)+'</h2><p class="small">@'+esc(acc.username)+' • الحساب منشأ بواسطة مدير المنصة</p></div><button class="btn outline" data-export-student="'+acc.id+'">تصدير بيانات الطالب</button></div><div class="statgrid"><div class="stat"><strong>'+(sum.avg==null?"—":sum.avg+"%")+'</strong><small>متوسط الأبعاد المقاسة</small></div><div class="stat"><strong>'+sum.completed+'</strong><small>مقررات مكتملة التشخيص</small></div><div class="stat"><strong>'+sum.groups+'</strong><small>مجموعات تشخيص</small></div><div class="stat"><strong>'+sum.activities+'</strong><small>تدريبات مكتملة</small></div></div><div class="adminReset"><label class="fieldlabel">إعادة تعيين كلمة المرور</label><div class="inlineform"><input id="resetStudentPass" type="password" placeholder="كلمة مرور جديدة"><button class="btn secondary" data-reset-pass="'+acc.id+'">تحديث</button></div></div>'+courseBlocks+'</section>';
 }
@@ -502,7 +537,7 @@ function commitGroup(){
   var s=cs(),g=currentGroup();
   var result={groupId:g.id,title:g.title,confidence:SESSION.confidence,avg:SESSION.pending.avg,items:SESSION.pending.items,at:new Date().toISOString()};
   s.groupResults.push(result);
-  result.items.forEach(function(x){var it=findItem(x.itemId);scheduleReview(it,x.score);});
+  result.items.forEach(function(x){var it=findItem(x.itemId);var et=E?E.classifyError(it,x.score,SESSION.confidence):"knowledge_gap";scheduleReview(it,x.score,SESSION.confidence,et);});
   addXP(10+(result.avg>=.8?5:0));
   s.groupIndex++;
   computeMastery();
@@ -522,7 +557,7 @@ function finishDiagnostic(){
 
 function resultsScreen(){
   var s=cs(),c=course(),ri=routeInfo(),goals=growthGoals(),errors=errorMemory(3);
-  var dims=["recall","understanding","legal_precision","transfer","exam_execution"];
+  var dims=["recall","understanding","legal_precision","transfer","exam_execution","observation"];
   var metrics=dims.map(function(d){
     var m=s.mastery[d];
     return '<div class="metric"><div class="metricHead"><span>'+dimensionLabel(d)+'</span><span>'+(m?pct(m.value):"لم يُقاس")+'</span></div>'+(m?'<div class="bar"><span style="width:'+m.value+'%"></span></div><div class="reliability">'+m.evidence+' دليل</div>':'<div class="reliability">لا توجد أدلة كافية لهذا البُعد.</div>')+'</div>';
@@ -531,7 +566,7 @@ function resultsScreen(){
   var examDetail=exam?'<div class="examdetail"><h3>تفصيل نتيجة الاختبار الامتحاني</h3><p class="small">تظهر نتيجة كل سؤال على حدة ليتضح أساس التقييم.</p>'+exam.items.map(function(x,i){var it=findItem(x.itemId);return '<div class="evidencecard"><b>سؤال '+(i+1)+': '+esc(it.prompt)+'</b><span>'+Math.round(x.score*100)+'%</span></div>';}).join("")+'</div>':'';
   var plan=goals.length?'<div class="focusPlan">'+goals.map(function(g,i){return '<div class="focusPlanRow '+(i===0?"primary":"")+'"><span class="goalIcon">'+g.icon+'</span><div><b>'+(i===0?"الأولوية الحالية: ":"أولوية لاحقة: ")+esc(g.title)+'</b><p>'+esc(g.why)+'</p><small>الخطوة التالية: '+esc(g.next)+'</small></div><span class="miniScore">'+g.score+'%</span></div>';}).join("")+'</div>':'<div class="goodbox"><b>لا توجد فجوة أساسية تستلزم مسارًا علاجيًا حاليًا.</b><br>ستقتصر الخطة على المراجعات المؤجلة والتحديات المتقدمة عند الحاجة.</div>';
   var err='<div class="errorMemory"><h3>🧠 ذاكرة الأخطاء</h3><p class="small">يستخدم النظام نوع الخطأ لتحديد التدريب المناسب، بدل إعادة السؤال نفسه بصورة آلية.</p>'+(errors.length?errors.map(function(e){return '<div class="errorChip"><b>'+esc(e.type)+'</b><span>'+esc(e.item.prompt.slice(0,90))+(e.item.prompt.length>90?"…":"")+'</span></div>';}).join(""):'<div class="goodbox">لا توجد أخطاء بارزة في التشخيص الحالي.</div>')+'</div>';
-  return '<section class="screen studentSimple"><div class="resultHero simplifiedHero"><div><div class="kicker">تحليل الأداء</div><h1>نتيجتك تحولت إلى خطة تدريب واضحة.</h1><p>لن تظهر لك تدريبات لا تحتاج إليها. يبدأ النظام بأضعف بُعد، ثم يغلق مساره بعد اجتياز الاختبار وينتقل إلى الأولوية التالية.</p></div><img src="assets/visual-study.svg" alt="تعلم قانوني ذكي"></div><div class="dashboard"><div class="panel">'+journey("results")+'<h2>'+esc(c.code)+' — '+esc(c.title_ar)+'</h2><div class="notice">هذه مؤشرات تدريبية مبنية على إجاباتك، وليست درجات جامعية رسمية. «لم يُقاس» لا يتحول إلى صفر.</div><div class="metricGrid">'+metrics+'<div class="metric"><div class="metricHead"><span>الاحتفاظ المؤجل</span><span>لم يُقاس بعد</span></div><div class="reliability">يُقاس في مراجعة لاحقة بعد مرور وقت مناسب.</div></div></div>'+examDetail+'</div><div class="pathcard"><div class="kicker" style="color:#e8c986">منطق المسار</div><h2>'+esc(ri.title)+'</h2><p>'+esc(ri.why)+'</p><div class="pathstep"><b>1.</b> تعلم موجّه</div><div class="pathstep"><b>2.</b> تدريب على نقطة الضعف</div><div class="pathstep"><b>3.</b> اختبار قصير للمسار</div><div class="pathstep"><b>4.</b> إغلاق المسار عند الاجتياز</div></div></div><div class="panel growthPlan"><div class="screenhead"><div><div class="kicker">خطة التدريب</div><h2>الأولويات التي تحتاجها فقط</h2><p class="small">لن تظهر التحديات غير المرتبطة بفجواتك الحالية.</p></div><span class="stepbadge">🎯 مخصصة حسب أدائك</span></div>'+plan+err+'<div class="actions"><button class="btn primary" id="enterTraining">ابدأ خطة التدريب</button></div></div></section>';
+  return '<section class="screen studentSimple"><div class="resultHero simplifiedHero"><div><div class="kicker">تحليل الأداء</div><h1>نتيجتك تحولت إلى خطة تدريب واضحة.</h1><p>لن تظهر لك تدريبات لا تحتاج إليها. يبدأ النظام بأضعف بُعد، ثم يغلق مساره بعد اجتياز الاختبار وينتقل إلى الأولوية التالية.</p></div><img src="assets/visual-study.svg" alt="تعلم قانوني ذكي"></div><div class="dashboard"><div class="panel">'+journey("results")+'<h2>'+esc(c.code)+' — '+esc(c.title_ar)+'</h2><div class="notice">هذه مؤشرات تدريبية مبنية على إجاباتك، وليست درجات جامعية رسمية. «لم يُقاس» لا يتحول إلى صفر.</div><div class="metricGrid">'+metrics+'<div class="metric"><div class="metricHead"><span>الاحتفاظ المؤجل</span><span>لم يُقاس بعد</span></div><div class="reliability">يُقاس في مراجعة لاحقة بعد مرور وقت مناسب.</div></div></div>'+examDetail+'</div><div class="pathcard"><div class="kicker" style="color:#e8c986">منطق المسار</div><h2>'+esc(ri.title)+'</h2><p>'+esc(ri.why)+'</p><div class="pathstep"><b>1.</b> تعلم موجّه</div><div class="pathstep"><b>2.</b> تدريب على نقطة الضعف</div><div class="pathstep"><b>3.</b> اختبار أولي</div><div class="pathstep"><b>4.</b> اختبار تثبيت بعد 24 ساعة على الأقل</div><div class="pathstep"><b>5.</b> إغلاق المسار بعد تأكيد الاحتفاظ</div></div></div><div class="panel growthPlan"><div class="screenhead"><div><div class="kicker">خطة التدريب</div><h2>الأولويات التي تحتاجها فقط</h2><p class="small">لن تظهر التحديات غير المرتبطة بفجواتك الحالية.</p></div><span class="stepbadge">🎯 مخصصة حسب أدائك</span></div>'+plan+err+'<div class="actions"><button class="btn primary" id="enterTraining">ابدأ خطة التدريب</button></div></div></section>';
 }
 function stats(){
   var s=cs();
@@ -549,7 +584,7 @@ function todayScreen(){
   var d=w.d,p=pathState(d),def=goalDefinition(d),lesson=chosenMicroLesson(),acts=recommendedActivities(d);
   var body="";
   if(p.stage==="learn"){
-    body='<div class="panel focusWork"><div class="phaseLabel">المرحلة 1 من 3 • التعلم الموجّه</div>'+(lesson?'<div class="microLesson simpleLesson"><div class="microTop"><span class="microIcon">'+lesson.icon+'</span><div><h2>'+esc(lesson.title)+'</h2><small>'+lesson.minutes+' دقائق تقريبًا</small></div></div><p>'+esc(lesson.explain)+'</p><div class="workedExample"><b>مثال</b><span>'+esc(lesson.example)+'</span></div><div class="microChallenge"><b>فكر في هذا السؤال</b><span>'+esc(lesson.challenge)+'</span></div></div>':'<div class="info">راجع المفهوم الأساسي المرتبط بهذا البُعد قبل الانتقال إلى التدريب.</div>')+'<div class="actions"><button class="btn primary" id="markLearnDone" data-dimension="'+d+'">انتهيت من التعلم — انتقل إلى التدريب</button></div></div>';
+    body='<div class="panel focusWork"><div class="phaseLabel">المرحلة 1 من 4 • التعلم الموجّه</div>'+(lesson?'<div class="microLesson simpleLesson"><div class="microTop"><span class="microIcon">'+lesson.icon+'</span><div><h2>'+esc(lesson.title)+'</h2><small>'+lesson.minutes+' دقائق تقريبًا</small></div></div><p>'+esc(lesson.explain)+'</p><div class="workedExample"><b>مثال</b><span>'+esc(lesson.example)+'</span></div><div class="microChallenge"><b>تحقق سريع — غير مُقيّم</b><span>'+esc(lesson.challenge)+'</span><textarea id="learnCheckInput" placeholder="اكتب إجابة قصيرة أو أعد صياغة الفكرة..."></textarea>'+(p.learnCheckPassed?'<div class="goodbox">✓ تم التفاعل مع الفكرة. يمكنك الانتقال إلى التدريب.</div>':'<button class="btn secondary" id="checkLearnUnderstanding" data-dimension="'+d+'">تحقق من التفاعل</button>')+'</div></div>':'<div class="info">راجع المفهوم الأساسي المرتبط بهذا البُعد قبل الانتقال إلى التدريب.</div>')+'<div class="actions">'+(p.learnCheckPassed?'<button class="btn primary" id="markLearnDone" data-dimension="'+d+'">انتقل إلى التدريب</button>':'<span class="small">أكمل التحقق السريع أولًا.</span>')+'</div></div>';
   }else if(p.stage==="practice"){
     var cards="";
     if(d==="exam_execution"){
@@ -557,9 +592,12 @@ function todayScreen(){
     }else{
       cards=acts.map(function(a){return activityCard(a,d);}).join("");
     }
-    body='<div class="panel focusWork"><div class="phaseLabel">المرحلة 2 من 3 • التدريب الموجّه</div><h2>تحديات مرتبطة بهذه الفجوة فقط</h2><p class="small">أخفى النظام بقية التحديات لأنها لا تخدم الأولوية الحالية.</p><div class="focusedChallenges">'+cards+'</div><div class="info">بعد أداء جيد في التدريب، سيفتح اختبار المسار تلقائيًا.</div></div>';
+    body='<div class="panel focusWork"><div class="phaseLabel">المرحلة 2 من 4 • التدريب الموجّه</div><h2>تحديات مرتبطة بهذه الفجوة فقط</h2><p class="small">أخفى النظام بقية التحديات لأنها لا تخدم الأولوية الحالية.</p><div class="focusedChallenges">'+cards+'</div><div class="info">بعد أداء جيد في التدريب، سيفتح اختبار المسار تلقائيًا.</div></div>';
   }else if(p.stage==="assessment"){
-    body='<div class="panel focusWork assessmentReady"><div class="phaseLabel">المرحلة 3 من 3 • اختبار المسار</div><div class="assessmentIcon">⚖️</div><h2>هل أصبحت هذه المهارة مستقرة؟</h2><p>اختبار قصير مستقل عن التدريب السابق. إذا حققت 80% أو أكثر، يُغلق هذا المسار ولا يظهر مرة أخرى ضمن الأولويات النشطة.</p><button class="btn primary bigbtn" data-skillcheck="'+d+'">ابدأ اختبار المسار</button></div>';
+    body='<div class="panel focusWork assessmentReady"><div class="phaseLabel">المرحلة 3 من 4 • اختبار أولي</div><div class="assessmentIcon">⚖️</div><h2>هل أتقنت المهارة الآن؟</h2><p>تحقيق 80% أو أكثر يسجل اجتيازًا أوليًا فقط. لن تُعتبر المهارة مكتملة قبل اختبار تثبيت مستقل بعد 24 ساعة على الأقل.</p><button class="btn primary bigbtn" data-skillcheck="'+d+'">ابدأ الاختبار الأولي</button></div>';
+  }else if(p.stage==="retention_check_pending"){
+    var ready=E&&E.retentionReady(p,Date.now()),dueAt=p.retentionDueAt?new Date(p.retentionDueAt):null;
+    body='<div class="panel focusWork assessmentReady"><div class="phaseLabel">المرحلة 4 من 4 • اختبار التثبيت</div><div class="assessmentIcon">⏳</div><h2>الاجتياز الأولي تم — نختبر الاحتفاظ الحقيقي.</h2>'+(ready?'<p>مرّ الفاصل الزمني المطلوب. سيظهر سؤال مختلف يقيس نفس المهارة قدر الإمكان.</p><button class="btn primary bigbtn" data-skillcheck="'+d+'">ابدأ اختبار التثبيت</button>':'<p>سيُفتح اختبار التثبيت بعد '+(dueAt?dueAt.toLocaleString("ar-EG",{dateStyle:"medium",timeStyle:"short"}):"24 ساعة")+'. لن نعتبر الأداء اللحظي إتقانًا نهائيًا.</p>')+'</div>';
   }
   var later=activeWeaknesses().slice(1,3);
   return '<section class="screen studentSimple">'+journey("training")+'<div class="studentPlanHeader"><div><span class="eyebrow">خطة التدريب الحالية</span><h1>هدف واحد في كل مرة.</h1><p>يركز النظام الآن على '+esc(def.title)+'، ويخفي التدريبات التي لا تحتاج إليها.</p></div><span class="stepbadge">'+due.length+' مراجعات مستحقة</span></div>'+focusedPathCard(d)+body+(later.length?'<div class="panel laterPriorities"><div class="kicker">أولويات لاحقة</div><p class="small">لن تُفتح قبل إنهاء المسار الحالي.</p>'+later.map(function(x){var z=goalDefinition(x.d);return '<span class="laterChip">'+z.icon+' '+esc(z.title)+'</span>';}).join("")+'</div>':'')+'</section>';
@@ -572,6 +610,7 @@ function activitiesScreen(){
   if(!w)return '<section class="panel screen studentSimple"><div class="allClearIcon">✓</div><h2>لا توجد تدريبات موجهة مطلوبة حاليًا.</h2><p>تظهر التدريبات هنا فقط عندما تكون مرتبطة بحاجة تعليمية مثبتة.</p><div class="actions"><button class="btn ghost" data-nav="today">العودة إلى الخطة</button></div></section>';
   var d=w.d,p=pathState(d),acts=recommendedActivities(d),cards="";
   if(p.stage==="assessment")return todayScreen();
+  if(p.stage==="retention_check_pending")return todayScreen();
   if(p.stage==="learn")return todayScreen();
   if(d==="exam_execution")cards='<div class="activityCard recommended"><div class="activityIcon">✍️</div><h3>تدريب على الإجابة القانونية</h3><p>تدريب كتابي واحد يخدم ضعف بناء الإجابة.</p><button class="btn primary" data-examactivity="1" data-target-dimension="'+d+'">ابدأ التدريب</button></div>';
   else cards=acts.map(function(a){return activityCard(a,d);}).join("");
@@ -590,9 +629,15 @@ function startActivity(id,exam,targetDimension){
   SESSION.activityAnswer=null;SESSION.activityFeedback=null;state.screen="activity_play";save();render();
 }
 function startSkillCheck(d){
-  var item=skillCheckItem(d);if(!item)return;
-  var p=pathState(d);p.testAttempts=(p.testAttempts||0)+0;
-  var a={id:"skillcheck-"+d,title:"اختبار المسار: "+goalDefinition(d).title,icon:"⚖️",isSkillCheck:true,targetDimension:d,prompt:item.prompt,sourceItem:item};
+  var p=pathState(d),item=null,isRetention=p.stage==="retention_check_pending";
+  if(isRetention){
+    if(E&&!E.retentionReady(p,Date.now())){toast("اختبار التثبيت لم يحن موعده بعد.");return;}
+    var original=findItem(p.firstPassItemId)||skillCheckItem(d);
+    item=E?E.selectVariant(original,allCourseItems()):null;
+    if(!item)item=skillCheckItem(d);
+  }else item=skillCheckItem(d);
+  if(!item)return;
+  var a={id:"skillcheck-"+d,title:(isRetention?"اختبار التثبيت: ":"اختبار المسار: ")+goalDefinition(d).title,icon:isRetention?"⏳":"⚖️",isSkillCheck:true,isRetentionCheck:isRetention,targetDimension:d,prompt:item.prompt,sourceItem:item};
   if(item.type==="build_answer")a.examItem=item;
   else if(item.type==="mcq")a.options=item.options.map(function(o){return {text:o.text,score:o.score};});
   SESSION.activity=a;SESSION.activityAnswer=null;SESSION.activityFeedback=null;state.screen="activity_play";save();render();
@@ -632,36 +677,54 @@ function submitActivity(){
   }
 
   if(a.isSkillCheck){
-    finishSkillCheck(a.targetDimension,score);
-    if(score>=.8){
-      detail+='<div class="pathPassed"><b>تم اجتياز المسار.</b><span>أُغلق هذا المسار ولن يظهر ضمن التدريبات النشطة. ستنتقل الخطة إلى الحاجة التالية، إن وجدت.</span></div>';
+    var outcome=finishSkillCheck(a.targetDimension,score,a.sourceItem);
+    if(outcome.status==="first_pass"){
+      detail+='<div class="pathPassed"><b>اجتياز أولي — لم يُغلق المسار بعد.</b><span>سيظهر اختبار تثبيت مختلف بعد مرور 24 ساعة على الأقل.</span></div>';
+    }else if(outcome.status==="confirmed"){
+      detail+='<div class="pathPassed"><b>تم تأكيد الاحتفاظ.</b><span>أُغلق المسار بعد اجتيازين منفصلين زمنيًا.</span></div>';
+    }else if(outcome.status==="retention_failed"){
+      detail+='<div class="notice"><b>الاحتفاظ لم يثبت بعد.</b> ستعود إلى تدريب موجّه ومراجعة أسرع قبل محاولة جديدة.</div>';
     }else{
       detail+='<div class="notice"><b>لم يُغلق المسار بعد.</b> ستعود إلى تدريب موجّه إضافي قبل إعادة الاختبار.</div>';
+    }
+  }else if(a.reviewId){
+    var srev=cs(),review=srev.reviews.find(function(r){return r.id===a.reviewId;});
+    srev.reviews=srev.reviews.filter(function(r){return r.id!==a.reviewId;});
+    if(score<.8&&a.sourceItem){
+      var rt=E?E.classifyError(a.sourceItem,score,review?review.confidence:null):"knowledge_gap";
+      scheduleReview(a.sourceItem,score,review?review.confidence:null,rt);
     }
   }else if(a.targetDimension){
     advancePathAfterPractice(a.targetDimension,score);
   }
 
   SESSION.activityFeedback={score:score,detail:detail};
-  var s=cs();s.activityHistory.push({title:a.title,score:score,targetDimension:a.targetDimension||null,isSkillCheck:!!a.isSkillCheck,at:new Date().toISOString()});
+  var s=cs();
+  if(a.kind==="MISSING_ELEMENT"||a.kind==="CHANGE_ONE_FACT"){
+    s.observationResults.push({activityId:a.id,score:score,unitId:a.unitId||null,conceptId:a.conceptId||null,at:new Date().toISOString()});
+    computeMastery();
+  }
+  s.activityHistory.push({title:a.title,score:score,targetDimension:a.targetDimension||null,isSkillCheck:!!a.isSkillCheck,isRetentionCheck:!!a.isRetentionCheck,gradingMethod:a.examItem?"keyword_fallback":null,at:new Date().toISOString()});
   addXP(8+(score>=.8?4:0));save();render();
 }
 function dueReviews(){var s=cs(),now=Date.now();return s.reviews.filter(function(r){return new Date(r.due).getTime()<=now;});}
 function reviewsScreen(){
   var s=cs(),due=dueReviews(),up=s.reviews.filter(function(r){return new Date(r.due).getTime()>Date.now();}).sort(function(a,b){return new Date(a.due)-new Date(b.due);});
-  return '<section class="panel screen">'+journey("training")+'<div class="screenhead"><div><div class="kicker">المراجعات</div><h2>المراجعة المجدولة</h2></div><span class="stepbadge">'+due.length+' مستحقة</span></div>'+(due.length?'<div class="grid2">'+due.map(function(r){var it=findItem(r.itemId);return '<div class="activityCard"><h3>'+esc(it?it.prompt:r.topic)+'</h3><p>هذا السؤال عاد لأن نتيجته السابقة كانت '+Math.round(r.score*100)+'%.</p><button class="btn primary" data-review="'+r.id+'">راجع الآن</button></div>';}).join("")+'</div>':'<div class="empty">لا توجد مراجعات مستحقة الآن.</div>')+(up.length?'<h3 style="margin-top:20px">القادم</h3><div class="timeline">'+up.slice(0,8).map(function(r){return '<div class="timelineItem"><b>'+esc(r.topic)+'</b><div class="small">'+new Date(r.due).toLocaleDateString("ar-EG",{dateStyle:"medium"})+'</div></div>';}).join("")+'</div>':'')+'</section>';
+  return '<section class="panel screen">'+journey("training")+'<div class="screenhead"><div><div class="kicker">المراجعات</div><h2>المراجعة المجدولة</h2></div><span class="stepbadge">'+due.length+' مستحقة</span></div>'+(due.length?'<div class="grid2">'+due.map(function(r){var it=findItem(r.itemId);return '<div class="activityCard"><h3>'+esc(it?it.prompt:r.topic)+'</h3><p>هذه مراجعة للمفهوم بسبب نتيجة سابقة قدرها '+Math.round(r.score*100)+'%.</p><button class="btn primary" data-review="'+r.id+'">راجع الآن</button></div>';}).join("")+'</div>':'<div class="empty">لا توجد مراجعات مستحقة الآن.</div>')+(up.length?'<h3 style="margin-top:20px">القادم</h3><div class="timeline">'+up.slice(0,8).map(function(r){return '<div class="timelineItem"><b>'+esc(r.topic)+'</b><div class="small">'+new Date(r.due).toLocaleDateString("ar-EG",{dateStyle:"medium"})+'</div></div>';}).join("")+'</div>':'')+'</section>';
 }
 function startReview(id){
   var r=cs().reviews.find(function(x){return x.id===id;});if(!r)return;
-  var item=findItem(r.itemId);if(!item)return;
-  SESSION.activity={id:"review",title:"مراجعة",icon:"🔄",examItem:item.type==="build_answer"?item:null,reviewItem:item,reviewId:id};
+  var original=findItem(r.itemId);if(!original)return;
+  var item=E?E.selectVariant(original,allCourseItems()):null;
+  if(!item)item=original;
+  SESSION.activity={id:"review",title:"مراجعة مفهومية",icon:"🔄",examItem:item.type==="build_answer"?item:null,reviewItem:item,sourceItem:item,reviewId:id,prompt:item.prompt};
   if(item.type==="mcq")SESSION.activity.options=item.options.map(function(o){return{text:o.text,score:o.score};});
   SESSION.activityAnswer=null;SESSION.activityFeedback=null;state.screen="activity_play";save();render();
 }
 function dashboardScreen(){
   var s=cs(),c=course(),ri=routeInfo(),ladder=masteryLadder(),errors=errorMemory(6),
       completedPaths=Object.keys(s.skillPaths||{}).filter(function(d){return s.skillPaths[d]&&s.skillPaths[d].stage==="completed";}),
-      dims=["recall","understanding","legal_precision","transfer","exam_execution"],
+      dims=["recall","understanding","legal_precision","transfer","exam_execution","observation"],
       current=primaryWeakness();
 
   var dimensionCards=dims.map(function(d){
@@ -671,7 +734,7 @@ function dashboardScreen(){
 
   var currentPlan=current?'<div class="currentProgressPlan"><div class="currentProgressIcon">'+goalDefinition(current.d).icon+'</div><div><div class="kicker">الأولوية الحالية في التدريب</div><h2>'+esc(goalDefinition(current.d).title)+'</h2><p>'+esc(goalDefinition(current.d).why)+'</p><span class="stagePill">المرحلة الحالية: '+esc(skillPathLabel(pathState(current.d).stage))+'</span></div><button class="btn primary" data-nav="today">متابعة الخطة</button></div>':'<div class="currentProgressPlan complete"><div class="currentProgressIcon">✓</div><div><div class="kicker">الحالة الحالية</div><h2>لا توجد فجوة علاجية نشطة.</h2><p>المسارات المطلوبة وفق الأدلة الحالية مكتملة. ستظهر مراجعات أو مسارات جديدة فقط إذا كشفت النتائج اللاحقة عن حاجة إليها.</p></div></div>';
 
-  var completed=completedPaths.length?'<div class="completedPathList">'+completedPaths.map(function(d){var z=goalDefinition(d),p=pathState(d);return '<div class="completedPathRow"><span>'+z.icon+'</span><div><b>'+esc(z.title)+'</b><small>أُغلق المسار بعد اجتياز اختبار المسار'+(p.completedAt?' • '+new Date(p.completedAt).toLocaleDateString("ar-EG",{dateStyle:"medium"}):'')+'</small></div><strong>✓</strong></div>';}).join("")+'</div>':'<div class="empty">لم يكتمل مسار تدريبي بعد.</div>';
+  var completed=completedPaths.length?'<div class="completedPathList">'+completedPaths.map(function(d){var z=goalDefinition(d),p=pathState(d);return '<div class="completedPathRow"><span>'+z.icon+'</span><div><b>'+esc(z.title)+'</b><small>أُغلق المسار بعد تأكيد الاحتفاظ في اختبار مؤجل'+(p.completedAt?' • '+new Date(p.completedAt).toLocaleDateString("ar-EG",{dateStyle:"medium"}):'')+'</small></div><strong>✓</strong></div>';}).join("")+'</div>':'<div class="empty">لم يكتمل مسار تدريبي بعد.</div>';
 
   return '<section class="screen studentSimple progressDashboard">'+
     '<div class="panel progressIntro">'+journey("training")+
@@ -683,8 +746,9 @@ function dashboardScreen(){
     '<div class="panel" style="margin-top:16px"><div class="screenhead"><div><div class="kicker">أبعاد الأداء</div><h2>ماذا تعني كل نتيجة؟</h2></div></div><div class="progressExplainGrid">'+dimensionCards+
       '<div class="progressExplainCard neutral"><div class="progressExplainHead"><span class="progressExplainIcon">⏳</span><div><h3>الاحتفاظ المؤجل</h3><span class="statusBadge neutral">لم يُقاس بعد</span></div><strong>—</strong></div><p>يقيس ما إذا كانت المعرفة بقيت مستقرة بعد مرور وقت، وليس في الجلسة نفسها.</p><div class="progressNext"><b>متى يظهر؟</b><span>بعد مراجعة لاحقة في موعد مختلف. لذلك لا نحوله إلى صفر ولا ندخله في الحكم الحالي.</span></div></div>'+
     '</div></div>'+
+    '<div class="panel" style="margin-top:16px"><div class="kicker">المؤشرات التحليلية</div><h2>دقة تقدير الذات والوحدات</h2><div class="metricGrid"><div class="metric"><div class="metricHead"><span>Calibration</span><span>'+(E?esc(E.calibrationLabel((s.calibration||{}).status)):"—")+'</span></div><div class="reliability">'+((s.calibration||{}).evidence||0)+' مجموعات مستخدمة في القياس</div></div><div class="metric"><div class="metricHead"><span>الوحدات المقاسة</span><span>'+Object.keys(s.unitMastery||{}).length+'</span></div><div class="reliability">'+(Object.keys(s.unitMastery||{}).length?Object.keys(s.unitMastery||{}).map(function(uid){return esc(unitLabel(uid))+' '+Math.round(s.unitMastery[uid].value)+'%';}).join(' • '):'لم تُقاس وحدات بعد')+'</div></div></div></div>'+
     '<div class="panel" style="margin-top:16px"><div class="kicker">سُلَّم العمق القانوني</div><h2>كيف يتطور الأداء القانوني؟</h2><p class="small">هذا السلم يوضح الانتقال من معرفة المفهوم إلى استخدامه في واقعة وإجابة امتحانية. العلامة الخضراء تعني أن لديك دليلًا مبدئيًا على اجتياز المرحلة، وليست شهادة نهائية بالإتقان.</p><div class="masteryLadder">'+ladder.map(function(x,i){return '<div class="ladderStep '+(x.done?"done":"")+'"><span>'+x.icon+'</span><b>'+esc(x.title)+'</b><small>'+(x.done?"ثبت مبدئيًا من أدائك":"لم يثبت بعد")+'</small></div>';}).join("")+'</div></div>'+
-    '<div class="panel" style="margin-top:16px"><div class="kicker">المسارات المكتملة</div><h2>المهارات التي انتهى تدريبها النشط</h2><p class="small">بعد اجتياز اختبار المسار يُغلق المسار ويختفي من التدريبات النشطة، لكنه يبقى هنا كسجل للتقدم.</p>'+completed+'</div>'+
+    '<div class="panel" style="margin-top:16px"><div class="kicker">المسارات المكتملة</div><h2>المهارات التي انتهى تدريبها النشط</h2><p class="small">لا يُغلق المسار بعد الاجتياز الأولي؛ يُغلق فقط بعد اختبار تثبيت لاحق يؤكد الاحتفاظ، ثم يبقى هنا كسجل للتقدم.</p>'+completed+'</div>'+
     '<div class="panel" style="margin-top:16px"><div class="kicker">ذاكرة الأخطاء</div><h2>ما الذي يتعلمه النظام من أخطائك؟</h2><p class="small">لا يسجل النظام أن الإجابة كانت خاطئة فقط؛ بل يحاول تحديد نوع الفجوة حتى يختار تدريبًا أنسب.</p>'+(errors.length?'<div class="attemptList">'+errors.map(function(e){return '<div class="attemptRow"><div><b>'+esc(e.type)+'</b><small>'+dimensionLabel(e.item.dimension)+'</small><p>'+esc(e.item.prompt)+'</p></div><strong>'+Math.round(e.score*100)+'%</strong></div>';}).join("")+'</div>':'<div class="goodbox">لا توجد أخطاء مسجلة حاليًا.</div>')+'</div>'+
   '</section>';
 }
@@ -707,7 +771,7 @@ function render(){
     else if(state.screen==="dashboard")html+=dashboardScreen();
     else html+=countryScreen();
   }
-  html+='</main><div class="footer">LexLearn AI • تعلم قانوني تكيفي • النسخة التجريبية v6.5</div><div id="toast" class="toast"></div>';
+  html+='</main><div class="footer">LexLearn AI • تعلم قانوني تكيفي • النسخة التجريبية v7.0</div><div id="toast" class="toast"></div>';
   APP.innerHTML=html;bind();
 }
 function exportStudent(id){
@@ -751,7 +815,7 @@ function bind(){
     if(auth.accounts.some(function(x){return x.username.toLowerCase()===username;})){toast("اسم المستخدم موجود بالفعل.");return;}
     if(!courseIds.length){toast("اختر مقررًا واحدًا على الأقل.");return;}
     var a={id:uid("student"),role:"student",name:name,username:username,passwordHash:hashPass(pass),courseIds:courseIds,createdAt:new Date().toISOString()};
-    auth.accounts.push(a);saveAuth();localStorage.setItem(studentStateKey(a.id),JSON.stringify(freshState()));
+    auth.accounts.push(a);saveAuth();DATA_REPO.set(studentStateKey(a.id),JSON.stringify(freshState()));
     ADMIN.lastCreated={id:a.id,username:username,password:pass};render();
   };
   document.querySelectorAll("[data-student-detail]").forEach(function(el){el.onclick=function(){ADMIN.selectedStudentId=el.getAttribute("data-student-detail");render();window.scrollTo({top:0,behavior:"smooth"});};});
@@ -791,6 +855,11 @@ function bind(){
   if(state.screen==="transition"&&SESSION.transition){setTimeout(function(){if(state.screen==="transition")go("diagnostic_group");},2200);}
   var et=document.getElementById("enterTraining");if(et)et.onclick=function(){go("today");};
 
+  var lc=document.getElementById("checkLearnUnderstanding");if(lc)lc.onclick=function(){
+    var input=document.getElementById("learnCheckInput"),answer=norm(input&&input.value||"");
+    if(answer.length<4){toast("اكتب إجابة قصيرة أولًا.");return;}
+    var lp=pathState(lc.getAttribute("data-dimension"));lp.learnCheckPassed=true;save();render();
+  };
   var ml=document.getElementById("markLearnDone");if(ml)ml.onclick=function(){markLearningDone(ml.getAttribute("data-dimension"));render();window.scrollTo({top:0,behavior:"smooth"});};
   document.querySelectorAll("[data-skillcheck]").forEach(function(el){el.onclick=function(){startSkillCheck(el.getAttribute("data-skillcheck"));};});
   document.querySelectorAll("[data-activity]").forEach(function(el){el.onclick=function(){startActivity(el.getAttribute("data-activity"),false,el.getAttribute("data-target-dimension"));};});
