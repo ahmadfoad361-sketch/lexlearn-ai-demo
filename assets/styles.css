@@ -385,3 +385,46 @@ input[type=password]:focus{border-color:var(--maroon);box-shadow:0 0 0 3px rgba(
   .pathStages{grid-template-columns:1fr 1fr}.focusedChallenges{grid-template-columns:1fr}
   .focusPlanRow{grid-template-columns:42px 1fr}.focusPlanRow .miniScore{grid-column:2}
 }
+
+
+/* v6.5 — clearer progress explanations + no gavel */
+.stageCompleteMark{width:92px;height:92px;border-radius:50%;margin:2px auto 14px;display:grid;place-items:center;background:linear-gradient(145deg,#edf7f2,#dff1e8);border:1px solid #b9dccb;box-shadow:0 14px 32px rgba(38,115,90,.12);animation:stagePop .48s ease-out both}
+.stageCompleteMark span{width:52px;height:52px;border-radius:50%;display:grid;place-items:center;background:#26735a;color:#fff;font-size:30px;font-weight:950;box-shadow:0 8px 20px rgba(38,115,90,.18)}
+.transitionVisual,.impactRing{display:none!important}
+@keyframes stagePop{0%{transform:scale(.72);opacity:0}70%{transform:scale(1.06);opacity:1}100%{transform:scale(1);opacity:1}}
+
+.progressDashboard{max-width:1120px}
+.progressIntro{padding:22px}
+.progressIntro h1{font-size:28px;margin:4px 0 6px}
+.progressIntro .screenhead p{max-width:740px;color:var(--muted);margin:0}
+.howToRead{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin:15px 0}
+.howToRead>div{display:grid;grid-template-columns:30px 1fr;gap:8px;align-items:start;padding:11px;border-radius:13px;background:#f7f7f8;border:1px solid #e6e4e1}
+.howToRead b{width:27px;height:27px;border-radius:9px;display:grid;place-items:center;background:#f1e6eb;color:var(--maroon);font-size:11px}
+.howToRead span{font-size:10px;line-height:1.65;color:#657080}.howToRead strong{display:block;color:var(--navy);font-size:11px;margin-bottom:2px}
+
+.currentProgressPlan{display:grid;grid-template-columns:58px 1fr auto;gap:13px;align-items:center;margin-top:16px;padding:18px 20px;border-radius:18px;background:linear-gradient(135deg,#13233d,#1f3d64);color:#fff;box-shadow:var(--shadow)}
+.currentProgressPlan.complete{background:linear-gradient(135deg,#205f49,#2e8065)}
+.currentProgressPlan h2{color:#fff;margin:3px 0 4px}.currentProgressPlan p{margin:0;color:#dce5f0;font-size:11px;max-width:680px}
+.currentProgressIcon{width:54px;height:54px;border-radius:15px;display:grid;place-items:center;background:rgba(255,255,255,.1);font-size:28px}
+.stagePill{display:inline-flex;margin-top:8px;padding:6px 9px;border-radius:999px;background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.11);font-size:10px;font-weight:850;color:#f1f4f8}
+
+.progressExplainGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
+.progressExplainCard{border:1px solid var(--line);border-radius:16px;padding:15px;background:#fff;box-shadow:0 6px 18px rgba(19,35,61,.035)}
+.progressExplainCard.needs{border-color:#e6c5ca;background:#fffafb}.progressExplainCard.strong{border-color:#c6e3d5;background:#fbfefc}.progressExplainCard.steady{border-color:#e5d8b6;background:#fffdf8}
+.progressExplainHead{display:grid;grid-template-columns:42px 1fr auto;gap:9px;align-items:center}.progressExplainIcon{width:40px;height:40px;border-radius:12px;background:#f1eef2;display:grid;place-items:center;font-size:21px}
+.progressExplainHead h3{margin:0 0 3px;font-size:14px}.progressExplainHead>strong{font-size:22px;color:var(--navy)}
+.statusBadge{display:inline-flex;padding:3px 7px;border-radius:999px;font-size:9px;font-weight:900}.statusBadge.needs{background:#fdebed;color:#923847}.statusBadge.steady{background:#fff2cf;color:#7d6022}.statusBadge.strong{background:#e8f5ee;color:#24684f}.statusBadge.neutral{background:#edf0f3;color:#606b78}
+.progressExplainCard>p{font-size:11px;color:var(--muted);line-height:1.75;min-height:44px;margin:11px 0}
+.progressEvidence{display:grid;grid-template-columns:auto 1fr;gap:8px;margin-top:8px;font-size:9px;color:#69727e}.progressEvidence span:first-child{white-space:nowrap}.progressEvidence b{color:var(--navy)}
+.progressNext{margin-top:11px;padding:10px;border-radius:11px;background:#f7f7f8;display:grid;gap:3px}.progressNext b{font-size:10px;color:var(--navy)}.progressNext span{font-size:10px;color:#68717d;line-height:1.6}
+
+@media(max-width:880px){
+  .howToRead{grid-template-columns:1fr 1fr}
+  .progressExplainGrid{grid-template-columns:1fr}
+  .currentProgressPlan{grid-template-columns:52px 1fr}.currentProgressPlan .btn{grid-column:1/-1}
+}
+@media(max-width:560px){
+  .howToRead{grid-template-columns:1fr}
+  .progressExplainHead{grid-template-columns:38px 1fr auto}
+  .progressEvidence{grid-template-columns:1fr}
+}
