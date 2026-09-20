@@ -14,6 +14,74 @@ var DATA_REPO = {
   set:function(key,value){localStorage.setItem(key,value);},
   remove:function(key){localStorage.removeItem(key);}
 };
+var URL_PARAMS = new URLSearchParams(window.location.search);
+var DEMO_MODE = URL_PARAMS.get("demo")==="1";
+var DEMO_VIEW = URL_PARAMS.get("view")||"dashboard";
+var DEMO_ACCOUNT = {id:"demo-student",role:"student",name:"مريم — طالبة سنة أولى",username:"conference-demo",courseIds:["QA-QU-LAWC101","QA-QU-LAWC213"],createdAt:"2026-09-20T00:00:00.000Z",demo:true};
+function demoCourseState(){
+  return {
+    groupIndex:5,
+    groupResults:[
+      {title:"البداية",confidence:3,at:"2026-09-19T08:00:00.000Z",items:[
+        {itemId:"101-e1",answer:"a",score:1},{itemId:"101-e2",answer:"a",score:1},{itemId:"101-e3",answer:"a",score:1}
+      ]},
+      {title:"التمييز",confidence:3,at:"2026-09-19T08:04:00.000Z",items:[
+        {itemId:"101-m1",answer:"a",score:1},{itemId:"101-m2",answer:"a",score:1},{itemId:"101-m3",answer:"b",score:0}
+      ]},
+      {title:"الدقة العالية",confidence:2,at:"2026-09-19T08:08:00.000Z",items:[
+        {itemId:"101-d1",answer:"a",score:1},{itemId:"101-d2",answer:"b",score:0},{itemId:"101-d3",answer:"a",score:1}
+      ]},
+      {title:"التطبيق",confidence:3,at:"2026-09-19T08:12:00.000Z",items:[
+        {itemId:"101-t1",answer:"b",score:0},{itemId:"101-t2",answer:"b",score:0},{itemId:"101-t3",answer:"a",score:1}
+      ]},
+      {title:"الإجابة الامتحانية",confidence:2,at:"2026-09-19T08:16:00.000Z",items:[
+        {itemId:"101-x1",answer:"ذكرت التشريع والعقد دون بيان الفرق الكامل",score:.5},
+        {itemId:"101-x2",answer:"الشخص صاحب الحق والعقار محل الحق",score:.75}
+      ]}
+    ],
+    mastery:{
+      recall:{value:88,evidence:3},
+      understanding:{value:76,evidence:4},
+      legal_precision:{value:62,evidence:4},
+      transfer:{value:48,evidence:3},
+      exam_execution:{value:58,evidence:2},
+      observation:{value:68,evidence:2}
+    },
+    unitMastery:{
+      "QA-QU-LAWC101-u1":{value:64,evidence:9},
+      "QA-QU-LAWC101-u2":{value:78,evidence:5}
+    },
+    conceptMastery:{},
+    calibration:{status:"overconfidence",value:.22,evidence:4},
+    observationResults:[
+      {itemId:"101-a2",score:1,at:"2026-09-19T08:20:00.000Z"},
+      {itemId:"101-a3",score:0,at:"2026-09-19T08:22:00.000Z"}
+    ],
+    route:"APPLICATION",
+    xp:180,
+    streak:4,
+    lastActive:"2026-09-20",
+    reviews:[
+      {id:"demo-review-1",itemId:"101-t1",topic:"تطبيق القانون من حيث الزمان",score:0,reviewReason:"application_difficulty",attempts:1,due:"2026-09-21T08:12:00.000Z"}
+    ],
+    activityHistory:[],
+    skillPaths:{
+      recall:{stage:"completed",retentionStatus:"confirmed",completedAt:"2026-09-20T06:30:00.000Z",learnCheckPassed:true},
+      understanding:{stage:"completed",retentionStatus:"confirmed",completedAt:"2026-09-20T06:32:00.000Z",learnCheckPassed:true},
+      legal_precision:{stage:"assessment",retentionStatus:"not_started",learnCheckPassed:true,practiceAttempts:2,testAttempts:0},
+      transfer:{stage:"practice",retentionStatus:"not_started",learnCheckPassed:true,practiceAttempts:1,testAttempts:0},
+      exam_execution:{stage:"learn",retentionStatus:"not_started",learnCheckPassed:false,practiceAttempts:0,testAttempts:0},
+      observation:{stage:"practice",retentionStatus:"not_started",learnCheckPassed:true,practiceAttempts:1,testAttempts:0}
+    },
+    completed:true
+  };
+}
+function demoState(){
+  var screen=DEMO_VIEW==="diagnostic"?"diagnostic_intro":DEMO_VIEW==="today"?"today":"dashboard";
+  var st={schema:6,country:"QA",courseId:"QA-QU-LAWC101",screen:screen,courses:{},createdAt:"2026-09-20T00:00:00.000Z"};
+  st.courses["QA-QU-LAWC101"]=demoCourseState();
+  return st;
+}
 
 var DIM_LABELS = {
   recall:"الاسترجاع",
@@ -39,9 +107,9 @@ function loadAuth(){
 }
 var auth=loadAuth();
 function saveAuth(){DATA_REPO.set(AUTH_KEY,JSON.stringify(auth));}
-function activeAccount(){return auth.accounts.find(function(x){return x.id===auth.currentId;})||null;}
-function accountById(id){return auth.accounts.find(function(x){return x.id===id;})||null;}
-function hasAdmin(){return auth.accounts.some(function(x){return x.role==="admin";});}
+function activeAccount(){if(DEMO_MODE)return DEMO_ACCOUNT;return auth.accounts.find(function(x){return x.id===auth.currentId;})||null;}
+function accountById(id){if(DEMO_MODE&&id===DEMO_ACCOUNT.id)return DEMO_ACCOUNT;return auth.accounts.find(function(x){return x.id===id;})||null;}
+function hasAdmin(){return DEMO_MODE||auth.accounts.some(function(x){return x.role==="admin";});}
 function studentStateKey(id){return STUDENT_PREFIX+id;}
 function freshCourseState(){
   return {groupIndex:0,groupResults:[],mastery:{},unitMastery:{},conceptMastery:{},calibration:{status:"insufficient_data",value:null,evidence:0},observationResults:[],route:null,xp:0,streak:0,lastActive:null,reviews:[],activityHistory:[],skillPaths:{},completed:false};
@@ -50,6 +118,7 @@ function freshState(){
   return {schema:6,country:null,courseId:null,screen:"country",courses:{},createdAt:new Date().toISOString()};
 }
 function readStudentState(id){
+  if(DEMO_MODE&&id===DEMO_ACCOUNT.id)return demoState();
   try{
     var s=JSON.parse(DATA_REPO.get(studentStateKey(id)));
     if(s&&s.courses)return s;
@@ -57,6 +126,7 @@ function readStudentState(id){
   return freshState();
 }
 function load(){
+  if(DEMO_MODE)return demoState();
   var a=activeAccount();
   if(a&&a.role==="student")return readStudentState(a.id);
   return freshState();
@@ -64,6 +134,7 @@ function load(){
 var state=load();
 
 function save(){
+  if(DEMO_MODE)return;
   var a=activeAccount();
   if(a&&a.role==="student")DATA_REPO.set(studentStateKey(a.id),JSON.stringify(state));
 }
@@ -404,6 +475,10 @@ function journey(stage){
 }
 function header(){
   var a=activeAccount(),s=a&&a.role==="student"?cs():null,nav="";
+  if(DEMO_MODE){
+    nav='<a class="iconbtn" href="conference.html">🎤 صفحة المؤتمر</a><button class="iconbtn" data-demo-view="dashboard">📊 النتيجة الجاهزة</button><button class="iconbtn" data-demo-view="diagnostic">🧪 التشخيص</button><a class="iconbtn" href="exams.html">📚 Exam Intelligence</a><span class="pill gold">وضع العرض</span>';
+    return '<header class="topbar"><div class="topin"><div class="brand"><div class="logo">Lx</div><div class="brandtext"><b>LexLearn AI</b><small>Conference Demo • Qatar</small></div></div><div class="topactions">'+nav+'</div></div></header>';
+  }
   if(a&&a.role==="admin"){
     nav='<button class="iconbtn" data-admin-home="1">👥 لوحة الإدارة</button><span class="pill">مدير المنصة</span><button class="iconbtn" id="logoutBtn">تسجيل الخروج</button>';
   }else if(a&&a.role==="student"){
@@ -771,7 +846,7 @@ function render(){
     else if(state.screen==="dashboard")html+=dashboardScreen();
     else html+=countryScreen();
   }
-  html+='</main><div class="footer">LexLearn AI • تعلم قانوني تكيفي • النسخة التجريبية v7.0</div><div id="toast" class="toast"></div>';
+  html+='</main><div class="footer">LexLearn AI • تعلم قانوني تكيفي • النسخة التجريبية v8.0'+(DEMO_MODE?' • Conference Demo':'')+'</div><div id="toast" class="toast"></div>';
   APP.innerHTML=html;bind();
 }
 function exportStudent(id){
@@ -805,6 +880,12 @@ function bind(){
     render();
   };
   var lo=document.getElementById("logoutBtn");if(lo)lo.onclick=function(){save();auth.currentId=null;saveAuth();state=freshState();ADMIN.selectedStudentId=null;render();};
+  document.querySelectorAll("[data-demo-view]").forEach(function(el){el.onclick=function(){
+    var v=el.getAttribute("data-demo-view");
+    if(v==="diagnostic"){state=demoState();state.screen="diagnostic_intro";state.courses["QA-QU-LAWC101"]=freshCourseState();state.courseId="QA-QU-LAWC101";state.country="QA";}
+    else{state=demoState();state.screen="dashboard";}
+    render();window.scrollTo({top:0,behavior:"smooth"});
+  };});
 
   var csb=document.getElementById("createStudent");if(csb)csb.onclick=function(){
     var name=(document.getElementById("studentName").value||"").trim();
