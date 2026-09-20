@@ -24,5 +24,6 @@ jobs:
           node --check assets/adaptive-engine.js
           node --check assets/content.js
           node --check assets/app.js
+          node --check namaa/assets/app.js
       - name: Adaptive engine tests
         run: node tests/adaptive-engine.test.js
