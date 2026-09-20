@@ -222,9 +222,7 @@ function bindActivity(a){
     btn.addEventListener("click",function(){
       var idx=Number(btn.getAttribute("data-choice"));
       var ch=a.choices[idx];
-      if(ch.audioChoice && !btn.dataset.listened){
-        btn.dataset.listened="1";speak(ch.audioChoice);return;
-      }
+      if(ch.audioChoice)speak(ch.audioChoice);
       answerChoice(a,idx,ch);
     });
   });
@@ -270,10 +268,42 @@ function advance(msg){
 function showIntervention(a){
   var area=document.getElementById("feedbackArea");
   area.innerHTML='<div class="feedback try"><b>نجربها بطريقة أوضح 🌿</b><br>'+esc(a.intervention||"نأخذ مثالًا أبسط ثم نحاول مرة ثانية.")+'</div>'+
-    '<div class="mini-stickers"><span class="sticker">بدون خصم نقاط</span><span class="sticker">بدون كلمة «غلط»</span><span class="sticker">الخطوة التالية تتغير</span></div>'+
-    '<div class="action-row"><span></span><button class="next-btn" id="nextStep">جرّب الخطوة التالية</button></div>';
+    '<div class="mini-stickers"><span class="sticker">بدون خصم نقاط</span><span class="sticker">بدون كلمة «غلط»</span><span class="sticker">النشاط التالي أبسط</span></div>'+
+    '<div class="action-row"><span></span><button class="next-btn" id="retryStep">نجرب بطريقة أبسط</button></div>';
   var hint=document.getElementById("hintBtn");if(hint)hint.disabled=true;
-  document.getElementById("nextStep").onclick=nextStep;
+  document.getElementById("retryStep").onclick=function(){renderRetry(a);};
+}
+
+function retrySpec(a){
+  if(a.id==="B2-A")return {title:"اسمع مرة ثانية واختر بين حرفين",audio:"مَ",choices:[{label:"م",correct:true},{label:"س"}]};
+  if(a.id==="B2-B")return {title:"أي صورة تبدأ بصوت «ب»؟",prompt:"ب",choices:[{label:"🦆",aria:"بطة",correct:true},{label:"🐟",aria:"سمكة"}]};
+  if(a.id==="A3")return {title:"نقرب الصوتين أكثر",audioSequence:["سَ","مَ"],choices:[{label:"🔊 1",audioChoice:"سَمَ",correct:true},{label:"🔊 2",audioChoice:"مَسَ"}]};
+  if(a.id==="C2")return {title:"نثبت الحرف ونغيّر الحركة فقط",prompt:"بُ",choices:[{label:"🔊 1",audioChoice:"بُ",correct:true},{label:"🔊 2",audioChoice:"بِ"}]};
+  if(a.id==="B3")return {title:"ركز في النقط",audio:"بَ",choices:[{label:"ب",correct:true},{label:"ت"}]};
+  if(a.id==="D1")return {title:"نجرب مع اختيارين",prompt:"سِ",choices:[{label:"🔊 1",audioChoice:"سِ",correct:true},{label:"🔊 2",audioChoice:"سَ"}]};
+  return {title:"نجرب مثالًا أبسط",choices:[{label:"الأول",correct:true},{label:"الثاني"}]};
+}
+
+function renderRetry(a){
+  var r=retrySpec(a), area=document.getElementById("feedbackArea");
+  var choices='<div class="choice-grid" style="grid-template-columns:repeat(2,1fr);margin-top:14px">'+r.choices.map(function(ch,i){
+    return '<button class="choice retry-choice" data-retry="'+i+'" aria-label="'+esc(ch.aria||ch.audioChoice||ch.label)+'"><span>'+esc(ch.label)+'</span>'+(ch.aria?'<small>'+esc(ch.aria)+'</small>':'')+'</button>';
+  }).join("")+'</div>';
+  area.innerHTML='<div class="feedback try"><b>'+esc(r.title)+'</b>'+(r.prompt?'<div style="font-size:48px;font-weight:900;text-align:center;margin-top:10px">'+esc(r.prompt)+'</div>':'')+
+    '<div class="action-row" style="justify-content:center">'+((r.audio||r.audioSequence)?'<button class="hint-btn" id="retryAudio">🔊 اسمع</button>':'')+'</div>'+choices+'</div>';
+  var aud=document.getElementById("retryAudio");
+  if(aud)aud.onclick=function(){if(r.audioSequence)speak(r.audioSequence.join(" ... "));else speak(r.audio);};
+  document.querySelectorAll("[data-retry]").forEach(function(btn){
+    btn.onclick=function(){
+      var idx=Number(btn.getAttribute("data-retry")),ch=r.choices[idx];
+      if(ch.audioChoice)speak(ch.audioChoice);
+      document.querySelectorAll("[data-retry]").forEach(function(b){b.disabled=true;});
+      if(ch.correct)btn.classList.add("correct");else btn.classList.add("wrong");
+      state.responses.push({id:a.id+"-retry",skill:a.skill,hypothesis:a.hypothesis||null,kind:"intervention",correct:!!ch.correct,choiceIndex:idx,shape:"تدخل مبسط",guess:"خياران (50%)",elapsedMs:null,replays:0,hints:1,at:new Date().toISOString()});
+      area.insertAdjacentHTML("beforeend",'<div class="feedback good"><b>'+(ch.correct?"أحسنت، كده أوضح 🌱":"تمام، هنسيبها دلوقتي ونرجع لها بطريقة مختلفة لاحقًا.")+'</b></div><div class="action-row"><span></span><button class="next-btn" id="afterRetry">نكمل</button></div>');
+      document.getElementById("afterRetry").onclick=nextStep;
+    };
+  });
 }
 
 function showHint(a){
