@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#7b1734">
+  <title>LexLearn AI — Presenter Mode</title>
+  <meta name="description" content="Fullscreen presenter mode for the LexLearn AI Qatar conference demo.">
+  <link rel="stylesheet" href="assets/presenter.css?v=8.1">
+</head>
+<body class="presenterPage">
+  <div class="presenterShell">
+    <header class="presenterTop">
+      <div class="presenterBrand">
+        <div class="presenterLogo">Lx</div>
+        <div><b>LexLearn AI</b><br><span class="presenterHint">Presenter Mode • Qatar</span></div>
+      </div>
+      <div class="presenterMeta">
+        <span class="presenterPill hideMobile">⏱ <span class="presenterTimer" id="timer">00:00</span></span>
+        <button id="timerBtn" title="تشغيل/إيقاف المؤقت">تشغيل المؤقت</button>
+        <button id="notesBtn" title="N">ملاحظاتي</button>
+        <button id="fullscreenBtn" title="F">ملء الشاشة</button>
+        <a href="conference.html">خروج</a>
+      </div>
+    </header>
+
+    <main class="presenterStage" id="stage">
+      <section class="presenterSlide dark active" data-title="الافتتاح" data-note="ابدأ من المشكلة، لا من التكنولوجيا." data-script="تخيل طالب قانون يذاكر كثيرًا ويجيب نصف الأسئلة بشكل صحيح. السؤال المهم ليس: كم درجته؟ السؤال: لماذا أخطأ؟ هل المشكلة حفظ؟ فهم؟ تطبيق؟ أم بناء إجابة امتحانية؟">
+        <div class="presenterContent">
+          <span class="presenterKicker">01 • Hook</span>
+          <h1>الطالب لا يحتاج فقط أن يعرف<br>أنه أخطأ.</h1>
+          <p class="lead">يحتاج أن يعرف <b>لماذا أخطأ</b>، وما التدريب التالي الذي يناسب نوع الخطأ.</p>
+          <div class="presenterActionRow">
+            <a class="presenterAction secondary" href="index.html?demo=1&view=dashboard" target="_blank" rel="noopener">فتح طالب الـDemo ↗</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="presenterSlide light" data-title="المشكلة" data-note="أظهر أن المشكلة تعليمية وليست مجرد UX." data-script="المنصات المعتادة تعطينا نسبة عامة. لكن طالب القانون قد يكون قويًا في الاسترجاع وضعيفًا في التطبيق. إذا عاملنا الاثنين بنفس الطريقة فنحن نهدر وقت الطالب.">
+        <div class="presenterContent">
+          <span class="presenterKicker">02 • The problem</span>
+          <h2>نفس الدرجة قد تخفي مشكلتين مختلفتين تمامًا.</h2>
+          <div class="presenterGrid">
+            <div class="presenterCard"><b>🧠 88%</b><span>استرجاع قوي: الطالب يعرف القاعدة والمفهوم.</span></div>
+            <div class="presenterCard"><b>⚖️ 48%</b><span>تطبيق ضعيف: لا يلتقط المسألة القانونية داخل الوقائع بسهولة.</span></div>
+            <div class="presenterCard"><b>✍️ 58%</b><span>تنفيذ امتحاني متوسط: يعرف جزءًا من الإجابة لكنه لا يبنيها بكفاءة.</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="presenterSlide gold" data-title="الفكرة" data-note="هنا عرّف المنتج بجملة واحدة فقط." data-script="LexLearn AI يقيس ستة أبعاد للأداء القانوني، ثم يحولها إلى مسار تدريبي شخصي بدل إعطاء نفس الأسئلة للجميع.">
+        <div class="presenterContent">
+          <span class="presenterKicker">03 • The idea</span>
+          <div class="presenterBigMetric">6</div>
+          <h2>أبعاد، وليس درجة واحدة.</h2>
+          <div class="presenterFlow">
+            <div class="presenterFlowItem"><strong>الاسترجاع</strong><span>هل يتذكر المفهوم؟</span></div>
+            <div class="presenterFlowItem"><strong>الفهم</strong><span>هل يفهم علاقته بباقي البناء القانوني؟</span></div>
+            <div class="presenterFlowItem"><strong>الدقة</strong><span>هل يميز بين البدائل المتقاربة؟</span></div>
+            <div class="presenterFlowItem"><strong>التطبيق</strong><span>هل يكتشف القاعدة داخل واقعة؟</span></div>
+            <div class="presenterFlowItem"><strong>الامتحان</strong><span>هل يصوغ إجابة قانونية منظمة؟</span></div>
+          </div>
+          <p class="lead" style="margin-top:18px">والبُعد السادس: <b>الملاحظة الدقيقة</b> — التقاط التفصيل الصغير الذي يغيّر التكييف.</p>
+        </div>
+      </section>
+
+      <section class="presenterSlide light" data-title="طالب Demo" data-note="هذه أقوى شاشة في العرض. لا تقرأ كل شيء؛ أشر فقط إلى التطبيق 48%." data-script="هذه مريم، طالبة سنة أولى. الاسترجاع عندها 88%، لكن التطبيق 48%. إذن النظام لا يعيد شرح كل شيء لها، بل يعطي أولوية لمسار التطبيق ثم يتابع الاحتفاظ لاحقًا.">
+        <div class="presenterContent">
+          <span class="presenterKicker">04 • Live student insight</span>
+          <h2>طالب واحد. فجوة محددة. تدخل محدد.</h2>
+          <div class="presenterDemoFrame">
+            <iframe title="LexLearn demo dashboard" src="index.html?demo=1&view=dashboard"></iframe>
+          </div>
+          <div class="presenterActionRow">
+            <a class="presenterAction primary" href="index.html?demo=1&view=dashboard" target="_blank" rel="noopener">فتح الـDemo كاملًا ↗</a>
+            <a class="presenterAction secondary" href="index.html?demo=1&view=diagnostic" target="_blank" rel="noopener">ابدأ التشخيص من الصفر ↗</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="presenterSlide ink" data-title="التكيف" data-note="ركّز على الاحتفاظ المؤجل لأنه يميز الفكرة عن quiz عادي." data-script="المنصة لا تعتبر النجاح اللحظي إتقانًا نهائيًا. إذا نجح الطالب أول مرة، تنتظر اختبار تثبيت لاحق. لو سقط، يرجع إلى تدريب أسرع ومراجعة موجهة.">
+        <div class="presenterContent">
+          <span class="presenterKicker">05 • Adaptive loop</span>
+          <h2>النجاح الآن لا يعني أن المعرفة ثبتت.</h2>
+          <div class="presenterGrid">
+            <div class="presenterCard"><b>1</b><span>تشخيص: ما البُعد الأضعف؟</span></div>
+            <div class="presenterCard"><b>2</b><span>تدريب: نشاط يطابق نوع الخطأ.</span></div>
+            <div class="presenterCard"><b>3</b><span>اختبار تثبيت مؤجل بعد الاجتياز الأولي.</span></div>
+          </div>
+          <p class="lead" style="margin-top:24px">إذا لم يثبت الاحتفاظ، لا نغلق المسار — نعيد التدريب بمراجعة أسرع.</p>
+        </div>
+      </section>
+
+      <section class="presenterSlide light" data-title="Exam Intelligence" data-note="لا تقل يتنبأ بالامتحان. قل يزن الأدلة ويحافظ على المصدر." data-script="هنا الفرق المهم: الامتحان السابق الحقيقي، السؤال الرسمي المرتبط بالمقرر، والمراجعة الطلابية لا يدخلون النظام كأنهم شيء واحد. كل مصدر له هوية ودرجة ثقة.">
+        <div class="presenterContent">
+          <span class="presenterKicker">06 • Exam Intelligence</span>
+          <h2>مصدر واضح قبل أي “ذكاء”.</h2>
+          <div class="presenterGrid">
+            <div class="presenterCard"><b>Final تاريخي</b><span>جامعة قطر • القانون التجاري • مع مفتاح إجابة منشور.</span></div>
+            <div class="presenterCard"><b>سؤال رسمي</b><span>مصدر من جامعة قطر مرتبط بمحور مقرر — لا نسمّيه امتحان المادة.</span></div>
+            <div class="presenterCard"><b>مراجعة طلابية</b><span>تستخدم لتغطية المفاهيم، لا لحساب تكرار الامتحان.</span></div>
+          </div>
+          <div class="presenterActionRow">
+            <a class="presenterAction primary" href="exams.html" target="_blank" rel="noopener">فتح Exam Intelligence ↗</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="presenterSlide gold" data-title="Pilot" data-note="حوّل العرض من انبهار إلى خطوة عملية." data-script="بدل أن نطلب إطلاقًا كاملًا، نطلب تجربة صغيرة قابلة للقياس: مقرر واحد، 30 إلى 50 طالبًا، من 6 إلى 8 أسابيع، وقياس قبلي وبعدي مع اختبار احتفاظ مؤجل.">
+        <div class="presenterContent">
+          <span class="presenterKicker">07 • Pilot proposal</span>
+          <h2>مقرر واحد. دفعة صغيرة. قياس واضح.</h2>
+          <div class="presenterGrid">
+            <div class="presenterCard"><b>30–50</b><span>طالبًا في دفعة تجريبية.</span></div>
+            <div class="presenterCard"><b>6–8 أسابيع</b><span>مدة تكفي لإظهار التعلم والاحتفاظ.</span></div>
+            <div class="presenterCard"><b>Pre / Post</b><span>قياس قبلي وبعدي + Retention.</span></div>
+          </div>
+          <div class="presenterActionRow">
+            <a class="presenterAction primary" href="pilot.html" target="_blank" rel="noopener">فتح Pilot Proposal ↗</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="presenterSlide dark" data-title="الخاتمة" data-note="قف هنا. لا تشرح أكثر. افتح باب الأسئلة." data-script="الفكرة ببساطة: نريد أن يعرف طالب القانون ما الذي يحتاج أن يتعلمه بعد ذلك، وأن تعرف المؤسسة هل التدخل التعليمي أحدث فرقًا حقيقيًا قبل أن تتوسع.">
+        <div class="presenterContent presenterSplit">
+          <div>
+            <span class="presenterKicker">08 • Close</span>
+            <p class="presenterQuote">“نعرف <em>لماذا أخطأ الطالب</em>،<br>ثم نغيّر ما يتعلمه بعد ذلك.”</p>
+            <div class="presenterActionRow">
+              <a class="presenterAction secondary" href="conference.html" target="_blank" rel="noopener">نسخة الحضور ↗</a>
+              <a class="presenterAction secondary" href="index.html?demo=1&view=dashboard" target="_blank" rel="noopener">الـDemo ↗</a>
+            </div>
+          </div>
+          <div style="text-align:center">
+            <img class="presenterAudienceQR" alt="QR لنسخة مؤتمر LexLearn" src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=https%3A%2F%2Fahmadfoad361-sketch.github.io%2Flexlearn-ai-demo%2Fconference.html">
+            <div style="margin-top:10px;color:rgba(255,255,255,.7);font-size:13px">امسح الكود لفتح نسخة الحضور</div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="presenterBottom">
+      <button class="prev" id="prevBtn">← السابق</button>
+      <div class="presenterProgressWrap">
+        <div class="presenterProgress"><span id="progressBar"></span></div>
+        <span class="presenterCount" id="slideCount">1 / 8</span>
+      </div>
+      <button class="next" id="nextBtn">التالي →</button>
+    </footer>
+  </div>
+
+  <aside class="presenterNotes" id="notesPanel">
+    <button class="presenterCloseNotes" id="closeNotes">✕</button>
+    <h3 id="noteTitle">ملاحظاتي</h3>
+    <p id="noteText"></p>
+    <div class="noteCue"><b>قل هذه الجملة:</b><p id="scriptText" style="margin:6px 0 0"></p></div>
+    <div class="presenterHint" style="margin-top:14px">اختصارات: ← / → للتنقل • N للملاحظات • F لملء الشاشة • Space للتالي</div>
+  </aside>
+
+  <script>
+  (function(){
+    var slides=Array.from(document.querySelectorAll(".presenterSlide"));
+    var i=0, notes=document.getElementById("notesPanel"), startAt=null, elapsed=0, timerId=null;
+    var timer=document.getElementById("timer"), timerBtn=document.getElementById("timerBtn");
+
+    function fmt(sec){sec=Math.max(0,Math.floor(sec));var m=Math.floor(sec/60),s=sec%60;return String(m).padStart(2,"0")+":"+String(s).padStart(2,"0");}
+    function updateTimer(){
+      var sec=elapsed+(startAt?((Date.now()-startAt)/1000):0);
+      timer.textContent=fmt(sec);
+    }
+    function toggleTimer(){
+      if(startAt){elapsed+=(Date.now()-startAt)/1000;startAt=null;clearInterval(timerId);timerId=null;timerBtn.textContent="استكمال المؤقت";}
+      else{startAt=Date.now();timerId=setInterval(updateTimer,500);timerBtn.textContent="إيقاف المؤقت";}
+      updateTimer();
+    }
+    function show(n){
+      i=Math.max(0,Math.min(slides.length-1,n));
+      slides.forEach(function(s,idx){s.classList.toggle("active",idx===i);});
+      document.getElementById("slideCount").textContent=(i+1)+" / "+slides.length;
+      document.getElementById("progressBar").style.width=((i+1)/slides.length*100)+"%";
+      document.getElementById("prevBtn").disabled=i===0;
+      document.getElementById("nextBtn").textContent=i===slides.length-1?"إنهاء العرض":"التالي →";
+      document.getElementById("noteTitle").textContent=slides[i].dataset.title||"ملاحظاتي";
+      document.getElementById("noteText").textContent=slides[i].dataset.note||"";
+      document.getElementById("scriptText").textContent=slides[i].dataset.script||"";
+      document.title="LexLearn Presenter — "+(slides[i].dataset.title||"");
+    }
+    function next(){if(i<slides.length-1)show(i+1);else window.location.href="conference.html";}
+    function prev(){show(i-1);}
+    function toggleNotes(){notes.classList.toggle("open");}
+    function fullscreen(){
+      if(!document.fullscreenElement){document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen();}
+      else{document.exitFullscreen&&document.exitFullscreen();}
+    }
+    document.getElementById("nextBtn").onclick=next;
+    document.getElementById("prevBtn").onclick=prev;
+    document.getElementById("notesBtn").onclick=toggleNotes;
+    document.getElementById("closeNotes").onclick=toggleNotes;
+    document.getElementById("fullscreenBtn").onclick=fullscreen;
+    timerBtn.onclick=toggleTimer;
+    document.addEventListener("keydown",function(e){
+      if(e.key==="ArrowRight"||e.key===" "){e.preventDefault();next();}
+      else if(e.key==="ArrowLeft"){e.preventDefault();prev();}
+      else if(e.key.toLowerCase()==="n"){toggleNotes();}
+      else if(e.key.toLowerCase()==="f"){fullscreen();}
+    });
+    show(0);updateTimer();
+  })();
+  </script>
+</body>
+</html>
