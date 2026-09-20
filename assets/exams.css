@@ -57,3 +57,15 @@ details.examDetails summary{cursor:pointer;font-weight:900;color:var(--exam-maro
   .examGrid{grid-template-columns:1fr}.examStats{grid-template-columns:1fr}.examCard.wide{grid-column:auto}
   .examLibraryShortcut{left:12px;bottom:12px;padding:10px 13px}
 }
+.examCoverage{margin-top:16px}
+.examCoverageTable{display:grid;gap:8px;margin-top:14px}
+.examCoverageRow{display:grid;grid-template-columns:1.05fr 1.7fr 1.15fr;gap:12px;align-items:center;padding:12px 14px;border:1px solid var(--exam-border);border-radius:14px;background:#fff}
+.examCoverageRow.head{background:#f2ece9;font-weight:900;color:var(--exam-maroon)}
+.examCoverageRow span{line-height:1.6}
+.examSectionTitle{margin:26px 0 8px;padding:0 4px}
+.examSectionTitle h2{margin:4px 0 6px}
+.examSectionTitle p{margin:0;color:var(--exam-muted);line-height:1.8}
+@media(max-width:760px){
+  .examCoverageRow{grid-template-columns:1fr}
+  .examCoverageRow.head{display:none}
+}
