@@ -27,5 +27,6 @@ jobs:
           node --check namaa/assets/app.js
           node --check assets/v9-law-content.js
           node --check assets/v9-law.js
+          node --check assets/showcase.js
       - name: Adaptive engine tests
         run: node tests/adaptive-engine.test.js
