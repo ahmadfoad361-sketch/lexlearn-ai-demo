@@ -85,6 +85,7 @@ function pct(type){
   if(!a.length)return 0;
   return Math.round(a.filter(function(x){return x.correct;}).length/a.length*100);
 }
+function qualitative(v){if(v>=80)return "إجابات صحيحة في أغلب المهام";if(v>=45)return "نتائج متباينة";return "ظهرت صعوبة متكررة";}
 function freeScore(){
   var n=(state.free||"").replace(/[أإآ]/g,"ا").replace(/[ًٌٍَُِّْـ]/g,"");
   var keys=["ايجاب","قبول","محل","سبب","اوضاع","خاصه","العقد"];
@@ -101,18 +102,18 @@ function result(){
   var rec=weakest[2]==="application"?"وقائع قصيرة وتغيير عنصر واحد":weakest[2]==="understanding"?"تفكيك القاعدة إلى عناصر ومعنى": "استرجاع قصير بدون إعادة قراءة";
   stage(96,'<div class="stageCard">'+
     '<span class="demoEyebrow" style="color:#7a5d2d;background:#fff7e8;border-color:#e3d2ae">نتيجتك في الديمو</span>'+
-    '<h2>أداءك في هذه المحاولة</h2>'+
+    '<h2>ملاحظات وصفية من هذه المحاولة</h2>'+
     '<div class="metrics">'+
       metric("الاسترجاع",recall)+metric("الفهم",understanding)+metric("التطبيق",application)+
-      '<div class="metric"><span>الاحتفاظ بعد فترة</span><b>—</b><small>يُقاس لاحقًا</small></div>'+
+      '<div class="metric"><span>الاحتفاظ بعد فترة</span><b>لم يُقَس بعد</b><small>يحتاج جلسة مؤجلة مستقلة</small></div>'+
     '</div>'+
-    '<div class="planCard" style="margin-top:16px"><h3>الخطوة التالية</h3><p>'+esc(rec)+'</p></div>'+
+    '<div class="planCard" style="margin-top:16px"><h3>ملاحظة تجريبية</h3><p>'+esc(rec)+'</p></div><div class="demoDisclaimer">هذه النتيجة للاستخدام التجريبي فقط. Pilot 0 لا يعتمد نسبًا سيكومترية قبل اختبار الأداة على عينة حقيقية.</div>'+
     '<div class="demoActions"><button class="btn primary" id="toExam">جرّب سؤال الامتحان</button><button class="btn secondary" id="again">أعد الديمو</button></div>'+
   '</div>');
   document.getElementById("toExam").onclick=function(){state.view="exam";render();};
   document.getElementById("again").onclick=function(){state.view="hero";render();};
 }
-function metric(name,v){return '<div class="metric"><span>'+name+'</span><b>'+v+'%</b></div>';}
+function metric(name,v){return '<div class="metric"><span>'+name+'</span><b>'+qualitative(v)+'</b><small>وصف استكشافي — ليس درجة معيارية</small></div>';}
 function exam(){
   stage(100,'<div class="stageCard"><span class="demoEyebrow" style="color:#7a5d2d;background:#fff7e8;border-color:#e3d2ae">سؤال امتحاني</span>'+
     '<h2>اشرح متى ينعقد العقد وفقًا للمادة 64.</h2>'+
