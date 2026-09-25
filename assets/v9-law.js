@@ -94,28 +94,25 @@ function dueRetention(){
   var q=state.profile.retention[resultKey()];return q&&q.dueAt&&Date.now()>=q.dueAt&&!q.completed?q:null;
 }
 function renderHub(){
-  var s=subject(),res=currentResult(),due=dueRetention();
-  var html='<section class="workspace-head"><div><span class="section-overline">'+esc(country().name)+' / '+esc(s.title)+'</span><h1>'+esc(s.title)+'</h1><p>'+esc(s.subtitle)+'</p></div><span class="workspace-status">'+(res?"ملف الأداء جاهز":"ابدأ بالتشخيص")+'</span></section>'+
-  (due?'<div class="premium-alert"><div><b>مراجعة التثبيت مستحقة الآن</b><span>مر أكثر من 24 ساعة. استرجع بدون إعادة قراءة النصوص أولًا.</span></div><button class="btn premium-primary" id="retentionNow">ابدأ المراجعة</button></div>':'')+
-  '<div class="command-dock">'+
-    hubAction("test","اختباري","شخّص أداءك")+
-    hubAction("plan","خطتي","حوّل النتيجة لمسار")+
-    hubAction("learn","أتعلم","نصوص قصيرة")+
-    hubAction("train","أتدرب","وقائع قانونية")+
-    hubAction("exam","إجابة امتحانية","ابنِ الإجابة")+
-    hubAction("archive","الامتحانات","المصادر والسابقة")+
-  '</div>'+
-  '<section class="workspace-card"><div class="workspace-card-copy"><span class="section-overline">'+(res?"التالي الأنسب لك":"البداية الموصى بها")+'</span><h2>'+(res?"حوّل نتيجتك إلى أسلوب مذاكرة":"ابدأ باختبار قصير يكشف نمط أدائك")+'</h2><p>'+(res?profileSentence(res):"في 8–12 دقيقة نقيس الاسترجاع والفهم والتطبيق والاحتفاظ. النتيجة لا تصنفك؛ بل تحدد أفضل طريقة للاستفادة من نقاط قوتك وتجاوز جوانب الضعف.")+'</p>'+
-  '<div class="workspace-actions">'+(res?'<button class="btn premium-primary" data-view="plan">افتح خطتي</button>':'<button class="btn premium-primary" id="startTest">ابدأ الاختبار</button>')+'<span>بدون IQ Test • بدون خلط محتوى الدول • قابل للمعايرة</span></div></div>'+
-  '<div class="workspace-orbit"><span class="orbit-core">'+(res?"READY":"START")+'</span><i class="ring-one"></i><i class="ring-two"></i><i class="dot-one"></i><i class="dot-two"></i><i class="dot-three"></i></div></section>';
+  var s=subject(),res=currentResult(),due=dueRetention(),trainingReady=s.id==="sources";
+  var html='<section class="workspace-head"><div><span class="section-overline">'+esc(country().name)+' / '+esc(s.title)+'</span><h1>'+esc(s.title)+'</h1><p>'+esc(s.subtitle)+'</p></div></section>'+
+  (due?'<div class="premium-alert"><div><b>مراجعة تثبيت مستحقة</b><span>يمكنك إكمالها ضمن التقييم أو البرنامج.</span></div><button class="btn premium-primary" id="retentionNow">ابدأ المراجعة</button></div>':'')+
+  '<section class="path-choice-grid">'+
+    '<button class="path-choice-card" id="assessmentOnly"><span class="path-choice-index">01</span><span class="path-choice-icon">'+icon("test")+'</span><span class="path-choice-copy"><b>قيّم مستواي</b><small>تقييم مستقل للمادة. تحصل على النتيجة ويمكنك التوقف هنا.</small></span><span class="path-choice-arrow">←</span></button>'+
+    (trainingReady?
+      '<button class="path-choice-card training" id="trainingProgram"><span class="path-choice-index">02</span><span class="path-choice-icon">'+icon("plan")+'</span><span class="path-choice-copy"><b>برنامج التدريب</b><small>'+(res?'برنامج 5 أسابيع مبني على نتيجتك الحالية.':'يبدأ بتقييم قصير ثم يبني جلساتك اليومية.')+'</small></span><span class="path-choice-arrow">←</span></button>':
+      '<div class="path-choice-card disabled"><span class="path-choice-index">02</span><span class="path-choice-icon">'+icon("plan")+'</span><span class="path-choice-copy"><b>برنامج التدريب</b><small>المحرك التجريبي الكامل متاح حاليًا في مادة مصادر الالتزام.</small></span></div>')+
+  '</section>'+
+  (res?'<div class="path-result-note"><b>لديك تقييم سابق لهذه المادة.</b><span>يمكنك إعادة التقييم، أو استخدام النتيجة الحالية لبدء التدريب.</span></div>':'');
   chrome(html);
-  bindHubActions();
-  var st=document.getElementById("startTest");if(st)st.onclick=startDiagnostic;
+  document.getElementById("assessmentOnly").onclick=startDiagnostic;
+  var tr=document.getElementById("trainingProgram");
+  if(tr)tr.onclick=function(){
+    if(res){window.location.href="program.html?country="+encodeURIComponent(state.countryId)+"&subject="+encodeURIComponent(state.subjectId);}
+    else{startDiagnostic();}
+  };
   var rt=document.getElementById("retentionNow");if(rt)rt.onclick=startRetention;
-  document.querySelectorAll("[data-view]").forEach(function(b){b.onclick=function(){state.view=b.dataset.view;render();};});
 }
-function hubAction(name,title,sub){return '<button class="dock-action" data-hub="'+name+'"><span class="dock-icon">'+icon(name)+'</span><span class="dock-copy"><b>'+title+'</b><small>'+sub+'</small></span></button>';}
-function bindHubActions(){document.querySelectorAll("[data-hub]").forEach(function(b){b.onclick=function(){var v=b.dataset.hub;if(v==="test")startDiagnostic();else{state.view=v;render();}};});}
 function words(text){return norm(text).split(" ").filter(Boolean).length;}
 function readingSeconds(text){return clamp(Math.round((words(text)/145)*60*1.35),18,75);}
 function startDiagnostic(){
