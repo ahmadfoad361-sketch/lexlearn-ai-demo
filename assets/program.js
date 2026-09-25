@@ -32,12 +32,16 @@ var skills=[
   {id:"apply",name:"التطبيق على الوقائع",state:"learning"},
   {id:"exam",name:"بناء الإجابة القانونية",state:"new"}
 ];
-var training=[
-  {kind:"review",title:"مراجعة بدون إعادة قراءة",q:"أي عنصر كان لازمًا إلى جانب الإيجاب والقبول في المادة 64؟",opts:["المحل والسبب المعتبران قانونًا","وقوع ضرر","مرور سنة"],a:0,skill:"contract",why:"العنصر المقصود هو المحل والسبب المعتبران قانونًا."},
-  {kind:"adaptive",title:"Change One Fact",q:"اتفق الطرفان على كل العناصر، لكن محل العقد غير جائز قانونًا. ما أثر تغيير هذه الواقعة؟",opts:["لا يكفي الاتفاق وحده","ينعقد العقد دائمًا","يصبح المصدر فعلًا ضارًا"],a:0,skill:"apply",why:"تغير المحل القانوني يغيّر نتيجة تحليل الانعقاد."},
-  {kind:"adaptive",title:"Case Detective",q:"أي واقعة هي الأهم في تحديد ما إذا كان الاتفاق انعقد كعقد صحيح؟",opts:["لون الورق المستخدم","مشروعية المحل وتطابق الإرادتين","مكان جلوس الطرفين"],a:1,skill:"spot",why:"الواقعة القانونية الحاسمة مرتبطة بالعناصر التي يتطلبها الانعقاد."},
-  {kind:"core",title:"تثبيت قصير",q:"أي عبارة أدق؟",opts:["كل المصادر إرادية","القانون قد ينشئ الالتزام مباشرة","الفعل الضار عقد"],a:1,skill:"sources",why:"القانون قد يكون مصدرًا مباشرًا للالتزام."}
-];
+var taskBank={
+  review:{kind:"review",title:"مراجعة بدون إعادة قراءة",q:"أي عنصر كان لازمًا إلى جانب الإيجاب والقبول في المادة 64؟",opts:["المحل والسبب المعتبران قانونًا","وقوع ضرر","مرور سنة"],a:0,skill:"contract",why:"العنصر المقصود هو المحل والسبب المعتبران قانونًا."},
+  core:{kind:"core",title:"تمييز المصادر",q:"أي عبارة أدق؟",opts:["كل المصادر إرادية","القانون قد ينشئ الالتزام مباشرة","الفعل الضار عقد"],a:1,skill:"sources",why:"القانون قد يكون مصدرًا مباشرًا للالتزام."},
+  apply:{kind:"adaptive",title:"Change One Fact",q:"اتفق الطرفان على كل العناصر، لكن محل العقد غير جائز قانونًا. ما أثر تغيير هذه الواقعة؟",opts:["لا يكفي الاتفاق وحده","ينعقد العقد دائمًا","يصبح المصدر فعلًا ضارًا"],a:0,skill:"apply",why:"تغير المحل القانوني يغيّر نتيجة تحليل الانعقاد."},
+  spot:{kind:"adaptive",title:"Case Detective",q:"أي واقعة هي الأهم في تحديد ما إذا كان الاتفاق انعقد كعقد صحيح؟",opts:["لون الورق المستخدم","مشروعية المحل وتطابق الإرادتين","مكان جلوس الطرفين"],a:1,skill:"spot",why:"الواقعة القانونية الحاسمة مرتبطة بالعناصر التي يتطلبها الانعقاد."},
+  exam:{kind:"adaptive",title:"بناء الإجابة",q:"أي ترتيب أقرب لإجابة قانونية جيدة عن انعقاد العقد؟",opts:["النتيجة فقط","القاعدة ثم الشروط ثم التطبيق ثم النتيجة","سرد الوقائع بلا قاعدة"],a:1,skill:"exam",why:"الإجابة القانونية تحتاج قاعدة وشروطًا وتطبيقًا ثم نتيجة، لا مجرد النتيجة."},
+  understanding:{kind:"adaptive",title:"فهم عناصر القاعدة",q:"لماذا لا يكفي مجرد الإيجاب والقبول دائمًا؟",opts:["لأن النص يربط الانعقاد أيضًا باعتبار المحل والسبب وبالأوضاع الخاصة عند اللزوم","لأن كل عقد يحتاج شاهدين","لأن العقد لا ينعقد إلا بعد سنة"],a:0,skill:"contract",why:"الفهم هنا يقوم على ربط الإيجاب والقبول بباقي شروط النص."},
+  recall:{kind:"adaptive",title:"استرجاع العناصر",q:"أي مجموعة تجمع أهم عناصر المادة 64؟",opts:["الإيجاب والقبول + المحل والسبب + الأوضاع الخاصة عند اللزوم","الضرر + الخطأ + السببية","الإثراء + الافتقار فقط"],a:0,skill:"contract",why:"هذه هي العناصر التي وردت في نص المادة 64."},
+  retention:{kind:"adaptive",title:"استرجاع مؤجل",q:"من غير الرجوع للنص: ما الاستثناء الذي تحفظه المادة 64 لبعض العقود؟",opts:["مراعاة الأوضاع الخاصة التي يتطلبها القانون","وجوب وجود ضرر","وجوب مرور مدة"],a:0,skill:"contract",why:"النص أبقى على الأوضاع الخاصة التي يتطلبها القانون لبعض العقود."}
+};
 var assessmentBank=[
   {q:"عرض شخص بيع شيء وقبل الآخر، لكن القانون يمنع التعامل في هذا الشيء. ما المشكلة الأساسية؟",opts:["المحل","الإيجاب","مرور الزمن"],a:0,skill:"apply"},
   {q:"أي موقف يختبر وجود تطابق إرادتين أكثر من غيره؟",opts:["طرفان اتفقا على العناصر الجوهرية","شخص أتلف مال غيره","شخص أثرى بلا سبب"],a:0,skill:"sources"},
@@ -53,9 +57,26 @@ function diagnostic(){
 }
 function defaultCourse(){return {session:DEMO?7:1,started:true,completed:[],errors:DEMO?[{skill:"apply",label:"يخلط بين وجود الاتفاق وصحة المحل",count:2},{skill:"spot",label:"لا يلتقط الواقعة الحاسمة بسرعة",count:1}]:[],history:[],lastAssessment:null};}
 function loadCourse(){try{return JSON.parse(localStorage.getItem(COURSE_KEY))||defaultCourse();}catch(e){return defaultCourse();}}
-var state={view:"home",task:0,answers:[],assessmentAnswers:[],course:loadCourse(),diag:diagnostic()};
+var state={view:"home",task:0,answers:[],assessmentAnswers:[],queue:[],course:loadCourse(),diag:diagnostic()};
 function save(){if(!DEMO)localStorage.setItem(COURSE_KEY,JSON.stringify(state.course));}
 function sessionMeta(n){var idx=Math.max(1,Math.min(25,n))-1;var w=Math.floor(idx/5),d=idx%5;var x=curriculum[w].sessions[d];return {week:w+1,day:d+1,title:x[0],detail:x[1],kind:x[2],weekTitle:curriculum[w].title};}
+function weakestDimension(){
+  var m=(state.diag&&state.diag.metrics)||{};
+  var list=[["recall",m.recall==null?100:m.recall],["understanding",m.understanding==null?100:m.understanding],["application",m.application==null?100:m.application],["retention",m.retention==null?100:m.retention],["exam",m.exam==null?100:m.exam]];
+  return list.sort(function(a,b){return a[1]-b[1];})[0][0];
+}
+function strongestErrorSkill(){
+  var es=(state.course.errors||[]).slice().sort(function(a,b){return b.count-a.count;});
+  return es.length?es[0].skill:null;
+}
+function buildTrainingQueue(){
+  var dim=weakestDimension(),err=strongestErrorSkill();
+  var adaptive=dim==="application"?taskBank.apply:dim==="understanding"?taskBank.understanding:dim==="recall"?taskBank.recall:dim==="retention"?taskBank.retention:taskBank.exam;
+  var errorTask=err==="spot"?taskBank.spot:err==="apply"?taskBank.apply:err==="exam"?taskBank.exam:null;
+  var q=[taskBank.review,taskBank.core,adaptive];
+  if(errorTask&&errorTask!==adaptive)q.push(errorTask);else q.push(taskBank.spot);
+  return q;
+}
 function chrome(inner){
   APP.innerHTML='<div class="courseShell"><header class="courseTop"><div class="courseTopIn">'+
     '<div class="brand"><div class="mark">Lx</div><div><b>LexLearn</b><small>برنامج مصادر الالتزام</small></div></div>'+
@@ -86,7 +107,7 @@ function home(){
     '<section class="grid"><div class="card">'+sessionCard(m)+'</div><div class="card">'+skillsCard()+'</div></section>'+
     '<section class="grid" style="margin-top:18px"><div class="card">'+errorCard()+'</div><div class="card">'+assessmentCard(metrics)+'</div></section>'
   );
-  document.getElementById("startSession").onclick=function(){state.answers=[];state.assessmentAnswers=[];state.task=0;state.view=m.kind==="assessment"?"assessment":"train";render();};
+  document.getElementById("startSession").onclick=function(){state.answers=[];state.assessmentAnswers=[];state.task=0;state.queue=buildTrainingQueue();state.view=m.kind==="assessment"?"assessment":"train";render();};
 }
 function kindLabel(k){return k==="assessment"?"تقييم مستقل":k==="review"?"مراجعة متباعدة":k==="adaptive"?"تدريب متكيف":"تدريب أساسي";}
 function priorityText(m){
@@ -118,8 +139,8 @@ function assessmentCard(m){
 function metric(n,v){return '<div class="metric"><span>'+n+'</span><b>'+(v==null?"—":Math.round(v)+"%")+'</b></div>';}
 
 function train(){
-  var t=training[state.task%training.length];
-  chrome('<section class="stage"><div class="progress"><i style="width:'+((state.task+1)/training.length*100)+'%"></i></div><div class="taskCard">'+
+  var q=state.queue.length?state.queue:buildTrainingQueue(),t=q[state.task%q.length];
+  chrome('<section class="stage"><div class="progress"><i style="width:'+((state.task+1)/q.length*100)+'%"></i></div><div class="taskCard">'+
     '<span class="kicker">'+esc(kindLabel(t.kind))+'</span><h2>'+esc(t.title)+'</h2>'+
     (state.task===0?'<div class="legalBox"><small>تذكير بالسياق القانوني — لا يُستخدم في التقييم المستقل</small><div>'+esc(TEXT64)+'</div></div>':'')+
     '<p>'+esc(t.q)+'</p><div class="options">'+t.opts.map(function(o,i){return '<button class="option" data-a="'+i+'">'+esc(o)+'</button>';}).join("")+'</div><div id="feed"></div></div></section>');
@@ -127,8 +148,8 @@ function train(){
     var i=Number(b.dataset.a),correct=i===t.a;state.answers.push({skill:t.skill,correct:correct});
     document.querySelectorAll("[data-a]").forEach(function(x){x.disabled=true;});b.classList.add(correct?"good":"bad");
     if(!correct)addError(t.skill,errorLabel(t.skill));
-    document.getElementById("feed").innerHTML='<div class="feedback">'+esc(t.why)+'</div><div class="choiceRow"><button class="primary" id="nextTask">'+(state.task<training.length-1?"التالي":"إنهاء الجلسة")+'</button></div>';
-    document.getElementById("nextTask").onclick=function(){if(state.task<training.length-1){state.task++;render();}else{finishTraining();}};
+    document.getElementById("feed").innerHTML='<div class="feedback">'+esc(t.why)+'</div><div class="choiceRow"><button class="primary" id="nextTask">'+(state.task<q.length-1?"التالي":"إنهاء الجلسة")+'</button></div>';
+    document.getElementById("nextTask").onclick=function(){if(state.task<q.length-1){state.task++;render();}else{finishTraining();}};
   };});
 }
 function errorLabel(skill){var map={apply:"يحتاج نقل القاعدة إلى الواقعة بدقة",spot:"لا يلتقط العنصر الحاسم",sources:"يخلط بين مصادر الالتزام",contract:"يسقط عنصرًا من شروط الانعقاد",exam:"هيكل الإجابة غير مكتمل"};return map[skill]||"خطأ متكرر"; }
