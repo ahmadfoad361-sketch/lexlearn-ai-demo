@@ -535,3 +535,14 @@ button.path-choice-card{cursor:pointer}
 .path-choice-card.disabled:hover{transform:none;box-shadow:var(--shadow-sm);border-color:rgba(119,99,82,.14)}
 .path-result-note{max-width:980px;margin:14px auto 0;padding:14px 18px;border-radius:16px;background:#eef5f1;color:#2f6b57;display:flex;gap:8px;align-items:center;justify-content:center;font-size:11px;flex-wrap:wrap}
 @media(max-width:760px){.path-choice-grid{grid-template-columns:1fr}.path-choice-card{min-height:180px;padding:22px}.path-choice-copy b{font-size:24px}}
+
+
+/* v14 — Arabic direction and assessment polish */
+html,body{direction:rtl;text-align:right}
+.v9-shell,.v9-app,.stage,.focus-panel,.reading-box,.choices,.profile-story,.path-choice-copy,.subject-copy{direction:rtl;text-align:right}
+.v9-brand b,.v9-mark{unicode-bidi:isolate}
+.v9-brand small,.entry-intro h1,.entry-intro p,.subject-hero h1,.subject-hero p,.workspace-head h1,.workspace-head p,.focus-panel h2,.reading-box .source,.legal-text,.choice,.profile-story p,.path-choice-copy b,.path-choice-copy small,textarea{
+  unicode-bidi:plaintext;
+}
+.choice.selected{border-color:#b995a3;background:#fff8fa;box-shadow:0 0 0 2px rgba(116,26,57,.08)}
+textarea{text-align:right;direction:rtl;line-height:1.8}
