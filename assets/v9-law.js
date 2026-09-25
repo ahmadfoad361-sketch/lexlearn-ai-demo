@@ -14,6 +14,12 @@ function saveProfile(){localStorage.setItem(KEY,JSON.stringify(state.profile));}
 function esc(v){return String(v==null?"":v).replace(/[&<>"']/g,function(c){return({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"})[c];});}
 function norm(v){return String(v||"").toLowerCase().replace(/[أإآ]/g,"ا").replace(/ة/g,"ه").replace(/ى/g,"ي").replace(/[ًٌٍَُِّْـ]/g,"").replace(/[^\u0600-\u06FFa-z0-9 ]/gi," ").replace(/\s+/g," ").trim();}
 function clamp(n,a,b){return Math.max(a,Math.min(b,n));}
+function qualitativeIndicator(v){
+  if(v==null)return "لم يُقَس بعد";
+  if(v>=80)return "ظهرت إجابات صحيحة في أغلب المهام";
+  if(v>=45)return "ظهرت نتائج متباينة";
+  return "ظهرت صعوبة متكررة";
+}
 function country(){return D.countries.find(function(c){return c.id===state.countryId;})||null;}
 function subject(){var c=country();return c?(c.subjects||[]).find(function(s){return s.id===state.subjectId;})||null:null;}
 function resultKey(){return state.countryId+"-"+state.subjectId;}
@@ -46,8 +52,8 @@ function chrome(inner){
       ''+
     '</div></div></header>'+
     '<main class="v9-app">'+
-    ((state.countryId&&state.subjectId)?'<div class="stat-strip">'+labels.map(function(x){var v=metrics[x[0]];return '<div class="stat-pill"><b>'+x[1]+'</b><div class="stat-meter"><i style="width:'+(v==null?0:v)+'%"></i></div><span>'+(v==null?'—':Math.round(v)+'%')+'</span></div>';}).join("")+'</div>':'')+
-    inner+'</main><footer class="footer">LexLearn • النسخة التشخيصية الجديدة v9 • مصر وقطر منفصلتان في المحتوى والمصادر</footer></div>';
+    ((state.countryId&&state.subjectId)?'<div class="stat-strip">'+labels.map(function(x){var v=metrics[x[0]];return '<div class="stat-pill"><b>'+x[1]+'</b><span>'+qualitativeIndicator(v)+'</span></div>';}).join("")+'</div>':'')+
+    inner+'</main><footer class="footer">LexLearn • Prototype بحثي وتدريبي • النتائج الحالية استكشافية وليست درجات معيارية</footer></div>';
   bindChrome();
 }
 function bindChrome(){
@@ -100,7 +106,7 @@ function renderHub(){
   '<section class="path-choice-grid">'+
     '<button class="path-choice-card" id="assessmentOnly"><span class="path-choice-index">01</span><span class="path-choice-icon">'+icon("test")+'</span><span class="path-choice-copy"><b>قيّم مستواي</b><small>تقييم مستقل للمادة. تحصل على النتيجة ويمكنك التوقف هنا.</small></span><span class="path-choice-arrow">←</span></button>'+
     (trainingReady?
-      '<button class="path-choice-card training" id="trainingProgram"><span class="path-choice-index">02</span><span class="path-choice-icon">'+icon("plan")+'</span><span class="path-choice-copy"><b>برنامج التدريب</b><small>'+(res?'برنامج 5 أسابيع مبني على نتيجتك الحالية.':'يبدأ بتقييم قصير ثم يبني جلساتك اليومية.')+'</small></span><span class="path-choice-arrow">←</span></button>':
+      '<button class="path-choice-card training" id="trainingProgram"><span class="path-choice-index">02</span><span class="path-choice-icon">'+icon("plan")+'</span><span class="path-choice-copy"><b>برنامج التدريب</b><small>'+(res?'تصور برنامج تدريبي لاحق مبني على نتيجتك الحالية — Prototype غير مُعتمد بعد.':'نموذج للمرحلة التالية بعد التحقق من صلاحية التشخيص في Pilot 0.')+'</small></span><span class="path-choice-arrow">←</span></button>':
       '<div class="path-choice-card disabled"><span class="path-choice-index">02</span><span class="path-choice-icon">'+icon("plan")+'</span><span class="path-choice-copy"><b>برنامج التدريب</b><small>المحرك التجريبي الكامل متاح حاليًا في مادة مصادر الالتزام.</small></span></div>')+
   '</section>'+
   (res?'<div class="path-result-note"><b>لديك تقييم سابق لهذه المادة.</b><span>يمكنك إعادة التقييم، أو استخدام النتيجة الحالية لبدء التدريب.</span></div>':'');
@@ -245,16 +251,16 @@ function profileSentence(res){
 function renderResults(){
   var res=currentResult();if(!res){state.view="hub";return render();}
   var m=res.metrics;
-  var html='<div class="section-title"><div><h1>صورتك المبدئية</h1><p>دي مؤشرات تدريبية من اختبار قصير، مش تصنيف ثابت لشخصيتك أو قدراتك.</p></div><button class="btn ghost" id="backHub">رجوع</button></div>'+
+  var html='<div class="section-title"><div><h1>صورتك المبدئية</h1><p>دي ملاحظات وصفية استكشافية من عدد محدود من المهام. لا تُعد درجات معيارية أو قياسًا سيكومتريًا معتمدًا.</p></div><button class="btn ghost" id="backHub">رجوع</button></div>'+
   '<div class="summary-rail">'+metric("الاسترجاع",m.recall)+metric("الفهم",m.understanding)+metric("التطبيق",m.application)+metric("الاحتفاظ",m.retention)+metric("الصياغة",m.exam)+'</div>'+
   '<section class="profile-story"><h2>إزاي نستفيد من اللي عندك؟</h2><p>'+profileSentence(res)+'</p><div class="plan-flow">'+planSteps(res).map(function(x,i){return '<div class="plan-step"><b>'+(i+1)+'. '+x[0]+'</b><span>'+x[1]+'</span></div>';}).join("")+'</div></section>'+
-  '<div class="timer-row"><div><button class="btn primary" id="openPlan">افتح خطة المذاكرة</button> <button class="btn secondary" id="openExam">جرّب الإجابة الامتحانية</button></div><span class="memory-chip">مراجعة تثبيت مجدولة بعد 24 ساعة</span></div>';
+  '<div class="timer-row"><div><button class="btn primary" id="openPlan">افتح خطة المذاكرة</button> <button class="btn secondary" id="openExam">جرّب الإجابة الامتحانية</button></div><span class="memory-chip">مراجعة مؤجلة مقترحة بعد 24–48 ساعة</span></div>';
   chrome(html);
   document.getElementById("backHub").onclick=function(){state.view="hub";render();};
   document.getElementById("openPlan").onclick=function(){state.view="plan";render();};
   document.getElementById("openExam").onclick=function(){state.view="exam";render();};
 }
-function metric(name,v){return '<div class="metric"><span>'+name+'</span><b>'+(v==null?"لم يُقَس":Math.round(v)+"%")+'</b></div>';}
+function metric(name,v){return '<div class="metric"><span>'+name+'</span><b>'+qualitativeIndicator(v)+'</b><small>وصف استكشافي — ليس نسبة معيارية</small></div>';}
 function planSteps(res){
   var m=res.metrics,out=[];
   if(res.profileType==="understanding-led"){out.push(["ابدأ بالخريطة","حوّل كل موضوع إلى: قاعدة → شروط → أثر → استثناء."]);out.push(["ثبّت الألفاظ","اختبر نفسك في الكلمات القانونية بدل إعادة قراءة الصفحة."]);}
