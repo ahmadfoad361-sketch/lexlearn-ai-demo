@@ -43,7 +43,7 @@ function chrome(inner){
     '<div class="v9-topactions">'+
       (state.countryId?'<button class="v9-topbtn" id="changeCountry">🌍 <span>'+esc(country().short)+'</span></button>':'')+
       (state.subjectId?'<button class="v9-topbtn" id="changeSubject">§ <span>'+esc(subject().title)+'</span></button>':'')+
-      '<button class="v9-topbtn" id="legacyLink">↗ <span>النسخة السابقة</span></button>'+
+      ''+
     '</div></div></header>'+
     '<main class="v9-app">'+
     ((state.countryId&&state.subjectId)?'<div class="stat-strip">'+labels.map(function(x){var v=metrics[x[0]];return '<div class="stat-pill"><b>'+x[1]+'</b><div class="stat-meter"><i style="width:'+(v==null?0:v)+'%"></i></div><span>'+(v==null?'—':Math.round(v)+'%')+'</span></div>';}).join("")+'</div>':'')+
@@ -53,7 +53,7 @@ function chrome(inner){
 function bindChrome(){
   var a=document.getElementById("changeCountry");if(a)a.onclick=function(){clearTimer();state.view="country";state.countryId=null;state.subjectId=null;render();};
   var b=document.getElementById("changeSubject");if(b)b.onclick=function(){clearTimer();state.view="subjects";state.subjectId=null;render();};
-  var l=document.getElementById("legacyLink");if(l)l.onclick=function(){window.location.href="legacy.html";};
+
 }
 function render(){clearTimer();
   if(state.view==="country")return renderCountry();
@@ -68,26 +68,19 @@ function render(){clearTimer();
   if(state.view==="archive")return renderArchive();
 }
 function renderCountry(){
-  var html='<section class="premium-hero">'+
-    '<div class="premium-hero-copy"><div class="hero-seal">LEX</div><span class="eyebrow">Adaptive Legal Learning</span>'+
-    '<h1>افهم القانون بطريقتك.<br><em>واكتب الإجابة باحتراف.</em></h1>'+
-    '<p>تجربة قانونية مصممة لطلاب يعرفون أن المذاكرة ليست حفظًا فقط. نبدأ بقياس الاسترجاع والفهم والتطبيق، ثم نبني طريقة مذاكرة وإجابة امتحانية تناسب أداءك الفعلي.</p>'+
-    '<div class="hero-proof"><span>تشخيص سلوكي قصير</span><i></i><span>محتوى منفصل لكل دولة</span><i></i><span>خطة مذاكرة شخصية</span></div>'+
-    '<div class="hero-actions"><button class="btn premium-primary" id="howBtn">اكتشف كيف يعمل</button><span class="hero-caption">ابدأ باختيار النظام القانوني</span></div>'+
-    '</div>'+
-    '<div class="jurisdiction-panel"><div class="jurisdiction-head"><span>01</span><div><b>اختر الدولة</b><small>لن تختلط النصوص أو الأسئلة بين النظامين.</small></div></div>'+
-    '<div class="jurisdiction-list">'+D.countries.map(function(c,i){return '<button class="jurisdiction-choice" data-country="'+c.id+'"><span class="jurisdiction-flag">'+c.flag+'</span><span class="jurisdiction-copy"><b>'+esc(c.name)+'</b><small>'+esc(c.subtitle)+'</small></span><span class="jurisdiction-arrow">←</span><span class="jurisdiction-index">0'+(i+1)+'</span></button>';}).join("")+'</div>'+
-    '<div class="jurisdiction-foot">مصادر مستقلة • نتائج مستقلة • مسار تعلم مستقل</div></div>'+
-    '</section><div id="howArea"></div>';
+  var html='<section class="entry-screen">'+
+    '<div class="entry-intro"><div class="entry-seal">Lx</div><span class="section-overline">LEXLEARN</span>'+
+    '<h1>اختر النظام القانوني</h1>'+
+    '<p>ابدأ من الدولة التي تدرس قانونها. المحتوى والأسئلة والنتائج منفصلة تمامًا بين مصر وقطر.</p></div>'+
+    '<div class="entry-options">'+D.countries.map(function(c,i){return '<button class="entry-option" data-country="'+c.id+'">'+
+      '<span class="entry-flag">'+c.flag+'</span>'+
+      '<span class="entry-copy"><b>'+esc(c.name)+'</b><small>'+esc(c.subtitle)+'</small></span>'+
+      '<span class="entry-arrow">←</span>'+
+    '</button>';}).join("")+'</div>'+
+    '<div class="entry-note">اختيار واحد فقط الآن — وبعده تظهر المواد المتاحة.</div>'+
+    '</section>';
   chrome(html);
   document.querySelectorAll("[data-country]").forEach(function(btn){btn.onclick=function(){state.countryId=btn.dataset.country;state.view="subjects";render();};});
-  document.getElementById("howBtn").onclick=function(){
-    document.getElementById("howArea").innerHTML='<section class="how-strip"><div class="how-title"><span>كيف يعمل</span><b>أربع مراحل بدون تعقيد.</b></div><div class="how-track">'+
-    '<div class="how-step"><span>01</span><b>اقرأ النص</b><small>وقت قراءة محسوب حسب الطول ويمكنك الإنهاء مبكرًا.</small></div>'+
-    '<div class="how-step"><span>02</span><b>استرجع وافهم</b><small>يختفي النص ثم نقيس اللفظ والمعنى والتطبيق.</small></div>'+
-    '<div class="how-step"><span>03</span><b>مهمة فاصلة</b><small>نشاط محايد يمنع التكرار الذهني ولا يقيس الذكاء.</small></div>'+
-    '<div class="how-step"><span>04</span><b>استرجاع مؤجل</b><small>نقيس ما بقي ثم نبني خطة المذاكرة.</small></div></div></section>';
-  };
 }
 function renderSubjects(){
   var c=country();
