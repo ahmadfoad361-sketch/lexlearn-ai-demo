@@ -79,7 +79,7 @@ function buildTrainingQueue(){
 }
 function chrome(inner){
   APP.innerHTML='<div class="courseShell"><header class="courseTop"><div class="courseTopIn">'+
-    '<div class="brand"><div class="mark">Lx</div><div><b>LexLearn</b><small>برنامج مصادر الالتزام</small></div></div>'+
+    '<div class="brand"><div class="mark">Lx</div><div><b>LexLearn</b><small>Prototype لبرنامج التدريب المقترح</small></div></div>'+
     '<div class="topActions"><a class="topBtn" href="showcase.html">الديمو التشخيصي</a><a class="topBtn" href="index.html">الرئيسية</a></div>'+
   '</div></header><main class="courseWrap">'+inner+'</main></div>';
 }
@@ -98,11 +98,11 @@ function home(){
   }
   var metrics=d?d.metrics:{recall:0,understanding:0,application:0,retention:0,exam:0};
   chrome(
-    '<section class="hero"><div class="heroMain"><span class="kicker">'+(DEMO?'وضع العرض • بيانات تجريبية':'برنامجك الحالي')+'</span>'+
+    '<section class="hero"><div class="heroMain"><span class="kicker">'+(DEMO?'وضع العرض • Prototype غير مُعتمد':'تصور المرحلة التالية')+'</span>'+
     '<h1>جلسة اليوم '+state.course.session+' من 25</h1><p>'+esc(m.title)+' • '+esc(m.detail)+'</p>'+
     '<div class="heroMeta"><span>≈ 20 دقيقة</span><span>الأسبوع '+m.week+' من 5</span><span>'+kindLabel(m.kind)+'</span></div>'+
     '<div class="choiceRow"><button class="primary" id="startSession">'+(m.kind==="assessment"?"ابدأ تقييم التقدم":"ابدأ جلسة اليوم")+'</button></div></div>'+
-    '<div class="heroSide"><h3>أولوية اليوم</h3><p>'+priorityText(metrics)+'</p><div class="notice">التقييمات الأسبوعية منفصلة عن التدريب ولا تستخدم نفس أسئلة الجلسات.</div></div></section>'+
+    '<div class="heroSide"><h3>أولوية اليوم</h3><p>'+priorityText(metrics)+'</p><div class="notice">هذه الصفحة تصور لما بعد Pilot 0. نظام الجلسات والعتبات ما زال افتراضيًا حتى نتحقق أولًا من صلاحية التشخيص.</div></div></section>'+
     weekBar(m.week)+
     '<section class="grid"><div class="card">'+sessionCard(m)+'</div><div class="card">'+skillsCard()+'</div></section>'+
     '<section class="grid" style="margin-top:18px"><div class="card">'+errorCard()+'</div><div class="card">'+assessmentCard(metrics)+'</div></section>'
@@ -131,12 +131,13 @@ function skillsCard(){
 function stateArabic(s){return s==="stable"?"مستقرة":s==="retained"?"مثبتة":s==="learning"?"قيد التدريب":"جديدة";}
 function errorCard(){
   var es=state.course.errors||[];
-  return '<h3>ذاكرة الأخطاء</h3><p>تُستخدم لتكوين أسئلة لاحقة مختلفة، لا لإعادة السؤال نفسه.</p>'+(es.length?es.map(function(e){return '<div class="errorItem"><b>'+esc(e.label)+'</b><span>تكرر '+e.count+' مرة</span></div>';}).join(""):'<div class="notice">لا توجد أخطاء متكررة مسجلة بعد.</div>');
+  return '<h3>سجل ملاحظات الأداء</h3><p>التصنيفات الظاهرة هنا توضيحية فقط. في Pilot 0 تُحفظ الاستجابات الخام أولًا، ثم تُشتق أنواع الأخطاء من بيانات الطلاب الفعلية.</p>'+(es.length?es.map(function(e){return '<div class="errorItem"><b>'+esc(e.label)+'</b><span>تكرر '+e.count+' مرة</span></div>';}).join(""):'<div class="notice">لا توجد أخطاء متكررة مسجلة بعد.</div>');
 }
 function assessmentCard(m){
   return '<h3>التقييم المستقل</h3><p>كل خامس جلسة، ثم تقييم نهائي في الجلسة 25.</p><div class="resultGrid">'+metric("استرجاع",m.recall)+metric("فهم",m.understanding)+metric("تطبيق",m.application)+'</div>';
 }
-function metric(n,v){return '<div class="metric"><span>'+n+'</span><b>'+(v==null?"—":Math.round(v)+"%")+'</b></div>';}
+function qualitative(v){if(v==null)return "لم يُقَس";if(v>=80)return "إجابات صحيحة في أغلب المهام";if(v>=45)return "نتائج متباينة";return "صعوبة متكررة";}
+function metric(n,v){return '<div class="metric"><span>'+n+'</span><b>'+qualitative(v)+'</b><small>وصف تجريبي غير معياري</small></div>';}
 
 function train(){
   var q=state.queue.length?state.queue:buildTrainingQueue(),t=q[state.task%q.length];
@@ -162,9 +163,9 @@ function finishTraining(){
   state.course.session=Math.min(25,state.course.session+1);save();state.view="sessionResult";render();
 }
 function sessionResult(){
-  var correct=state.answers.filter(function(x){return x.correct;}).length,total=state.answers.length||1,p=Math.round(correct/total*100);
+  var correct=state.answers.filter(function(x){return x.correct;}).length,total=state.answers.length||1,p=Math.round(correct/total*100),sessionDesc=correct>=Math.ceil(total*.75)?"أغلب المهام أُنجزت بنجاح":correct>=Math.ceil(total*.4)?"أداء متباين داخل الجلسة":"ظهرت حاجة لمزيد من التثبيت";
   chrome('<section class="stage"><div class="taskCard"><span class="kicker">جلسة مكتملة</span><h2>خلصت جلسة اليوم</h2>'+
-    '<div class="resultGrid">'+metric("أداء الجلسة",p)+metric("أسئلة",total)+metric("جلسة قادمة",state.course.session)+'</div>'+
+    '<div class="resultGrid"><div class="metric"><span>أداء الجلسة</span><b>'+sessionDesc+'</b><small>لا تُعامل كدرجة تقييم</small></div><div class="metric"><span>عدد المهام</span><b>'+total+'</b></div><div class="metric"><span>الجلسة القادمة</span><b>'+state.course.session+'</b></div></div>'+
     '<div class="notice">هذه ليست درجة تقييم رسمي. نتيجة الجلسة تستخدم فقط لاختيار التدريب التالي.</div>'+
     '<div class="choiceRow"><button class="primary" id="backHome">العودة للبرنامج</button></div></div></section>');
   document.getElementById("backHome").onclick=function(){state.view="home";render();};
@@ -186,9 +187,9 @@ function finishAssessment(){
 }
 function assessmentResult(){
   var p=state.course.lastAssessment?state.course.lastAssessment.score:0;
-  var decision=p>=85?"ترقية طبيعية مع تقليل التكرار":p>=70?"استمرار مع إبقاء بعض المهارات في المراجعة":"جلسات تثبيت إضافية قبل زيادة الصعوبة";
-  chrome('<section class="stage"><div class="taskCard"><span class="kicker">نتيجة التقييم المستقل</span><h2>'+p+'%</h2>'+
-    '<p>'+esc(decision)+'</p><div class="notice">القرار هنا خاص بالـPilot. العتبات ستُراجع مع المختص التربوي وبيانات التجربة.</div>'+
+  var decision="تم حفظ نتيجة تقييم التقدم. عتبات الترقية لم تُفعّل بعد؛ ستُحدد بعد Pilot 0 ومراجعة بيانات فعلية.";
+  chrome('<section class="stage"><div class="taskCard"><span class="kicker">نتيجة التقييم المستقل</span><h2>'+qualitative(p)+'</h2>'+
+    '<p>'+esc(decision)+'</p><div class="notice">لا توجد حاليًا نسبة نجاح أو ترقية نهائية. هذه الصفحة Prototype لما قد يفعله النظام بعد معايرة الأداة على بيانات حقيقية.</div>'+
     '<div class="choiceRow"><button class="primary" id="backHome">العودة للبرنامج</button></div></div></section>');
   document.getElementById("backHome").onclick=function(){state.view="home";render();};
 }
