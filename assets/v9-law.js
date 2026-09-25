@@ -68,27 +68,31 @@ function render(){clearTimer();
   if(state.view==="archive")return renderArchive();
 }
 function renderCountry(){
-  var html='<section class="hero-choice"><div class="hero-copy"><span class="eyebrow">تشخيص → تعلم → تدريب → إجابة امتحانية</span>'+
-    '<h1>مش كل طالب قانون<br><em>بيذاكر بنفس الطريقة.</em></h1>'+
-    '<p>اختَر الدولة أولًا. المحتوى القانوني والمصادر والأسئلة منفصلة تمامًا لكل دولة. بعدها نختبر كيف تسترجع النص، كيف تفهمه، وكيف تطبقه — ثم نحول النتيجة إلى طريقة مذاكرة عملية.</p>'+
-    '<button class="btn outline" id="howBtn">كيف يعمل الاختبار؟</button></div>'+
-    '<div class="country-orbit"><div class="orbit-center">ابدأ من<br>النظام القانوني</div>'+
-    D.countries.map(function(c){return '<button class="country-node '+(c.id==="EG"?"eg":"qa")+'" data-country="'+c.id+'"><span class="flag">'+c.flag+'</span><b>'+esc(c.name)+'</b><small>'+esc(c.subtitle)+'</small></button>';}).join("")+
-    '</div></section><div id="howArea"></div>';
+  var html='<section class="premium-hero">'+
+    '<div class="premium-hero-copy"><div class="hero-seal">LEX</div><span class="eyebrow">Adaptive Legal Learning</span>'+
+    '<h1>افهم القانون بطريقتك.<br><em>واكتب الإجابة باحتراف.</em></h1>'+
+    '<p>تجربة قانونية مصممة لطلاب يعرفون أن المذاكرة ليست حفظًا فقط. نبدأ بقياس الاسترجاع والفهم والتطبيق، ثم نبني طريقة مذاكرة وإجابة امتحانية تناسب أداءك الفعلي.</p>'+
+    '<div class="hero-proof"><span>تشخيص سلوكي قصير</span><i></i><span>محتوى منفصل لكل دولة</span><i></i><span>خطة مذاكرة شخصية</span></div>'+
+    '<div class="hero-actions"><button class="btn premium-primary" id="howBtn">اكتشف كيف يعمل</button><span class="hero-caption">ابدأ باختيار النظام القانوني</span></div>'+
+    '</div>'+
+    '<div class="jurisdiction-panel"><div class="jurisdiction-head"><span>01</span><div><b>اختر الدولة</b><small>لن تختلط النصوص أو الأسئلة بين النظامين.</small></div></div>'+
+    '<div class="jurisdiction-list">'+D.countries.map(function(c,i){return '<button class="jurisdiction-choice" data-country="'+c.id+'"><span class="jurisdiction-flag">'+c.flag+'</span><span class="jurisdiction-copy"><b>'+esc(c.name)+'</b><small>'+esc(c.subtitle)+'</small></span><span class="jurisdiction-arrow">←</span><span class="jurisdiction-index">0'+(i+1)+'</span></button>';}).join("")+'</div>'+
+    '<div class="jurisdiction-foot">مصادر مستقلة • نتائج مستقلة • مسار تعلم مستقل</div></div>'+
+    '</section><div id="howArea"></div>';
   chrome(html);
   document.querySelectorAll("[data-country]").forEach(function(btn){btn.onclick=function(){state.countryId=btn.dataset.country;state.view="subjects";render();};});
   document.getElementById("howBtn").onclick=function(){
-    document.getElementById("howArea").innerHTML='<div class="focus-panel" style="margin-top:18px"><h2>الاختبار في 4 مراحل</h2><div class="plan-flow">'+
-    '<div class="plan-step" style="background:#f3eaed;border-color:#e0c7cf;color:var(--ink)"><b style="color:var(--navy)">1. نص قانوني</b><span style="color:var(--muted)">يظهر بوقت محسوب حسب طوله ويمكن إنهاؤه مبكرًا.</span></div>'+
-    '<div class="plan-step" style="background:#f8efd8;border-color:#ead9aa;color:var(--ink)"><b style="color:var(--navy)">2. استرجاع وفهم</b><span style="color:var(--muted)">النص يختفي ثم نختبر اللفظ والمعنى والتطبيق.</span></div>'+
-    '<div class="plan-step" style="background:#e9eff3;border-color:#cfdae1;color:var(--ink)"><b style="color:var(--navy)">3. تشتيت محايد</b><span style="color:var(--muted)">مهمة قصيرة لا تقيس الذكاء، فقط تمنع التكرار المستمر.</span></div>'+
-    '<div class="plan-step" style="background:#e9f1ec;border-color:#cfe0d5;color:var(--ink)"><b style="color:var(--navy)">4. استرجاع مؤجل</b><span style="color:var(--muted)">نرجع للمواد ثم نحدد طريقة المذاكرة المناسبة.</span></div></div></div>';
+    document.getElementById("howArea").innerHTML='<section class="how-strip"><div class="how-title"><span>كيف يعمل</span><b>أربع مراحل بدون تعقيد.</b></div><div class="how-track">'+
+    '<div class="how-step"><span>01</span><b>اقرأ النص</b><small>وقت قراءة محسوب حسب الطول ويمكنك الإنهاء مبكرًا.</small></div>'+
+    '<div class="how-step"><span>02</span><b>استرجع وافهم</b><small>يختفي النص ثم نقيس اللفظ والمعنى والتطبيق.</small></div>'+
+    '<div class="how-step"><span>03</span><b>مهمة فاصلة</b><small>نشاط محايد يمنع التكرار الذهني ولا يقيس الذكاء.</small></div>'+
+    '<div class="how-step"><span>04</span><b>استرجاع مؤجل</b><small>نقيس ما بقي ثم نبني خطة المذاكرة.</small></div></div></section>';
   };
 }
 function renderSubjects(){
   var c=country();
-  var html='<div class="section-title"><div><h1>'+c.flag+' '+esc(c.name)+'</h1><p>'+esc(c.sourceNote)+'</p></div><button class="btn ghost" id="backCountry">تغيير الدولة</button></div>'+
-  '<div class="subject-wheel">'+c.subjects.map(function(s){return '<button class="subject-node" data-subject="'+s.id+'"><span class="icon-disc">'+icon(s.icon)+'</span><b>'+esc(s.title)+'</b><small>'+esc(s.subtitle)+'</small></button>';}).join("")+'</div>';
+  var html='<section class="subject-hero"><div><span class="section-overline">'+c.flag+' '+esc(c.name)+'</span><h1>اختر المادة التي تريد أن تبدأ بها.</h1><p>'+esc(c.sourceNote)+'</p></div><button class="btn soft-outline" id="backCountry">تغيير الدولة</button></section>'+
+  '<div class="subject-gallery">'+c.subjects.map(function(s,i){return '<button class="subject-card" data-subject="'+s.id+'"><span class="subject-number">0'+(i+1)+'</span><span class="subject-medallion">'+icon(s.icon)+'</span><span class="subject-copy"><b>'+esc(s.title)+'</b><small>'+esc(s.subtitle)+'</small></span><span class="subject-open">ابدأ ←</span></button>';}).join("")+'</div>';
   chrome(html);
   document.getElementById("backCountry").onclick=function(){state.view="country";state.countryId=null;render();};
   document.querySelectorAll("[data-subject]").forEach(function(btn){btn.onclick=function(){state.subjectId=btn.dataset.subject;state.view="hub";render();};});
@@ -98,25 +102,26 @@ function dueRetention(){
 }
 function renderHub(){
   var s=subject(),res=currentResult(),due=dueRetention();
-  var html='<div class="section-title"><div><h1>'+esc(s.title)+'</h1><p>'+esc(s.subtitle)+'</p></div><span class="eyebrow">'+esc(country().name)+' • '+(res?"لديك ملف أداء محفوظ":"ابدأ بتشخيص قصير")+'</span></div>'+
-  (due?'<div class="archive-note"><b>مراجعة تثبيت مستحقة الآن.</b> مر أكثر من 24 ساعة على الاختبار السابق. جرّب الاسترجاع بدون إعادة قراءة النصوص أولًا. <button class="btn primary" id="retentionNow" style="margin-inline-start:8px">ابدأ المراجعة</button></div>':'')+
-  '<div class="hub">'+
-    hubAction("test","اختباري","اختبار الاسترجاع والفهم والتطبيق")+
-    hubAction("plan","خطتي","كيف تعوّض الأضعف بالأقوى")+
-    hubAction("learn","أتعلم","نصوص وتعريفات باختبار استرجاع")+
-    hubAction("train","أتدرب","وقائع وتغيير عنصر واحد")+
-    hubAction("exam","إجابة امتحانية","الخلاصة ثم البناء الكامل")+
-    hubAction("archive","الامتحانات","المصادر المرتبطة بالمواد الثلاث")+
+  var html='<section class="workspace-head"><div><span class="section-overline">'+esc(country().name)+' / '+esc(s.title)+'</span><h1>'+esc(s.title)+'</h1><p>'+esc(s.subtitle)+'</p></div><span class="workspace-status">'+(res?"ملف الأداء جاهز":"ابدأ بالتشخيص")+'</span></section>'+
+  (due?'<div class="premium-alert"><div><b>مراجعة التثبيت مستحقة الآن</b><span>مر أكثر من 24 ساعة. استرجع بدون إعادة قراءة النصوص أولًا.</span></div><button class="btn premium-primary" id="retentionNow">ابدأ المراجعة</button></div>':'')+
+  '<div class="command-dock">'+
+    hubAction("test","اختباري","شخّص أداءك")+
+    hubAction("plan","خطتي","حوّل النتيجة لمسار")+
+    hubAction("learn","أتعلم","نصوص قصيرة")+
+    hubAction("train","أتدرب","وقائع قانونية")+
+    hubAction("exam","إجابة امتحانية","ابنِ الإجابة")+
+    hubAction("archive","الامتحانات","المصادر والسابقة")+
   '</div>'+
-  '<section class="focus-panel"><h2>'+(res?"ملفك جاهز للاستخدام":"ابدأ بالاختبار الكامل")+'</h2><p>'+(res?profileSentence(res):"الاختبار الحالي نموذج أولي مدته التقريبية 8–12 دقيقة. لا يصنفك «حافظ» أو «فاهم»؛ بل يقيس مؤشرات منفصلة ويستخدمها لبناء مسار مذاكرة.")+'</p>'+
-  '<div class="timer-row"><div>'+(res?'<button class="btn secondary" data-view="plan">افتح خطتي</button>':'<button class="btn primary" id="startTest">ابدأ الاختبار</button>')+'</div><div class="memory-strip"><span class="memory-chip">لا IQ test</span><span class="memory-chip">لا نصوص مشتركة بين مصر وقطر</span><span class="memory-chip">الوقت قابل للمعايرة</span></div></div></section>';
+  '<section class="workspace-card"><div class="workspace-card-copy"><span class="section-overline">'+(res?"التالي الأنسب لك":"البداية الموصى بها")+'</span><h2>'+(res?"حوّل نتيجتك إلى أسلوب مذاكرة":"ابدأ باختبار قصير يكشف نمط أدائك")+'</h2><p>'+(res?profileSentence(res):"في 8–12 دقيقة نقيس الاسترجاع والفهم والتطبيق والاحتفاظ. النتيجة لا تصنفك؛ بل تحدد أفضل طريقة للاستفادة من نقاط قوتك وتجاوز جوانب الضعف.")+'</p>'+
+  '<div class="workspace-actions">'+(res?'<button class="btn premium-primary" data-view="plan">افتح خطتي</button>':'<button class="btn premium-primary" id="startTest">ابدأ الاختبار</button>')+'<span>بدون IQ Test • بدون خلط محتوى الدول • قابل للمعايرة</span></div></div>'+
+  '<div class="workspace-orbit"><span class="orbit-core">'+(res?"READY":"START")+'</span><i class="ring-one"></i><i class="ring-two"></i><i class="dot-one"></i><i class="dot-two"></i><i class="dot-three"></i></div></section>';
   chrome(html);
   bindHubActions();
   var st=document.getElementById("startTest");if(st)st.onclick=startDiagnostic;
   var rt=document.getElementById("retentionNow");if(rt)rt.onclick=startRetention;
   document.querySelectorAll("[data-view]").forEach(function(b){b.onclick=function(){state.view=b.dataset.view;render();};});
 }
-function hubAction(name,title,sub){return '<button class="hub-action" data-hub="'+name+'"><span class="hub-icon">'+icon(name)+'</span><b>'+title+'</b><small style="color:var(--muted);line-height:1.4">'+sub+'</small></button>';}
+function hubAction(name,title,sub){return '<button class="dock-action" data-hub="'+name+'"><span class="dock-icon">'+icon(name)+'</span><span class="dock-copy"><b>'+title+'</b><small>'+sub+'</small></span></button>';}
 function bindHubActions(){document.querySelectorAll("[data-hub]").forEach(function(b){b.onclick=function(){var v=b.dataset.hub;if(v==="test")startDiagnostic();else{state.view=v;render();}};});}
 function words(text){return norm(text).split(" ").filter(Boolean).length;}
 function readingSeconds(text){return clamp(Math.round((words(text)/145)*60*1.35),18,75);}
