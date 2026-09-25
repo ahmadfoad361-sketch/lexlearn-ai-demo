@@ -29,5 +29,6 @@ jobs:
           node --check assets/v9-law.js
           node --check assets/showcase.js
           node --check assets/program.js
+          node --check assets/pilot0.js
       - name: Adaptive engine tests
         run: node tests/adaptive-engine.test.js
