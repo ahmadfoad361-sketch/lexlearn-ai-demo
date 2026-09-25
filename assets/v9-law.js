@@ -13,7 +13,8 @@ function loadProfile(){try{return JSON.parse(localStorage.getItem(KEY))||{result
 function saveProfile(){localStorage.setItem(KEY,JSON.stringify(state.profile));}
 function esc(v){return String(v==null?"":v).replace(/[&<>"']/g,function(c){return({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"})[c];});}
 function norm(v){return String(v||"").toLowerCase().replace(/[أإآ]/g,"ا").replace(/ة/g,"ه").replace(/ى/g,"ي").replace(/[ًٌٍَُِّْـ]/g,"").replace(/[^\u0600-\u06FFa-z0-9 ]/gi," ").replace(/\s+/g," ").trim();}
-function clamp(n,a,b){return Math.max(a,Math.min(b,n));}\nfunction shuffled(arr){var a=arr.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),t=a[i];a[i]=a[j];a[j]=t;}return a;}
+function clamp(n,a,b){return Math.max(a,Math.min(b,n));}
+function shuffled(arr){var a=arr.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),t=a[i];a[i]=a[j];a[j]=t;}return a;}
 function qualitativeIndicator(v){
   if(v==null)return "لم يُقَس بعد";
   if(v>=80)return "ظهرت إجابات صحيحة في أغلب المهام";
