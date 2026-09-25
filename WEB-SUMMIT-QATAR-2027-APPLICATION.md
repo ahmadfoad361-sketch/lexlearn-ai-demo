@@ -11,7 +11,7 @@
 LexLearn is an adaptive legal-learning platform that diagnoses how law students recall, understand, apply and retain legal material, then turns that diagnosis into a personalised study path and exam-answer training.
 
 ## 40-word pitch
-LexLearn helps law students study smarter by measuring recall, understanding, application and retention, then adapting what they learn next. It combines sourced legal content, personalised practice and structured exam-answer training, starting with Qatar and Egypt as separate legal systems.
+LexLearn helps law students study smarter by measuring recall, understanding, application and retention, then adapting what they learn next. It combines sourced legal content, personalised practice and structured exam-answer training, initially starting with Qatar and Egypt as separate legal systems.
 
 ## Short pitch (approx. 80 words)
 Law students often receive the same notes, questions and revision path even when their learning gaps are completely different. LexLearn diagnoses whether a student’s difficulty is recall, understanding, application, retention or exam execution, then adapts the next activity accordingly. The working prototype separates Qatar and Egypt legal content, starts with core civil-law subjects, and turns diagnostic evidence into a personalised study strategy and structured exam-answer practice.
