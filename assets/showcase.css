@@ -103,3 +103,27 @@ repeating-linear-gradient(0deg,#faf4eb 0 31px,#eee4d8 32px);box-shadow:inset 0 1
   .storyStrip{grid-template-columns:1fr}.storyStep:last-child{grid-column:auto}.metrics{grid-template-columns:1fr}
   .timerRow{align-items:flex-start}.legalPaper{padding:22px}.legalPaper .txt{font-size:22px}
 }
+
+/* v14 — public Arabic cleanup */
+html{direction:rtl}
+body{direction:rtl;text-align:right}
+.demoShell,.demoWrap,.demoStage,.stageCard,.legalPaper,.choices,.metric,.planCard,.feedback{direction:rtl;text-align:right}
+.demoTopIn{direction:rtl}
+.demoBrand{direction:rtl}
+.demoBrand b,.demoLogo{unicode-bidi:isolate}
+.demoBrand small,.demoPill,.demoGhost,.demoEyebrow,.stageCard h2,.stageCard p,.legalPaper small,.legalPaper .txt,.choice,.freeInput,.metric span,.metric b,.planCard h3,.planCard p,.feedback{
+  unicode-bidi:plaintext;
+}
+.demoIntro{margin-top:8vh}
+.centered{text-align:center}
+.centered h2,.centered p{text-align:center}
+.centeredActions{justify-content:center}
+.symbolChoices .choice{text-align:center;font-size:24px;direction:ltr}
+.metrics.three{grid-template-columns:repeat(3,1fr)}
+.nextStep{margin-top:18px}
+.freeInput{text-align:right;line-height:1.8}
+.demoFooter{direction:ltr}
+@media(max-width:700px){
+  .metrics.three{grid-template-columns:1fr}
+  .demoMeta{justify-content:flex-start}
+}
