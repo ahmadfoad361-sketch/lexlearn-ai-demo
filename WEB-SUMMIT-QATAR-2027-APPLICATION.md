@@ -55,14 +55,17 @@ Current traction is product validation rather than commercial traction:
 - No paid users or institutional deployment claimed at this stage
 
 ## Pilot proposal
-A small exploratory pilot with one foundational law course:
-- 30–50 students
-- 6–8 weeks
-- Independent pre/post assessment
-- Delayed retention check
-- Comparison between platform diagnosis and human academic assessment on a sample
-- Weekly review of unexpected item failures
-- Expansion only if the evidence supports it
+The first study is intentionally an exploratory Pilot 0 rather than a full effectiveness trial:
+- 10–15 students
+- One subject only: Sources of Obligations
+- One legal system only
+- 15–20 carefully reviewed diagnostic items
+- A delayed retention session after 24–48 hours
+- One short constructed legal answer reviewed with a shared rubric by at least two raters
+- Raw response logging before building any final error taxonomy
+- Descriptive outputs only; no psychometric score claims at this stage
+
+The single hypothesis is whether LexLearn can distinguish different types of learning difficulty among students who may have similar overall scores. A longer adaptive training pilot follows only if this diagnostic hypothesis is promising.
 
 ## Target users
 Primary:
