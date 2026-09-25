@@ -14,6 +14,7 @@ function saveProfile(){localStorage.setItem(KEY,JSON.stringify(state.profile));}
 function esc(v){return String(v==null?"":v).replace(/[&<>"']/g,function(c){return({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"})[c];});}
 function norm(v){return String(v||"").toLowerCase().replace(/[أإآ]/g,"ا").replace(/ة/g,"ه").replace(/ى/g,"ي").replace(/[ًٌٍَُِّْـ]/g,"").replace(/[^\u0600-\u06FFa-z0-9 ]/gi," ").replace(/\s+/g," ").trim();}
 function clamp(n,a,b){return Math.max(a,Math.min(b,n));}
+function shuffled(arr){var a=arr.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),t=a[i];a[i]=a[j];a[j]=t;}return a;}
 function qualitativeIndicator(v){
   if(v==null)return "لم يُقَس بعد";
   if(v>=80)return "ظهرت إجابات صحيحة في أغلب المهام";
@@ -53,7 +54,7 @@ function chrome(inner){
     '</div></div></header>'+
     '<main class="v9-app">'+
     ((state.countryId&&state.subjectId)?'<div class="stat-strip">'+labels.map(function(x){var v=metrics[x[0]];return '<div class="stat-pill"><b>'+x[1]+'</b><span>'+qualitativeIndicator(v)+'</span></div>';}).join("")+'</div>':'')+
-    inner+'</main><footer class="footer">LexLearn • Prototype بحثي وتدريبي • النتائج الحالية استكشافية وليست درجات معيارية</footer></div>';
+    inner+'</main><footer class="footer">LexLearn • تعلم قانوني متكيف</footer></div>';
   bindChrome();
 }
 function bindChrome(){
@@ -77,7 +78,7 @@ function renderCountry(){
   var html='<section class="entry-screen">'+
     '<div class="entry-intro"><div class="entry-seal">Lx</div><span class="section-overline">LEXLEARN</span>'+
     '<h1>اختر النظام القانوني</h1>'+
-    '<p>ابدأ من الدولة التي تدرس قانونها. المحتوى والأسئلة والنتائج منفصلة تمامًا بين مصر وقطر.</p></div>'+
+    '<p>اختر الدولة التي تدرس قانونها.</p></div>'+
     '<div class="entry-options">'+D.countries.map(function(c,i){return '<button class="entry-option" data-country="'+c.id+'">'+
       '<span class="entry-flag">'+c.flag+'</span>'+
       '<span class="entry-copy"><b>'+esc(c.name)+'</b><small>'+esc(c.subtitle)+'</small></span>'+
@@ -104,10 +105,10 @@ function renderHub(){
   var html='<section class="workspace-head"><div><span class="section-overline">'+esc(country().name)+' / '+esc(s.title)+'</span><h1>'+esc(s.title)+'</h1><p>'+esc(s.subtitle)+'</p></div></section>'+
   (due?'<div class="premium-alert"><div><b>مراجعة تثبيت مستحقة</b><span>يمكنك إكمالها ضمن التقييم أو البرنامج.</span></div><button class="btn premium-primary" id="retentionNow">ابدأ المراجعة</button></div>':'')+
   '<section class="path-choice-grid">'+
-    '<button class="path-choice-card" id="assessmentOnly"><span class="path-choice-index">01</span><span class="path-choice-icon">'+icon("test")+'</span><span class="path-choice-copy"><b>قيّم مستواي</b><small>تقييم مستقل للمادة. تحصل على النتيجة ويمكنك التوقف هنا.</small></span><span class="path-choice-arrow">←</span></button>'+
+    '<button class="path-choice-card" id="assessmentOnly"><span class="path-choice-index">01</span><span class="path-choice-icon">'+icon("test")+'</span><span class="path-choice-copy"><b>قيّم مستواي</b><small>اختبار قصير لهذه المادة.</small></span><span class="path-choice-arrow">←</span></button>'+
     (trainingReady?
-      '<button class="path-choice-card training" id="trainingProgram"><span class="path-choice-index">02</span><span class="path-choice-icon">'+icon("plan")+'</span><span class="path-choice-copy"><b>برنامج التدريب</b><small>'+(res?'تصور برنامج تدريبي لاحق مبني على نتيجتك الحالية — Prototype غير مُعتمد بعد.':'نموذج للمرحلة التالية بعد التحقق من صلاحية التشخيص في Pilot 0.')+'</small></span><span class="path-choice-arrow">←</span></button>':
-      '<div class="path-choice-card disabled"><span class="path-choice-index">02</span><span class="path-choice-icon">'+icon("plan")+'</span><span class="path-choice-copy"><b>برنامج التدريب</b><small>المحرك التجريبي الكامل متاح حاليًا في مادة مصادر الالتزام.</small></span></div>')+
+      '<button class="path-choice-card training" id="trainingProgram"><span class="path-choice-index">02</span><span class="path-choice-icon">'+icon("plan")+'</span><span class="path-choice-copy"><b>برنامج التدريب</b><small>'+(res?'ابدأ تدريبًا مبنيًا على نتيجتك الحالية.':'أكمل التقييم أولًا لبدء التدريب.')+'</small></span><span class="path-choice-arrow">←</span></button>':
+      '<div class="path-choice-card disabled"><span class="path-choice-index">02</span><span class="path-choice-icon">'+icon("plan")+'</span><span class="path-choice-copy"><b>برنامج التدريب</b><small>متاح حاليًا في مادة مصادر الالتزام.</small></span></div>')+
   '</section>'+
   (res?'<div class="path-result-note"><b>لديك تقييم سابق لهذه المادة.</b><span>يمكنك إعادة التقييم، أو استخدام النتيجة الحالية لبدء التدريب.</span></div>':'');
   chrome(html);
@@ -140,7 +141,7 @@ function diagnosticProgress(d){
 function renderDiagnostic(){
   var d=state.diagnostic;if(!d){state.view="hub";return render();}
   var pct=diagnosticProgress(d);
-  var html='<div class="stage"><div class="stage-head"><div class="meta">'+esc(country().name)+' • '+esc(subject().title)+(d.retentionMode?' • مراجعة تثبيت':' • التشخيص الكامل')+'</div><button class="btn ghost" id="quitTest">خروج</button></div>'+
+  var html='<div class="stage"><div class="stage-head"><div class="meta">'+esc(country().name)+' • '+esc(subject().title)+(d.retentionMode?' • مراجعة':' • التقييم')+'</div><button class="btn ghost" id="quitTest">خروج</button></div>'+
     '<div class="stage-progress"><i style="width:'+pct+'%"></i></div><div id="stageBody"></div></div>';
   chrome(html);
   document.getElementById("quitTest").onclick=function(){clearTimer();state.view="hub";render();};
@@ -160,9 +161,9 @@ function renderDiagnosticStage(){
 }
 function renderReading(text,title,source,done){
   var seconds=readingSeconds(text),left=seconds,start=Date.now();
-  setStageBody('<section class="focus-panel" style="margin-top:18px"><span class="eyebrow">اقرأ للفهم — مش مطلوب تحفظ حرفيًا</span><h2>'+esc(title)+'</h2>'+
+  setStageBody('<section class="focus-panel" style="margin-top:18px"><span class="eyebrow">اقرأ النص جيدًا</span><h2>'+esc(title)+'</h2>'+
   '<div class="reading-box"><div class="source">'+esc(source||"نص تدريبي")+'</div><div class="legal-text">'+esc(text)+'</div></div>'+
-  '<div class="timer-row"><div><button class="btn primary" id="doneReading">انتهيت من القراءة</button><p style="font-size:12px;color:var(--muted)">الوقت محسوب من طول النص بمعامل أولي قابل للمعايرة، وليس معيارًا نفسيًا ثابتًا.</p></div><div class="timer-ring" id="timerRing"><b id="timerNum">'+seconds+'</b></div></div></section>');
+  '<div class="timer-row"><button class="btn primary" id="doneReading">انتهيت من القراءة</button><div class="timer-ring" id="timerRing"><b id="timerNum">'+seconds+'</b></div></div></section>');
   function tick(){
     left=Math.max(0,seconds-Math.floor((Date.now()-start)/1000));
     var num=document.getElementById("timerNum"),ring=document.getElementById("timerRing");
@@ -174,8 +175,9 @@ function renderReading(text,title,source,done){
   document.getElementById("doneReading").onclick=function(){var used=Math.max(1,Math.round((Date.now()-start)/1000));clearTimer();done(used);};
 }
 function renderQuestion(kicker,q,opts,done){
-  setStageBody('<section class="focus-panel" style="margin-top:18px"><span class="eyebrow">'+esc(kicker)+'</span><h2>'+esc(q)+'</h2><div class="choices">'+opts.map(function(o,i){return '<button class="choice" data-q="'+i+'">'+esc(o.t)+'</button>';}).join("")+'</div><div id="qFeed"></div></section>');
-  document.querySelectorAll("[data-q]").forEach(function(b){b.onclick=function(){var i=Number(b.dataset.q);document.querySelectorAll("[data-q]").forEach(function(x){x.disabled=true;x.classList.remove("selected");});b.classList.add(opts[i].s?"good":"bad");document.getElementById("qFeed").innerHTML='<div class="memory-strip"><span class="memory-chip">'+(opts[i].s?"سجلنا الإجابة ونكمل.":"مش هنحكم من سؤال واحد — نكمل عشان نشوف النمط.")+'</span></div><button class="btn primary" id="qNext">التالي</button>';document.getElementById("qNext").onclick=function(){done(opts[i].s?100:0);};};});
+  var mixed=shuffled(opts);
+  setStageBody('<section class="focus-panel" style="margin-top:18px"><span class="eyebrow">'+esc(kicker)+'</span><h2>'+esc(q)+'</h2><div class="choices">'+mixed.map(function(o,i){return '<button class="choice" data-q="'+i+'">'+esc(o.t)+'</button>';}).join("")+'</div></section>');
+  document.querySelectorAll("[data-q]").forEach(function(b){b.onclick=function(){var i=Number(b.dataset.q),picked=mixed[i];document.querySelectorAll("[data-q]").forEach(function(x){x.disabled=true;});b.classList.add("selected");setTimeout(function(){done(picked.s?100:0);},140);};});
 }
 function keyTermsFromCorrect(){
   var a=subject().diagnostic.anchor,o=a.recallOptions.find(function(x){return x.s;});
@@ -184,7 +186,7 @@ function keyTermsFromCorrect(){
 }
 function renderFreeRecall(){
   var d=state.diagnostic;
-  setStageBody('<section class="focus-panel" style="margin-top:18px"><span class="eyebrow">استرجاع حر</span><h2>اكتب أي عبارة أو كلمتين قانونيتين تتذكرهما من النص.</h2><p>مش مطلوب صياغة نموذجية. الهدف نشوف إيه اللي فضل حاضر بعد اختفاء النص.</p><textarea id="freeRecall" style="width:100%;min-height:130px;border:1px solid var(--line);border-radius:16px;padding:14px;font:inherit"></textarea><div class="timer-row"><button class="btn primary" id="freeNext">سجل وكمل</button><button class="btn ghost" id="dontRemember">مش فاكر</button></div></section>');
+  setStageBody('<section class="focus-panel" style="margin-top:18px"><span class="eyebrow">استرجاع حر</span><h2>اكتب أهم الكلمات أو العبارات القانونية التي تتذكرها من النص.</h2><textarea id="freeRecall" dir="rtl" style="width:100%;min-height:130px;border:1px solid var(--line);border-radius:16px;padding:14px;font:inherit;text-align:right"></textarea><div class="timer-row"><button class="btn primary" id="freeNext">سجل وكمل</button><button class="btn ghost" id="dontRemember">مش فاكر</button></div></section>');
   document.getElementById("freeNext").onclick=function(){d.recallFree=document.getElementById("freeRecall").value.trim();d.stage="understand";renderDiagnostic();};
   document.getElementById("dontRemember").onclick=function(){d.recallFree="";d.stage="understand";renderDiagnostic();};
 }
@@ -202,9 +204,9 @@ var distractors=[
 function renderDistractor(){
   var d=state.diagnostic;
   if(d.distractorIndex>=distractors.length){d.stage="delayedRecall";d.delayedIndex=0;return renderDiagnostic();}
-  var x=distractors[d.distractorIndex];
-  setStageBody('<section class="focus-panel" style="margin-top:18px"><span class="eyebrow">مهمة فاصلة — لا تدخل في تقييم الذكاء</span><h2>'+esc(x.q)+'</h2><p>الغرض فقط إنك ما تفضلش تكرر النصوص القانونية في ذهنك باستمرار.</p><div class="choices">'+x.opts.map(function(o,i){return '<button class="choice" data-d="'+i+'" style="text-align:center;font-size:24px">'+esc(o)+'</button>';}).join("")+'</div></section>');
-  document.querySelectorAll("[data-d]").forEach(function(b){b.onclick=function(){state.distractorAnswers.push(Number(b.dataset.d)===x.answer);d.distractorIndex++;renderDiagnostic();};});
+  var x=distractors[d.distractorIndex],packed=shuffled(x.opts.map(function(o,i){return {t:o,correct:i===x.answer};}));
+  setStageBody('<section class="focus-panel" style="margin-top:18px"><span class="eyebrow">سؤال سريع</span><h2>'+esc(x.q)+'</h2><div class="choices">'+packed.map(function(o,i){return '<button class="choice" data-d="'+i+'" style="text-align:center;font-size:24px;direction:ltr">'+esc(o.t)+'</button>';}).join("")+'</div></section>');
+  document.querySelectorAll("[data-d]").forEach(function(b){b.onclick=function(){state.distractorAnswers.push(packed[Number(b.dataset.d)].correct);d.distractorIndex++;renderDiagnostic();};});
 }
 function delayedOptions(index){
   var set=subject().diagnostic.memorySet,correct=set[index].key;
@@ -215,7 +217,7 @@ function renderDelayedRecall(){
   if(d.delayedIndex>=set.length)return finishDiagnostic();
   var item=set[d.delayedIndex];
   var q='أي عبارة مفتاحية كانت مرتبطة بـ «'+item.label+'»؟';
-  renderQuestion(d.retentionMode?"مراجعة بعد فترة — من غير إعادة قراءة":"رجعنا للنصوص بعد المهمة الفاصلة",q,delayedOptions(d.delayedIndex),function(score){if(score)d.delayedCorrect++;d.delayedIndex++;renderDiagnostic();});
+  renderQuestion(d.retentionMode?"مراجعة لاحقة":"السؤال التالي",q,delayedOptions(d.delayedIndex),function(score){if(score)d.delayedCorrect++;d.delayedIndex++;renderDiagnostic();});
 }
 function freeRecallScore(text){
   if(!text)return 0;var n=norm(text),terms=keyTermsFromCorrect(),hits=terms.filter(function(t){return n.indexOf(t)>=0;}).length;
@@ -243,17 +245,17 @@ function profileType(m){
 }
 function profileSentence(res){
   var m=res.metrics;
-  if(res.profileType==="understanding-led")return "فهمك أسرع من استرجاعك اللفظي. هنستخدم الخريطة المنطقية للنص، ثم نثبت الكلمات القانونية الأساسية باسترجاع متباعد.";
-  if(res.profileType==="recall-led")return "استرجاعك اللفظي أقوى من الفهم التطبيقي. هنستخدم النص الذي تتذكره كبداية، ثم نفككه ونغيّر الوقائع حتى يتحول الحفظ إلى فهم قابل للاستخدام.";
-  if(m.retention+20<m.recall)return "أداؤك الفوري أفضل من الاحتفاظ بعد فترة. الأولوية ليست إعادة القراءة، بل مراجعات قصيرة متباعدة واختبارات استرجاع.";
-  return "أداؤك متقارب بين الاسترجاع والفهم. سنركز على نقل المعرفة إلى الوقائع ثم تحويلها إلى إجابة امتحانية منظمة.";
+  if(res.profileType==="understanding-led")return "كان الفهم أقوى من الاسترجاع اللفظي. ابدأ بخريطة منطقية للنص، ثم ثبّت الكلمات القانونية الأساسية باسترجاع متباعد.";
+  if(res.profileType==="recall-led")return "كان الاسترجاع اللفظي أقوى من التطبيق. ابدأ من النص الذي تتذكره، ثم فككه وغيّر الوقائع حتى تتحول القاعدة إلى فهم قابل للاستخدام.";
+  if(m.retention+20<m.recall)return "كان الأداء الفوري أقوى من الاحتفاظ. ابدأ بمراجعات قصيرة متباعدة واختبارات استرجاع.";
+  return "أداؤك متقارب بين الاسترجاع والفهم. انتقل إلى تطبيق القاعدة على الوقائع ثم بناء إجابة امتحانية منظمة.";
 }
 function renderResults(){
   var res=currentResult();if(!res){state.view="hub";return render();}
   var m=res.metrics;
-  var html='<div class="section-title"><div><h1>صورتك المبدئية</h1><p>دي ملاحظات وصفية استكشافية من عدد محدود من المهام. لا تُعد درجات معيارية أو قياسًا سيكومتريًا معتمدًا.</p></div><button class="btn ghost" id="backHub">رجوع</button></div>'+
+  var html='<div class="section-title"><div><h1>نتيجتك</h1><p>ملخص أدائك في هذه المحاولة.</p></div><button class="btn ghost" id="backHub">رجوع</button></div>'+
   '<div class="summary-rail">'+metric("الاسترجاع",m.recall)+metric("الفهم",m.understanding)+metric("التطبيق",m.application)+metric("الاحتفاظ",m.retention)+metric("الصياغة",m.exam)+'</div>'+
-  '<section class="profile-story"><h2>إزاي نستفيد من اللي عندك؟</h2><p>'+profileSentence(res)+'</p><div class="plan-flow">'+planSteps(res).map(function(x,i){return '<div class="plan-step"><b>'+(i+1)+'. '+x[0]+'</b><span>'+x[1]+'</span></div>';}).join("")+'</div></section>'+
+  '<section class="profile-story"><h2>الخطوة التالية</h2><p>'+profileSentence(res)+'</p><div class="plan-flow">'+planSteps(res).map(function(x,i){return '<div class="plan-step"><b>'+(i+1)+'. '+x[0]+'</b><span>'+x[1]+'</span></div>';}).join("")+'</div></section>'+
   '<div class="timer-row"><div><button class="btn primary" id="openPlan">افتح خطة المذاكرة</button> <button class="btn secondary" id="openExam">جرّب الإجابة الامتحانية</button></div><span class="memory-chip">مراجعة مؤجلة مقترحة بعد 24–48 ساعة</span></div>';
   chrome(html);
   document.getElementById("backHub").onclick=function(){state.view="hub";render();};
