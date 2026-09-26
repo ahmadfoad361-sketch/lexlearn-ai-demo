@@ -15,13 +15,19 @@ function weekStatus(n){
   var r=course.weekResults[n];if(r&&r.status==="repair")return ["need","يحتاج تثبيت","repeat"];
   if(r)return ["done",r.status==="mastered"?"مكتمل بإتقان":"مكتمل","check"];
   if(n===currentWeek)return ["current","متاح الآن","play"];
+  if(course.adminOverrideWeeks&&course.adminOverrideWeeks[n])return ["current","مفتوح بواسطة المشرف","play"];
   return ["locked","مغلق حتى إكمال السابق","lock"];
 }
 function status(v){if(v==null)return "لم يُقَس";if(v>=80)return "قوي";if(v>=60)return "جيد";if(v>=40)return "يحتاج تركيز";return "أولوية تدريب";}
 function profileTitle(){if(!res)return "ابدأ بالتقييم التشخيصي";if(res.profileType==="recall-led")return "ذاكرتك أقوى من الفهم — هنحوّل الحفظ إلى استخدام";if(res.profileType==="understanding-led")return "فهمك أقوى من الاسترجاع — هنحوّل المعنى إلى ذاكرة سريعة";return "أداء متوازن — هنركز على أقل مهارة حاليًا";}
 function skill(name,key,iconName){var v=res&&res.metrics?res.metrics[key]:null,w=v==null?6:Math.max(6,v);return '<div class="skill"><div class="skillHead"><span class="skillIcon">'+ico(iconName)+'</span><div><b>'+name+'</b><small>'+status(v)+(v==null?"":" • "+v+"%")+'</small></div></div><div class="bar"><i style="width:'+w+'%"></i></div></div>';}
 function achievementName(a){var names={mastered:"إتقان المرحلة",completed:"إنهاء المرحلة",completed_with_support:"تقدم بعد الدعم"};return names[a.status]||"إنجاز المرحلة";}
+function changePasswordView(){
+  APP.innerHTML='<main class="passwordGate"><section><div class="mark">Lx</div><span class="eyebrow">أول تسجيل دخول</span><h1>اختر كلمة مرور جديدة</h1><p>الحساب أُنشئ بكلمة مرور مؤقتة. غيّرها قبل بدء التدريب.</p><input id="newPass" type="password" placeholder="8 أحرف على الأقل"><input id="newPass2" type="password" placeholder="أعد كتابة كلمة المرور"><div id="passError"></div><button class="btn primary" id="savePass">حفظ وفتح حسابي</button></section></main>';
+  document.getElementById("savePass").onclick=function(){var a=document.getElementById("newPass").value,b=document.getElementById("newPass2").value,e=document.getElementById("passError");if(a.length<8||a!==b){e.textContent="اكتب كلمة مرور من 8 أحرف على الأقل وتأكد من التطابق.";return;}var arr=students;var x=arr.find(function(z){return z.id===student.id;});x.password=a;x.mustChangePassword=false;localStorage.setItem(STUDENTS_KEY,JSON.stringify(arr));student=x;render();};
+}
 function render(){
+  if(student.mustChangePassword){changePasswordView();return;}
   APP.innerHTML='<header class="top"><div class="topin"><div class="brand"><div class="mark">Lx</div><div><b>LexLearn</b><small>حساب الطالب</small></div></div><div class="topactions"><a class="topbtn" href="index.html">الموقع</a><button class="topbtn" id="logout">خروج</button></div></div></header>'+
   '<main class="wrap"><section class="hero"><div class="heroMain"><span class="eyebrow">'+esc(student.cohort||"برنامج التدريب")+'</span><h1>أهلًا '+esc(student.name)+'</h1><p>برنامج مصادر الالتزام • 6 أسابيع • 30 جلسة عملية</p><div class="heroMeta"><span>الأسبوع '+currentWeek+' من 6</span><span>الجلسة '+(course.session||1)+' من 30</span><span>'+course.completed.length+' جلسة مكتملة</span></div></div><div class="heroSide"><h3>'+profileTitle()+'</h3><p>'+(res?"الجلسة التالية ستستخدم نتيجتك الحالية والأخطاء المسجلة لتحديد نوع التدريب.":"التقييم الأول هو الذي يبني أول مسار تدريبي لك.")+'</p></div></section>'+
   '<section class="actionGrid">'+
