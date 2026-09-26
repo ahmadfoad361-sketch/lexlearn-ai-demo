@@ -3,6 +3,7 @@
 var APP=document.getElementById("programApp");
 var qs=new URLSearchParams(location.search);
 var DEMO=qs.get("demo")==="1";
+var AUTO_START=qs.get("start")==="1";
 var COUNTRY=qs.get("country")||"qa";
 var SUBJECT=qs.get("subject")||"sources";
 var PROFILE_KEY="lexlearn_v9_profile";
@@ -113,14 +114,16 @@ function home(){
     '<section class="hero"><div class="heroMain"><span class="kicker">'+(DEMO?'برنامجك':'برنامجك')+'</span>'+
     '<h1>جلسة اليوم '+state.course.session+' من 25</h1><p>'+esc(m.title)+' • '+esc(m.detail)+'</p>'+
     '<div class="heroMeta"><span>≈ 20 دقيقة</span><span>الأسبوع '+m.week+' من 5</span><span>'+kindLabel(m.kind)+'</span></div>'+
-    '<div class="choiceRow"><button class="primary" id="startSession">'+(m.kind==="assessment"?"ابدأ تقييم التقدم":"ابدأ جلسة اليوم")+'</button></div></div>'+
+    '<div class="choiceRow"><button class="primary" id="startSession">'+(m.kind==="assessment"?"ابدأ تقييم التقدم":(DEMO?"ابدأ التدريب الفعلي الآن":"ابدأ جلسة اليوم"))+'</button>'+(DEMO?'<a class="secondary" style="text-decoration:none" href="showcase.html">جرّب التقييم الذي يبني المسار</a>':'')+'</div></div>'+
     '<div class="heroSide"><h3>أولوية اليوم</h3><p>'+priorityText(metrics)+'</p><div class="notice">ابدأ بالأولوية الحالية، ثم تابع جلسات التدريب بالتدرج.</div></div></section>'+
+    (DEMO?'<section class="practiceNow"><div><span class="kicker">تجربة عملية</span><h2>الجزء التالي ليس شرحًا للخطة</h2><p>عند الضغط على الزر ستجيب بنفسك: استرجاع من الذاكرة، سؤال يحوّل الحفظ إلى فهم أو الفهم إلى تثبيت، ثم تطبيق على واقعة قانونية.</p></div><button class="primary" id="practiceNowBtn">ادخل الجلسة العملية</button></section>':'')+
     bridgeCard(metrics)+
     weekBar(m.week)+
     '<section class="grid"><div class="card">'+sessionCard(m)+'</div><div class="card">'+skillsCard()+'</div></section>'+
     '<section class="grid" style="margin-top:18px"><div class="card">'+errorCard()+'</div><div class="card">'+assessmentCard(metrics)+'</div></section>'
   );
   document.getElementById("startSession").onclick=function(){state.answers=[];state.assessmentAnswers=[];state.task=0;state.queue=buildTrainingQueue();state.view=m.kind==="assessment"?"assessment":"train";render();};
+  var pn=document.getElementById("practiceNowBtn");if(pn)pn.onclick=function(){state.answers=[];state.assessmentAnswers=[];state.task=0;state.queue=buildTrainingQueue();state.view="train";render();};
 }
 function kindLabel(k){return k==="assessment"?"تقييم مستقل":k==="review"?"مراجعة متباعدة":k==="adaptive"?"تدريب متكيف":"تدريب أساسي";}
 function priorityText(m){
@@ -229,5 +232,6 @@ function assessmentResult(){
     '<div class="choiceRow"><button class="primary" id="backHome">العودة للبرنامج</button></div></div></section>');
   document.getElementById("backHome").onclick=function(){state.view="home";render();};
 }
+if(DEMO&&AUTO_START){state.answers=[];state.assessmentAnswers=[];state.task=0;state.queue=buildTrainingQueue();state.view="train";}
 render();
 })();
