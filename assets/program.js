@@ -258,7 +258,8 @@ function bindWeekRoadmap(current){
   document.querySelectorAll("[data-week-open]").forEach(function(b){b.onclick=function(){
     var w=Number(b.dataset.weekOpen);
     if(w===current){var el=document.querySelector(".sessionHead");if(el)el.scrollIntoView({behavior:"smooth",block:"center"});return;}
-    if(w<current||weekResult(w)){state.weekPreview=w;state.view="weekSummary";render();}
+    if(w<current||weekResult(w)){state.weekPreview=w;state.view="weekSummary";render();return;}
+    if(w>current&&state.course.adminOverrideWeeks&&state.course.adminOverrideWeeks[w]){state.course.session=(w-1)*5+1;save();state.view="home";render();}
   };});
 }
 function weekSummary(){
