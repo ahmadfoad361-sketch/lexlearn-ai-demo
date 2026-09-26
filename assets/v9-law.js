@@ -252,19 +252,53 @@ function profileSentence(res){
   if(m.retention+20<m.recall)return "كان الأداء الفوري أقوى من الاحتفاظ. ابدأ بمراجعات قصيرة متباعدة واختبارات استرجاع.";
   return "أداؤك متقارب بين الاسترجاع والفهم. انتقل إلى تطبيق القاعدة على الوقائع ثم بناء إجابة امتحانية منظمة.";
 }
+function resultStatus(v){
+  if(v==null)return {label:"لم يُقَس بعد",cls:"unknown"};
+  if(v>=80)return {label:"قوي",cls:"strong"};
+  if(v>=60)return {label:"جيد",cls:"good"};
+  if(v>=40)return {label:"يحتاج تركيز",cls:"focus"};
+  return {label:"أولوية تدريب",cls:"priority"};
+}
+function resultSkillInfo(key){
+  var map={
+    recall:["🧠","الذاكرة القانونية","تسترجع القاعدة والمصطلحات من غير فتح النص."],
+    understanding:["💡","فهم القاعدة","تعرف لماذا تعمل القاعدة وما وظيفة كل عنصر."],
+    application:["⚖️","التطبيق","تنقل القاعدة من النص إلى واقعة جديدة."],
+    retention:["🔁","ثبات المعلومة","تظل المعلومة متاحة بعد مرور وقت."],
+    exam:["✍️","الإجابة الامتحانية","تنظم القاعدة والتطبيق والنتيجة في إجابة واضحة."]
+  };
+  return map[key];
+}
+function resultProfileTitle(res){
+  var m=res.metrics,items=[["recall",m.recall],["understanding",m.understanding],["application",m.application],["retention",m.retention],["exam",m.exam==null?55:m.exam]].sort(function(a,b){return (a[1]||0)-(b[1]||0);});
+  var weak=resultSkillInfo(items[0][0])[1],strong=resultSkillInfo(items[items.length-1][0])[1];
+  if(res.profileType==="recall-led")return "ذاكرتك أقوى من الفهم — هنحوّل الحفظ إلى استخدام";
+  if(res.profileType==="understanding-led")return "فهمك أقوى من الاسترجاع — هنحوّل المعنى إلى ذاكرة سريعة";
+  return strong+" نقطة قوة، و"+weak+" هي الأولوية الحالية";
+}
+function resultSkillCard(key,v){
+  var i=resultSkillInfo(key),st=resultStatus(v),w=v==null?8:clamp(v,8,100);
+  return '<div class="result-skill '+st.cls+'"><div class="result-skill-head"><span class="result-icon">'+i[0]+'</span><div><b>'+i[1]+'</b><small>'+st.label+'</small></div></div><div class="skill-bar"><i style="width:'+w+'%"></i></div><p>'+i[2]+'</p></div>';
+}
 function renderResults(){
   var res=currentResult();if(!res){state.view="hub";return render();}
   var m=res.metrics;
-  var html='<div class="section-title"><div><h1>نتيجتك</h1><p>ملخص أدائك في هذه المحاولة.</p></div><button class="btn ghost" id="backHub">رجوع</button></div>'+
-  '<div class="summary-rail">'+metric("الاسترجاع",m.recall)+metric("الفهم",m.understanding)+metric("التطبيق",m.application)+metric("الاحتفاظ",m.retention)+metric("الصياغة",m.exam)+'</div>'+
-  '<section class="profile-story"><h2>الخطوة التالية</h2><p>'+profileSentence(res)+'</p><div class="plan-flow">'+planSteps(res).map(function(x,i){return '<div class="plan-step"><b>'+(i+1)+'. '+x[0]+'</b><span>'+x[1]+'</span></div>';}).join("")+'</div></section>'+
-  '<div class="timer-row"><div><button class="btn primary" id="openPlan">افتح خطة المذاكرة</button> <button class="btn secondary" id="openExam">جرّب الإجابة الامتحانية</button></div><span class="memory-chip">مراجعة مؤجلة مقترحة بعد 24–48 ساعة</span></div>';
+  var html='<div class="section-title"><div><h1>نتيجتك ببساطة</h1><p>دي خريطة سريعة لطريقة تعلمك في هذه المحاولة، وليست درجة جامعية.</p></div><button class="btn ghost" id="backHub">رجوع</button></div>'+
+  '<section class="result-hero-simple"><span class="section-overline">نمط التعلم الحالي</span><h2>'+esc(resultProfileTitle(res))+'</h2><p>'+esc(profileSentence(res))+'</p></section>'+
+  '<div class="result-infographic">'+
+    resultSkillCard("recall",m.recall)+
+    resultSkillCard("understanding",m.understanding)+
+    resultSkillCard("application",m.application)+
+    resultSkillCard("retention",m.retention)+
+    resultSkillCard("exam",m.exam)+
+  '</div>'+
+  '<section class="student-next"><div><span class="section-overline">إيه اللي يحصل بعد كده؟</span><h2>ابدأ التدريب بدل ما تقرأ خطة فقط</h2><p>البرنامج مدته 6 أسابيع / 30 جلسة. كل جلسة فيها استرجاع، مهمة من موضوع الأسبوع، تدريب على نقطة ضعفك، تطبيق على واقعة جديدة، وتغذية راجعة.</p></div><div class="student-next-actions"><a class="btn primary" style="text-decoration:none" href="program.html?country='+encodeURIComponent(state.countryId)+'&subject='+encodeURIComponent(state.subjectId)+'">ابدأ أول جلسة تدريب</a><button class="btn secondary" id="openPlan">شوف خطة الـ6 أسابيع</button></div></section>'+
+  '<div class="result-note-simple"><b>مهم:</b> لو أعدت التقييم أو أكملت تقييم التثبيت، المسار يتغير تلقائيًا حسب أدائك الجديد.</div>';
   chrome(html);
   document.getElementById("backHub").onclick=function(){state.view="hub";render();};
   document.getElementById("openPlan").onclick=function(){state.view="plan";render();};
-  document.getElementById("openExam").onclick=function(){state.view="exam";render();};
 }
-function metric(name,v){return '<div class="metric"><span>'+name+'</span><b>'+qualitativeIndicator(v)+'</b><small>وصف استكشافي — ليس نسبة معيارية</small></div>';}
+function metric(name,v){var st=resultStatus(v);return '<div class="metric"><span>'+name+'</span><b>'+st.label+'</b></div>';}
 function planSteps(res){
   var m=res.metrics,out=[];
   if(res.profileType==="understanding-led"){out.push(["ابدأ بالخريطة","حوّل كل موضوع إلى: قاعدة → شروط → أثر → استثناء."]);out.push(["ثبّت الألفاظ","اختبر نفسك في الكلمات القانونية بدل إعادة قراءة الصفحة."]);}
