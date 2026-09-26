@@ -10,22 +10,50 @@ var PROFILE_KEY="lexlearn_v9_profile";
 var COURSE_KEY="lexlearn_course_v1_"+COUNTRY+"_"+SUBJECT;
 var TEXT64="ينعقد العقد بمجرد ارتباط الإيجاب بالقبول، إذا كان محله وسببه معتبرين قانونًا، وذلك دون إخلال بما يتطلبه القانون من أوضاع خاصة لانعقاد بعض العقود.";
 var curriculum=[
-  {week:1,title:"الأساس القانوني",sessions:[
-    ["بداية المقرر","العقد: القاعدة والعناصر","core"],["العقد","تمييز الإيجاب والقبول","core"],["العقد","المحل والسبب","core"],["العقد","الأوضاع الخاصة","adaptive"],["تقييم التقدم 1","بنك مستقل","assessment"]
+  {week:1,title:"أساس القاعدة القانونية",sessions:[
+    ["بداية البرنامج","العقد: الفكرة والعناصر","core"],
+    ["التراضي","الإيجاب والقبول","core"],
+    ["صحة العناصر","المحل والسبب","core"],
+    ["الدقة القانونية","ما الذي لا يجوز إسقاطه؟","adaptive"],
+    ["تقييم التقدم 1","استرجاع + فهم + تطبيق","assessment"]
   ]},
-  {week:2,title:"تمييز المصادر",sessions:[
-    ["مراجعة متباعدة","العقد بعد تأخير","review"],["مصادر الالتزام","العقد أم مصدر آخر؟","core"],["تمييز المصادر","Change One Fact","adaptive"],["تطبيق","Case Detective","adaptive"],["تقييم التقدم 2","بنك مستقل","assessment"]
+  {week:2,title:"مصادر الالتزام",sessions:[
+    ["خريطة المصادر","العقد والإرادة المنفردة","core"],
+    ["المصادر غير الإرادية","الفعل الضار والفعل النافع","core"],
+    ["القانون كمصدر","متى ينشئ الالتزام مباشرة؟","core"],
+    ["تمييز المصدر","Case Detective","adaptive"],
+    ["تقييم التقدم 2","تمييز المصدر تحت ضغط الوقت","assessment"]
   ]},
-  {week:3,title:"التطبيق",sessions:[
-    ["وقائع","اكتشاف القاعدة","core"],["وقائع","العنصر الحاسم","adaptive"],["وقائع","تغيير عنصر واحد","adaptive"],["مراجعة قديمة","Retrieval Mix","review"],["تقييم التقدم 3","بنك مستقل","assessment"]
+  {week:3,title:"التطبيق على الوقائع",sessions:[
+    ["اكتشاف المسألة","التقاط الواقعة الحاسمة","core"],
+    ["Change One Fact","تغيير واقعة واحدة","adaptive"],
+    ["استبعاد المشتت","ما الواقعة غير المؤثرة؟","adaptive"],
+    ["مسألة قصيرة","قاعدة → واقعة → نتيجة","adaptive"],
+    ["تقييم التقدم 3","تطبيق على حالات جديدة","assessment"]
   ]},
-  {week:4,title:"المسائل المختلطة",sessions:[
-    ["مسألة مركبة","مصدر + عناصر","core"],["مسألة مركبة","استبعاد البدائل","adaptive"],["مسألة مركبة","تعليل النتيجة","adaptive"],["مراجعة متباعدة","مهارات سابقة","review"],["تقييم التقدم 4","بنك مستقل","assessment"]
+  {week:4,title:"الذاكرة القانونية الدقيقة",sessions:[
+    ["استرجاع متباعد","المصطلحات والعناصر","review"],
+    ["Missing Element","اكتشف العنصر الناقص","adaptive"],
+    ["تصحيح الصياغة","اكتشف كلمة تغيّر الحكم","adaptive"],
+    ["ذاكرة الفهم","مفتاح معنى لكل لفظ","review"],
+    ["تقييم التقدم 4","استرجاع بعد تأخير","assessment"]
   ]},
-  {week:5,title:"الأداء الامتحاني",sessions:[
-    ["إجابة قصيرة","قاعدة → تطبيق","core"],["إجابة منظمة","شروط → أثر","core"],["سؤال مختلط","اختيار الهيكل","adaptive"],["Mock قصير","إجابة كاملة","adaptive"],["التقييم النهائي","بنك مستقل","assessment"]
+  {week:5,title:"الإجابة الامتحانية",sessions:[
+    ["Issue Spotting","ما المسألة القانونية؟","core"],
+    ["بناء الإجابة","قاعدة → شروط → تطبيق → نتيجة","core"],
+    ["تعليل النتيجة","لماذا وصلنا للحكم؟","adaptive"],
+    ["Mini Mock","إجابة قصيرة تحت وقت","adaptive"],
+    ["تقييم التقدم 5","جودة البناء الامتحاني","assessment"]
+  ]},
+  {week:6,title:"التثبيت والمحاكاة",sessions:[
+    ["مراجعة تراكمية","استرجاع من الأسابيع السابقة","review"],
+    ["مسألة مركبة","أكثر من مصدر وأكثر من عنصر","adaptive"],
+    ["Mock تدريبي","مسألة كاملة","adaptive"],
+    ["خطة ما بعد البرنامج","ما الذي يحتاج استمرارًا؟","review"],
+    ["التقييم النهائي","تشخيص ختامي + خطة شخصية","assessment"]
   ]}
 ];
+
 var skills=[
   {id:"contract",name:"انعقاد العقد",state:"stable"},
   {id:"sources",name:"تمييز مصادر الالتزام",state:"learning"},
@@ -47,11 +75,54 @@ var taskBank={
   memoryAnchor:{kind:"adaptive",title:"من الفهم إلى التثبيت",q:"أي مفتاح ذاكرة يحفظ بنية القاعدة دون فصلها عن معناها؟",opts:["إيجاب/قبول ← محل/سبب ← أوضاع خاصة عند اللزوم","ضرر ← خطأ ← سببية","زمن ← مكان ← شاهد"],a:0,skill:"contract",why:"نحن لا نحفظ فقرة صماء؛ نحفظ هيكلًا ذا معنى يمكن إعادة بناء القاعدة منه.",memory:"مفتاح الذاكرة: تراضٍ → صحة العناصر → شكل خاص عند اللزوم."},
   reconstruct:{kind:"adaptive",mode:"free",title:"استرجاع مع معنى",q:"من ذاكرتك، اكتب 3 مفاتيح فقط تعيد بها بناء قاعدة انعقاد العقد، ثم اكتب بجانب كل مفتاح وظيفته.",skill:"contract",model:"1) الإيجاب والقبول: وجود التراضي. 2) المحل والسبب المعتبران قانونًا: سلامة عناصر العقد. 3) الأوضاع الخاصة عند اللزوم: احترام الشكل الذي يفرضه القانون لبعض العقود.",why:"هذا التدريب يربط الذاكرة بالسبب القانوني، فلا يبقى الحفظ منفصلًا عن الفهم.",memory:"إذا نسيت العبارة الطويلة، استرجع الهيكل ثم أعد بناء الصياغة."}
 };
+var weekTasks={
+  1:[
+    {kind:"core",title:"التقاط القاعدة",q:"أي عبارة تعبّر عن جوهر انعقاد العقد في النص المعروض؟",opts:["تطابق الإرادتين مع سلامة العناصر القانونية","وجود ضرر فقط","مرور مدة زمنية"],a:0,skill:"contract",why:"جوهر القاعدة هو التراضي مع بقاء باقي العناصر القانونية معتبرة.",memory:"ابدأ دائمًا بالسؤال: هل يوجد تراضٍ؟ وهل العناصر صحيحة قانونًا؟"},
+    {kind:"adaptive",title:"Missing Element",q:"الصياغة الآتية ناقصة: «ينعقد العقد بمجرد الإيجاب والقبول». ما الإضافة التي تمنع الفهم المبتور؟",opts:["مراعاة المحل والسبب والأوضاع الخاصة عند اللزوم","ذكر مكان التوقيع","ذكر عمر المتعاقدين دائمًا"],a:0,skill:"contract",why:"الحفظ الصحيح لا يسقط العناصر التي قد تغيّر نتيجة الانعقاد.",memory:"لا تحفظ صدر القاعدة وتنسى قيودها."},
+    {kind:"adaptive",title:"فسّر اللفظ",q:"ما فائدة عبارة «دون إخلال بما يتطلبه القانون من أوضاع خاصة»؟",opts:["تمنع اعتبار التراضي كافيًا في كل العقود","تلغي الإيجاب والقبول","تجعل كل العقود شكلية"],a:0,skill:"contract",why:"هذه العبارة تحفظ الاستثناء: بعض العقود تتطلب شكلًا خاصًا.",memory:"الاستثناء ليس زائدًا؛ هو مفتاح لتغيير الحكم."},
+    {kind:"adaptive",mode:"free",title:"اشرح بطريقتك",q:"اكتب في سطر واحد الفرق بين وجود اتفاق وبين صحة انعقاد العقد.",skill:"contract",model:"قد يوجد اتفاق بين الطرفين، لكن صحة الانعقاد تتطلب أيضًا سلامة العناصر التي يشترطها القانون وقد تتطلب شكلًا خاصًا.",why:"الفهم يظهر عندما تفصل بين وجود الإرادة وبين اكتمال البناء القانوني.",memory:"اتفاق ≠ دائمًا عقد صحيح."}
+  ],
+  2:[
+    {kind:"core",title:"خريطة المصادر",q:"أي ترتيب يساعدك على تمييز مصدر الالتزام؟",opts:["اسأل أولًا: هل نشأ من إرادة؟ ثم هل سببه فعل؟ ثم هل أنشأه القانون مباشرة؟","احفظ أسماء المصادر بلا مقارنة","ابدأ دائمًا بالفعل الضار"],a:0,skill:"sources",why:"التمييز يبدأ بأسئلة منطقية لا بقائمة محفوظة فقط.",memory:"إرادة؟ فعل؟ قانون؟"},
+    {kind:"adaptive",title:"تمييز المصدر",q:"التزام نشأ لأن شخصًا أتلف مال غيره دون عقد بينهما. ما الباب الأقرب؟",opts:["الفعل الضار","العقد","الإرادة المنفردة"],a:0,skill:"sources",why:"غياب الاتفاق ووجود إضرار يوجهان إلى الفعل الضار.",memory:"اسأل: ما الواقعة التي أنشأت الالتزام؟"},
+    {kind:"adaptive",title:"القانون كمصدر",q:"متى يكون القانون مصدرًا مباشرًا للالتزام؟",opts:["عندما ينشئ الالتزام بذاته دون الحاجة إلى عقد أو فعل سابق محدد","فقط إذا وُجد عقد","لا يكون مصدرًا أبدًا"],a:0,skill:"sources",why:"قد يرتب القانون التزامًا مباشرة متى قرر ذلك.",memory:"مصدر مباشر = النص نفسه أنشأ الالتزام."},
+    {kind:"adaptive",mode:"free",title:"قارن مصدرين",q:"اكتب فرقًا واحدًا واضحًا بين العقد والفعل الضار من حيث سبب نشوء الالتزام.",skill:"sources",model:"العقد يقوم على توافق إرادتين لإنشاء أثر قانوني، بينما الفعل الضار ينشئ الالتزام بالتعويض بسبب الإضرار دون حاجة لاتفاق.",why:"المقارنة تثبت الفكرة أكثر من حفظ تعريفين منفصلين.",memory:"العقد: إرادة متوافقة. الفعل الضار: إضرار يولد التزامًا."}
+  ],
+  3:[
+    {kind:"adaptive",title:"Case Detective",q:"في واقعة طويلة، أي معلومة يجب أن تبحث عنها أولًا؟",opts:["الواقعة التي إذا تغيرت تغير الحكم القانوني","أطول جملة في السؤال","اسم أول شخص ذُكر"],a:0,skill:"spot",why:"الواقعة الحاسمة هي التي تتحكم في تطبيق القاعدة.",memory:"اسأل: لو شلت الواقعة دي، هل الحكم يتغير؟"},
+    {kind:"adaptive",title:"Change One Fact",q:"كان المحل جائزًا فأصبح محظورًا قانونًا، وبقي كل شيء آخر كما هو. ما المتوقع؟",opts:["قد تتغير نتيجة صحة العقد","لا يتغير شيء أبدًا","يتحول الأمر تلقائيًا إلى إثراء بلا سبب"],a:0,skill:"apply",why:"تغيير عنصر قانوني حاسم يغير نتيجة التطبيق.",memory:"غيّر واقعة واحدة ثم راقب الحكم."},
+    {kind:"adaptive",title:"المشتت",q:"أي واقعة أقل صلة عادةً بتحليل صحة انعقاد العقد؟",opts:["لون الورق الذي كتب عليه الاتفاق","مشروعية المحل","تطابق الإيجاب والقبول"],a:0,skill:"spot",why:"ليست كل الوقائع في السؤال لها وزن قانوني.",memory:"فرّق بين الوقائع السردية والوقائع القانونية."},
+    {kind:"adaptive",mode:"free",title:"طبق القاعدة",q:"طرفان اتفقا على بيع شيء محظور. اكتب النتيجة في جملتين: قاعدة ثم تطبيق.",skill:"apply",model:"التراضي وحده لا يكفي إذا كان المحل غير معتبر قانونًا. وبما أن محل الاتفاق محظور، فلا يكفي تطابق الإرادتين وحده لسلامة الانعقاد.",why:"التطبيق الجيد يربط عنصر القاعدة بواقعة محددة.",memory:"قاعدة محددة + واقعة محددة = نتيجة."}
+  ],
+  4:[
+    {kind:"review",title:"استرجاع بدون نص",q:"أي مجموعة تحفظ هيكل قاعدة انعقاد العقد بأقل كلمات؟",opts:["تراضٍ → محل/سبب → شكل خاص عند اللزوم","ضرر → مدة → شاهد","مكان → زمن → توقيع"],a:0,skill:"contract",why:"هذا الهيكل يسمح بإعادة بناء القاعدة بدل حفظ فقرة صماء.",memory:"هيكل قبل الألفاظ."},
+    {kind:"adaptive",title:"Missing Element",q:"«العقد ينعقد بتطابق الإرادتين إذا كان محله معتبرًا قانونًا». ما العنصر الذي سقط من الصياغة المختصرة؟",opts:["السبب","الضرر","المدة"],a:0,skill:"contract",why:"الدقة القانونية تعني عدم إسقاط عنصر جوهري من النص المدروس.",memory:"المحل والسبب زوج لا تنس أحدهما."},
+    {kind:"adaptive",title:"اكتشف الخطأ",q:"أي صياغة أخطر لأنها تغيّر معنى القاعدة؟",opts:["ينعقد العقد دائمًا بمجرد الإيجاب والقبول","قد يتطلب القانون أوضاعًا خاصة لبعض العقود","يشترط اعتبار المحل والسبب قانونًا"],a:0,skill:"contract",why:"كلمة «دائمًا» تلغي القيود والاستثناءات الموجودة في القاعدة.",memory:"انتبه للكلمات المطلقة: دائمًا، أبدًا، في كل الأحوال."},
+    {kind:"review",mode:"free",title:"استرجاع مؤجل",q:"من غير الرجوع للنص: اكتب العناصر الثلاثة التي تبني منها القاعدة، ثم معنى كل عنصر بكلمة أو كلمتين.",skill:"contract",model:"التراضي: توافق الإرادتين. المحل والسبب: سلامة العناصر القانونية. الأوضاع الخاصة: الشكل الذي قد يفرضه القانون.",why:"الذاكرة الأقوى هي التي تحفظ العنصر ومعناه معًا.",memory:"لفظ + وظيفة = ذاكرة قانونية قابلة للاستخدام."}
+  ],
+  5:[
+    {kind:"core",title:"Issue Spotting",q:"قبل كتابة الإجابة، ما أول شيء تحدده في المسألة؟",opts:["المسألة القانونية المطلوب حسمها","الخاتمة الطويلة","كل الوقائع بلا تمييز"],a:0,skill:"exam",why:"الإجابة المنظمة تبدأ بتحديد المسألة القانونية.",memory:"المسألة أولًا، ثم القاعدة."},
+    {kind:"core",title:"هيكل الإجابة",q:"ما الترتيب الأكثر أمانًا لإجابة تطبيقية قصيرة؟",opts:["مسألة → قاعدة → شروط/عناصر → تطبيق → نتيجة","نتيجة → قصة الوقائع → قاعدة","حفظ النص فقط"],a:0,skill:"exam",why:"هذا الهيكل يمنع القفز من القاعدة إلى النتيجة بلا تطبيق.",memory:"م ق ش ت ن: مسألة، قاعدة، شروط، تطبيق، نتيجة."},
+    {kind:"adaptive",title:"تعليل النتيجة",q:"أي جملة تمثل تطبيقًا وليس مجرد تكرار للقاعدة؟",opts:["وبما أن محل الاتفاق محظور، فإن شرط سلامة المحل لا يتحقق","المحل يجب أن يكون معتبرًا قانونًا","العقد من مصادر الالتزام"],a:0,skill:"exam",why:"التطبيق يربط القاعدة بواقعة السؤال.",memory:"ابدأ التطبيق بـ: وبما أن..."},
+    {kind:"adaptive",mode:"free",title:"Mini Mock",q:"اكتب إجابة من 4 جمل لمسألة: اتفق شخصان على بيع شيء محظور قانونًا.",skill:"exam",model:"المسألة هي مدى صحة انعقاد الاتفاق. القاعدة أن التراضي لا يكفي وحده بل يجب أن يكون المحل والسبب معتبرين قانونًا. وبما أن محل الاتفاق محظور، فلا يتحقق هذا الشرط. لذلك لا يكفي تطابق الإرادتين لسلامة الانعقاد.",why:"الأداء الامتحاني يجمع الفهم والذاكرة والتطبيق في بنية واحدة.",memory:"كل جملة لها وظيفة: مسألة، قاعدة، تطبيق، نتيجة."}
+  ],
+  6:[
+    {kind:"review",title:"مراجعة تراكمية",q:"أي سؤال يكشف أنك نسيت معنى مصدر الالتزام رغم أنك تحفظ اسمه؟",opts:["هل تستطيع تمييزه في واقعة جديدة؟","هل تستطيع نطق الاسم؟","هل كتبته بخط واضح؟"],a:0,skill:"sources",why:"الثبات الحقيقي يظهر في التمييز والتطبيق، لا في ترديد الاسم.",memory:"الاسم بلا معيار تمييز = حفظ هش."},
+    {kind:"adaptive",title:"مسألة مركبة",q:"وجد اتفاق بين طرفين، لكن المحل محظور، ونتج عن التنفيذ ضرر للغير. ما التصرف الأفضل في التحليل؟",opts:["افصل مسائل العقد عن الفعل الضار ولا تخلط بين مصدري الالتزام","اختر مصدرًا واحدًا فقط مهما كانت الوقائع","اعتبر كل شيء عقدًا"],a:0,skill:"apply",why:"المسائل المركبة قد تجمع أكثر من مصدر وأكثر من قاعدة.",memory:"قسّم المسألة إلى مشكلات صغيرة."},
+    {kind:"adaptive",title:"اختبار القرار",q:"إذا تحسن فهمك لكن ظل الاسترجاع بطيئًا قبل الامتحان، ما التدريب الأنسب؟",opts:["استرجاع متباعد قصير للمفاتيح القانونية","قراءة الفصل كاملًا مرات متتالية","إلغاء أسئلة التطبيق"],a:0,skill:"contract",why:"الهدف هو جعل الفهم متاحًا بسرعة وقت الحاجة.",memory:"الفهم يحتاج مفتاح استدعاء."},
+    {kind:"adaptive",mode:"free",title:"خطة الاستمرار",q:"اكتب في 3 نقاط: ما الذي ستراجعه بعد البرنامج؟ وما نوع السؤال الذي ستستخدمه؟ ومتى ستعيد الاختبار؟",skill:"exam",model:"1) أراجع العناصر التي ما زالت ضعيفة. 2) أستخدم استرجاعًا وتطبيقًا على وقائع جديدة، لا إعادة قراءة فقط. 3) أعيد اختبارًا مختصرًا بعد عدة أيام لقياس الاحتفاظ.",why:"نهاية البرنامج ليست نهاية التعلم؛ المطلوب خطة صيانة للمعلومة.",memory:"راجع الضعف، اختبره، ثم أعد القياس."}
+  ]
+};
+
 var assessmentBank=[
+  {q:"من غير الرجوع للنص: أي مجموعة تمثل الهيكل الأقرب لقاعدة انعقاد العقد؟",opts:["تراضٍ + سلامة المحل والسبب + الأوضاع الخاصة عند اللزوم","ضرر + خطأ + سببية","إثراء + افتقار فقط"],a:0,skill:"contract"},
+  {q:"لماذا لا يكفي الإيجاب والقبول وحدهما دائمًا؟",opts:["لأن القانون قد يشترط سلامة عناصر أخرى أو أوضاعًا خاصة","لأن كل عقد يحتاج شاهدين","لأن القبول لا قيمة له"],a:0,skill:"contract"},
   {q:"عرض شخص بيع شيء وقبل الآخر، لكن القانون يمنع التعامل في هذا الشيء. ما المشكلة الأساسية؟",opts:["المحل","الإيجاب","مرور الزمن"],a:0,skill:"apply"},
-  {q:"أي موقف يختبر وجود تطابق إرادتين أكثر من غيره؟",opts:["طرفان اتفقا على العناصر الجوهرية","شخص أتلف مال غيره","شخص أثرى بلا سبب"],a:0,skill:"sources"},
-  {q:"أي وصف أقرب للقانون كمصدر للالتزام؟",opts:["لا ينشئ التزامًا إلا بعقد","قد ينشئ الالتزام مباشرة","هو دائمًا فعل ضار"],a:1,skill:"sources"},
-  {q:"في سؤال امتحاني عن انعقاد العقد، ما الهيكل الأنسب؟",opts:["النتيجة فقط","القاعدة ثم الشروط ثم التطبيق ثم النتيجة","سرد الوقائع فقط"],a:1,skill:"exam"}
+  {q:"التزام نشأ من إتلاف مال الغير دون اتفاق. أي مصدر أقرب؟",opts:["الفعل الضار","العقد","الإرادة المنفردة"],a:0,skill:"sources"},
+  {q:"أي واقعة هي الأكثر حسمًا في سؤال عن صحة انعقاد عقد؟",opts:["مشروعية المحل","لون الورق","مكان جلوس الطرفين"],a:0,skill:"spot"},
+  {q:"إذا تغيرت واقعة حاسمة وبقيت باقي الوقائع ثابتة، ما التدريب الذي يقيس الفهم أفضل؟",opts:["Change One Fact","إعادة قراءة النص","نسخ التعريف"],a:0,skill:"apply"},
+  {q:"في سؤال امتحاني تطبيقي، ما الهيكل الأنسب؟",opts:["المسألة ثم القاعدة ثم التطبيق ثم النتيجة","النتيجة فقط","سرد الوقائع فقط"],a:0,skill:"exam"},
+  {q:"أي جملة تمثل تطبيقًا قانونيًا؟",opts:["وبما أن المحل محظور فلا يتحقق شرط سلامته","المحل يجب أن يكون معتبرًا قانونًا","العقد مصدر من مصادر الالتزام"],a:0,skill:"exam"}
 ];
 
 function esc(v){return String(v==null?"":v).replace(/[&<>"']/g,function(c){return({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c];});}
@@ -64,7 +135,7 @@ function defaultCourse(){return {session:DEMO?7:1,started:true,completed:[],erro
 function loadCourse(){try{return JSON.parse(localStorage.getItem(COURSE_KEY))||defaultCourse();}catch(e){return defaultCourse();}}
 var state={view:"home",task:0,answers:[],assessmentAnswers:[],queue:[],course:loadCourse(),diag:diagnostic()};
 function save(){if(!DEMO)localStorage.setItem(COURSE_KEY,JSON.stringify(state.course));}
-function sessionMeta(n){var idx=Math.max(1,Math.min(25,n))-1;var w=Math.floor(idx/5),d=idx%5;var x=curriculum[w].sessions[d];return {week:w+1,day:d+1,title:x[0],detail:x[1],kind:x[2],weekTitle:curriculum[w].title};}
+function sessionMeta(n){var idx=Math.max(1,Math.min(30,n))-1;var w=Math.floor(idx/5),d=idx%5;var x=curriculum[w].sessions[d];return {week:w+1,day:d+1,title:x[0],detail:x[1],kind:x[2],weekTitle:curriculum[w].title};}
 function weakestDimension(){
   var m=(state.diag&&state.diag.metrics)||{};
   var list=[["recall",m.recall==null?100:m.recall],["understanding",m.understanding==null?100:m.understanding],["application",m.application==null?100:m.application],["retention",m.retention==null?100:m.retention],["exam",m.exam==null?100:m.exam]];
@@ -83,12 +154,16 @@ function learningBridge(){
   return {type:"balanced",title:"ربط الفهم بالذاكرة",lead:"سنحافظ على التوازن: استرجاع قصير للقاعدة ثم تفسير أو تطبيق حتى لا يتحول الحفظ إلى ترديد ولا الفهم إلى معرفة يصعب استدعاؤها.",primary:taskBank.memoryAnchor,secondary:taskBank.whyContrast};
 }
 function buildTrainingQueue(){
-  var dim=weakestDimension(),err=strongestErrorSkill(),bridge=learningBridge();
+  var dim=weakestDimension(),err=strongestErrorSkill(),bridge=learningBridge(),meta=sessionMeta(state.course.session);
   var adaptive=dim==="application"?taskBank.apply:dim==="understanding"?taskBank.understanding:dim==="recall"?taskBank.recall:dim==="retention"?taskBank.retention:taskBank.exam;
   var errorTask=err==="spot"?taskBank.spot:err==="apply"?taskBank.apply:err==="exam"?taskBank.exam:null;
-  var q=[taskBank.review,bridge.primary,taskBank.core,adaptive,bridge.secondary];
+  var pool=(weekTasks[meta.week]||weekTasks[1]).slice();
+  var offset=(meta.day-1)%pool.length;
+  var rotated=pool.slice(offset).concat(pool.slice(0,offset));
+  var q=[taskBank.review,bridge.primary,rotated[0],rotated[1],adaptive,rotated[2]];
   if(errorTask&&q.indexOf(errorTask)===-1)q.push(errorTask);
-  return q;
+  if(bridge.secondary&&q.indexOf(bridge.secondary)===-1)q.push(bridge.secondary);
+  return q.slice(0,8);
 }
 function chrome(inner){
   APP.innerHTML='<div class="courseShell"><header class="courseTop"><div class="courseTopIn">'+
@@ -112,8 +187,8 @@ function home(){
   var metrics=d?d.metrics:{recall:0,understanding:0,application:0,retention:0,exam:0};
   chrome(
     '<section class="hero"><div class="heroMain"><span class="kicker">'+(DEMO?'برنامجك':'برنامجك')+'</span>'+
-    '<h1>جلسة اليوم '+state.course.session+' من 25</h1><p>'+esc(m.title)+' • '+esc(m.detail)+'</p>'+
-    '<div class="heroMeta"><span>≈ 20 دقيقة</span><span>الأسبوع '+m.week+' من 5</span><span>'+kindLabel(m.kind)+'</span></div>'+
+    '<h1>جلسة اليوم '+state.course.session+' من 30</h1><p>'+esc(m.title)+' • '+esc(m.detail)+'</p>'+
+    '<div class="heroMeta"><span>≈ 20 دقيقة</span><span>الأسبوع '+m.week+' من 6</span><span>30 جلسة عملية</span><span>'+kindLabel(m.kind)+'</span></div>'+
     '<div class="choiceRow"><button class="primary" id="startSession">'+(m.kind==="assessment"?"ابدأ تقييم التقدم":(DEMO?"ابدأ التدريب الفعلي الآن":"ابدأ جلسة اليوم"))+'</button>'+(DEMO?'<a class="secondary" style="text-decoration:none" href="showcase.html">جرّب التقييم الذي يبني المسار</a>':'')+'</div></div>'+
     '<div class="heroSide"><h3>أولوية اليوم</h3><p>'+priorityText(metrics)+'</p><div class="notice">ابدأ بالأولوية الحالية، ثم تابع جلسات التدريب بالتدرج.</div></div></section>'+
     (DEMO?'<section class="practiceNow"><div><span class="kicker">تجربة عملية</span><h2>الجزء التالي ليس شرحًا للخطة</h2><p>عند الضغط على الزر ستجيب بنفسك: استرجاع من الذاكرة، سؤال يحوّل الحفظ إلى فهم أو الفهم إلى تثبيت، ثم تطبيق على واقعة قانونية.</p></div><button class="primary" id="practiceNowBtn">ادخل الجلسة العملية</button></section>':'')+
@@ -140,8 +215,8 @@ function weekBar(current){
 function sessionCard(m){
   var bridge=learningBridge();
   var items=m.kind==="assessment"?
-    [["بنك أسئلة مستقل","assess"],["لا توجد تغذية راجعة أثناء التقييم","assess"],["النتيجة تظهر بعد النهاية","assess"]]:
-    [["استرجاع من الذاكرة","review"],[bridge.title,"adapt"],["هدف المقرر اليوم","core"],["تدريب على نقطة الضعف","adapt"],["فحص خفيف للنهاية","core"]];
+    [["8 مهام تقييم مستقلة","assess"],["استرجاع + فهم + تطبيق","assess"],["لا توجد تغذية راجعة أثناء التقييم","assess"],["النتيجة تحدّث الجلسات التالية","assess"]]:
+    [["استرجاع من الذاكرة","review"],[bridge.title,"adapt"],["مهمة من موضوع الأسبوع","core"],["تطبيق على واقعة جديدة","adapt"],["تدريب على أضعف مهارة","adapt"],["تغذية راجعة + مرساة ذاكرة","core"]];
   return '<div class="sessionHead"><div><h2>'+esc(m.title)+'</h2><p>'+esc(m.detail)+'</p></div><div class="sessionNum">'+String(state.course.session).padStart(2,"0")+'</div></div>'+
     '<div class="sessionPlan">'+items.map(function(x,i){return '<div class="planItem"><span class="dot">'+(i+1)+'</span><div><b>'+esc(x[0])+'</b></div><span class="badge '+x[1]+'">'+badgeLabel(x[1])+'</span></div>';}).join("")+'</div>';
 }
@@ -155,7 +230,7 @@ function errorCard(){
   return '<h3>سجل ملاحظات الأداء</h3><p>تظهر هنا الأخطاء التي تكررت في محاولاتك السابقة.</p>'+(es.length?es.map(function(e){return '<div class="errorItem"><b>'+esc(e.label)+'</b><span>تكرر '+e.count+' مرة</span></div>';}).join(""):'<div class="notice">لا توجد أخطاء متكررة مسجلة بعد.</div>');
 }
 function assessmentCard(m){
-  return '<h3>التقييم المستقل</h3><p>كل خامس جلسة، ثم تقييم نهائي في الجلسة 25.</p><div class="resultGrid">'+metric("استرجاع",m.recall)+metric("فهم",m.understanding)+metric("تطبيق",m.application)+'</div>';
+  return '<h3>التقييم المستقل</h3><p>كل خامس جلسة يوجد تقييم من 8 مهام، ثم تقييم نهائي في الجلسة 30.</p><div class="resultGrid">'+metric("استرجاع",m.recall)+metric("فهم",m.understanding)+metric("تطبيق",m.application)+'</div>';
 }
 function qualitative(v){if(v==null)return "لم يُقَس";if(v>=80)return "إجابات صحيحة في أغلب المهام";if(v>=45)return "نتائج متباينة";return "صعوبة متكررة";}
 function metric(n,v){return '<div class="metric"><span>'+n+'</span><b>'+qualitative(v)+'</b><small>من محاولاتك الحالية</small></div>';}
@@ -199,10 +274,10 @@ function addError(skill,label){
 function finishTraining(){
   state.course.history.push({session:state.course.session,type:"training",answers:state.answers,ts:Date.now()});
   state.course.completed.push(state.course.session);
-  state.course.session=Math.min(25,state.course.session+1);save();state.view="sessionResult";render();
+  state.course.session=Math.min(30,state.course.session+1);save();state.view="sessionResult";render();
 }
 function sessionResult(){
-  var correct=state.answers.filter(function(x){return x.correct;}).length,total=state.answers.length||1,p=Math.round(correct/total*100),sessionDesc=correct>=Math.ceil(total*.75)?"أغلب المهام أُنجزت بنجاح":correct>=Math.ceil(total*.4)?"أداء متباين داخل الجلسة":"ظهرت حاجة لمزيد من التثبيت";
+  var correct=state.answers.filter(function(x){return x.correct;}).length,total=state.answers.length||1,p=Math.round(correct/total*100),sessionDesc=correct>=Math.ceil(total*.75)?"الجلسة مستقرة — انتقل للخطوة التالية":correct>=Math.ceil(total*.4)?"محتاج جولة إضافية على بعض المهارات":"الأولوية الآن للتثبيت قبل التقدم";
   chrome('<section class="stage"><div class="taskCard"><span class="kicker">جلسة مكتملة</span><h2>خلصت جلسة اليوم</h2>'+
     '<div class="resultGrid"><div class="metric"><span>أداء الجلسة</span><b>'+sessionDesc+'</b><small>ملخص الجلسة</small></div><div class="metric"><span>عدد المهام</span><b>'+total+'</b></div><div class="metric"><span>الجلسة القادمة</span><b>'+state.course.session+'</b></div></div>'+
     '<div class="notice">سيُستخدم أداؤك لاختيار التدريب التالي.</div>'+
@@ -222,7 +297,7 @@ function finishAssessment(){
   var a=state.assessmentAnswers,c=a.filter(function(x){return x.correct;}).length,p=Math.round(c/(a.length||1)*100);
   state.course.lastAssessment={session:state.course.session,score:p,ts:Date.now()};
   state.course.history.push({session:state.course.session,type:"assessment",score:p,answers:a,ts:Date.now()});
-  state.course.completed.push(state.course.session);state.course.session=Math.min(25,state.course.session+1);save();state.view="assessmentResult";render();
+  state.course.completed.push(state.course.session);state.course.session=Math.min(30,state.course.session+1);save();state.view="assessmentResult";render();
 }
 function assessmentResult(){
   var p=state.course.lastAssessment?state.course.lastAssessment.score:0;
