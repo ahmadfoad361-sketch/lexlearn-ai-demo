@@ -46,3 +46,20 @@ button,input,textarea{font:inherit}.courseShell{min-height:100vh}
 .notice{margin-top:14px;padding:13px 15px;border-radius:14px;background:#fff7e8;border:1px solid #ead7b5;color:#70572e;font-size:11px;line-height:1.7}
 @media(max-width:900px){.hero,.grid{grid-template-columns:1fr}.weekBar{grid-template-columns:1fr 1fr 1fr}.resultGrid{grid-template-columns:1fr}}
 @media(max-width:560px){.courseWrap{padding:20px 12px 60px}.heroMain,.heroSide,.card,.taskCard{border-radius:20px;padding:20px}.weekBar{grid-template-columns:1fr 1fr}.heroMain h1{font-size:38px}.legalBox div{font-size:20px}}
+
+
+/* v16 — bridge memory with understanding */
+.bridgePanel{margin:20px 0;background:linear-gradient(135deg,#fffdfa,#f8f1e8);border:1px solid rgba(116,26,57,.12);border-radius:24px;padding:24px;box-shadow:0 14px 38px rgba(20,24,32,.05)}
+.bridgeHead{display:grid;grid-template-columns:1fr auto;gap:22px;align-items:center}
+.bridgeHead h2{margin:9px 0 4px;color:var(--navy);font-size:28px}.bridgeHead p{margin:0;color:var(--muted);line-height:1.8;max-width:780px}
+.bridgeScore{display:grid;grid-template-columns:auto auto;gap:5px 12px;align-items:center;padding:14px 16px;border-radius:18px;background:var(--navy);color:#fff;min-width:150px}
+.bridgeScore span{font-size:9px;color:#a8b3c3}.bridgeScore b{font-size:22px;color:#e0c58f}
+.bridgeSteps{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:20px}
+.bridgeSteps>div{border:1px solid #e7ddd2;background:#fff;border-radius:17px;padding:14px;min-height:110px}
+.bridgeSteps b{display:grid;place-items:center;width:28px;height:28px;border-radius:9px;background:#f2e8ec;color:var(--maroon);font-size:11px}
+.bridgeSteps span{display:block;margin-top:10px;color:var(--navy);font-weight:800}.bridgeSteps small{display:block;margin-top:3px;color:var(--muted);line-height:1.55}
+.modelAnswer{margin-top:16px;padding:16px 18px;border-radius:16px;background:#eef4f8;border:1px solid #d7e2ec;color:#233b55}.modelAnswer b{color:#315b84}.modelAnswer p{margin:6px 0 0;color:#334c64}
+.memoryAnchor{margin-top:12px;padding:14px 16px;border-radius:15px;background:#fff7e8;border:1px solid #ead7b5;display:grid;gap:3px}.memoryAnchor b{color:#8a641c;font-size:11px}.memoryAnchor span{color:#624b27;line-height:1.65}
+.textarea:focus{outline:0;border-color:#b88497;box-shadow:0 0 0 3px rgba(116,26,57,.08)}
+@media(max-width:900px){.bridgeHead{grid-template-columns:1fr}.bridgeScore{width:max-content}.bridgeSteps{grid-template-columns:1fr 1fr}}
+@media(max-width:560px){.bridgePanel{padding:18px;border-radius:20px}.bridgeSteps{grid-template-columns:1fr}.bridgeScore{width:100%}}
