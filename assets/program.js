@@ -6,8 +6,10 @@ var DEMO=qs.get("demo")==="1";
 var AUTO_START=qs.get("start")==="1";
 var COUNTRY=qs.get("country")||"qa";
 var SUBJECT=qs.get("subject")||"sources";
-var PROFILE_KEY="lexlearn_v9_profile";
-var COURSE_KEY="lexlearn_course_v1_"+COUNTRY+"_"+SUBJECT;
+var STUDENT_SESSION=(function(){try{return JSON.parse(localStorage.getItem("lexlearn_student_session"))||null;}catch(e){return null;}})();
+var STUDENT_SCOPE=STUDENT_SESSION&&STUDENT_SESSION.studentId?("_"+STUDENT_SESSION.studentId):"";
+var PROFILE_KEY="lexlearn_v9_profile"+STUDENT_SCOPE;
+var COURSE_KEY="lexlearn_course_v1_"+COUNTRY+"_"+SUBJECT+STUDENT_SCOPE;
 var TEXT64="ينعقد العقد بمجرد ارتباط الإيجاب بالقبول، إذا كان محله وسببه معتبرين قانونًا، وذلك دون إخلال بما يتطلبه القانون من أوضاع خاصة لانعقاد بعض العقود.";
 var curriculum=[
   {week:1,title:"أساس القاعدة القانونية",sessions:[
