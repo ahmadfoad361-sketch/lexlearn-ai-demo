@@ -128,14 +128,35 @@ var assessmentBank=[
 ];
 
 function esc(v){return String(v==null?"":v).replace(/[&<>"']/g,function(c){return({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c];});}
+function ico(name){
+  var p={
+    lock:'<rect x="18" y="29" width="28" height="23" rx="5"/><path d="M24 29v-7a8 8 0 0 1 16 0v7"/>',
+    check:'<circle cx="32" cy="32" r="23"/><path d="m21 32 7 7 15-16"/>',
+    trophy:'<path d="M22 13h20v12c0 9-5 15-10 15s-10-6-10-15z"/><path d="M22 18h-8v5c0 6 4 10 10 10M42 18h8v5c0 6-4 10-10 10M32 40v9M23 52h18"/>',
+    brain:'<path d="M25 13c-7 0-10 5-9 10-5 2-6 10-1 13-3 6 3 13 9 11 2 5 10 5 12 0 6 2 12-5 9-11 5-3 4-11-1-13 1-5-2-10-9-10"/><path d="M32 14v34M23 24c4 0 6 2 9 5M41 24c-4 0-6 2-9 5M22 39c4 0 7-2 10-5M42 39c-4 0-7-2-10-5"/>',
+    bulb:'<path d="M32 10a15 15 0 0 0-9 27c3 2 4 5 4 8h10c0-3 1-6 4-8a15 15 0 0 0-9-27z"/><path d="M27 50h10M29 55h6"/>',
+    scale:'<path d="M32 11v39M20 17h24M12 26l8-9 8 9M36 26l8-9 8 9M10 26h20c0 7-4 11-10 11S10 33 10 26zM34 26h20c0 7-4 11-10 11s-10-4-10-11zM22 53h20"/>',
+    repeat:'<path d="M16 21a20 20 0 0 1 32 2l4 5M52 17v11H41M48 43a20 20 0 0 1-32-2l-4-5M12 47V36h11"/>',
+    pen:'<path d="M14 49l4-14 24-24 11 11-24 24zM18 35l11 11M37 16l11 11"/><path d="M13 52h38"/>',
+    star:'<path d="m32 9 7 14 16 2-12 11 3 16-14-8-14 8 3-16L9 25l16-2z"/>'
+  };
+  return '<svg class="uiIcon" viewBox="0 0 64 64" aria-hidden="true">'+(p[name]||p.star)+'</svg>';
+}
 function loadProfile(){try{return JSON.parse(localStorage.getItem(PROFILE_KEY))||{results:{}};}catch(e){return {results:{}};}}
 function diagnostic(){
   if(DEMO)return {metrics:{recall:82,understanding:88,application:58,retention:64,exam:55}};
   var p=loadProfile(),k=COUNTRY+"-"+SUBJECT;return p.results&&p.results[k]?p.results[k]:null;
 }
-function defaultCourse(){return {session:DEMO?7:1,started:true,completed:[],errors:DEMO?[{skill:"apply",label:"يخلط بين وجود الاتفاق وصحة المحل",count:2},{skill:"spot",label:"لا يلتقط الواقعة الحاسمة بسرعة",count:1}]:[],history:[],lastAssessment:null};}
-function loadCourse(){try{return JSON.parse(localStorage.getItem(COURSE_KEY))||defaultCourse();}catch(e){return defaultCourse();}}
-var state={view:"home",task:0,answers:[],assessmentAnswers:[],queue:[],course:loadCourse(),diag:diagnostic()};
+function defaultCourse(){return {session:1,started:true,completed:[],errors:DEMO?[{skill:"apply",label:"يخلط بين وجود الاتفاق وصحة المحل",count:2},{skill:"spot",label:"لا يلتقط الواقعة الحاسمة بسرعة",count:1}]:[],history:[],lastAssessment:null,weekResults:{},repairRequired:false,repairWeek:null,adminOverrideWeeks:{},achievements:[]};}
+function loadCourse(){
+  try{
+    var c=JSON.parse(localStorage.getItem(COURSE_KEY))||defaultCourse();
+    c.weekResults=c.weekResults||{};c.adminOverrideWeeks=c.adminOverrideWeeks||{};c.achievements=c.achievements||[];
+    if(c.repairRequired==null)c.repairRequired=false;
+    return c;
+  }catch(e){return defaultCourse();}
+}
+var state={view:"home",task:0,answers:[],assessmentAnswers:[],queue:[],course:loadCourse(),diag:diagnostic(),repairMode:false,weekPreview:null};
 function save(){if(!DEMO)localStorage.setItem(COURSE_KEY,JSON.stringify(state.course));}
 function sessionMeta(n){var idx=Math.max(1,Math.min(30,n))-1;var w=Math.floor(idx/5),d=idx%5;var x=curriculum[w].sessions[d];return {week:w+1,day:d+1,title:x[0],detail:x[1],kind:x[2],weekTitle:curriculum[w].title};}
 function weakestDimension(){
@@ -179,6 +200,9 @@ function render(){
   if(state.view==="sessionResult")return sessionResult();
   if(state.view==="assessment")return assessment();
   if(state.view==="assessmentResult")return assessmentResult();
+  if(state.view==="achievement")return achievementBoard();
+  if(state.view==="repairAssessment")return repairAssessment();
+  if(state.view==="weekSummary")return weekSummary();
 }
 function home(){
   var m=sessionMeta(state.course.session),d=state.diag;
@@ -201,6 +225,7 @@ function home(){
   );
   document.getElementById("startSession").onclick=function(){state.answers=[];state.assessmentAnswers=[];state.task=0;state.queue=buildTrainingQueue();state.view=m.kind==="assessment"?"assessment":"train";render();};
   var pn=document.getElementById("practiceNowBtn");if(pn)pn.onclick=function(){state.answers=[];state.assessmentAnswers=[];state.task=0;state.queue=buildTrainingQueue();state.view="train";render();};
+  bindWeekRoadmap(m.week);
 }
 function kindLabel(k){return k==="assessment"?"تقييم مستقل":k==="review"?"مراجعة متباعدة":k==="adaptive"?"تدريب متكيف":"تدريب أساسي";}
 function priorityText(m){
@@ -211,8 +236,36 @@ function bridgeCard(m){
   var b=learningBridge();
   return '<section class="bridgePanel"><div class="bridgeHead"><div><span class="kicker">جسر التعلم</span><h2>'+esc(b.title)+'</h2><p>'+esc(b.lead)+'</p></div><div class="bridgeScore"><span>الاسترجاع</span><b>'+Math.round(m.recall||0)+'</b><span>الفهم</span><b>'+Math.round(m.understanding||0)+'</b></div></div><div class="bridgeSteps"><div><b>1</b><span>استرجع</span><small>من الذاكرة قبل فتح النص</small></div><div><b>2</b><span>فسّر</span><small>قل لماذا تعمل القاعدة هكذا</small></div><div><b>3</b><span>طبّق</span><small>غيّر واقعة واحدة واختبر النتيجة</small></div><div><b>4</b><span>ثبّت</span><small>مفتاح ذاكرة مرتبط بالمعنى</small></div></div></section>';
 }
+function weekResult(w){return (state.course.weekResults||{})[w]||null;}
+function weekUnlocked(w,current){
+  if(w===1)return true;
+  if(w<=current)return true;
+  var prev=weekResult(w-1);
+  return !!(prev&&(prev.status==="mastered"||prev.status==="completed"||prev.status==="completed_with_support"))||!!(state.course.adminOverrideWeeks&&state.course.adminOverrideWeeks[w]);
+}
 function weekBar(current){
-  return '<div class="weekBar">'+curriculum.map(function(w){var cls=w.week<current?"done":w.week===current?"current":"";return '<div class="week '+cls+'"><b>الأسبوع '+w.week+'</b><small>'+esc(w.title)+'</small></div>';}).join("")+'</div>';
+  return '<section class="weekRoadmap"><div class="roadmapTitle"><div><span class="kicker">مسار 6 أسابيع</span><h2>كل أسبوع يفتح بعد إكمال المرحلة السابقة</h2></div><span class="roadmapCount">'+Math.max(0,state.course.completed.length)+' / 30 جلسة</span></div><div class="weekBar">'+curriculum.map(function(w){
+    var r=weekResult(w.week),open=weekUnlocked(w.week,current),cls="",status="",icon="lock";
+    if(r&&r.status==="repair"){cls="needs";status="يحتاج تثبيت";icon="repeat";}
+    else if(r){cls="done";status=r.status==="mastered"?"مكتمل بإتقان":"مكتمل";icon="check";}
+    else if(w.week===current){cls="current";status="متاح الآن";icon="star";}
+    else if(open){cls="available";status="متاح";icon="star";}
+    else{cls="locked";status="مغلق";icon="lock";}
+    return '<button class="week '+cls+'" '+(open?'data-week-open="'+w.week+'"':'disabled')+'><span class="weekIcon">'+ico(icon)+'</span><b>الأسبوع '+w.week+'</b><small>'+esc(w.title)+'</small><em>'+status+'</em></button>';
+  }).join("")+'</div></section>';
+}
+function bindWeekRoadmap(current){
+  document.querySelectorAll("[data-week-open]").forEach(function(b){b.onclick=function(){
+    var w=Number(b.dataset.weekOpen);
+    if(w===current){var el=document.querySelector(".sessionHead");if(el)el.scrollIntoView({behavior:"smooth",block:"center"});return;}
+    if(w<current||weekResult(w)){state.weekPreview=w;state.view="weekSummary";render();}
+  };});
+}
+function weekSummary(){
+  var w=state.weekPreview||1,r=weekResult(w),meta=curriculum[w-1];
+  var status=r?(r.status==="mastered"?"مكتمل بإتقان":r.status==="repair"?"يحتاج تثبيت":"مكتمل"):"لم يكتمل بعد";
+  chrome('<section class="stage"><div class="achievementCard compact"><span class="achievementIcon">'+ico(r&&r.status!=="repair"?"check":"repeat")+'</span><span class="kicker">ملخص الأسبوع '+w+'</span><h2>'+esc(meta.title)+'</h2><div class="achievementState '+(r&&r.status==="repair"?"need":"ok")+'">'+status+'</div>'+(r?'<p>نتيجة تقييم المرحلة: <b>'+r.score+'%</b></p>':'<p>لا توجد نتيجة نهائية لهذه المرحلة بعد.</p>')+'<div class="sessionPlan">'+meta.sessions.map(function(x,i){return '<div class="planItem"><span class="dot">'+(i+1)+'</span><div><b>'+esc(x[0])+'</b><small>'+esc(x[1])+'</small></div></div>';}).join("")+'</div><div class="choiceRow"><button class="primary" id="weekBack">العودة للمسار</button></div></div></section>');
+  document.getElementById("weekBack").onclick=function(){state.view="home";render();};
 }
 function sessionCard(m){
   var bridge=learningBridge();
