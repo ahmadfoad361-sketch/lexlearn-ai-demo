@@ -2,7 +2,9 @@
 "use strict";
 var D=window.LEX_V9_CONTENT;
 var APP=document.getElementById("lawApp");
-var KEY="lexlearn_v9_profile";
+var STUDENT_SESSION=(function(){try{return JSON.parse(localStorage.getItem("lexlearn_student_session"))||null;}catch(e){return null;}})();
+var STUDENT_SCOPE=STUDENT_SESSION&&STUDENT_SESSION.studentId?("_"+STUDENT_SESSION.studentId):"";
+var KEY="lexlearn_v9_profile"+STUDENT_SCOPE;
 var STOP=["في","من","على","إلى","الى","عن","أن","ان","ما","هو","هي","أو","او","مع","إذا","اذا","كان","كانت","هذا","هذه","الذي","التي","ثم","كل","وفق","وفقا","طبقًا","طبقا"];
 var state={
   view:"country",countryId:null,subjectId:null,
