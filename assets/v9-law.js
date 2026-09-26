@@ -79,7 +79,7 @@ function renderCountry(){
     '<div class="entry-intro"><div class="entry-seal">Lx</div><span class="section-overline">LEXLEARN</span>'+
     '<h1>اختر النظام القانوني</h1>'+
     '<p>اختر الدولة التي تدرس قانونها.</p></div>'+
-    '<div class="quick-live-demo"><div class="quick-live-copy"><span class="section-overline">تجربة مباشرة</span><h2>مش مجرد خطة — جرّب LexLearn بنفسك الآن</h2><p>ابدأ بتقييم تشخيصي قصير، أو ادخل مباشرة في جلسة تدريب متكيفة وترى كيف يتغير التدريب حسب طريقة تفكير الطالب.</p></div><div class="quick-live-actions"><a class="quick-live-btn primary-live" href="showcase.html">جرّب التقييم التشخيصي</a><a class="quick-live-btn training-live" href="program.html?demo=1&start=1">جرّب جلسة تدريب فعلية</a></div></div>'+
+    '<div class="quick-live-demo"><div class="quick-live-copy"><span class="section-overline">تجربة مباشرة</span><h2>مش مجرد خطة — جرّب LexLearn بنفسك الآن</h2><p>ابدأ بتقييم تشخيصي قصير، أو ادخل مباشرة في جلسة تدريب متكيفة وترى كيف يتغير التدريب حسب طريقة تفكير الطالب.</p></div><div class="quick-live-actions"><a class="quick-live-btn primary-live" href="showcase.html">جرّب التقييم التشخيصي</a><a class="quick-live-btn training-live" href="program.html?demo=1&start=1">جرّب جلسة تدريب فعلية</a><a class="quick-live-btn admin-live" href="admin.html">عرض لوحة المشرف التجريبية</a></div></div>'+
     '<div class="entry-divider"><span>أو ابدأ مسارك الكامل</span></div>'+
     '<div class="entry-options">'+D.countries.map(function(c,i){return '<button class="entry-option" data-country="'+c.id+'">'+
       '<span class="entry-flag">'+c.flag+'</span>'+
