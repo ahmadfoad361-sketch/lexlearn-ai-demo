@@ -290,35 +290,60 @@ function assessmentCard(m){
 function qualitative(v){if(v==null)return "لم يُقَس";if(v>=80)return "إجابات صحيحة في أغلب المهام";if(v>=45)return "نتائج متباينة";return "صعوبة متكررة";}
 function metric(n,v){return '<div class="metric"><span>'+n+'</span><b>'+qualitative(v)+'</b><small>من محاولاتك الحالية</small></div>';}
 
+function normText(v){return String(v||"").toLowerCase().replace(/[أإآ]/g,"ا").replace(/ة/g,"ه").replace(/ى/g,"ي").replace(/[ًٌٍَُِّْـ]/g,"").replace(/[^\u0600-\u06FFa-z0-9 ]/gi," ").replace(/\s+/g," ").trim();}
+function freeRubric(answer,t){
+  var n=normText(answer),groups=[];
+  if(t.skill==="contract")groups=[["ايجاب","قبول","تراض"],["محل","سبب"],["اوضاع","شكل"]];
+  else if(t.skill==="sources")groups=[["عقد","اراده"],["فعل","ضرر"],["قانون"]];
+  else if(t.skill==="apply")groups=[["قاعد","محل","تراض"],["واقع","محظور","غير جائز"],["نتيج","لا يكفي","لا ينعقد"]];
+  else if(t.skill==="exam")groups=[["مساله"],["قاعد"],["تطبيق","بما ان"],["نتيج","لذلك"]];
+  else groups=[["قاعد"],["سبب","لماذا"],["نتيج"]];
+  var hits=groups.map(function(g){return g.some(function(k){return n.indexOf(k)>=0;});}).filter(Boolean).length;
+  var score=Math.round(hits/groups.length*100);
+  return {score:score,hits:hits,total:groups.length,pass:score>=60};
+}
+function taskStatusBox(correct,label){
+  return '<div class="answerStatus '+(correct?"correct":"wrong")+'"><span class="answerStatusIcon">'+ico(correct?"check":"repeat")+'</span><div><b>'+(correct?"إجابتك صحيحة":"إجابتك تحتاج تعديل")+'</b><small>'+esc(label||"راجع السبب ثم انتقل للمهمة التالية.")+'</small></div></div>';
+}
 function train(){
   var q=state.queue.length?state.queue:buildTrainingQueue(),t=q[state.task%q.length];
   var input=t.mode==="free"?
-    '<textarea class="textarea" id="freeAnswer" placeholder="اكتب إجابتك بطريقتك..."></textarea><div class="choiceRow"><button class="primary" id="checkFree">قارن إجابتي</button></div>':
+    '<textarea class="textarea" id="freeAnswer" placeholder="اكتب إجابتك بطريقتك..."></textarea><div class="choiceRow"><button class="primary" id="checkFree">حلّل إجابتي</button></div>':
     '<div class="options">'+t.opts.map(function(o,i){return '<button class="option" data-a="'+i+'">'+esc(o)+'</button>';}).join("")+'</div>';
   chrome('<section class="stage"><div class="progress"><i style="width:'+((state.task+1)/q.length*100)+'%"></i></div><div class="taskCard">'+
-    '<span class="kicker">'+esc(kindLabel(t.kind))+' • '+(state.task+1)+' / '+q.length+'</span><h2>'+esc(t.title)+'</h2>'+
+    '<span class="kicker">'+(state.repairMode?"جلسة تثبيت • ":"")+esc(kindLabel(t.kind))+' • '+(state.task+1)+' / '+q.length+'</span><h2>'+esc(t.title)+'</h2>'+
     (t.showText?'<div class="legalBox"><small>النص القانوني</small><div>'+esc(TEXT64)+'</div></div>':'')+
     '<p>'+esc(t.q)+'</p>'+input+'<div id="feed"></div></div></section>');
   if(t.mode==="free"){
     document.getElementById("checkFree").onclick=function(){
       var answer=(document.getElementById("freeAnswer").value||"").trim();
-      if(!answer){document.getElementById("feed").innerHTML='<div class="notice">اكتب محاولة قصيرة أولًا؛ الهدف أن تُخرج المعنى من ذاكرتك قبل رؤية النموذج.</div>';return;}
+      if(!answer){document.getElementById("feed").innerHTML='<div class="notice">اكتب محاولة قصيرة أولًا؛ الهدف أن نحلل بناء إجابتك، لا أن نريك النموذج مباشرة.</div>';return;}
+      var r=freeRubric(answer,t);
       document.getElementById("freeAnswer").disabled=true;document.getElementById("checkFree").disabled=true;
-      document.getElementById("feed").innerHTML='<div class="modelAnswer"><b>نموذج للمقارنة</b><p>'+esc(t.model)+'</p></div><div class="feedback">'+esc(t.why)+'</div>'+(t.memory?'<div class="memoryAnchor"><b>مرساة الذاكرة</b><span>'+esc(t.memory)+'</span></div>':'')+'<div class="choiceRow"><button class="primary" id="freeGood">إجابتي قريبة</button><button class="secondary" id="freeRetry">أحتاج تدريبًا أكثر</button></div>';
-      document.getElementById("freeGood").onclick=function(){completeTask(t,true,q);};
-      document.getElementById("freeRetry").onclick=function(){completeTask(t,false,q);};
+      document.getElementById("feed").innerHTML=
+        taskStatusBox(r.pass,r.pass?"استوفيت "+r.hits+" من "+r.total+" عناصر مطلوبة.":"استوفيت "+r.hits+" من "+r.total+" عناصر. راجع العنصر الناقص.")+
+        '<div class="rubricMini"><b>تحليل سريع</b><span>'+r.score+'%</span><small>هذا تقييم بنائي داخل الـPrototype يعتمد على Rubric وكلمات مفتاحية؛ النسخة الإنتاجية ستستخدم تحليلًا دلاليًا أكثر دقة.</small></div>'+
+        '<div class="modelAnswer"><b>نموذج للمقارنة</b><p>'+esc(t.model)+'</p></div><div class="feedback">'+esc(t.why)+'</div>'+
+        (t.memory?'<div class="memoryAnchor"><b>مرساة الذاكرة</b><span>'+esc(t.memory)+'</span></div>':'')+
+        '<div class="choiceRow"><button class="primary" id="nextFree">'+(state.task<q.length-1?"التالي":"إنهاء الجلسة")+'</button></div>';
+      document.getElementById("nextFree").onclick=function(){completeTask(t,r.pass,q,{rubricScore:r.score,answer:answer});};
     };
   }else{
     document.querySelectorAll("[data-a]").forEach(function(b){b.onclick=function(){
       var i=Number(b.dataset.a),correct=i===t.a;
-      document.querySelectorAll("[data-a]").forEach(function(x){x.disabled=true;});b.classList.add(correct?"good":"bad");
-      document.getElementById("feed").innerHTML='<div class="feedback">'+esc(t.why)+'</div>'+(t.memory?'<div class="memoryAnchor"><b>مرساة الذاكرة</b><span>'+esc(t.memory)+'</span></div>':'')+'<div class="choiceRow"><button class="primary" id="nextTask">'+(state.task<q.length-1?"التالي":"إنهاء الجلسة")+'</button></div>';
-      document.getElementById("nextTask").onclick=function(){completeTask(t,correct,q);};
+      document.querySelectorAll("[data-a]").forEach(function(x){x.disabled=true;});
+      b.classList.add(correct?"good":"bad");
+      if(!correct){var right=document.querySelector('[data-a="'+t.a+'"]');if(right)right.classList.add("good");}
+      document.getElementById("feed").innerHTML=
+        taskStatusBox(correct,correct?t.why:"الإجابة الصحيحة: "+t.opts[t.a]+". "+t.why)+
+        (t.memory?'<div class="memoryAnchor"><b>مرساة الذاكرة</b><span>'+esc(t.memory)+'</span></div>':'')+
+        '<div class="choiceRow"><button class="primary" id="nextTask">'+(state.task<q.length-1?"التالي":"إنهاء الجلسة")+'</button></div>';
+      document.getElementById("nextTask").onclick=function(){completeTask(t,correct,q,{selected:i});};
     };});
   }
 }
-function completeTask(t,correct,q){
-  state.answers.push({skill:t.skill,correct:correct,bridge:learningBridge().type});
+function completeTask(t,correct,q,extra){
+  state.answers.push({skill:t.skill,correct:correct,bridge:learningBridge().type,extra:extra||null});
   if(!correct)addError(t.skill,errorLabel(t.skill));
   if(state.task<q.length-1){state.task++;render();}else finishTraining();
 }
@@ -326,42 +351,105 @@ function errorLabel(skill){var map={apply:"يحتاج نقل القاعدة إل
 function addError(skill,label){
   var e=state.course.errors.find(function(x){return x.skill===skill;});if(e)e.count++;else state.course.errors.push({skill:skill,label:label,count:1});
 }
+function pushUnique(arr,val){if(arr.indexOf(val)===-1)arr.push(val);}
+function buildRepairQueue(){
+  var w=state.course.repairWeek||sessionMeta(state.course.session).week,pool=(weekTasks[w]||weekTasks[1]).slice(),weak=weakestDimension();
+  var targeted=weak==="application"?taskBank.apply:weak==="understanding"?taskBank.understanding:weak==="recall"?taskBank.recall:weak==="retention"?taskBank.retention:taskBank.exam;
+  return [targeted,pool[0],pool[1],learningBridge().primary,pool[2]].filter(Boolean);
+}
 function finishTraining(){
-  state.course.history.push({session:state.course.session,type:"training",answers:state.answers,ts:Date.now()});
-  state.course.completed.push(state.course.session);
+  state.course.history.push({session:state.course.session,type:state.repairMode?"repair":"training",answers:state.answers,ts:Date.now()});
+  if(state.repairMode){
+    state.repairMode=false;state.assessmentAnswers=[];state.task=0;state.view="repairAssessment";save();render();return;
+  }
+  pushUnique(state.course.completed,state.course.session);
   state.course.session=Math.min(30,state.course.session+1);save();state.view="sessionResult";render();
 }
 function sessionResult(){
   var correct=state.answers.filter(function(x){return x.correct;}).length,total=state.answers.length||1,p=Math.round(correct/total*100),sessionDesc=correct>=Math.ceil(total*.75)?"الجلسة مستقرة — انتقل للخطوة التالية":correct>=Math.ceil(total*.4)?"محتاج جولة إضافية على بعض المهارات":"الأولوية الآن للتثبيت قبل التقدم";
   chrome('<section class="stage"><div class="taskCard"><span class="kicker">جلسة مكتملة</span><h2>خلصت جلسة اليوم</h2>'+
-    '<div class="resultGrid"><div class="metric"><span>أداء الجلسة</span><b>'+sessionDesc+'</b><small>ملخص الجلسة</small></div><div class="metric"><span>عدد المهام</span><b>'+total+'</b></div><div class="metric"><span>الجلسة القادمة</span><b>'+state.course.session+'</b></div></div>'+
-    '<div class="notice">سيُستخدم أداؤك لاختيار التدريب التالي.</div>'+
+    '<div class="resultGrid"><div class="metric"><span>أداء الجلسة</span><b>'+sessionDesc+'</b><small>'+p+'% من مهام الجلسة</small></div><div class="metric"><span>عدد المهام</span><b>'+total+'</b></div><div class="metric"><span>الجلسة القادمة</span><b>'+state.course.session+'</b></div></div>'+
+    '<div class="notice">تم حفظ الأخطاء والمهارات التي احتاجت دعمًا، وستؤثر في اختيار الجلسة التالية.</div>'+
     '<div class="choiceRow"><button class="primary" id="backHome">العودة للبرنامج</button></div></div></section>');
   document.getElementById("backHome").onclick=function(){state.view="home";render();};
 }
 function assessment(){
   var q=assessmentBank[state.task%assessmentBank.length];
   chrome('<section class="stage"><div class="progress"><i style="width:'+((state.task+1)/assessmentBank.length*100)+'%"></i></div><div class="taskCard">'+
-    '<span class="kicker">تقييم التقدم • '+(state.task+1)+' / '+assessmentBank.length+'</span><h2>'+esc(q.q)+'</h2>'+
-    '<div class="options">'+q.opts.map(function(o,i){return '<button class="option" data-a="'+i+'">'+esc(o)+'</button>';}).join("")+'</div></div></section>');
+    '<span class="kicker">تقييم نهاية الأسبوع • '+(state.task+1)+' / '+assessmentBank.length+'</span><h2>'+esc(q.q)+'</h2>'+
+    '<div class="options">'+q.opts.map(function(o,i){return '<button class="option" data-a="'+i+'">'+esc(o)+'</button>';}).join("")+'</div><div class="assessmentNote">لا تظهر الإجابة الصحيحة أثناء التقييم حتى لا نخلط بين التدريب والقياس.</div></div></section>');
   document.querySelectorAll("[data-a]").forEach(function(b){b.onclick=function(){
-    state.assessmentAnswers.push({skill:q.skill,correct:Number(b.dataset.a)===q.a});if(state.task<assessmentBank.length-1){state.task++;render();}else finishAssessment();
+    state.assessmentAnswers.push({skill:q.skill,correct:Number(b.dataset.a)===q.a});
+    if(state.task<assessmentBank.length-1){state.task++;render();}else finishAssessment();
   };});
 }
+function skillScores(answers){
+  var out={contract:[],sources:[],apply:[],spot:[],exam:[]};
+  (answers||[]).forEach(function(a){if(!out[a.skill])out[a.skill]=[];out[a.skill].push(a.correct?1:0);});
+  Object.keys(out).forEach(function(k){var a=out[k];out[k]=a.length?Math.round(a.reduce(function(x,y){return x+y;},0)/a.length*100):null;});
+  return out;
+}
+function achievementLabel(status){
+  return status==="mastered"?"مكتمل بإتقان":status==="completed"?"مكتمل بنجاح":status==="completed_with_support"?"مكتمل بعد جلسة دعم":"يحتاج جلسة تثبيت";
+}
+function addAchievement(week,status){
+  var id="week-"+week+"-"+status;if(!state.course.achievements.some(function(a){return a.id===id;}))state.course.achievements.push({id:id,week:week,status:status,ts:Date.now()});
+}
 function finishAssessment(){
-  var a=state.assessmentAnswers,c=a.filter(function(x){return x.correct;}).length,p=Math.round(c/(a.length||1)*100);
-  state.course.lastAssessment={session:state.course.session,score:p,ts:Date.now()};
-  state.course.history.push({session:state.course.session,type:"assessment",score:p,answers:a,ts:Date.now()});
-  state.course.completed.push(state.course.session);state.course.session=Math.min(30,state.course.session+1);save();state.view="assessmentResult";render();
+  var a=state.assessmentAnswers,c=a.filter(function(x){return x.correct;}).length,p=Math.round(c/(a.length||1)*100),week=sessionMeta(state.course.session).week;
+  var status=p>=80?"mastered":p>=60?"completed":"repair";
+  var r={week:week,score:p,status:status,skillScores:skillScores(a),ts:Date.now()};
+  state.course.lastAssessment={session:state.course.session,score:p,week:week,status:status,ts:Date.now()};
+  state.course.weekResults[week]=r;
+  state.course.history.push({session:state.course.session,type:"assessment",score:p,answers:a,week:week,ts:Date.now()});
+  pushUnique(state.course.completed,state.course.session);
+  if(status==="repair"){
+    state.course.repairRequired=true;state.course.repairWeek=week;
+  }else{
+    state.course.repairRequired=false;state.course.repairWeek=null;addAchievement(week,status);state.course.session=Math.min(30,state.course.session+1);
+  }
+  save();state.view="achievement";render();
 }
-function assessmentResult(){
-  var p=state.course.lastAssessment?state.course.lastAssessment.score:0;
-  var decision="تم حفظ نتيجة تقييم التقدم وتحديث جلساتك التالية.";
-  chrome('<section class="stage"><div class="taskCard"><span class="kicker">نتيجة التقييم المستقل</span><h2>'+qualitative(p)+'</h2>'+
-    '<p>'+esc(decision)+'</p><div class="notice">تابع البرنامج للانتقال إلى الجلسة التالية.</div>'+
-    '<div class="choiceRow"><button class="primary" id="backHome">العودة للبرنامج</button></div></div></section>');
-  document.getElementById("backHome").onclick=function(){state.view="home";render();};
+function achievementSkill(name,v,iconName){
+  var label=v==null?"لم يُقَس":v>=80?"قوي":v>=60?"جيد":v>=40?"متوسط":"يحتاج إعادة";
+  return '<div class="achievementSkill"><span>'+ico(iconName)+'</span><div><b>'+name+'</b><small>'+label+(v==null?"":" • "+v+"%")+'</small></div></div>';
 }
+function achievementBoard(){
+  var last=state.course.lastAssessment||{},week=last.week||state.course.repairWeek||sessionMeta(state.course.session).week,r=state.course.weekResults[week]||last,status=r.status||"repair",scores=r.skillScores||{};
+  var need=status==="repair",title=need?"المرحلة تحتاج جلسة تثبيت":achievementLabel(status);
+  chrome('<section class="stage"><div class="achievementCard '+(need?"needsRepair":"success")+'"><span class="achievementIcon">'+ico(need?"repeat":"trophy")+'</span><span class="kicker">لوحة إنجاز • الأسبوع '+week+'</span><h2>'+title+'</h2><p>'+(need?"لم نفتح الأسبوع التالي بعد. ستأخذ جلسة دعم قصيرة ثم إعادة قياس مصغرة.":"تم إنهاء هذه المرحلة وفتح المسار التالي.")+'</p>'+
+    '<div class="achievementSkills">'+
+      achievementSkill("القاعدة والدقة",scores.contract,"brain")+
+      achievementSkill("تمييز المصادر",scores.sources,"bulb")+
+      achievementSkill("التطبيق",scores.apply,"scale")+
+      achievementSkill("التقاط الواقعة",scores.spot,"star")+
+      achievementSkill("الإجابة الامتحانية",scores.exam,"pen")+
+    '</div>'+
+    '<div class="achievementState '+(need?"need":"ok")+'">'+achievementLabel(status)+' • '+(r.score==null?"—":r.score+"%")+'</div>'+
+    '<div class="choiceRow">'+(need?'<button class="primary" id="startRepair">ابدأ جلسة التثبيت</button><button class="secondary" id="backHome">ارجع للمسار</button>':'<button class="primary" id="backHome">افتح المرحلة التالية</button>')+'</div></div></section>');
+  var sr=document.getElementById("startRepair");if(sr)sr.onclick=function(){state.answers=[];state.task=0;state.queue=buildRepairQueue();state.repairMode=true;state.view="train";render();};
+  var bh=document.getElementById("backHome");if(bh)bh.onclick=function(){state.view="home";render();};
+}
+function repairAssessment(){
+  var bank=assessmentBank.slice(0,4),q=bank[state.task%bank.length];
+  chrome('<section class="stage"><div class="progress"><i style="width:'+((state.task+1)/bank.length*100)+'%"></i></div><div class="taskCard"><span class="kicker">إعادة قياس قصيرة • '+(state.task+1)+' / '+bank.length+'</span><h2>'+esc(q.q)+'</h2><div class="options">'+q.opts.map(function(o,i){return '<button class="option" data-r="'+i+'">'+esc(o)+'</button>';}).join("")+'</div><div class="assessmentNote">الهدف التأكد من تحسن المهارة بعد جلسة التثبيت.</div></div></section>');
+  document.querySelectorAll("[data-r]").forEach(function(b){b.onclick=function(){
+    state.assessmentAnswers.push({skill:q.skill,correct:Number(b.dataset.r)===q.a});
+    if(state.task<bank.length-1){state.task++;render();}else finishRepairAssessment();
+  };});
+}
+function finishRepairAssessment(){
+  var a=state.assessmentAnswers,c=a.filter(function(x){return x.correct;}).length,p=Math.round(c/(a.length||1)*100),week=state.course.repairWeek||sessionMeta(state.course.session).week;
+  var existing=state.course.weekResults[week]||{week:week};
+  existing.repairScore=p;existing.skillScores=skillScores(a);
+  if(p>=60||state.course.adminOverrideWeeks[week+1]){
+    existing.status="completed_with_support";existing.score=Math.max(existing.score||0,p);state.course.repairRequired=false;state.course.repairWeek=null;addAchievement(week,"completed_with_support");state.course.session=Math.min(30,state.course.session+1);
+  }else{
+    existing.status="repair";existing.score=Math.max(existing.score||0,p);state.course.repairRequired=true;state.course.repairWeek=week;
+  }
+  state.course.weekResults[week]=existing;state.course.lastAssessment={week:week,score:existing.score,status:existing.status,ts:Date.now()};save();state.view="achievement";render();
+}
+function assessmentResult(){state.view="achievement";render();}
 if(DEMO&&AUTO_START){state.answers=[];state.assessmentAnswers=[];state.task=0;state.queue=buildTrainingQueue();state.view="train";}
 render();
 })();
