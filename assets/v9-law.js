@@ -2,6 +2,10 @@
 "use strict";
 var D=window.LEX_V9_CONTENT;
 var APP=document.getElementById("lawApp");
+var BOOT_QS=new URLSearchParams(location.search);
+var BOOT_COUNTRY=BOOT_QS.get("country");
+var BOOT_SUBJECT=BOOT_QS.get("subject");
+var BOOT_AUTODIAG=BOOT_QS.get("autodiag")==="1";
 var STUDENT_SESSION=(function(){try{return JSON.parse(localStorage.getItem("lexlearn_student_session"))||null;}catch(e){return null;}})();
 var STUDENT_SCOPE=STUDENT_SESSION&&STUDENT_SESSION.studentId?("_"+STUDENT_SESSION.studentId):"";
 var KEY="lexlearn_v9_profile"+STUDENT_SCOPE;
@@ -350,6 +354,10 @@ function renderArchive(){
   '<div class="archive-note">أي سؤال رسمي مرتبط بمحور المقرر سيُوسم بوضوح إذا لم يكن امتحانًا فعليًا للمادة.</div></section>');
   document.getElementById("backHub").onclick=function(){state.view="hub";render();};
 }
-state.view="country";
-render();
+if(BOOT_COUNTRY&&BOOT_SUBJECT){
+  state.countryId=BOOT_COUNTRY;state.subjectId=BOOT_SUBJECT;state.view="hub";render();
+  if(BOOT_AUTODIAG)startDiagnostic();
+}else{
+  state.view="country";render();
+}
 })();
