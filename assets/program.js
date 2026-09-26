@@ -40,7 +40,11 @@ var taskBank={
   exam:{kind:"adaptive",title:"بناء الإجابة",q:"أي ترتيب أقرب لإجابة قانونية جيدة عن انعقاد العقد؟",opts:["النتيجة فقط","القاعدة ثم الشروط ثم التطبيق ثم النتيجة","سرد الوقائع بلا قاعدة"],a:1,skill:"exam",why:"الإجابة القانونية تحتاج قاعدة وشروطًا وتطبيقًا ثم نتيجة، لا مجرد النتيجة."},
   understanding:{kind:"adaptive",title:"فهم عناصر القاعدة",q:"لماذا لا يكفي مجرد الإيجاب والقبول دائمًا؟",opts:["لأن النص يربط الانعقاد أيضًا باعتبار المحل والسبب وبالأوضاع الخاصة عند اللزوم","لأن كل عقد يحتاج شاهدين","لأن العقد لا ينعقد إلا بعد سنة"],a:0,skill:"contract",why:"الفهم هنا يقوم على ربط الإيجاب والقبول بباقي شروط النص."},
   recall:{kind:"adaptive",title:"استرجاع العناصر",q:"أي مجموعة تجمع أهم عناصر المادة 64؟",opts:["الإيجاب والقبول + المحل والسبب + الأوضاع الخاصة عند اللزوم","الضرر + الخطأ + السببية","الإثراء + الافتقار فقط"],a:0,skill:"contract",why:"هذه هي العناصر التي وردت في نص المادة 64."},
-  retention:{kind:"adaptive",title:"استرجاع مؤجل",q:"من غير الرجوع للنص: ما الاستثناء الذي تحفظه المادة 64 لبعض العقود؟",opts:["مراعاة الأوضاع الخاصة التي يتطلبها القانون","وجوب وجود ضرر","وجوب مرور مدة"],a:0,skill:"contract",why:"النص أبقى على الأوضاع الخاصة التي يتطلبها القانون لبعض العقود."}
+  retention:{kind:"adaptive",title:"استرجاع مؤجل",q:"من غير الرجوع للنص: ما الاستثناء الذي تحفظه المادة 64 لبعض العقود؟",opts:["مراعاة الأوضاع الخاصة التي يتطلبها القانون","وجوب وجود ضرر","وجوب مرور مدة"],a:0,skill:"contract",why:"النص أبقى على الأوضاع الخاصة التي يتطلبها القانون لبعض العقود.",memory:"اربط الاستثناء بوظيفته: بعض العقود لا يكفي فيها التراضي وحده لأن القانون يفرض شكلًا خاصًا."},
+  explainRule:{kind:"adaptive",mode:"free",showText:true,title:"من الحفظ إلى الفهم",q:"اشرح في سطرين: لماذا لا يكفي وجود الإيجاب والقبول وحدهما دائمًا لانعقاد العقد؟",skill:"contract",model:"لأن التراضي عنصر أساسي، لكن صحة الانعقاد ترتبط أيضًا بمشروعية المحل والسبب، وقد يتطلب القانون أوضاعًا خاصة لبعض العقود.",why:"المطلوب هنا ليس ترديد النص؛ المطلوب بيان وظيفة كل عنصر وعلاقته بالنتيجة.",memory:"احفظ المعنى أولًا: تراضٍ + عناصر صحيحة + شكل خاص عند اللزوم."},
+  whyContrast:{kind:"adaptive",title:"فهم لا ترديد",q:"اتفق طرفان في حالتين متشابهتين، لكن المحل في الحالة الثانية غير جائز قانونًا. لماذا تختلف النتيجة؟",opts:["لأن صحة المحل جزء من بناء القاعدة وليس تفصيلًا ثانويًا","لأن عدد الأطراف تغيّر","لأن كل اتفاق صحيح بمجرد القبول"],a:0,skill:"apply",why:"الفهم يظهر عندما تعرف أي عنصر يغيّر الحكم ولماذا.",memory:"اربط كل كلمة محفوظة بأثر: إذا اختل المحل تغيّرت نتيجة الانعقاد."},
+  memoryAnchor:{kind:"adaptive",title:"من الفهم إلى التثبيت",q:"أي مفتاح ذاكرة يحفظ بنية القاعدة دون فصلها عن معناها؟",opts:["إيجاب/قبول ← محل/سبب ← أوضاع خاصة عند اللزوم","ضرر ← خطأ ← سببية","زمن ← مكان ← شاهد"],a:0,skill:"contract",why:"نحن لا نحفظ فقرة صماء؛ نحفظ هيكلًا ذا معنى يمكن إعادة بناء القاعدة منه.",memory:"مفتاح الذاكرة: تراضٍ → صحة العناصر → شكل خاص عند اللزوم."},
+  reconstruct:{kind:"adaptive",mode:"free",title:"استرجاع مع معنى",q:"من ذاكرتك، اكتب 3 مفاتيح فقط تعيد بها بناء قاعدة انعقاد العقد، ثم اكتب بجانب كل مفتاح وظيفته.",skill:"contract",model:"1) الإيجاب والقبول: وجود التراضي. 2) المحل والسبب المعتبران قانونًا: سلامة عناصر العقد. 3) الأوضاع الخاصة عند اللزوم: احترام الشكل الذي يفرضه القانون لبعض العقود.",why:"هذا التدريب يربط الذاكرة بالسبب القانوني، فلا يبقى الحفظ منفصلًا عن الفهم.",memory:"إذا نسيت العبارة الطويلة، استرجع الهيكل ثم أعد بناء الصياغة."}
 };
 var assessmentBank=[
   {q:"عرض شخص بيع شيء وقبل الآخر، لكن القانون يمنع التعامل في هذا الشيء. ما المشكلة الأساسية؟",opts:["المحل","الإيجاب","مرور الزمن"],a:0,skill:"apply"},
@@ -69,12 +73,20 @@ function strongestErrorSkill(){
   var es=(state.course.errors||[]).slice().sort(function(a,b){return b.count-a.count;});
   return es.length?es[0].skill:null;
 }
+function learningBridge(){
+  var m=(state.diag&&state.diag.metrics)||{};
+  var recall=m.recall==null?50:m.recall,understanding=m.understanding==null?50:m.understanding;
+  var gap=recall-understanding;
+  if(gap>=12)return {type:"memorizer",title:"من الحفظ إلى الفهم",lead:"ذاكرتك أقوى من تفسيرك للقاعدة. لن نطلب منك حفظًا أكثر؛ سنحوّل ما تحفظه إلى أسباب وعلاقات وتطبيق.",primary:taskBank.explainRule,secondary:taskBank.whyContrast};
+  if(gap<=-12)return {type:"understander",title:"من الفهم إلى التثبيت",lead:"فهمك أقوى من سرعة الاسترجاع. سنحوّل المعنى الذي تفهمه إلى مفاتيح ذاكرة قصيرة ثم نسترجعها على فترات.",primary:taskBank.memoryAnchor,secondary:taskBank.reconstruct};
+  return {type:"balanced",title:"ربط الفهم بالذاكرة",lead:"سنحافظ على التوازن: استرجاع قصير للقاعدة ثم تفسير أو تطبيق حتى لا يتحول الحفظ إلى ترديد ولا الفهم إلى معرفة يصعب استدعاؤها.",primary:taskBank.memoryAnchor,secondary:taskBank.whyContrast};
+}
 function buildTrainingQueue(){
-  var dim=weakestDimension(),err=strongestErrorSkill();
+  var dim=weakestDimension(),err=strongestErrorSkill(),bridge=learningBridge();
   var adaptive=dim==="application"?taskBank.apply:dim==="understanding"?taskBank.understanding:dim==="recall"?taskBank.recall:dim==="retention"?taskBank.retention:taskBank.exam;
   var errorTask=err==="spot"?taskBank.spot:err==="apply"?taskBank.apply:err==="exam"?taskBank.exam:null;
-  var q=[taskBank.review,taskBank.core,adaptive];
-  if(errorTask&&errorTask!==adaptive)q.push(errorTask);else q.push(taskBank.spot);
+  var q=[taskBank.review,bridge.primary,taskBank.core,adaptive,bridge.secondary];
+  if(errorTask&&q.indexOf(errorTask)===-1)q.push(errorTask);
   return q;
 }
 function chrome(inner){
@@ -103,6 +115,7 @@ function home(){
     '<div class="heroMeta"><span>≈ 20 دقيقة</span><span>الأسبوع '+m.week+' من 5</span><span>'+kindLabel(m.kind)+'</span></div>'+
     '<div class="choiceRow"><button class="primary" id="startSession">'+(m.kind==="assessment"?"ابدأ تقييم التقدم":"ابدأ جلسة اليوم")+'</button></div></div>'+
     '<div class="heroSide"><h3>أولوية اليوم</h3><p>'+priorityText(metrics)+'</p><div class="notice">ابدأ بالأولوية الحالية، ثم تابع جلسات التدريب بالتدرج.</div></div></section>'+
+    bridgeCard(metrics)+
     weekBar(m.week)+
     '<section class="grid"><div class="card">'+sessionCard(m)+'</div><div class="card">'+skillsCard()+'</div></section>'+
     '<section class="grid" style="margin-top:18px"><div class="card">'+errorCard()+'</div><div class="card">'+assessmentCard(metrics)+'</div></section>'
@@ -114,13 +127,18 @@ function priorityText(m){
   var list=[["الاسترجاع",m.recall||0],["الفهم",m.understanding||0],["التطبيق",m.application||0],["الاحتفاظ",m.retention||0],["الصياغة",m.exam||0]].sort(function(a,b){return a[1]-b[1];});
   return "الأولوية الحالية: "+list[0][0]+". الجلسات القادمة ستزيد تدريب هذا الجانب بدون إعادة ما أتقنته بالكامل.";
 }
+function bridgeCard(m){
+  var b=learningBridge();
+  return '<section class="bridgePanel"><div class="bridgeHead"><div><span class="kicker">جسر التعلم</span><h2>'+esc(b.title)+'</h2><p>'+esc(b.lead)+'</p></div><div class="bridgeScore"><span>الاسترجاع</span><b>'+Math.round(m.recall||0)+'</b><span>الفهم</span><b>'+Math.round(m.understanding||0)+'</b></div></div><div class="bridgeSteps"><div><b>1</b><span>استرجع</span><small>من الذاكرة قبل فتح النص</small></div><div><b>2</b><span>فسّر</span><small>قل لماذا تعمل القاعدة هكذا</small></div><div><b>3</b><span>طبّق</span><small>غيّر واقعة واحدة واختبر النتيجة</small></div><div><b>4</b><span>ثبّت</span><small>مفتاح ذاكرة مرتبط بالمعنى</small></div></div></section>';
+}
 function weekBar(current){
   return '<div class="weekBar">'+curriculum.map(function(w){var cls=w.week<current?"done":w.week===current?"current":"";return '<div class="week '+cls+'"><b>الأسبوع '+w.week+'</b><small>'+esc(w.title)+'</small></div>';}).join("")+'</div>';
 }
 function sessionCard(m){
+  var bridge=learningBridge();
   var items=m.kind==="assessment"?
     [["بنك أسئلة مستقل","assess"],["لا توجد تغذية راجعة أثناء التقييم","assess"],["النتيجة تظهر بعد النهاية","assess"]]:
-    [["استرجاع قديم مستحق","review"],["هدف المقرر اليوم","core"],["تدريب على نقطة الضعف","adapt"],["فحص خفيف للنهاية","core"]];
+    [["استرجاع من الذاكرة","review"],[bridge.title,"adapt"],["هدف المقرر اليوم","core"],["تدريب على نقطة الضعف","adapt"],["فحص خفيف للنهاية","core"]];
   return '<div class="sessionHead"><div><h2>'+esc(m.title)+'</h2><p>'+esc(m.detail)+'</p></div><div class="sessionNum">'+String(state.course.session).padStart(2,"0")+'</div></div>'+
     '<div class="sessionPlan">'+items.map(function(x,i){return '<div class="planItem"><span class="dot">'+(i+1)+'</span><div><b>'+esc(x[0])+'</b></div><span class="badge '+x[1]+'">'+badgeLabel(x[1])+'</span></div>';}).join("")+'</div>';
 }
@@ -141,17 +159,35 @@ function metric(n,v){return '<div class="metric"><span>'+n+'</span><b>'+qualitat
 
 function train(){
   var q=state.queue.length?state.queue:buildTrainingQueue(),t=q[state.task%q.length];
+  var input=t.mode==="free"?
+    '<textarea class="textarea" id="freeAnswer" placeholder="اكتب إجابتك بطريقتك..."></textarea><div class="choiceRow"><button class="primary" id="checkFree">قارن إجابتي</button></div>':
+    '<div class="options">'+t.opts.map(function(o,i){return '<button class="option" data-a="'+i+'">'+esc(o)+'</button>';}).join("")+'</div>';
   chrome('<section class="stage"><div class="progress"><i style="width:'+((state.task+1)/q.length*100)+'%"></i></div><div class="taskCard">'+
-    '<span class="kicker">'+esc(kindLabel(t.kind))+'</span><h2>'+esc(t.title)+'</h2>'+
-    (state.task===0?'<div class="legalBox"><small>النص القانوني</small><div>'+esc(TEXT64)+'</div></div>':'')+
-    '<p>'+esc(t.q)+'</p><div class="options">'+t.opts.map(function(o,i){return '<button class="option" data-a="'+i+'">'+esc(o)+'</button>';}).join("")+'</div><div id="feed"></div></div></section>');
-  document.querySelectorAll("[data-a]").forEach(function(b){b.onclick=function(){
-    var i=Number(b.dataset.a),correct=i===t.a;state.answers.push({skill:t.skill,correct:correct});
-    document.querySelectorAll("[data-a]").forEach(function(x){x.disabled=true;});b.classList.add(correct?"good":"bad");
-    if(!correct)addError(t.skill,errorLabel(t.skill));
-    document.getElementById("feed").innerHTML='<div class="feedback">'+esc(t.why)+'</div><div class="choiceRow"><button class="primary" id="nextTask">'+(state.task<q.length-1?"التالي":"إنهاء الجلسة")+'</button></div>';
-    document.getElementById("nextTask").onclick=function(){if(state.task<q.length-1){state.task++;render();}else{finishTraining();}};
-  };});
+    '<span class="kicker">'+esc(kindLabel(t.kind))+' • '+(state.task+1)+' / '+q.length+'</span><h2>'+esc(t.title)+'</h2>'+
+    (t.showText?'<div class="legalBox"><small>النص القانوني</small><div>'+esc(TEXT64)+'</div></div>':'')+
+    '<p>'+esc(t.q)+'</p>'+input+'<div id="feed"></div></div></section>');
+  if(t.mode==="free"){
+    document.getElementById("checkFree").onclick=function(){
+      var answer=(document.getElementById("freeAnswer").value||"").trim();
+      if(!answer){document.getElementById("feed").innerHTML='<div class="notice">اكتب محاولة قصيرة أولًا؛ الهدف أن تُخرج المعنى من ذاكرتك قبل رؤية النموذج.</div>';return;}
+      document.getElementById("freeAnswer").disabled=true;document.getElementById("checkFree").disabled=true;
+      document.getElementById("feed").innerHTML='<div class="modelAnswer"><b>نموذج للمقارنة</b><p>'+esc(t.model)+'</p></div><div class="feedback">'+esc(t.why)+'</div>'+(t.memory?'<div class="memoryAnchor"><b>مرساة الذاكرة</b><span>'+esc(t.memory)+'</span></div>':'')+'<div class="choiceRow"><button class="primary" id="freeGood">إجابتي قريبة</button><button class="secondary" id="freeRetry">أحتاج تدريبًا أكثر</button></div>';
+      document.getElementById("freeGood").onclick=function(){completeTask(t,true,q);};
+      document.getElementById("freeRetry").onclick=function(){completeTask(t,false,q);};
+    };
+  }else{
+    document.querySelectorAll("[data-a]").forEach(function(b){b.onclick=function(){
+      var i=Number(b.dataset.a),correct=i===t.a;
+      document.querySelectorAll("[data-a]").forEach(function(x){x.disabled=true;});b.classList.add(correct?"good":"bad");
+      document.getElementById("feed").innerHTML='<div class="feedback">'+esc(t.why)+'</div>'+(t.memory?'<div class="memoryAnchor"><b>مرساة الذاكرة</b><span>'+esc(t.memory)+'</span></div>':'')+'<div class="choiceRow"><button class="primary" id="nextTask">'+(state.task<q.length-1?"التالي":"إنهاء الجلسة")+'</button></div>';
+      document.getElementById("nextTask").onclick=function(){completeTask(t,correct,q);};
+    };});
+  }
+}
+function completeTask(t,correct,q){
+  state.answers.push({skill:t.skill,correct:correct,bridge:learningBridge().type});
+  if(!correct)addError(t.skill,errorLabel(t.skill));
+  if(state.task<q.length-1){state.task++;render();}else finishTraining();
 }
 function errorLabel(skill){var map={apply:"يحتاج نقل القاعدة إلى الواقعة بدقة",spot:"لا يلتقط العنصر الحاسم",sources:"يخلط بين مصادر الالتزام",contract:"يسقط عنصرًا من شروط الانعقاد",exam:"هيكل الإجابة غير مكتمل"};return map[skill]||"خطأ متكرر"; }
 function addError(skill,label){
