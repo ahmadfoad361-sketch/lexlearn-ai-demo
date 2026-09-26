@@ -127,7 +127,7 @@ function result(){
       metric("الاسترجاع",recall)+metric("الفهم",understanding)+metric("التطبيق",application)+
     '</div>'+
     '<div class="planCard nextStep"><h3>الخطوة التالية</h3><p>'+esc(rec)+'</p></div>'+
-    '<div class="demoActions"><button class="btn primary" id="toExam">سؤال امتحاني</button><button class="btn secondary" id="again">إعادة الاختبار</button></div>'+
+    '<div class="demoActions"><a class="btn primary" style="text-decoration:none" href="program.html?demo=1&start=1">ابدأ التدريب المقترح فعليًا</a><button class="btn secondary" id="toExam">سؤال امتحاني</button><button class="btn secondary" id="again">إعادة الاختبار</button></div>'+
   '</div>');
   document.getElementById("toExam").onclick=function(){state.view="exam";render();};
   document.getElementById("again").onclick=function(){state.view="hero";render();};
