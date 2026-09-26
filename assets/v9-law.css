@@ -593,3 +593,5 @@ textarea{text-align:right;direction:rtl;line-height:1.8}
 .result-note-simple{margin-top:14px;padding:14px 16px;border-radius:16px;background:#eef5f1;color:#2f6b57;font-size:12px;line-height:1.8}
 @media(max-width:1050px){.result-infographic{grid-template-columns:repeat(2,1fr)}.result-skill:last-child{grid-column:1/-1}.student-next{grid-template-columns:1fr}.student-next-actions{grid-template-columns:1fr 1fr;min-width:0}}
 @media(max-width:600px){.result-infographic{grid-template-columns:1fr}.result-skill:last-child{grid-column:auto}.student-next-actions{grid-template-columns:1fr}.result-hero-simple{padding:22px}}
+
+.student-live{background:#fff;color:var(--maroon);border:1px solid rgba(116,26,57,.22)}
