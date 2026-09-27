@@ -4,6 +4,7 @@ var APP=document.getElementById("programApp");
 var qs=new URLSearchParams(location.search);
 var DEMO=qs.get("demo")==="1";
 var AUTO_START=qs.get("start")==="1";
+var DEMO_WEEK=Math.max(1,Math.min(6,parseInt(qs.get("week")||"1",10)||1));
 var COUNTRY=qs.get("country")||"qa";
 var SUBJECT=qs.get("subject")||"sources";
 var STUDENT_SESSION=(function(){try{return JSON.parse(localStorage.getItem("lexlearn_student_session"))||null;}catch(e){return null;}})();
@@ -157,6 +158,7 @@ function loadCourse(){
   }catch(e){return defaultCourse();}
 }
 var state={view:"home",task:0,answers:[],assessmentAnswers:[],queue:[],course:loadCourse(),diag:diagnostic(),repairMode:false,weekPreview:null};
+if(DEMO){state.course.session=(DEMO_WEEK-1)*5+1;}
 function save(){if(!DEMO)localStorage.setItem(COURSE_KEY,JSON.stringify(state.course));}
 function sessionMeta(n){var idx=Math.max(1,Math.min(30,n))-1;var w=Math.floor(idx/5),d=idx%5;var x=curriculum[w].sessions[d];return {week:w+1,day:d+1,title:x[0],detail:x[1],kind:x[2],weekTitle:curriculum[w].title};}
 function weakestDimension(){
@@ -238,6 +240,7 @@ function bridgeCard(m){
 }
 function weekResult(w){return (state.course.weekResults||{})[w]||null;}
 function weekUnlocked(w,current){
+  if(DEMO)return true;
   if(w===1)return true;
   if(w<=current)return true;
   var prev=weekResult(w-1);
