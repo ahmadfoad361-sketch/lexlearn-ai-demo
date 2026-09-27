@@ -224,7 +224,7 @@ function render(){
         actionPrimary+
         "<a class='actionCard' href='program.html?demo=1&start=1'><span class='actionIcon'>"+icon("play")+"</span><span class='actionCopy'><b>جرّب المستوى الأول</b><small>ادخل مباشرة إلى أول جلسة تدريب عملية.</small></span></a>"+
       "</section>"+
-      "<div class='sectionHead'><div><h2>مسار الأسابيع</h2><p>كل مرحلة تفتح بعد إكمال السابقة أو بقرار دعم من المشرف.</p></div><span class='progressTag'>"+course.completed.length+" / 30</span></div>"+
+      "<div class='sectionHead'><div><h2>مسار الأسابيع</h2><p>"+(params.get("demo")==="1"?"وضع العرض: كل المراحل الست متاحة لتجربتها الآن. في الاستخدام الحقيقي تُفتح بالتدرج.":"كل مرحلة تفتح بعد إكمال السابقة أو بقرار دعم من المشرف.")+"</p></div><span class='progressTag'>"+course.completed.length+" / 30</span></div>"+
       "<section class='weekGrid'>"+weeks+"</section>"+
       "<div class='sectionHead'><div><h2>ملف تعلمك</h2><p>عرض مبسط لك — التفاصيل الرقمية الكاملة تظهر للمشرف.</p></div></div>"+
       learningProfile+
