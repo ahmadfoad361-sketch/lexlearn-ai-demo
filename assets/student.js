@@ -171,17 +171,20 @@ function render(){
   var weeks=weekTitles.map(function(title,i){
     var n=i+1;
     var st=weekStatus(n);
-    return "<div class='week "+st[0]+"'>"+
+    var open=st[0]==="current"||st[0]==="done"||st[0]==="need";
+    var tag=open?"a":"div";
+    var href=open?" href='program.html?demo=1&start=1'":"";
+    return "<"+tag+href+" class='week "+st[0]+"'>"+
       "<span class='weekIcon'>"+icon(st[2])+"</span>"+
       "<b>الأسبوع "+n+"</b>"+
       "<small>"+esc(title)+"</small>"+
       "<em>"+st[1]+"</em>"+
-    "</div>";
+    "</"+tag+">";
   }).join("");
 
   var actionPrimary=!result
-    ? "<a class='actionCard primary' href='index.html?country=qa&subject=sources&autodiag=1'><span class='actionIcon'>"+icon("test")+"</span><span class='actionCopy'><b>ابدأ التقييم التشخيصي</b><small>اختبار قصير يبني ملف التعلم الأول.</small></span></a>"
-    : "<a class='actionCard primary' href='program.html?country=qa&subject=sources'><span class='actionIcon'>"+icon("play")+"</span><span class='actionCopy'><b>أكمل جلسة اليوم</b><small>حوالي 15–20 دقيقة من التدريب الفعلي.</small></span></a>";
+    ? "<a class='actionCard primary' href='showcase.html'><span class='actionIcon'>"+icon("test")+"</span><span class='actionCopy'><b>ابدأ التقييم التشخيصي</b><small>يفتح الاختبار مباشرة بدل الرجوع للصفحة الرئيسية.</small></span></a>"
+    : "<a class='actionCard primary' href='program.html?demo=1&start=1'><span class='actionIcon'>"+icon("play")+"</span><span class='actionCopy'><b>أكمل جلسة اليوم</b><small>يفتح التدريب الفعلي مباشرة.</small></span></a>";
 
   var learningProfile=result
     ? "<section class='resultCard'>"+
@@ -216,7 +219,7 @@ function render(){
       "</section>"+
       "<section class='actionGrid'>"+
         actionPrimary+
-        "<a class='actionCard' href='index.html?country=qa&subject=sources'><span class='actionIcon'>"+icon("test")+"</span><span class='actionCopy'><b>استكشف البرنامج</b><small>شاهد المقرر ومسار التدريب قبل بدء الجلسة.</small></span></a>"+
+        "<a class='actionCard' href='program.html?demo=1&start=1'><span class='actionIcon'>"+icon("play")+"</span><span class='actionCopy'><b>جرّب المستوى الأول</b><small>ادخل مباشرة إلى أول جلسة تدريب عملية.</small></span></a>"+
       "</section>"+
       "<div class='sectionHead'><div><h2>مسار الأسابيع</h2><p>كل مرحلة تفتح بعد إكمال السابقة أو بقرار دعم من المشرف.</p></div><span class='progressTag'>"+course.completed.length+" / 30</span></div>"+
       "<section class='weekGrid'>"+weeks+"</section>"+
