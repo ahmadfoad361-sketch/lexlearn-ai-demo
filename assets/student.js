@@ -97,11 +97,9 @@ function currentWeek(){
   return Math.min(6,Math.max(1,Math.ceil((Number(course.session)||1)/5)));
 }
 function weekStatus(n){
-  var demoMode=params.get("demo")==="1";
   var r=course.weekResults[n];
   if(r&&r.status==="repair")return ["need","يحتاج تثبيت","repeat"];
   if(r)return ["done",r.status==="mastered"?"مكتمل بإتقان":"مكتمل","check"];
-  if(demoMode)return [n===1?"current":"available",n===1?"ابدأ من هنا":"متاح للعرض","play"];
   if(n===currentWeek())return ["current","متاح الآن","play"];
   if(course.adminOverrideWeeks[n])return ["current","مفتوح بواسطة المشرف","play"];
   return ["locked","مغلق حتى إكمال السابق","lock"];
@@ -173,10 +171,9 @@ function render(){
   var weeks=weekTitles.map(function(title,i){
     var n=i+1;
     var st=weekStatus(n);
-    var demoMode=params.get("demo")==="1";
-    var open=demoMode||st[0]==="current"||st[0]==="done"||st[0]==="need"||st[0]==="available";
+    var open=st[0]==="current"||st[0]==="done"||st[0]==="need";
     var tag=open?"a":"div";
-    var href=open?" href='program.html?demo=1&week="+n+"&start=1'":"";
+    var href=open?" href='program.html?demo=1&start=1'":"";
     return "<"+tag+href+" class='week "+st[0]+"'>"+
       "<span class='weekIcon'>"+icon(st[2])+"</span>"+
       "<b>الأسبوع "+n+"</b>"+
@@ -224,7 +221,7 @@ function render(){
         actionPrimary+
         "<a class='actionCard' href='program.html?demo=1&start=1'><span class='actionIcon'>"+icon("play")+"</span><span class='actionCopy'><b>جرّب المستوى الأول</b><small>ادخل مباشرة إلى أول جلسة تدريب عملية.</small></span></a>"+
       "</section>"+
-      "<div class='sectionHead'><div><h2>مسار الأسابيع</h2><p>"+(params.get("demo")==="1"?"وضع العرض: كل المراحل الست متاحة لتجربتها الآن. في الاستخدام الحقيقي تُفتح بالتدرج.":"كل مرحلة تفتح بعد إكمال السابقة أو بقرار دعم من المشرف.")+"</p></div><span class='progressTag'>"+course.completed.length+" / 30</span></div>"+
+      "<div class='sectionHead'><div><h2>مسار الأسابيع</h2><p>"+"كل مرحلة تفتح بعد إكمال السابقة أو بقرار دعم من المشرف."+"</p></div><span class='progressTag'>"+course.completed.length+" / 30</span></div>"+
       "<section class='weekGrid'>"+weeks+"</section>"+
       "<div class='sectionHead'><div><h2>ملف تعلمك</h2><p>عرض مبسط لك — التفاصيل الرقمية الكاملة تظهر للمشرف.</p></div></div>"+
       learningProfile+
