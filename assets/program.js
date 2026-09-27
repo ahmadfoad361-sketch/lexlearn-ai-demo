@@ -306,11 +306,22 @@ function freeRubric(answer,t){
 function taskStatusBox(correct,label){
   return '<div class="answerStatus '+(correct?"correct":"wrong")+'"><span class="answerStatusIcon">'+ico(correct?"check":"repeat")+'</span><div><b>'+(correct?"إجابتك صحيحة":"إجابتك تحتاج تعديل")+'</b><small>'+esc(label||"راجع السبب ثم انتقل للمهمة التالية.")+'</small></div></div>';
 }
+function orderedOptions(t,salt){
+  var n=(t.opts||[]).length;
+  if(!n)return [];
+  var correct=t.a;
+  var target=(Number(state.course.session||1)+Number(state.task||0)+Number(salt||0))%n;
+  var order=[];
+  for(var i=0;i<n;i++){if(i!==correct)order.push(i);}
+  order.splice(target,0,correct);
+  return order.map(function(orig){return {orig:orig,text:t.opts[orig]};});
+}
 function train(){
   var q=state.queue.length?state.queue:buildTrainingQueue(),t=q[state.task%q.length];
+  var ordered=t.mode==="free"?[]:orderedOptions(t,0);
   var input=t.mode==="free"?
     '<textarea class="textarea" id="freeAnswer" placeholder="اكتب إجابتك بطريقتك..."></textarea><div class="choiceRow"><button class="primary" id="checkFree">حلّل إجابتي</button></div>':
-    '<div class="options">'+t.opts.map(function(o,i){return '<button class="option" data-a="'+i+'">'+esc(o)+'</button>';}).join("")+'</div>';
+    '<div class="options">'+ordered.map(function(o){return '<button class="option" data-orig="'+o.orig+'">'+esc(o.text)+'</button>';}).join("")+'</div>';
   chrome('<section class="stage"><div class="progress"><i style="width:'+((state.task+1)/q.length*100)+'%"></i></div><div class="taskCard">'+
     '<span class="kicker">'+(state.repairMode?"جلسة تثبيت • ":"")+esc(kindLabel(t.kind))+' • '+(state.task+1)+' / '+q.length+'</span><h2>'+esc(t.title)+'</h2>'+
     (t.showText?'<div class="legalBox"><small>النص القانوني</small><div>'+esc(TEXT64)+'</div></div>':'')+
@@ -330,11 +341,11 @@ function train(){
       document.getElementById("nextFree").onclick=function(){completeTask(t,r.pass,q,{rubricScore:r.score,answer:answer});};
     };
   }else{
-    document.querySelectorAll("[data-a]").forEach(function(b){b.onclick=function(){
-      var i=Number(b.dataset.a),correct=i===t.a;
-      document.querySelectorAll("[data-a]").forEach(function(x){x.disabled=true;});
+    document.querySelectorAll("[data-orig]").forEach(function(b){b.onclick=function(){
+      var i=Number(b.dataset.orig),correct=i===t.a;
+      document.querySelectorAll("[data-orig]").forEach(function(x){x.disabled=true;});
       b.classList.add(correct?"good":"bad");
-      if(!correct){var right=document.querySelector('[data-a="'+t.a+'"]');if(right)right.classList.add("good");}
+      if(!correct){var right=document.querySelector('[data-orig="'+t.a+'"]');if(right)right.classList.add("good");}
       document.getElementById("feed").innerHTML=
         taskStatusBox(correct,correct?t.why:"الإجابة الصحيحة: "+t.opts[t.a]+". "+t.why)+
         (t.memory?'<div class="memoryAnchor"><b>مرساة الذاكرة</b><span>'+esc(t.memory)+'</span></div>':'')+
@@ -375,12 +386,12 @@ function sessionResult(){
   document.getElementById("backHome").onclick=function(){state.view="home";render();};
 }
 function assessment(){
-  var q=assessmentBank[state.task%assessmentBank.length];
+  var q=assessmentBank[state.task%assessmentBank.length],ordered=orderedOptions(q,7);
   chrome('<section class="stage"><div class="progress"><i style="width:'+((state.task+1)/assessmentBank.length*100)+'%"></i></div><div class="taskCard">'+
     '<span class="kicker">تقييم نهاية الأسبوع • '+(state.task+1)+' / '+assessmentBank.length+'</span><h2>'+esc(q.q)+'</h2>'+
-    '<div class="options">'+q.opts.map(function(o,i){return '<button class="option" data-a="'+i+'">'+esc(o)+'</button>';}).join("")+'</div><div class="assessmentNote">لا تظهر الإجابة الصحيحة أثناء التقييم حتى لا نخلط بين التدريب والقياس.</div></div></section>');
-  document.querySelectorAll("[data-a]").forEach(function(b){b.onclick=function(){
-    state.assessmentAnswers.push({skill:q.skill,correct:Number(b.dataset.a)===q.a});
+    '<div class="options">'+ordered.map(function(o){return '<button class="option" data-assess-orig="'+o.orig+'">'+esc(o.text)+'</button>';}).join("")+'</div><div class="assessmentNote">لا تظهر الإجابة الصحيحة أثناء التقييم حتى لا نخلط بين التدريب والقياس.</div></div></section>');
+  document.querySelectorAll("[data-assess-orig]").forEach(function(b){b.onclick=function(){
+    state.assessmentAnswers.push({skill:q.skill,correct:Number(b.dataset.assessOrig)===q.a});
     if(state.task<assessmentBank.length-1){state.task++;render();}else finishAssessment();
   };});
 }
@@ -432,10 +443,10 @@ function achievementBoard(){
   var bh=document.getElementById("backHome");if(bh)bh.onclick=function(){state.view="home";render();};
 }
 function repairAssessment(){
-  var bank=assessmentBank.slice(0,4),q=bank[state.task%bank.length];
-  chrome('<section class="stage"><div class="progress"><i style="width:'+((state.task+1)/bank.length*100)+'%"></i></div><div class="taskCard"><span class="kicker">إعادة قياس قصيرة • '+(state.task+1)+' / '+bank.length+'</span><h2>'+esc(q.q)+'</h2><div class="options">'+q.opts.map(function(o,i){return '<button class="option" data-r="'+i+'">'+esc(o)+'</button>';}).join("")+'</div><div class="assessmentNote">الهدف التأكد من تحسن المهارة بعد جلسة التثبيت.</div></div></section>');
-  document.querySelectorAll("[data-r]").forEach(function(b){b.onclick=function(){
-    state.assessmentAnswers.push({skill:q.skill,correct:Number(b.dataset.r)===q.a});
+  var bank=assessmentBank.slice(0,4),q=bank[state.task%bank.length],ordered=orderedOptions(q,13);
+  chrome('<section class="stage"><div class="progress"><i style="width:'+((state.task+1)/bank.length*100)+'%"></i></div><div class="taskCard"><span class="kicker">إعادة قياس قصيرة • '+(state.task+1)+' / '+bank.length+'</span><h2>'+esc(q.q)+'</h2><div class="options">'+ordered.map(function(o){return '<button class="option" data-r-orig="'+o.orig+'">'+esc(o.text)+'</button>';}).join("")+'</div><div class="assessmentNote">الهدف التأكد من تحسن المهارة بعد جلسة التثبيت.</div></div></section>');
+  document.querySelectorAll("[data-r-orig]").forEach(function(b){b.onclick=function(){
+    state.assessmentAnswers.push({skill:q.skill,correct:Number(b.dataset.rOrig)===q.a});
     if(state.task<bank.length-1){state.task++;render();}else finishRepairAssessment();
   };});
 }
