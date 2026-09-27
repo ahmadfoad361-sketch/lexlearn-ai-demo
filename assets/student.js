@@ -97,9 +97,11 @@ function currentWeek(){
   return Math.min(6,Math.max(1,Math.ceil((Number(course.session)||1)/5)));
 }
 function weekStatus(n){
+  var demoMode=params.get("demo")==="1";
   var r=course.weekResults[n];
   if(r&&r.status==="repair")return ["need","يحتاج تثبيت","repeat"];
   if(r)return ["done",r.status==="mastered"?"مكتمل بإتقان":"مكتمل","check"];
+  if(demoMode)return [n===1?"current":"available",n===1?"ابدأ من هنا":"متاح للعرض","play"];
   if(n===currentWeek())return ["current","متاح الآن","play"];
   if(course.adminOverrideWeeks[n])return ["current","مفتوح بواسطة المشرف","play"];
   return ["locked","مغلق حتى إكمال السابق","lock"];
