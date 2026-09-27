@@ -4,8 +4,21 @@ var APP=document.getElementById("studentApp"),SESSION_KEY="lexlearn_student_sess
 function read(k,f){try{return JSON.parse(localStorage.getItem(k))||f;}catch(e){return f;}}
 function esc(v){return String(v==null?"":v).replace(/[&<>"']/g,function(c){return({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c];});}
 function ico(name){var p={lock:'<rect x="18" y="29" width="28" height="23" rx="5"/><path d="M24 29v-7a8 8 0 0 1 16 0v7"/>',check:'<circle cx="32" cy="32" r="23"/><path d="m21 32 7 7 15-16"/>',play:'<path d="m24 17 24 15-24 15z"/>',test:'<path d="M18 10h28v44H18z"/><path d="M25 23h14M25 31h14M25 39h8"/><path d="m40 43 4 4 8-10"/>',brain:'<path d="M25 13c-7 0-10 5-9 10-5 2-6 10-1 13-3 6 3 13 9 11 2 5 10 5 12 0 6 2 12-5 9-11 5-3 4-11-1 1-5-2-10-9-10"/><path d="M32 14v34"/>',bulb:'<path d="M32 10a15 15 0 0 0-9 27c3 2 4 5 4 8h10c0-3 1-6 4-8a15 15 0 0 0-9-27z"/><path d="M27 50h10M29 55h6"/>',scale:'<path d="M32 11v39M20 17h24M12 26l8-9 8 9M36 26l8-9 8 9M10 26h20c0 7-4 11-10 11S10 33 10 26zM34 26h20c0 7-4 11-10 11s-10-4-10-11zM22 53h20"/>',repeat:'<path d="M16 21a20 20 0 0 1 32 2l4 5M52 17v11H41M48 43a20 20 0 0 1-32-2l-4-5M12 47V36h11"/>',pen:'<path d="M14 49l4-14 24-24 11 11-24 24zM18 35l11 11M13 52h38"/>',trophy:'<path d="M22 13h20v12c0 9-5 15-10 15s-10-6-10-15z"/><path d="M22 18h-8v5c0 6 4 10 10 10M42 18h8v5c0 6-4 10-10 10M32 40v9M23 52h18"/>};return '<svg class="icon" viewBox="0 0 64 64">'+(p[name]||p.play)+'</svg>';}
-var session=read(SESSION_KEY,null);if(!session){location.href="student-login.html";return;}
-var students=read(STUDENTS_KEY,[]),student=students.find(function(x){return x.id===session.studentId;});if(!student){localStorage.removeItem(SESSION_KEY);location.href="student-login.html";return;}
+var qs=new URLSearchParams(location.search);
+var session=read(SESSION_KEY,null);
+var students=read(STUDENTS_KEY,[]);
+if(qs.get("demo")==="1"){
+  var demo=students.find(function(x){return x.id==="stu-demo-001"||x.username==="student01";});
+  if(!demo){
+    demo={id:"stu-demo-001",name:"طالب تجريبي 01",username:"student01",password:"Learn2027!",cohort:"Pilot A",university:"Qatar University",year:"السنة الأولى",subject:"sources",active:true,createdAt:Date.now()};
+    students.unshift(demo);localStorage.setItem(STUDENTS_KEY,JSON.stringify(students));
+  }
+  session={studentId:demo.id,name:demo.name,username:demo.username,at:Date.now()};
+  localStorage.setItem(SESSION_KEY,JSON.stringify(session));
+}
+if(!session){location.href="student-login.html";return;}
+var student=students.find(function(x){return x.id===session.studentId;});
+if(!student){localStorage.removeItem(SESSION_KEY);location.href="student-login.html";return;}
 var profile=read("lexlearn_v9_profile_"+student.id,{results:{}}),res=profile.results&&profile.results["qa-sources"];
 var course=read("lexlearn_course_v1_qa_sources_"+student.id,{session:1,completed:[],weekResults:{},achievements:[],repairRequired:false});
 course.weekResults=course.weekResults||{};course.achievements=course.achievements||[];course.completed=course.completed||[];
