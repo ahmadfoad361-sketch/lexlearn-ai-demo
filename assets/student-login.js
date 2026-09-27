@@ -3,13 +3,11 @@
 var KEY="lexlearn_students_v2",SESSION="lexlearn_student_session";
 function seed(){
   var a=[];try{a=JSON.parse(localStorage.getItem(KEY)||"[]");}catch(e){}
-  if(!a.length){
-    a=[
-      {id:"stu-demo-001",name:"طالب تجريبي 01",username:"student01",password:"Learn2027!",cohort:"Pilot A",university:"Qatar University",year:"السنة الأولى",subject:"sources",active:true,createdAt:Date.now()},
-      {id:"stu-demo-002",name:"طالب تجريبي 02",username:"student02",password:"Learn2027!",cohort:"Pilot A",university:"Qatar University",year:"السنة الأولى",subject:"sources",active:true,createdAt:Date.now()}
-    ];
-    localStorage.setItem(KEY,JSON.stringify(a));
-  }
+  var demo1={id:"stu-demo-001",name:"طالب تجريبي 01",username:"student01",password:"Learn2027!",cohort:"Pilot A",university:"Qatar University",year:"السنة الأولى",subject:"sources",active:true,createdAt:Date.now()};
+  var demo2={id:"stu-demo-002",name:"طالب تجريبي 02",username:"student02",password:"Learn2027!",cohort:"Pilot A",university:"Qatar University",year:"السنة الأولى",subject:"sources",active:true,createdAt:Date.now()};
+  if(!a.some(function(x){return x.id===demo1.id||x.username==="student01";}))a.unshift(demo1);
+  if(!a.some(function(x){return x.id===demo2.id||x.username==="student02";}))a.push(demo2);
+  localStorage.setItem(KEY,JSON.stringify(a));
   return a;
 }
 var students=seed(),err=document.getElementById("studentError");
