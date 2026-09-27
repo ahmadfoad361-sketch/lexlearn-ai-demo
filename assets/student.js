@@ -173,9 +173,10 @@ function render(){
   var weeks=weekTitles.map(function(title,i){
     var n=i+1;
     var st=weekStatus(n);
-    var open=st[0]==="current"||st[0]==="done"||st[0]==="need";
+    var demoMode=params.get("demo")==="1";
+    var open=demoMode||st[0]==="current"||st[0]==="done"||st[0]==="need"||st[0]==="available";
     var tag=open?"a":"div";
-    var href=open?" href='program.html?demo=1&start=1'":"";
+    var href=open?" href='program.html?demo=1&week="+n+"&start=1'":"";
     return "<"+tag+href+" class='week "+st[0]+"'>"+
       "<span class='weekIcon'>"+icon(st[2])+"</span>"+
       "<b>الأسبوع "+n+"</b>"+
