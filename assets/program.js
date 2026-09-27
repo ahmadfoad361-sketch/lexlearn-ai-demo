@@ -251,7 +251,8 @@ function weekBar(current){
     var r=weekResult(w.week),open=weekUnlocked(w.week,current),cls="",status="",icon="lock";
     if(r&&r.status==="repair"){cls="needs";status="يحتاج تثبيت";icon="repeat";}
     else if(r){cls="done";status=r.status==="mastered"?"مكتمل بإتقان":"مكتمل";icon="check";}
-    else if(w.week===current){cls="current";status="متاح الآن";icon="star";}
+    else if(w.week===current){cls="current";status=DEMO?"معروض الآن":"متاح الآن";icon="star";}
+    else if(DEMO){cls="available";status="متاح للعرض";icon="star";}
     else if(open){cls="available";status="متاح";icon="star";}
     else{cls="locked";status="مغلق";icon="lock";}
     return '<button class="week '+cls+'" '+(open?'data-week-open="'+w.week+'"':'disabled')+'><span class="weekIcon">'+ico(icon)+'</span><b>الأسبوع '+w.week+'</b><small>'+esc(w.title)+'</small><em>'+status+'</em></button>';
@@ -260,6 +261,7 @@ function weekBar(current){
 function bindWeekRoadmap(current){
   document.querySelectorAll("[data-week-open]").forEach(function(b){b.onclick=function(){
     var w=Number(b.dataset.weekOpen);
+    if(DEMO){state.course.session=(w-1)*5+1;state.answers=[];state.assessmentAnswers=[];state.task=0;state.queue=buildTrainingQueue();state.view="train";render();return;}
     if(w===current){var el=document.querySelector(".sessionHead");if(el)el.scrollIntoView({behavior:"smooth",block:"center"});return;}
     if(w<current||weekResult(w)){state.weekPreview=w;state.view="weekSummary";render();return;}
     if(w>current&&state.course.adminOverrideWeeks&&state.course.adminOverrideWeeks[w]){state.course.session=(w-1)*5+1;save();state.view="home";render();}
