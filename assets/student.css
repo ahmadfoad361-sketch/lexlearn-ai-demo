@@ -15,3 +15,6 @@
 .passwordGate{min-height:100vh;display:grid;place-items:center;padding:20px;background:linear-gradient(145deg,#f7f3ed,#eee7de)}
 .passwordGate>section{width:min(560px,100%);background:#fffdfa;border:1px solid #ddd5ca;border-radius:28px;padding:30px;box-shadow:0 24px 70px rgba(17,29,49,.12)}
 .passwordGate .mark{margin-bottom:16px}.passwordGate h1{color:var(--navy);font-size:34px;margin:10px 0}.passwordGate p{color:var(--muted);line-height:1.8}.passwordGate input{width:100%;border:1px solid #dcd2c7;border-radius:14px;padding:13px 14px;margin:6px 0;font:inherit}.passwordGate #passError{color:var(--red);font-size:10px;min-height:24px;padding-top:4px}.passwordGate .btn{width:100%;margin-top:8px}
+
+.countryTop{min-width:110px;appearance:auto}.countryPick{width:100%;border:1px solid #dcd2c7;border-radius:14px;padding:13px 14px;margin:6px 0 10px;font:inherit;background:#fff;color:var(--ink)}.passwordGate .secondary{width:100%;margin-top:8px}.topactions select.topbtn{padding-inline:10px}
+@media(max-width:620px){.topactions{flex-wrap:wrap;justify-content:flex-end}.countryTop{min-width:96px}}
