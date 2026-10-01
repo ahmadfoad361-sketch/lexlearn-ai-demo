@@ -4,9 +4,11 @@ var APP=document.getElementById("programApp");
 var qs=new URLSearchParams(location.search);
 var DEMO=qs.get("demo")==="1";
 var AUTO_START=qs.get("start")==="1";
-var COUNTRY=qs.get("country")||"qa";
-var SUBJECT=qs.get("subject")||"sources";
 var STUDENT_SESSION=(function(){try{return JSON.parse(localStorage.getItem("lexlearn_student_session"))||null;}catch(e){return null;}})();
+var COUNTRY=qs.get("country")||(STUDENT_SESSION&&STUDENT_SESSION.country)||"qa";
+var SUBJECT=qs.get("subject")||"sources";
+var COUNTRY_LABELS={qa:"قطر",eg:"مصر",sa:"السعودية",ae:"الإمارات",other:"دولة أخرى"};
+function countryLabel(){return COUNTRY_LABELS[COUNTRY]||"الدولة المختارة";}
 var STUDENT_SCOPE=STUDENT_SESSION&&STUDENT_SESSION.studentId?("_"+STUDENT_SESSION.studentId):"";
 var PROFILE_KEY="lexlearn_v9_profile"+STUDENT_SCOPE;
 var COURSE_KEY="lexlearn_course_v1_"+COUNTRY+"_"+SUBJECT+STUDENT_SCOPE;
@@ -203,7 +205,7 @@ function buildTrainingQueue(){
 }
 function chrome(inner){
   APP.innerHTML='<div class="courseShell"><header class="courseTop"><div class="courseTopIn">'+
-    '<div class="brand"><div class="mark">Lx</div><div><b>LexLearn</b><small>برنامج التدريب</small></div></div>'+
+    '<div class="brand"><div class="mark">Lx</div><div><b>LexLearn</b><small>'+countryLabel()+' • برنامج التدريب</small></div></div>'+
     '<div class="topActions"><a class="topBtn" href="showcase.html">الديمو التشخيصي</a><a class="topBtn" href="index.html">الرئيسية</a></div>'+
   '</div></header><main class="courseWrap">'+inner+'</main></div>';
 }
