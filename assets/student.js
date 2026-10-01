@@ -141,6 +141,7 @@ function skillCard(title,key,ic){
   "</div>";
 }
 function achievementName(a){
+  if(a.status==="program-complete")return "إتمام برنامج LexLearn";
   if(a.status==="mastered")return "إتقان المرحلة";
   if(a.status==="completed_with_support")return "تقدم بعد الدعم";
   return "إنهاء المرحلة";
@@ -227,9 +228,11 @@ function render(){
     "</"+tag+">";
   }).join("");
 
-  var actionPrimary=!result
-    ? "<a class='actionCard primary' href='showcase.html?country="+country+"'><span class='actionIcon'>"+icon("test")+"</span><span class='actionCopy'><b>ابدأ التقييم التشخيصي</b><small>يفتح الاختبار مباشرة بدل الرجوع للصفحة الرئيسية.</small></span></a>"
-    : "<a class='actionCard primary' href='program.html?demo=1&country="+country+"&start=1'><span class='actionIcon'>"+icon("play")+"</span><span class='actionCopy'><b>أكمل جلسة اليوم</b><small>يفتح التدريب الفعلي مباشرة.</small></span></a>";
+  var actionPrimary=course.completedProgram
+    ? "<a class='actionCard primary completeAction' href='program.html?demo=1&country="+country+"&start=1'><span class='actionIcon'>🏆</span><span class='actionCopy'><b>عرض إنجازك النهائي</b><small>لقد أنهيت البرنامج بالكامل — افتح شاشة الفوز والإنهاء.</small></span></a>"
+    : !result
+      ? "<a class='actionCard primary' href='showcase.html?country="+country+"'><span class='actionIcon'>"+icon("test")+"</span><span class='actionCopy'><b>ابدأ التقييم التشخيصي</b><small>يفتح الاختبار مباشرة بدل الرجوع للصفحة الرئيسية.</small></span></a>"
+      : "<a class='actionCard primary' href='program.html?demo=1&country="+country+"&start=1'><span class='actionIcon'>"+icon("play")+"</span><span class='actionCopy'><b>أكمل جلسة اليوم</b><small>يفتح التدريب الفعلي مباشرة.</small></span></a>";
 
   var learningProfile=result
     ? "<section class='resultCard'>"+
@@ -247,7 +250,8 @@ function render(){
 
   var achievements=course.achievements.length
     ? course.achievements.map(function(a){
-        return "<div class='badge'><span class='badgeIcon'>"+icon("trophy")+"</span><div><b>"+achievementName(a)+"</b><small>الأسبوع "+a.week+" • "+(a.status==="mastered"?"بإتقان":"مكتمل")+"</small></div></div>";
+        var sub=a.status==="program-complete"?"6 مراحل • 30 جلسة • مكتمل":("الأسبوع "+a.week+" • "+(a.status==="mastered"?"بإتقان":"مكتمل"));
+        return "<div class='badge "+(a.status==="program-complete"?"finalBadge":"")+"'><span class='badgeIcon'>"+(a.status==="program-complete"?"🏆":icon("trophy"))+"</span><div><b>"+achievementName(a)+"</b><small>"+sub+"</small></div></div>";
       }).join("")
     : "<div class='empty'>أول Badge يظهر بعد إنهاء تقييم الأسبوع الأول.</div>";
 
@@ -257,10 +261,10 @@ function render(){
       "<div class='topactions'><select class='topbtn countryTop' id='countrySwitch'>"+countryOptions(country)+"</select><button class='topbtn' id='changePass'>تغيير كلمة المرور</button><a class='topbtn' href='index.html'>الموقع</a><button class='topbtn' id='logout'>خروج</button></div>"+
     "</div></header>"+
     "<main class='wrap'>"+
-      "<section class='hero'>"+
-        "<div class='heroMain'><span class='eyebrow'>"+esc(student.cohort||"برنامج التدريب")+"</span><h1>أهلًا "+esc(student.name)+"</h1><p>"+countryLabel(country)+" • برنامج مصادر الالتزام • 6 أسابيع • 30 جلسة عملية</p>"+
-        "<div class='heroMeta'><span>الأسبوع "+w+" من 6</span><span>الجلسة "+(course.session||1)+" من 30</span><span>"+course.completed.length+" جلسة مكتملة</span></div></div>"+
-        "<div class='heroSide'><h3>"+esc(profileTitle())+"</h3><p>"+(result?"الجلسة التالية ستستخدم نتيجتك الحالية والأخطاء المسجلة لتحديد نوع التدريب.":"التقييم الأول هو الذي يبني أول مسار تدريبي لك.")+"</p></div>"+
+      "<section class='hero "+(course.completedProgram?"heroComplete":"")+"'>"+
+        "<div class='heroMain'><span class='eyebrow'>"+esc(student.cohort||"برنامج التدريب")+"</span><h1>"+(course.completedProgram?"🎉 مبروك "+esc(student.name)+"!":"أهلًا "+esc(student.name))+"</h1><p>"+countryLabel(country)+" • برنامج مصادر الالتزام • 6 أسابيع • 30 جلسة عملية</p>"+
+        "<div class='heroMeta'><span>"+(course.completedProgram?"6 / 6 مراحل مكتملة":"الأسبوع "+w+" من 6")+"</span><span>"+(course.completedProgram?"30 / 30 جلسة":"الجلسة "+(course.session||1)+" من 30")+"</span><span>"+(course.completedProgram?"🏆 تم إنهاء التدريب":course.completed.length+" جلسة مكتملة")+"</span></div></div>"+
+        "<div class='heroSide'><h3>"+(course.completedProgram?"تم إنهاء البرنامج بنجاح 🏆":esc(profileTitle()))+"</h3><p>"+(course.completedProgram?"أكملت جميع المراحل واجتزت التقييم النهائي. يمكنك فتح شاشة الإنجاز في أي وقت.":(result?"الجلسة التالية ستستخدم نتيجتك الحالية والأخطاء المسجلة لتحديد نوع التدريب.":"التقييم الأول هو الذي يبني أول مسار تدريبي لك."))+"</p></div>"+
       "</section>"+
       "<section class='actionGrid'>"+
         actionPrimary+
