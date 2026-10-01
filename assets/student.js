@@ -96,13 +96,17 @@ var weekTitles=[
 function currentWeek(){
   return Math.min(6,Math.max(1,Math.ceil((Number(course.session)||1)/5)));
 }
+function passedWeek(n){
+  var r=course.weekResults[n];
+  return !!(r&&(r.status==="mastered"||r.status==="completed"||r.status==="completed_with_support"));
+}
 function weekStatus(n){
   var r=course.weekResults[n];
   if(r&&r.status==="repair")return ["need","يحتاج تثبيت","repeat"];
   if(r)return ["done",r.status==="mastered"?"مكتمل بإتقان":"مكتمل","check"];
-  if(n===currentWeek())return ["current","متاح الآن","play"];
   if(course.adminOverrideWeeks[n])return ["current","مفتوح بواسطة المشرف","play"];
-  return ["locked","مغلق حتى إكمال السابق","lock"];
+  if(n===1||passedWeek(n-1))return ["current","متاح الآن","play"];
+  return ["locked","مغلق حتى اجتياز المرحلة السابقة","lock"];
 }
 function status(value){
   if(value==null)return "لم يُقَس";
@@ -237,4 +241,7 @@ function render(){
 }
 
 render();
+window.addEventListener("pageshow",function(e){
+  if(e.persisted){location.reload();}
+});
 })();
