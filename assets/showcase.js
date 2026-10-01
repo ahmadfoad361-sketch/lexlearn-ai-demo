@@ -1,6 +1,10 @@
 (function(){
 "use strict";
 var APP=document.getElementById("showcaseApp");
+var qs=new URLSearchParams(location.search),studentSession=null;try{studentSession=JSON.parse(localStorage.getItem("lexlearn_student_session")||"null");}catch(e){}
+var COUNTRY=qs.get("country")||(studentSession&&studentSession.country)||"qa";
+var COUNTRY_LABELS={qa:"قطر",eg:"مصر",sa:"السعودية",ae:"الإمارات",other:"دولة أخرى"};
+function countryLabel(){return COUNTRY_LABELS[COUNTRY]||"الدولة المختارة";}
 var state={view:"hero",step:0,timer:null,answers:[],free:"",runQuestions:[]};
 
 var text64="ينعقد العقد بمجرد ارتباط الإيجاب بالقبول، إذا كان محله وسببه معتبرين قانونًا، وذلك دون إخلال بما يتطلبه القانون من أوضاع خاصة لانعقاد بعض العقود.";
@@ -32,7 +36,7 @@ function prepareQuestions(){
 function chrome(inner){
   APP.innerHTML='<div class="demoShell"><header class="demoTop"><div class="demoTopIn">'+
     '<div class="demoBrand"><div class="demoLogo" dir="ltr">Lx</div><div><b dir="ltr">LexLearn</b><small>تعلم قانوني متكيف</small></div></div>'+
-    '<div class="demoMeta"><span class="demoPill">قطر • مصادر الالتزام</span><a class="demoGhost" href="index.html">الرئيسية</a></div>'+
+    '<div class="demoMeta"><span class="demoPill">'+countryLabel()+' • مصادر الالتزام</span><a class="demoGhost" href="index.html">الرئيسية</a></div>'+
     '</div></header><main class="demoWrap">'+inner+'</main><footer class="demoFooter">LexLearn</footer></div>';
 }
 function render(){
@@ -62,7 +66,7 @@ function read(){
   stage(12,'<div class="stageCard">'+
     '<span class="demoEyebrow">اقرأ النص جيدًا</span>'+
     '<h2>المادة ٦٤ — انعقاد العقد</h2>'+
-    '<div class="legalPaper" dir="rtl"><small>القانون المدني القطري رقم ٢٢ لسنة ٢٠٠٤ — المادة ٦٤</small><div class="txt">'+esc(text64)+'</div></div>'+
+    '<div class="legalPaper" dir="rtl"><small>'+(COUNTRY==="qa"?"القانون المدني القطري رقم ٢٢ لسنة ٢٠٠٤ — المادة ٦٤":"نص تدريبي تجريبي — انعقاد العقد")+'</small><div class="txt">'+esc(text64)+'</div></div>'+
     '<div class="timerRow"><button class="btn primary" id="finishRead">انتهيت</button><div class="timerCircle" id="ring"><b id="num">'+total+'</b></div></div>'+
   '</div>');
   state.timer=setInterval(function(){
@@ -120,6 +124,14 @@ function result(){
   var arr=[["الاسترجاع",recall,"recall"],["الفهم",understanding,"understanding"],["التطبيق",application,"application"]];
   var weakest=arr.slice().sort(function(a,b){return a[1]-b[1];})[0];
   var rec=weakest[2]==="application"?"ابدأ بوقائع قصيرة يتغير فيها عنصر واحد.":weakest[2]==="understanding"?"ابدأ بتفكيك القاعدة إلى عناصرها ومعناها.":"ابدأ باسترجاع قصير من غير إعادة قراءة النص.";
+  if(studentSession&&studentSession.studentId){
+    var pk="lexlearn_v9_profile_"+studentSession.studentId,p={results:{}};
+    try{p=JSON.parse(localStorage.getItem(pk)||"{\"results\":{}}")||{results:{}};}catch(e){}
+    p.results=p.results||{};
+    var gap=recall-understanding,profileType=gap>=12?"recall-led":gap<=-12?"understanding-led":"balanced";
+    p.results[COUNTRY+"-sources"]={metrics:{recall:recall,understanding:understanding,application:application,retention:null,exam:null},profileType:profileType,updatedAt:Date.now()};
+    localStorage.setItem(pk,JSON.stringify(p));
+  }
   stage(97,'<div class="stageCard">'+
     '<span class="demoEyebrow">النتيجة</span>'+
     '<h2>نتيجتك في هذه المحاولة</h2>'+
@@ -127,7 +139,7 @@ function result(){
       metric("الاسترجاع",recall)+metric("الفهم",understanding)+metric("التطبيق",application)+
     '</div>'+
     '<div class="planCard nextStep"><h3>الخطوة التالية</h3><p>'+esc(rec)+'</p></div>'+
-    '<div class="demoActions"><a class="btn primary" style="text-decoration:none" href="program.html?demo=1&start=1">ابدأ التدريب المقترح فعليًا</a><button class="btn secondary" id="toExam">سؤال امتحاني</button><button class="btn secondary" id="again">إعادة الاختبار</button></div>'+
+    '<div class="demoActions"><a class="btn primary" style="text-decoration:none" href="program.html?demo=1&country='+COUNTRY+'&start=1">ابدأ التدريب المقترح فعليًا</a><button class="btn secondary" id="toExam">سؤال امتحاني</button><button class="btn secondary" id="again">إعادة الاختبار</button></div>'+
   '</div>');
   document.getElementById("toExam").onclick=function(){state.view="exam";render();};
   document.getElementById("again").onclick=function(){state.view="hero";render();};
