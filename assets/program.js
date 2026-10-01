@@ -149,7 +149,7 @@ function diagnostic(){
   if(DEMO)return {metrics:{recall:82,understanding:88,application:58,retention:64,exam:55}};
   var p=loadProfile(),k=COUNTRY+"-"+SUBJECT;return p.results&&p.results[k]?p.results[k]:null;
 }
-function defaultCourse(){return {session:1,started:true,completed:[],errors:DEMO?[{skill:"apply",label:"يخلط بين وجود الاتفاق وصحة المحل",count:2},{skill:"spot",label:"لا يلتقط الواقعة الحاسمة بسرعة",count:1}]:[],history:[],lastAssessment:null,weekResults:{},repairRequired:false,repairWeek:null,adminOverrideWeeks:{},achievements:[]};}
+function defaultCourse(){return {session:1,started:true,completed:[],errors:DEMO?[{skill:"apply",label:"يخلط بين وجود الاتفاق وصحة المحل",count:2},{skill:"spot",label:"لا يلتقط الواقعة الحاسمة بسرعة",count:1}]:[],history:[],lastAssessment:null,weekResults:{},repairRequired:false,repairWeek:null,adminOverrideWeeks:{},achievements:[],completedProgram:false,completedAt:null};}
 function passedWeekResult(r){
   return !!(r&&(r.status==="mastered"||r.status==="completed"||r.status==="completed_with_support"));
 }
@@ -162,6 +162,8 @@ function loadCourse(){
     c.errors=Array.isArray(c.errors)?c.errors:[];
     if(c.repairRequired==null)c.repairRequired=false;
     c.session=Math.max(1,Math.min(30,Number(c.session)||1));
+    if(c.completedProgram==null)c.completedProgram=passedWeekResult(c.weekResults[6]);
+    if(c.completedProgram&&!c.completedAt)c.completedAt=Date.now();
     for(var w=1;w<=5;w++){
       if(c.session>w*5&&!passedWeekResult(c.weekResults[w])&&!c.adminOverrideWeeks[w+1]){
         c.session=w*5;
@@ -227,8 +229,10 @@ function render(){
   if(state.view==="achievement")return achievementBoard();
   if(state.view==="repairAssessment")return repairAssessment();
   if(state.view==="weekSummary")return weekSummary();
+  if(state.view==="completion")return completion();
 }
 function home(){
+  if(state.course.completedProgram){state.view="completion";return completion();}
   var m=sessionMeta(state.course.session),d=state.diag;
   if(!d&&!DEMO){
     chrome('<section class="hero"><div class="heroMain"><span class="kicker">برنامج التدريب</span><h1>مصادر الالتزام</h1><p>البرنامج يحتاج تقييم بداية حتى يبني أول جلسة على أدائك الحقيقي.</p><div class="choiceRow"><a class="primary" style="text-decoration:none" href="index.html">ابدأ تقييم البداية</a></div></div><div class="heroSide"><h3>التقييم مستقل</h3><p>يمكنك إجراء التقييم فقط والخروج، أو العودة بعده وبدء البرنامج.</p></div></section>');
@@ -447,9 +451,17 @@ function finishAssessment(){
   if(status==="repair"){
     state.course.repairRequired=true;state.course.repairWeek=week;
   }else{
-    state.course.repairRequired=false;state.course.repairWeek=null;addAchievement(week,status);state.course.session=Math.min(30,state.course.session+1);
+    state.course.repairRequired=false;state.course.repairWeek=null;addAchievement(week,status);
+    if(week===6){
+      state.course.completedProgram=true;
+      state.course.completedAt=Date.now();
+      state.course.session=30;
+      addAchievement(6,"program-complete");
+    }else{
+      state.course.session=Math.min(30,state.course.session+1);
+    }
   }
-  save();state.view="achievement";render();
+  save();state.view=(week===6&&status!=="repair")?"completion":"achievement";render();
 }
 function achievementSkill(name,v,iconName){
   var label=v==null?"لم يُقَس":v>=80?"قوي":v>=60?"جيد":v>=40?"متوسط":"يحتاج إعادة";
@@ -484,13 +496,39 @@ function finishRepairAssessment(){
   var existing=state.course.weekResults[week]||{week:week};
   existing.repairScore=p;existing.skillScores=skillScores(a);
   if(p>=60||state.course.adminOverrideWeeks[week+1]){
-    existing.status="completed_with_support";existing.score=Math.max(existing.score||0,p);state.course.repairRequired=false;state.course.repairWeek=null;addAchievement(week,"completed_with_support");state.course.session=Math.min(30,state.course.session+1);
+    existing.status="completed_with_support";existing.score=Math.max(existing.score||0,p);state.course.repairRequired=false;state.course.repairWeek=null;addAchievement(week,"completed_with_support");
+    if(week===6){
+      state.course.completedProgram=true;
+      state.course.completedAt=Date.now();
+      state.course.session=30;
+      addAchievement(6,"program-complete");
+    }else{
+      state.course.session=Math.min(30,state.course.session+1);
+    }
   }else{
     existing.status="repair";existing.score=Math.max(existing.score||0,p);state.course.repairRequired=true;state.course.repairWeek=week;
   }
-  state.course.weekResults[week]=existing;state.course.lastAssessment={week:week,score:existing.score,status:existing.status,ts:Date.now()};save();state.view="achievement";render();
+  state.course.weekResults[week]=existing;state.course.lastAssessment={week:week,score:existing.score,status:existing.status,ts:Date.now()};save();state.view=(week===6&&existing.status!=="repair")?"completion":"achievement";render();
+}
+function completion(){
+  var r=(state.course.weekResults||{})[6]||state.course.lastAssessment||{};
+  var score=r.score==null?"—":r.score+"%";
+  var date=state.course.completedAt?new Date(state.course.completedAt).toLocaleDateString("ar-EG"):"اليوم";
+  var pieces=["✦","◆","★","✦","●","★","◆","✦","★","●","✦","◆"].map(function(x,i){
+    return '<span class="confetti c'+(i+1)+'">'+x+'</span>';
+  }).join("");
+  chrome('<section class="stage finalStage"><div class="confettiLayer">'+pieces+'</div><div class="finalCard">'+
+    '<div class="finalTrophy">🏆</div><span class="kicker">تم إنجاز البرنامج بالكامل</span>'+
+    '<h1>مبروك! أنهيت تدريب LexLearn 🎉</h1>'+
+    '<p>أكملت المراحل الست ونجحت في التقييم النهائي. تم تسجيل البرنامج كمكتمل لهذا المسار.</p>'+
+    '<div class="finalStats"><div><span>المراحل</span><b>6 / 6</b></div><div><span>الجلسات</span><b>30 / 30</b></div><div><span>التقييم النهائي</span><b>'+score+'</b></div></div>'+
+    '<div class="finalRibbon">★ إنجاز مكتمل • '+date+' ★</div>'+
+    '<div class="finalChecks">'+curriculum.map(function(w){return '<div><span>✓</span><b>الأسبوع '+w.week+'</b><small>'+esc(w.title)+'</small></div>';}).join("")+'</div>'+
+    '<div class="choiceRow"><a class="primary finalLink" href="student.html">العودة إلى حساب الطالب</a><button class="secondary" id="showFinalAgain">عرض لوحة الإنجاز</button></div>'+
+  '</div></section>');
+  var b=document.getElementById("showFinalAgain");if(b)b.onclick=function(){state.view="completion";render();};
 }
 function assessmentResult(){state.view="achievement";render();}
-if(DEMO&&AUTO_START){var autoMeta=sessionMeta(state.course.session);state.answers=[];state.assessmentAnswers=[];state.task=0;state.queue=buildTrainingQueue();state.view=autoMeta.kind==="assessment"?"assessment":"train";}
+if(DEMO&&AUTO_START){if(state.course.completedProgram){state.view="completion";}else{var autoMeta=sessionMeta(state.course.session);state.answers=[];state.assessmentAnswers=[];state.task=0;state.queue=buildTrainingQueue();state.view=autoMeta.kind==="assessment"?"assessment":"train";}}
 render();
 })();
