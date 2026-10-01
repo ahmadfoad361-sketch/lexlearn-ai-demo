@@ -18,3 +18,9 @@
 
 .countryTop{min-width:110px;appearance:auto}.countryPick{width:100%;border:1px solid #dcd2c7;border-radius:14px;padding:13px 14px;margin:6px 0 10px;font:inherit;background:#fff;color:var(--ink)}.passwordGate .secondary{width:100%;margin-top:8px}.topactions select.topbtn{padding-inline:10px}
 @media(max-width:620px){.topactions{flex-wrap:wrap;justify-content:flex-end}.countryTop{min-width:96px}}
+
+.heroComplete .heroMain{background:linear-gradient(145deg,#111d31,#2f6b57)}
+.heroComplete .heroSide{border:1px solid rgba(199,166,106,.5);background:linear-gradient(180deg,#fffdfa,#fff7e8)}
+.completeAction{outline:2px solid rgba(199,166,106,.38)}
+.finalBadge{min-width:240px;background:linear-gradient(145deg,#111d31,#20375e);border-color:#c7a66a;color:#fff}
+.finalBadge b{color:#fff}.finalBadge small{color:#e7d8b4}.finalBadge .badgeIcon{background:#fff7e8;color:#741a39;font-size:22px}
