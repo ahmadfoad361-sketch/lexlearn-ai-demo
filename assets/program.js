@@ -196,17 +196,26 @@ function buildTrainingQueue(){
   var adaptive=dim==="application"?taskBank.apply:dim==="understanding"?taskBank.understanding:dim==="recall"?taskBank.recall:dim==="retention"?taskBank.retention:taskBank.exam;
   var errorTask=err==="spot"?taskBank.spot:err==="apply"?taskBank.apply:err==="exam"?taskBank.exam:null;
   var pool=(weekTasks[meta.week]||weekTasks[1]).slice();
-  var offset=(meta.day-1)%pool.length;
-  var rotated=pool.slice(offset).concat(pool.slice(0,offset));
-  var q=[taskBank.review,bridge.primary,rotated[0],rotated[1],adaptive,rotated[2]];
+  var lead=pool[Math.max(0,Math.min(pool.length-1,meta.day-1))]||pool[0];
+  var previous=meta.day>1?pool[meta.day-2]:taskBank.review;
+  var q=[lead];
+  if(meta.day===1){
+    q.push(bridge.primary,adaptive,bridge.secondary||taskBank.review);
+  }else if(meta.day===2){
+    q.push(previous,bridge.secondary||bridge.primary,adaptive);
+  }else if(meta.day===3){
+    q.push(bridge.primary,previous,adaptive);
+  }else{
+    q.push(previous,bridge.primary,bridge.secondary||adaptive);
+  }
   if(errorTask&&q.indexOf(errorTask)===-1)q.push(errorTask);
-  if(bridge.secondary&&q.indexOf(bridge.secondary)===-1)q.push(bridge.secondary);
-  return q.slice(0,8);
+  if(adaptive&&q.indexOf(adaptive)===-1)q.push(adaptive);
+  return q.filter(Boolean).filter(function(t,i,a){return a.indexOf(t)===i;}).slice(0,6);
 }
 function chrome(inner){
   APP.innerHTML='<div class="courseShell"><header class="courseTop"><div class="courseTopIn">'+
     '<div class="brand"><div class="mark">Lx</div><div><b>LexLearn</b><small>'+countryLabel()+' • برنامج التدريب</small></div></div>'+
-    '<div class="topActions"><a class="topBtn" href="showcase.html">الديمو التشخيصي</a><a class="topBtn" href="index.html">الرئيسية</a></div>'+
+    '<div class="topActions"><a class="topBtn" href="showcase.html?country='+COUNTRY+'">الديمو التشخيصي</a><a class="topBtn" href="index.html">الرئيسية</a></div>'+
   '</div></header><main class="courseWrap">'+inner+'</main></div>';
 }
 function render(){
@@ -332,13 +341,13 @@ function orderedOptions(t,salt){
   return order.map(function(orig){return {orig:orig,text:t.opts[orig]};});
 }
 function train(){
-  var q=state.queue.length?state.queue:buildTrainingQueue(),t=q[state.task%q.length];
+  var q=state.queue.length?state.queue:buildTrainingQueue(),t=q[state.task%q.length],meta=sessionMeta(state.course.session);
   var ordered=t.mode==="free"?[]:orderedOptions(t,0);
   var input=t.mode==="free"?
     '<textarea class="textarea" id="freeAnswer" placeholder="اكتب إجابتك بطريقتك..."></textarea><div class="choiceRow"><button class="primary" id="checkFree">حلّل إجابتي</button></div>':
     '<div class="options">'+ordered.map(function(o){return '<button class="option" data-orig="'+o.orig+'">'+esc(o.text)+'</button>';}).join("")+'</div>';
   chrome('<section class="stage"><div class="progress"><i style="width:'+((state.task+1)/q.length*100)+'%"></i></div><div class="taskCard">'+
-    '<span class="kicker">'+(state.repairMode?"جلسة تثبيت • ":"")+esc(kindLabel(t.kind))+' • '+(state.task+1)+' / '+q.length+'</span><h2>'+esc(t.title)+'</h2>'+
+    '<span class="kicker">'+(state.repairMode?"جلسة تثبيت • ":"")+'الجلسة '+state.course.session+' • '+esc(meta.title)+' • '+(state.task+1)+' / '+q.length+'</span><h2>'+esc(t.title)+'</h2>'+
     (t.showText?'<div class="legalBox"><small>النص القانوني</small><div>'+esc(TEXT64)+'</div></div>':'')+
     '<p>'+esc(t.q)+'</p>'+input+'<div id="feed"></div></div></section>');
   if(t.mode==="free"){
