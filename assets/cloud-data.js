@@ -31,6 +31,12 @@ async function signInAdmin(email,password){
   return {user:r.data.user,profile:p};
 }
 async function signOut(){var c=db();if(c)await c.auth.signOut();}
+async function requestPasswordReset(email,redirectTo){
+  var c=db();if(!c)throw new Error("cloud_not_configured");
+  var opts=redirectTo?{redirectTo:redirectTo}:{};
+  var r=await c.auth.resetPasswordForEmail(String(email||"").trim(),opts);
+  if(r.error)throw r.error;return true;
+}
 async function loadSnapshot(opts){
   var c=db();if(!c)return null;
   var q=c.from("learner_snapshots").select("state,version,updated_at").eq("course_id",opts.courseId).eq("snapshot_type",opts.snapshotType);
@@ -117,7 +123,7 @@ async function saveLearningPlan(row){
   row=Object.assign({},row,{user_id:u.data.user.id,updated_at:new Date().toISOString()});
   var r=await c.from("learning_plans").upsert(row,{onConflict:"user_id,course_id"}).select().single();if(r.error)throw r.error;return r.data;
 }
-root.LEX_CLOUD={isConfigured:isConfigured,db:db,studentEmail:studentEmail,profile:profile,signInStudent:signInStudent,signInAdmin:signInAdmin,signOut:signOut,loadSnapshot:loadSnapshot,saveSnapshot:saveSnapshot,listStudents:listStudents,listCohorts:listCohorts,listAudit:listAudit,listContentItems:listContentItems,reviewContent:reviewContent,createStudent:createStudent,manageStudent:manageStudent,createCohort:createCohort,setOwnPassword:setOwnPassword,updateOwnProfile:updateOwnProfile,gradeAnswer:gradeAnswer,getConsent:getConsent,recordConsent:recordConsent,logEvent:logEvent,recordAttempt:recordAttempt,saveLearningPlan:saveLearningPlan};
+root.LEX_CLOUD={isConfigured:isConfigured,db:db,studentEmail:studentEmail,profile:profile,signInStudent:signInStudent,signInAdmin:signInAdmin,signOut:signOut,requestPasswordReset:requestPasswordReset,loadSnapshot:loadSnapshot,saveSnapshot:saveSnapshot,listStudents:listStudents,listCohorts:listCohorts,listAudit:listAudit,listContentItems:listContentItems,reviewContent:reviewContent,createStudent:createStudent,manageStudent:manageStudent,createCohort:createCohort,setOwnPassword:setOwnPassword,updateOwnProfile:updateOwnProfile,gradeAnswer:gradeAnswer,getConsent:getConsent,recordConsent:recordConsent,logEvent:logEvent,recordAttempt:recordAttempt,saveLearningPlan:saveLearningPlan};
 if(typeof window!=="undefined"){
   window.addEventListener("error",function(ev){
     if(!isConfigured())return;
