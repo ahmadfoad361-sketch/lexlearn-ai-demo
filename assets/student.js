@@ -289,7 +289,7 @@ function render(){
       "</section>"+
       "<section class='actionGrid'>"+
         actionPrimary+
-        (course.completedProgram?"":"<a class='actionCard' href='program.html?demo=1&country="+country+"&start=1'><span class='actionIcon'>"+icon("play")+"</span><span class='actionCopy'><b>جرّب المستوى الأول</b><small>ادخل مباشرة إلى أول جلسة تدريب عملية.</small></span></a>")+
+        (course.completedProgram?"":"<a class='actionCard' href='program.html?"+demoPrefix+"country="+country+"&subject=sources&start=1'><span class='actionIcon'>"+icon("play")+"</span><span class='actionCopy'><b>جرّب المستوى الأول</b><small>ادخل مباشرة إلى أول جلسة تدريب عملية.</small></span></a>")+
       "</section>"+
       "<div class='sectionHead'><div><h2>مسار الأسابيع</h2><p>"+"كل مرحلة تفتح بعد إكمال السابقة أو بقرار دعم من المشرف."+"</p></div><span class='progressTag'>"+course.completed.length+" / 30</span></div>"+
       "<section class='weekGrid'>"+weeks+"</section>"+
