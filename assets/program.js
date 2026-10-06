@@ -201,7 +201,7 @@ function diagnostic(){
   if(DEMO)return {metrics:{recall:82,understanding:88,application:58,retention:64,exam:55}};
   var p=loadProfile(),k=COUNTRY+"-"+SUBJECT;return p.results&&p.results[k]?p.results[k]:null;
 }
-function defaultCourse(){return {session:1,started:true,completed:[],errors:DEMO?[{skill:"apply",label:"يخلط بين وجود الاتفاق وصحة المحل",count:2},{skill:"spot",label:"لا يلتقط الواقعة الحاسمة بسرعة",count:1}]:[],history:[],lastAssessment:null,weekResults:{},repairRequired:false,repairWeek:null,adminOverrideWeeks:{},achievements:[],completedProgram:false,completedAt:null};}
+function defaultCourse(){return {session:1,started:true,completed:[],evidence:[],errors:DEMO?[{skill:"apply",label:"يخلط بين وجود الاتفاق وصحة المحل",count:2},{skill:"spot",label:"لا يلتقط الواقعة الحاسمة بسرعة",count:1}]:[],history:[],lastAssessment:null,weekResults:{},repairRequired:false,repairWeek:null,adminOverrideWeeks:{},achievements:[],completedProgram:false,completedAt:null};}
 function passedWeekResult(r){
   return !!(r&&(r.status==="mastered"||r.status==="completed"||r.status==="completed_with_support"));
 }
@@ -212,6 +212,7 @@ function loadCourse(){
     c.completed=Array.isArray(c.completed)?c.completed:[];
     c.history=Array.isArray(c.history)?c.history:[];
     c.errors=Array.isArray(c.errors)?c.errors:[];
+    c.evidence=Array.isArray(c.evidence)?c.evidence:[];
     if(c.repairRequired==null)c.repairRequired=false;
     c.session=Math.max(1,Math.min(30,Number(c.session)||1));
     if(c.completedProgram==null)c.completedProgram=passedWeekResult(c.weekResults[6]);
@@ -228,6 +229,13 @@ function loadCourse(){
 var state={view:"home",task:0,answers:[],assessmentAnswers:[],queue:[],course:loadCourse(),diag:diagnostic(),repairMode:false,weekPreview:null};
 function save(){
   localStorage.setItem(COURSE_KEY,JSON.stringify(state.course));
+  if(window.LEX_ENGINE){
+    var m=(state.diag&&state.diag.metrics)||{},model=LEX_ENGINE.learnerModel({metrics:m,events:state.course.evidence||[]});
+    state.course.adaptiveModel=model;
+    if(window.LEX_CLOUD&&LEX_CLOUD.isConfigured&&LEX_CLOUD.isConfigured()&&STUDENT_SESSION&&STUDENT_SESSION.cloud){
+      LEX_CLOUD.saveLearningPlan({course_id:COUNTRY+"-"+SUBJECT,weakest_dimension:model.weakest,strongest_dimension:model.strongest,bridge_mode:model.bridge.mode,goals_json:[{dimension:model.weakest,reason:model.reasons}],model_json:model}).catch(function(){});
+    }
+  }
   if(window.LEX_CLOUD&&LEX_CLOUD.isConfigured&&LEX_CLOUD.isConfigured()&&STUDENT_SESSION&&STUDENT_SESSION.cloud){
     LEX_CLOUD.saveSnapshot({courseId:COUNTRY+"-"+SUBJECT,snapshotType:"course",state:state.course}).catch(function(){});
   }
@@ -236,7 +244,7 @@ function sessionMeta(n){var idx=Math.max(1,Math.min(30,n))-1;var w=Math.floor(id
 function weakestDimension(){
   var m=(state.diag&&state.diag.metrics)||{};
   if(window.LEX_ENGINE){
-    var model=LEX_ENGINE.learnerModel({metrics:m,events:(state.course.history||[]).map(function(h){return {dimension:h.dimension||h.skill,score:h.score,confidence:h.confidence,difficulty:h.difficulty||2,ts:h.ts||h.at};})});
+    var model=LEX_ENGINE.learnerModel({metrics:m,events:(state.course.evidence||[])});
     state.course.adaptiveModel=model;
     return model.weakest==="legal_precision"?"understanding":model.weakest;
   }
@@ -463,9 +471,31 @@ function train(){
     };});
   }
 }
+function taskDimension(t){
+  var title=String(t.title||"");
+  if(t.dimension)return t.dimension;
+  if(t.kind==="review"||/استرجاع مؤجل|مراجعة|تثبيت/.test(title))return "retention";
+  if(/استرجاع|ذاكرة/.test(title))return "recall";
+  if(t.skill==="apply"||t.skill==="spot")return "application";
+  if(t.skill==="exam")return "exam";
+  if(t.skill==="sources"||/تمييز|الدقة|اكتشف الخطأ/.test(title))return "legal_precision";
+  return "understanding";
+}
+function taskDifficulty(t){return t.difficulty||((t.kind==="adaptive")?3:(t.kind==="review"?2:2));}
 function completeTask(t,correct,q,extra){
-  state.answers.push({skill:t.skill,correct:correct,bridge:learningBridge().type,extra:extra||null});
+  extra=extra||{};
+  var score=extra.rubricScore!=null?Number(extra.rubricScore)/100:(correct?1:0),dim=taskDimension(t);
+  state.answers.push({skill:t.skill,dimension:dim,score:score,correct:correct,bridge:(state.course.adaptiveModel&&state.course.adaptiveModel.bridge&&state.course.adaptiveModel.bridge.mode)||learningBridge().type,extra:extra});
+  state.course.evidence=state.course.evidence||[];
+  state.course.evidence.push({itemId:t.itemId||null,dimension:dim,score:score,difficulty:taskDifficulty(t),confidence:extra.confidence||null,ts:Date.now(),session:state.course.session,week:sessionMeta(state.course.session).week});
+  if(state.course.evidence.length>240)state.course.evidence=state.course.evidence.slice(-240);
   if(!correct)addError(t.skill,errorLabel(t.skill));
+  if(window.LEX_ENGINE){
+    state.course.adaptiveModel=LEX_ENGINE.learnerModel({metrics:(state.diag&&state.diag.metrics)||{},events:state.course.evidence});
+  }
+  if(window.LEX_CLOUD&&LEX_CLOUD.isConfigured&&LEX_CLOUD.isConfigured()&&STUDENT_SESSION&&STUDENT_SESSION.cloud){
+    LEX_CLOUD.recordAttempt({course_id:COUNTRY+"-"+SUBJECT,item_id:t.itemId||null,dimension:dim,answer_text:extra.answer||null,selected_option:extra.selected==null?null:String(extra.selected),score:score,confidence:extra.confidence||null,difficulty:taskDifficulty(t),grading_method:extra.gradingMethod||"adaptive_local",error_type:correct?null:errorLabel(t.skill)}).catch(function(){});
+  }
   if(state.task<q.length-1){state.task++;render();}else finishTraining();
 }
 function errorLabel(skill){var map={apply:"يحتاج نقل القاعدة إلى الواقعة بدقة",spot:"لا يلتقط العنصر الحاسم",sources:"يخلط بين مصادر الالتزام",contract:"يسقط عنصرًا من شروط الانعقاد",exam:"هيكل الإجابة غير مكتمل"};return map[skill]||"خطأ متكرر"; }
