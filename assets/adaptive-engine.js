@@ -291,6 +291,159 @@
     return tag==="frequent"?1:tag==="medium"?0.66:tag==="rare"?0.33:0;
   }
 
+  function evidenceWeight(e,now){
+    now=now==null?Date.now():now;
+    var ts=e&&e.ts?new Date(e.ts).getTime():now;
+    var ageDays=Math.max(0,(now-ts)/DAY);
+    var recency=Math.pow(0.5,ageDays/21);
+    var difficulty=1+0.08*Math.max(0,(Number(e&&e.difficulty)||1)-1);
+    var transfer=(e&&e.dimension==="application")||e&&e.dimension==="transfer"?1.08:1;
+    var delayed=e&&e.delayed?1.15:1;
+    return recency*difficulty*transfer*delayed;
+  }
+  function betaEstimate(events,now){
+    events=(events||[]).filter(function(e){return e&&e.score!=null;});
+    var a=2,b=2,w=0;
+    events.forEach(function(e){
+      var ew=evidenceWeight(e,now),s=clamp(Number(e.score),0,1);
+      a+=s*ew;b+=(1-s)*ew;w+=ew;
+    });
+    var mean=a/(a+b);
+    var variance=(a*b)/(((a+b)*(a+b))*(a+b+1));
+    var sd=Math.sqrt(variance);
+    return {
+      value:Math.round(mean*100),
+      uncertainty:Math.round(clamp(sd*196,0,0.5)*100),
+      evidenceWeight:Math.round(w*100)/100,
+      evidence:events.length
+    };
+  }
+  function trendScore(events){
+    var xs=(events||[]).filter(function(e){return e&&e.score!=null;}).slice(-10);
+    if(xs.length<4)return 0;
+    var cut=Math.floor(xs.length/2),a=xs.slice(0,cut),b=xs.slice(cut);
+    function avg(arr){return arr.reduce(function(s,e){return s+Number(e.score||0);},0)/Math.max(1,arr.length);}
+    return Math.round((avg(b)-avg(a))*100);
+  }
+  function evidenceModel(events,now){
+    events=events||[];now=now==null?Date.now():now;
+    var dimensions=["recall","understanding","legal_precision","application","exam","retention"];
+    var axes={};
+    dimensions.forEach(function(d){
+      var rows=events.filter(function(e){return e.dimension===d||(d==="application"&&e.dimension==="transfer")||(d==="exam"&&e.dimension==="exam_execution");});
+      var est=betaEstimate(rows,now);
+      est.trend=trendScore(rows);
+      est.status=est.evidence===0?"unmeasured":est.value>=82&&est.uncertainty<=18?"strong":est.value>=65?"developing":"priority";
+      axes[d]=est;
+    });
+    return axes;
+  }
+  function bridgeStrategy(strong,weak){
+    var key=(strong||"")+"->"+(weak||"");
+    var map={
+      "recall->understanding":{mode:"explain_from_memory",label:"استخدم ما يتذكره الطالب لتفسير لماذا تعمل القاعدة."},
+      "recall->application":{mode:"change_one_fact",label:"ابدأ بالنص المحفوظ ثم غيّر واقعة واحدة لاختبار التطبيق."},
+      "understanding->recall":{mode:"memory_keys",label:"حوّل الفهم إلى مفاتيح استرجاع قصيرة مرتبطة بالمعنى."},
+      "understanding->legal_precision":{mode:"precision_contrast",label:"استخدم الفهم للتمييز بين الألفاظ القانونية المتقاربة."},
+      "legal_precision->application":{mode:"boundary_case",label:"استثمر الدقة في حالات حدودية ووقائع متقاربة."},
+      "application->exam":{mode:"structured_answer",label:"حوّل التطبيق الجيد إلى إجابة: مسألة، قاعدة، تطبيق، نتيجة."},
+      "exam->retention":{mode:"retrieval_rebuild",label:"أعد بناء الإجابة من مفاتيح قصيرة بعد فاصل زمني."}
+    };
+    return map[key]||{mode:"evidence_bridge",label:"ابدأ من أقوى مهارة مثبتة لبناء أضعف مهارة بدل تكرار التدريب نفسه."};
+  }
+  function learnerModel(input,now){
+    input=input||{};now=now==null?Date.now():now;
+    var axes=evidenceModel(input.events||[],now);
+    var metrics=input.metrics||{};
+    Object.keys(metrics).forEach(function(k){
+      var target=k==="application"?"application":k==="exam_execution"?"exam":k;
+      if(!axes[target]||metrics[k]==null)return;
+      if(axes[target].evidence===0){
+        axes[target]={value:Math.round(Number(metrics[k])),uncertainty:24,evidenceWeight:0.75,evidence:1,trend:0,status:Number(metrics[k])>=82?"strong":Number(metrics[k])>=65?"developing":"priority",seeded:true};
+      }
+    });
+    var ranked=Object.keys(axes).filter(function(k){return axes[k].evidence>0;}).sort(function(a,b){
+      var aa=axes[a],bb=axes[b];
+      var ar=(100-aa.value)+(aa.uncertainty*0.45)+(aa.trend<0?Math.abs(aa.trend)*0.35:0);
+      var br=(100-bb.value)+(bb.uncertainty*0.45)+(bb.trend<0?Math.abs(bb.trend)*0.35:0);
+      return br-ar;
+    });
+    var weak=ranked[0]||"application";
+    var strong=ranked.slice().sort(function(a,b){return axes[b].value-axes[a].value;})[0]||"understanding";
+    var bridge=bridgeStrategy(strong,weak);
+    return {
+      version:"adaptive-v9",
+      axes:axes,
+      weakest:weak,
+      strongest:strong,
+      bridge:bridge,
+      confidence:ranked.length?Math.round(ranked.reduce(function(s,k){return s+(100-axes[k].uncertainty);},0)/ranked.length):0,
+      reasons:[
+        "weakest:"+weak,
+        "strongest:"+strong,
+        axes[weak]&&axes[weak].trend<0?"declining_trend":"stable_or_improving",
+        axes[weak]&&axes[weak].uncertainty>22?"needs_more_evidence":"evidence_sufficient"
+      ]
+    };
+  }
+  function targetDifficulty(model,currentDifficulty){
+    currentDifficulty=Number(currentDifficulty)||2;
+    var a=model&&model.axes&&model.axes[model.weakest];
+    if(!a)return currentDifficulty;
+    if(a.value>=88&&a.uncertainty<18)return clamp(currentDifficulty+1,1,5);
+    if(a.value<55)return clamp(currentDifficulty-1,1,5);
+    if(a.trend>10)return clamp(currentDifficulty+1,1,5);
+    return clamp(currentDifficulty,1,5);
+  }
+  function recommendNextTask(model,candidates,history){
+    candidates=candidates||[];history=history||[];
+    var seen={};history.slice(-20).forEach(function(h){if(h&&h.itemId)seen[h.itemId]=(seen[h.itemId]||0)+1;});
+    var target=model&&model.weakest||"application";
+    return candidates.map(function(x){
+      var s=0;
+      if(x.dimension===target||(target==="application"&&x.dimension==="transfer")||(target==="exam"&&x.dimension==="exam_execution"))s+=45;
+      if(x.approved===true||x.status==="approved")s+=20;
+      if(x.sourceIds&&x.sourceIds.length)s+=10;
+      s-=Math.min(18,(seen[x.id]||0)*9);
+      var diff=targetDifficulty(model,x.currentDifficulty||2);
+      s-=Math.abs((Number(x.difficulty)||2)-diff)*4;
+      if(x.variantGroupId)s+=4;
+      return {item:x,score:s};
+    }).sort(function(a,b){return b.score-a.score;})[0]||null;
+  }
+  function adaptiveReviewInterval(input){
+    input=input||{};
+    var score=clamp(Number(input.score)||0,0,1);
+    var repeats=Math.max(0,Number(input.repeatErrors)||0);
+    var confidence=Number(input.confidence)||2;
+    var retentionFailures=Math.max(0,Number(input.retentionFailures)||0);
+    var hours=score>=0.9?168:score>=0.75?72:score>=0.55?24:8;
+    if(confidence===3&&score<0.6)hours=Math.min(hours,6);
+    hours=hours/Math.pow(1.45,repeats+retentionFailures);
+    return Math.max(4,Math.round(hours));
+  }
+  function mergeSemanticGrade(localGrade,semanticGrade){
+    localGrade=localGrade||{};semanticGrade=semanticGrade||{};
+    var ls=localGrade.score==null?null:Number(localGrade.score);
+    var ss=semanticGrade.score==null?null:Number(semanticGrade.score);
+    var disagreement=(ls==null||ss==null)?null:Math.abs(ls-ss);
+    var confidence=Number(semanticGrade.model_confidence||semanticGrade.confidence||0);
+    var needs=!!semanticGrade.needs_human_review||confidence<0.68||(disagreement!=null&&disagreement>0.35);
+    return {
+      score:needs?null:(ss==null?ls:ss),
+      localScore:ls,
+      semanticScore:ss,
+      disagreement:disagreement,
+      achievedCriteria:semanticGrade.achieved_criteria||localGrade.matchedConcepts||[],
+      missingCriteria:semanticGrade.missing_criteria||localGrade.missingConcepts||[],
+      contradictions:semanticGrade.contradictions||[],
+      feedback:semanticGrade.feedback_ar||localGrade.feedback||"",
+      confidence:confidence,
+      needsHumanReview:needs,
+      gradingMethod:ss==null?"rubric_fallback":"grounded_semantic"
+    };
+  }
+
   return {
     CONFIG:CONFIG,
     migrateCourseState:migrateCourseState,
@@ -307,6 +460,15 @@
     calibrationLabel:calibrationLabel,
     priorityScore:priorityScore,
     selectVariant:selectVariant,
-    examTagWeight:examTagWeight
+    examTagWeight:examTagWeight,
+    evidenceWeight:evidenceWeight,
+    betaEstimate:betaEstimate,
+    evidenceModel:evidenceModel,
+    bridgeStrategy:bridgeStrategy,
+    learnerModel:learnerModel,
+    targetDifficulty:targetDifficulty,
+    recommendNextTask:recommendNextTask,
+    adaptiveReviewInterval:adaptiveReviewInterval,
+    mergeSemanticGrade:mergeSemanticGrade
   };
 });
