@@ -234,7 +234,7 @@ create trigger trg_plans_updated before update on public.learning_plans for each
 create or replace function public.handle_new_user()
 returns trigger language plpgsql security definer set search_path=public as $$
 begin
-  insert into public.profiles(id,role,username,display_name,active,must_change_password,university,year_label)
+  insert into public.profiles(id,role,username,display_name,active,must_change_password,university,year_label,country_code)
   values(
     new.id,
     coalesce(new.raw_user_meta_data->>'role','student'),
@@ -243,7 +243,8 @@ begin
     true,
     coalesce((new.raw_user_meta_data->>'must_change_password')::boolean,false),
     new.raw_user_meta_data->>'university',
-    new.raw_user_meta_data->>'year_label'
+    new.raw_user_meta_data->>'year_label',
+    coalesce(nullif(new.raw_user_meta_data->>'country_code',''),'qa')
   )
   on conflict(id) do nothing;
   return new;
