@@ -38,3 +38,47 @@
   --maroon:#8a1f39;
   --maroon-2:#5b0d26;
 }
+
+
+/* Student simplified infographic experience */
+.singleAction{grid-template-columns:1fr;max-width:760px;margin-inline:auto}
+.studentHeroSide{text-align:center;align-items:center}
+.heroVisual{width:82px;height:82px;border-radius:24px;display:grid;place-items:center;font-size:38px;background:linear-gradient(145deg,#fff5df,#f6e8c7);margin-bottom:12px;box-shadow:inset 0 0 0 1px rgba(199,166,106,.35)}
+.simpleProfile{background:var(--paper);border:1px solid rgba(119,99,82,.13);border-radius:28px;padding:24px;box-shadow:var(--shadow)}
+.simpleIntro{display:flex;justify-content:space-between;gap:12px;align-items:center}
+.simpleIntro h3{margin:8px 0 0;color:var(--navy);font-size:24px}
+.simpleSkillGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:20px}
+.simpleSkill{background:#fff;border:1px solid #e9e1d8;border-radius:24px;padding:20px;text-align:center;position:relative;overflow:hidden}
+.simpleSkill:before{content:"";position:absolute;inset:auto 0 0;height:5px;background:linear-gradient(90deg,var(--maroon),var(--gold))}
+.simpleIcon{width:64px;height:64px;border-radius:20px;margin:0 auto 10px;display:grid;place-items:center;font-size:29px;background:#f7f1e9}
+.simpleSkill b{display:block;color:var(--navy);font-size:15px}
+.simpleSkill strong{display:block;font-size:30px;line-height:1.2;color:var(--navy);margin:8px 0 2px}
+.simpleSkill span{font-size:10px;color:var(--muted)}
+.miniBar{height:7px;border-radius:999px;background:#efe9e2;overflow:hidden;margin-top:13px}
+.miniBar i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--maroon),var(--gold))}
+.studentTipGrid{display:grid;grid-template-columns:.8fr .8fr 1.4fr;gap:12px;margin-top:14px}
+.tipCard{display:flex;gap:12px;align-items:center;border-radius:20px;padding:15px 16px;border:1px solid #e7ded4;background:#fff}
+.tipCard>span{width:44px;height:44px;display:grid;place-items:center;border-radius:14px;background:#f6f0e8;font-size:21px;flex:0 0 auto}
+.tipCard small{display:block;color:var(--muted);font-size:9px}
+.tipCard b{display:block;color:var(--navy);font-size:12px;line-height:1.5;margin-top:2px}
+.tipCard.good{background:#f5faf7;border-color:#d7e8de}
+.tipCard.focus{background:#fff9ed;border-color:#ead9b8}
+.tipCard.today{background:#f7f7fb;border-color:#ddddea}
+.studentEmpty{text-align:center;font-size:14px}
+.week{min-height:118px}
+.week small{display:none}
+.weekIcon{width:36px;height:36px}
+.week em{font-size:8px}
+@media(max-width:760px){
+  .simpleSkillGrid{grid-template-columns:repeat(3,1fr);gap:8px}
+  .simpleSkill{padding:14px 8px;border-radius:18px}
+  .simpleIcon{width:48px;height:48px;font-size:23px;border-radius:15px}
+  .simpleSkill strong{font-size:24px}
+  .studentTipGrid{grid-template-columns:1fr}
+}
+@media(max-width:520px){
+  .simpleSkillGrid{grid-template-columns:1fr 1fr 1fr}
+  .simpleSkill b{font-size:11px}
+  .simpleSkill span{font-size:8px}
+  .heroVisual{width:64px;height:64px;font-size:30px}
+}
