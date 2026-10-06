@@ -16,7 +16,12 @@ var state={
   distractorAnswers:[], profile:loadProfile()
 };
 function loadProfile(){try{return JSON.parse(localStorage.getItem(KEY))||{results:{},retention:{}};}catch(e){return {results:{},retention:{}};}}
-function saveProfile(){localStorage.setItem(KEY,JSON.stringify(state.profile));}
+function saveProfile(){
+  localStorage.setItem(KEY,JSON.stringify(state.profile));
+  if(window.LEX_CLOUD&&LEX_CLOUD.isConfigured&&LEX_CLOUD.isConfigured()&&STUDENT_SESSION&&STUDENT_SESSION.cloud&&state.countryId&&state.subjectId){
+    LEX_CLOUD.saveSnapshot({courseId:state.countryId+"-"+state.subjectId,snapshotType:"profile",state:state.profile}).catch(function(){});
+  }
+}
 function esc(v){return String(v==null?"":v).replace(/[&<>"']/g,function(c){return({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"})[c];});}
 function norm(v){return String(v||"").toLowerCase().replace(/[أإآ]/g,"ا").replace(/ة/g,"ه").replace(/ى/g,"ي").replace(/[ًٌٍَُِّْـ]/g,"").replace(/[^\u0600-\u06FFa-z0-9 ]/gi," ").replace(/\s+/g," ").trim();}
 function clamp(n,a,b){return Math.max(a,Math.min(b,n));}
@@ -366,10 +371,17 @@ function renderArchive(){
   '<div class="archive-note">أي سؤال رسمي مرتبط بمحور المقرر سيُوسم بوضوح إذا لم يكن امتحانًا فعليًا للمادة.</div></section>');
   document.getElementById("backHub").onclick=function(){state.view="hub";render();};
 }
-if(BOOT_COUNTRY&&BOOT_SUBJECT){
-  state.countryId=BOOT_COUNTRY;state.subjectId=BOOT_SUBJECT;state.view="hub";render();
-  if(BOOT_AUTODIAG)startDiagnostic();
-}else{
-  state.view="country";render();
+async function boot(){
+  if(BOOT_COUNTRY&&BOOT_SUBJECT){
+    state.countryId=BOOT_COUNTRY;state.subjectId=BOOT_SUBJECT;
+    if(window.LEX_CLOUD&&LEX_CLOUD.isConfigured&&LEX_CLOUD.isConfigured()&&STUDENT_SESSION&&STUDENT_SESSION.cloud){
+      try{
+        var snap=await LEX_CLOUD.loadSnapshot({courseId:BOOT_COUNTRY+"-"+BOOT_SUBJECT,snapshotType:"profile"});
+        if(snap&&snap.state){state.profile=snap.state;localStorage.setItem(KEY,JSON.stringify(state.profile));}
+      }catch(e){}
+    }
+    state.view="hub";render();if(BOOT_AUTODIAG)startDiagnostic();
+  }else{state.view="country";render();}
 }
+boot();
 })();
