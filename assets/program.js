@@ -680,27 +680,29 @@ function train(){
     document.getElementById("checkFree").onclick=async function(){
       var answer=(document.getElementById("freeAnswer").value||"").trim();
       if(!answer){document.getElementById("feed").innerHTML='<div class="notice">اكتب محاولة قصيرة أولًا؛ الهدف أن نحلل بناء إجابتك، لا أن نريك النموذج مباشرة.</div>';return;}
-      var r=freeRubric(answer,t),semantic=null,merged=null,itemId=taskItemId(t);
+      var essay=t.essayProfile?essayAnalysis(answer,t):null;
+      var r=essay?{score:essay.overall,pass:essay.overall>=60}:freeRubric(answer,t),semantic=null,merged=null,itemId=taskItemId(t);
       document.getElementById("freeAnswer").disabled=true;document.getElementById("checkFree").disabled=true;
-      document.getElementById("feed").innerHTML='<div class="notice">يتم تحليل الإجابة وفق عناصر المعيار'+(itemId&&window.LEX_CLOUD&&LEX_CLOUD.isConfigured&&LEX_CLOUD.isConfigured()?" والمصدر القانوني المعتمد…":"…")+'</div>';
+      document.getElementById("feed").innerHTML='<div class="notice">يتم تحليل الإجابة وفق عناصر المعيار'+(t.essayProfile?"، مع فصل الاسترجاع والفهم والتطبيق وتنظيم الكتابة":"")+(itemId&&window.LEX_CLOUD&&LEX_CLOUD.isConfigured&&LEX_CLOUD.isConfigured()?" والمصدر القانوني المعتمد…":"…")+'</div>';
       if(itemId&&window.LEX_CLOUD&&LEX_CLOUD.isConfigured&&LEX_CLOUD.isConfigured()&&STUDENT_SESSION&&STUDENT_SESSION.cloud){
         try{semantic=await LEX_CLOUD.gradeAnswer({course_id:COURSE_DB_ID,item_id:itemId,answer:answer,language:"ar"});}catch(e){semantic=null;}
       }
       if(window.LEX_ENGINE&&semantic)merged=LEX_ENGINE.mergeSemanticGrade({score:r.score/100,matchedConcepts:[]},semantic);
       var finalScore=merged&&merged.score!=null?Math.round(merged.score*100):r.score;
       var pass=finalScore>=60;
-      var method=merged&&!merged.needsHumanReview?"grounded_semantic":"concept_rubric_v2";
+      var method=merged&&!merged.needsHumanReview?"grounded_semantic":(t.essayProfile?"essay_profile_v1":"concept_rubric_v2");
       var semanticNote=merged&&!merged.needsHumanReview?
         '<div class="goodbox"><b>تحليل دلالي موثّق</b><div>'+esc(merged.feedback||"تم تقييم المعنى باستخدام المعيار والمصادر المعتمدة فقط.")+'</div><small>الثقة: '+Math.round((merged.confidence||0)*100)+'%</small></div>':
-        (itemId&&semantic&&semantic.needs_human_review?'<div class="notice">التحليل الدلالي لم يصل لثقة كافية؛ استخدم النظام Rubric البنائي ولم يخمّن.</div>':'');
+        (itemId&&semantic&&semantic.needs_human_review?'<div class="notice">التحليل الدلالي لم يصل لثقة كافية؛ استخدم النظام التحليل البنائي ولم يخمّن.</div>':'');
       document.getElementById("feed").innerHTML=
         taskStatusBox(pass,pass?"حققّت العناصر المطلوبة في هذه المحاولة.":"هناك عنصر أو أكثر يحتاج إلى استكمال.")+
-        '<div class="rubricMini"><b>التحليل البنائي</b><span>'+finalScore+'%</span><small>'+(method==="grounded_semantic"?"تقييم دلالي مقيّد بالمصادر المعتمدة.":"Rubric بنائي احتياطي حتى تتوافر مراجعة دلالية موثوقة.")+'</small></div>'+
+        (essay?essayMini(essay):'<div class="rubricMini"><b>التحليل البنائي</b><span>'+finalScore+'%</span><small>'+(method==="grounded_semantic"?"تقييم دلالي مقيّد بالمصادر المعتمدة.":"Rubric بنائي احتياطي حتى تتوافر مراجعة دلالية موثوقة.")+'</small></div>')+
         semanticNote+
-        '<div class="modelAnswer"><b>نموذج للمقارنة</b><p>'+esc(t.model)+'</p></div><div class="feedback">'+esc(t.why)+'</div>'+
+        (t.model?'<div class="modelAnswer"><b>نموذج للمقارنة</b><p>'+esc(t.model)+'</p></div>':'')+
+        (t.why?'<div class="feedback">'+esc(t.why)+'</div>':'')+
         (t.memory?'<div class="memoryAnchor"><b>مرساة الذاكرة</b><span>'+esc(t.memory)+'</span></div>':'')+
         '<div class="choiceRow"><button class="primary" id="nextFree">'+(state.task<q.length-1?"التالي":"إنهاء الجلسة")+'</button></div>';
-      document.getElementById("nextFree").onclick=function(){completeTask(t,pass,q,{rubricScore:r.score,semanticScore:merged&&merged.score!=null?merged.score:null,gradingMethod:method,answer:answer,needsHumanReview:!!(merged&&merged.needsHumanReview)});};
+      document.getElementById("nextFree").onclick=function(){completeTask(t,pass,q,{rubricScore:r.score,semanticScore:merged&&merged.score!=null?merged.score:null,gradingMethod:method,answer:answer,essayProfile:essay,needsHumanReview:!!(merged&&merged.needsHumanReview)});};
     };
   }else{
     document.querySelectorAll("[data-orig]").forEach(function(b){b.onclick=function(){
