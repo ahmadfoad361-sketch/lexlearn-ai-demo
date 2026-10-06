@@ -67,6 +67,16 @@ async function invoke(name,body){
 }
 async function createStudent(data){return invoke("admin-create-student",data);}
 async function manageStudent(data){return invoke("admin-manage-student",data);}
+async function createCohort(data){
+  var c=db();if(!c)throw new Error("cloud_not_configured");
+  var row={name:String(data.name||"").trim(),institution:data.institution||null,academic_year:data.academic_year||null,active:true};
+  if(!row.name)throw new Error("cohort_name_required");
+  var r=await c.from("cohorts").insert(row).select().single();if(r.error)throw r.error;return r.data;
+}
+async function setOwnPassword(password){
+  if(String(password||"").length<10)throw new Error("password_too_short");
+  return invoke("account-set-password",{password:String(password)});
+}
 async function gradeAnswer(data){return invoke("grade-answer",data);}
 async function recordAttempt(row){
   var c=db();if(!c)return null;
@@ -80,5 +90,5 @@ async function saveLearningPlan(row){
   row=Object.assign({},row,{user_id:u.data.user.id,updated_at:new Date().toISOString()});
   var r=await c.from("learning_plans").upsert(row,{onConflict:"user_id,course_id"}).select().single();if(r.error)throw r.error;return r.data;
 }
-root.LEX_CLOUD={isConfigured:isConfigured,db:db,studentEmail:studentEmail,profile:profile,signInStudent:signInStudent,signInAdmin:signInAdmin,signOut:signOut,loadSnapshot:loadSnapshot,saveSnapshot:saveSnapshot,listStudents:listStudents,listCohorts:listCohorts,listAudit:listAudit,createStudent:createStudent,manageStudent:manageStudent,gradeAnswer:gradeAnswer,recordAttempt:recordAttempt,saveLearningPlan:saveLearningPlan};
+root.LEX_CLOUD={isConfigured:isConfigured,db:db,studentEmail:studentEmail,profile:profile,signInStudent:signInStudent,signInAdmin:signInAdmin,signOut:signOut,loadSnapshot:loadSnapshot,saveSnapshot:saveSnapshot,listStudents:listStudents,listCohorts:listCohorts,listAudit:listAudit,createStudent:createStudent,manageStudent:manageStudent,createCohort:createCohort,setOwnPassword:setOwnPassword,gradeAnswer:gradeAnswer,recordAttempt:recordAttempt,saveLearningPlan:saveLearningPlan};
 })(typeof globalThis!=="undefined"?globalThis:this);
