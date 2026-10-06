@@ -295,7 +295,9 @@ var qatarAssessmentBanks={
 ]
 };
 function assessmentBankForWeek(week){
-  return COUNTRY==="qa"?(qatarAssessmentBanks[week]||qatarAssessmentBanks[6]):assessmentBank;
+  var base=COUNTRY==="qa"?(qatarAssessmentBanks[week]||qatarAssessmentBanks[6]):assessmentBank;
+  var essay=COUNTRY==="qa"?assessmentEssayBank[week]:null;
+  return essay?base.concat([essay]):base.slice();
 }
 
 function esc(v){return String(v==null?"":v).replace(/[&<>"']/g,function(c){return({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c];});}
