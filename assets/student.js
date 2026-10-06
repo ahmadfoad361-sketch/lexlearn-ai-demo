@@ -172,21 +172,33 @@ function changePasswordView(force){
       "<h1>"+(force?"اختر كلمة مرور جديدة":"تغيير كلمة المرور")+"</h1>"+
       "<p>"+(force?"غيّر كلمة المرور المؤقتة قبل بدء التدريب.":"اكتب كلمة المرور الحالية ثم اختر كلمة مرور جديدة.")+"</p>"+
       (force?"":"<input id='oldPass' type='password' placeholder='كلمة المرور الحالية'>")+
-      "<input id='newPass' type='password' placeholder='كلمة المرور الجديدة — 8 أحرف على الأقل'>"+
+      "<input id='newPass' type='password' placeholder='كلمة المرور الجديدة — 10 أحرف على الأقل'>"+
       "<input id='newPass2' type='password' placeholder='أعد كتابة كلمة المرور الجديدة'>"+
       "<div id='passError'></div>"+
       "<button class='btn primary' id='savePass'>حفظ كلمة المرور</button>"+
       (force?"":"<button class='btn secondary' id='cancelPass'>إلغاء</button>")+
     "</section></main>";
-  document.getElementById("savePass").onclick=function(){
+  document.getElementById("savePass").onclick=async function(){
     var a=document.getElementById("newPass").value;
     var b=document.getElementById("newPass2").value;
     var e=document.getElementById("passError");
-    if(!force){
-      var old=document.getElementById("oldPass").value;
-      if(old!==student.password){e.textContent="كلمة المرور الحالية غير صحيحة.";return;}
+    if(a.length<10||a!==b){e.textContent="اكتب كلمة مرور من 10 أحرف على الأقل وتأكد من التطابق.";return;}
+    if(session.cloud&&window.LEX_CLOUD&&LEX_CLOUD.isConfigured&&LEX_CLOUD.isConfigured()){
+      try{
+        if(!force){
+          var old=document.getElementById("oldPass").value;
+          await LEX_CLOUD.signInStudent(student.username,old);
+        }
+        await LEX_CLOUD.setOwnPassword(a);
+        student.mustChangePassword=false;
+        saveStudentPatch({mustChangePassword:false});
+        render();return;
+      }catch(err){e.textContent="تعذر تغيير كلمة المرور. تأكد من كلمة المرور الحالية وحاول مرة أخرى.";return;}
     }
-    if(a.length<8||a!==b){e.textContent="اكتب كلمة مرور من 8 أحرف على الأقل وتأكد من التطابق.";return;}
+    if(!force){
+      var oldLocal=document.getElementById("oldPass").value;
+      if(oldLocal!==student.password){e.textContent="كلمة المرور الحالية غير صحيحة.";return;}
+    }
     saveStudentPatch({password:a,mustChangePassword:false});
     render();
   };
@@ -202,8 +214,11 @@ function countryGateView(){
       "<div id='passError'></div>"+
       "<button class='btn primary' id='saveCountry'>حفظ وفتح التدريب</button>"+
     "</section></main>";
-  document.getElementById("saveCountry").onclick=function(){
+  document.getElementById("saveCountry").onclick=async function(){
     var code=document.getElementById("countryPick").value;
+    if(session.cloud&&window.LEX_CLOUD&&LEX_CLOUD.isConfigured&&LEX_CLOUD.isConfigured()){
+      try{await LEX_CLOUD.updateOwnProfile({country_code:code});}catch(e){document.getElementById("passError").textContent="تعذر حفظ الدولة الآن.";return;}
+    }
     saveStudentPatch({country:code});
     location.reload();
   };
@@ -219,12 +234,13 @@ function render(){
   }
   country=student.country;
   var w=currentWeek();
+  var demoPrefix=session.cloud?"":"demo=1&";
   var weeks=weekTitles.map(function(title,i){
     var n=i+1;
     var st=weekStatus(n);
     var open=st[0]==="current"||st[0]==="need";
     var tag=open?"a":"div";
-    var href=open?" href='program.html?demo=1&country="+country+"&start=1'":"";
+    var href=open?" href='program.html?"+demoPrefix+"country="+country+"&subject=sources&start=1'":"";
     return "<"+tag+href+" class='week "+st[0]+"'>"+
       "<span class='weekIcon'>"+icon(st[2])+"</span>"+
       "<b>الأسبوع "+n+"</b>"+
@@ -234,10 +250,10 @@ function render(){
   }).join("");
 
   var actionPrimary=course.completedProgram
-    ? "<a class='actionCard primary completeAction' href='program.html?demo=1&country="+country+"&start=1'><span class='actionIcon'>🏆</span><span class='actionCopy'><b>عرض إنجازك النهائي</b><small>لقد أنهيت البرنامج بالكامل — افتح شاشة الفوز والإنهاء.</small></span></a>"
+    ? "<a class='actionCard primary completeAction' href='program.html?"+demoPrefix+"country="+country+"&subject=sources&start=1'><span class='actionIcon'>🏆</span><span class='actionCopy'><b>عرض إنجازك النهائي</b><small>لقد أنهيت البرنامج بالكامل — افتح شاشة الفوز والإنهاء.</small></span></a>"
     : !result
-      ? "<a class='actionCard primary' href='showcase.html?country="+country+"'><span class='actionIcon'>"+icon("test")+"</span><span class='actionCopy'><b>ابدأ التقييم التشخيصي</b><small>يفتح الاختبار مباشرة بدل الرجوع للصفحة الرئيسية.</small></span></a>"
-      : "<a class='actionCard primary' href='program.html?demo=1&country="+country+"&start=1'><span class='actionIcon'>"+icon("play")+"</span><span class='actionCopy'><b>أكمل جلسة اليوم</b><small>يفتح التدريب الفعلي مباشرة.</small></span></a>";
+      ? "<a class='actionCard primary' href='showcase.html?country="+country+"&subject=sources'><span class='actionIcon'>"+icon("test")+"</span><span class='actionCopy'><b>ابدأ التقييم التشخيصي</b><small>يفتح الاختبار مباشرة بدل الرجوع للصفحة الرئيسية.</small></span></a>"
+      : "<a class='actionCard primary' href='program.html?"+demoPrefix+"country="+country+"&subject=sources&start=1'><span class='actionIcon'>"+icon("play")+"</span><span class='actionCopy'><b>أكمل جلسة اليوم</b><small>يفتح التدريب الفعلي مباشرة.</small></span></a>";
 
   var learningProfile=result
     ? "<section class='resultCard'>"+
@@ -297,6 +313,16 @@ function render(){
 async function boot(){
   if(session.cloud&&window.LEX_CLOUD&&LEX_CLOUD.isConfigured&&LEX_CLOUD.isConfigured()){
     try{
+      var cloudProfile=await LEX_CLOUD.profile();
+      if(cloudProfile){
+        student.name=cloudProfile.display_name||student.name;
+        student.username=cloudProfile.username||student.username;
+        student.university=cloudProfile.university||student.university;
+        student.year=cloudProfile.year_label||student.year;
+        student.country=cloudProfile.country_code||student.country||"qa";
+        student.mustChangePassword=!!cloudProfile.must_change_password;
+        saveStudentPatch({name:student.name,username:student.username,university:student.university,year:student.year,country:student.country,mustChangePassword:student.mustChangePassword});
+      }
       country=student.country||session.country||"qa";
       PROFILE_KEY="lexlearn_v9_profile_"+student.id;
       COURSE_KEY="lexlearn_course_v1_"+country+"_sources_"+student.id;
