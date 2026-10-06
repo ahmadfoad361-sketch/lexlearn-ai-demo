@@ -597,6 +597,61 @@ function freeRubric(answer,t){
   var score=Math.round(hits/groups.length*100);
   return {score:score,hits:hits,total:groups.length,pass:score>=60};
 }
+function pct(v){return Math.max(0,Math.min(100,Math.round(Number(v)||0)));}
+function groupCoverage(n,groups){
+  groups=groups||[];
+  if(!groups.length)return null;
+  var hits=groups.filter(function(g){return (g||[]).some(function(k){return n.indexOf(normText(k))>=0;});}).length;
+  return Math.round(hits/groups.length*100);
+}
+function essayAnalysis(answer,t){
+  var n=normText(answer),words=n?n.split(" ").filter(Boolean):[],raw=String(answer||"");
+  var sentences=raw.split(/[.!؟?\n]+/).map(function(x){return x.trim();}).filter(Boolean);
+  var keys=t.essayKeys||{},recallGroups=keys.recall||[];
+  var precisionGroups=keys.legal_precision||[];
+  var recall=groupCoverage(n,recallGroups);
+  if(recall==null)recall=Math.min(100,35+words.length*2);
+  var why=["لان","لأن","بسبب","حيث","ذلك ان","ذلك أن","لذلك","ومن ثم","مما يعني","ولهذا"];
+  var whyHits=why.filter(function(k){return n.indexOf(normText(k))>=0;}).length;
+  var understanding=pct(25+Math.min(45,whyHits*18)+Math.min(30,groupCoverage(n,recallGroups)||0)*.3);
+  var appMarkers=["بما ان","بما أن","في الواقعه","في الواقعة","على الواقعه","على الواقعة","وبتطبيق","تطبيقا","ينطبق","يترتب"];
+  var appHits=appMarkers.filter(function(k){return n.indexOf(normText(k))>=0;}).length;
+  var factTerms=["محظور","ضرر","اخلال","إخلال","وعد","جائزه","جائزة","اثرى","أثرى","دفع","حراسه","حراسة"];
+  var factHits=factTerms.filter(function(k){return n.indexOf(normText(k))>=0;}).length;
+  var application=pct(20+Math.min(45,appHits*18)+Math.min(35,factHits*9));
+  var legalPrecision=groupCoverage(n,precisionGroups);
+  if(legalPrecision==null){
+    var legalTerms=["عقد","التزام","مصدر","قاعد","شرط","عنصر","تكييف","مسؤوليه","مسؤولية","محل","سبب"];
+    var legalHits=legalTerms.filter(function(k){return n.indexOf(normText(k))>=0;}).length;
+    legalPrecision=pct(25+legalHits*9);
+  }
+  var structure=["المساله","المسألة","القاعده","القاعدة","التطبيق","النتيجه","النتيجة"];
+  var structureHits=structure.filter(function(k){return n.indexOf(normText(k))>=0;}).length;
+  var organization=pct(20+Math.min(45,structureHits*14)+Math.min(35,Math.max(0,sentences.length-2)*7));
+  var avgSentence=sentences.length?words.length/sentences.length:words.length;
+  var clarity=pct(avgSentence<=28?75+(words.length>=25?15:0):Math.max(35,85-(avgSentence-28)*2));
+  var exam=pct(organization*.7+clarity*.3);
+  var axes={recall:pct(recall),understanding:understanding,application:application,legal_precision:pct(legalPrecision),exam:exam};
+  var weights={recall:.18,understanding:.24,application:.28,legal_precision:.12,exam:.18};
+  if(t.dimension&&weights[t.dimension]!=null)weights[t.dimension]+=.12;
+  var totalWeight=Object.keys(weights).reduce(function(s,k){return s+weights[k];},0);
+  var overall=Math.round(Object.keys(weights).reduce(function(s,k){return s+axes[k]*weights[k];},0)/totalWeight);
+  var weakest=Object.keys(axes).sort(function(a,b){return axes[a]-axes[b];})[0];
+  var style=organization<55?"الإجابة تحتاج ترتيبًا أوضح بين المسألة والقاعدة والتطبيق والنتيجة":clarity<55?"الجمل طويلة أو غير مفصولة بما يكفي":"أسلوب الإجابة منظم وواضح نسبيًا";
+  var noteMap={
+    recall:"الاسترجاع القانوني ناقص؛ أعد بناء القاعدة من مفاتيح قصيرة قبل التطبيق.",
+    understanding:"الإجابة تذكر عناصر أكثر مما تشرح لماذا تؤثر في الحكم.",
+    application:"القاعدة موجودة لكن الربط بالواقعة يحتاج أن يكون أوضح.",
+    legal_precision:"استخدم مصطلحات قانونية أدق وحدد العنصر الذي يغيّر التكييف.",
+    exam:"رتّب الإجابة في خطوات واضحة بدل الوصول السريع إلى النتيجة."
+  };
+  return {overall:overall,axes:axes,weakest:weakest,style:style,note:noteMap[weakest],words:words.length,sentences:sentences.length,organization:organization,clarity:clarity};
+}
+function essayMini(profile){
+  if(!profile||!profile.axes)return "";
+  var a=profile.axes;
+  return '<div class="essayAnalysis"><div><span>الاسترجاع</span><b>'+a.recall+'%</b></div><div><span>الفهم</span><b>'+a.understanding+'%</b></div><div><span>التطبيق</span><b>'+a.application+'%</b></div><div><span>تنظيم الإجابة</span><b>'+a.exam+'%</b></div><p>'+esc(profile.style)+' — '+esc(profile.note)+'</p></div>';
+}
 function taskStatusBox(correct,label){
   return '<div class="answerStatus '+(correct?"correct":"wrong")+'"><span class="answerStatusIcon">'+ico(correct?"check":"repeat")+'</span><div><b>'+(correct?"إجابتك صحيحة":"إجابتك تحتاج تعديل")+'</b><small>'+esc(label||"راجع السبب ثم انتقل للمهمة التالية.")+'</small></div></div>';
 }
