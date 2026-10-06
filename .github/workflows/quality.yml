@@ -40,3 +40,5 @@ jobs:
         run: node tests/adaptive-engine.test.js
       - name: Production boundary tests
         run: node tests/production-boundaries.test.js
+      - name: Build public artifact
+        run: node scripts/build-public.js
