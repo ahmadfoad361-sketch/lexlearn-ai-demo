@@ -29,6 +29,14 @@ jobs:
           node --check assets/v9-law.js
           node --check assets/showcase.js
           node --check assets/program.js
+          node --check assets/cloud-data.js
+          node --check assets/student-login.js
+          node --check assets/admin-login-v2.js
+          node --check assets/student.js
+          node --check assets/admin-entry.js
+          node --check assets/admin-cloud.js
           node --check assets/pilot0.js
       - name: Adaptive engine tests
         run: node tests/adaptive-engine.test.js
+      - name: Production boundary tests
+        run: node tests/production-boundaries.test.js
