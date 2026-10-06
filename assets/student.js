@@ -70,9 +70,14 @@ if(!session){
 
 var student=students.find(function(x){return x.id===session.studentId;});
 if(!student){
-  session={studentId:seeded.demo.id,name:seeded.demo.name,username:seeded.demo.username,at:Date.now()};
-  write(SESSION_KEY,session);
-  student=seeded.demo;
+  if(session.cloud){
+    student={id:session.studentId,name:session.name||session.username,username:session.username,cohort:"",university:"Qatar University",year:"السنة الأولى",subject:"sources",country:session.country||"qa",active:true,cloud:true,createdAt:Date.now()};
+    students.unshift(student);write(STUDENTS_KEY,students);
+  }else{
+    session={studentId:seeded.demo.id,name:seeded.demo.name,username:seeded.demo.username,at:Date.now()};
+    write(SESSION_KEY,session);
+    student=seeded.demo;
+  }
 }
 
 var country=student.country||session.country||null;
@@ -289,7 +294,21 @@ function render(){
   };
 }
 
-render();
+async function boot(){
+  if(session.cloud&&window.LEX_CLOUD&&LEX_CLOUD.isConfigured&&LEX_CLOUD.isConfigured()){
+    try{
+      country=student.country||session.country||"qa";
+      PROFILE_KEY="lexlearn_v9_profile_"+student.id;
+      COURSE_KEY="lexlearn_course_v1_"+country+"_sources_"+student.id;
+      var ps=await LEX_CLOUD.loadSnapshot({courseId:country+"-sources",snapshotType:"profile"});
+      if(ps&&ps.state){profile=ps.state;write(PROFILE_KEY,profile);result=profile.results&&profile.results[country+"-sources"]||null;}
+      var cs=await LEX_CLOUD.loadSnapshot({courseId:country+"-sources",snapshotType:"course"});
+      if(cs&&cs.state){course=cs.state;write(COURSE_KEY,course);}
+    }catch(e){}
+  }
+  render();
+}
+boot();
 window.addEventListener("pageshow",function(e){
   if(e.persisted){location.reload();}
 });
