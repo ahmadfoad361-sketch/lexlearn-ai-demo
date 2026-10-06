@@ -16,3 +16,7 @@
 @media(max-width:720px){.wrap{padding:15px 10px 50px}.topActions{display:none}.nav button span{display:none}.nav button{padding:8px}.hero{grid-template-columns:1fr;padding:22px}.hero h1{font-size:30px}.kpis{grid-template-columns:1fr 1fr}.twoCols{grid-template-columns:1fr}.metricGrid,.evidenceGrid{grid-template-columns:1fr 1fr}.weekMini{grid-template-columns:repeat(3,1fr)}.adminActions{grid-template-columns:1fr}.pageTitle{align-items:flex-start;flex-direction:column}.pageActions{width:100%}.pageActions .btn{flex:1}.toolbar{grid-template-columns:1fr}.tr{grid-template-columns:1.6fr .8fr .7fr}.tr span:nth-child(2),.tr span:nth-child(4){display:none}.cohortGrid{grid-template-columns:1fr}.formGrid{grid-template-columns:1fr}.modal{padding:22px 16px}}
 @media print{.top,.studentAside,.adminActions,.pageActions,.btn{display:none!important}.wrap{max-width:none;padding:0}.dashboardGrid{display:block}.panel{box-shadow:none;break-inside:avoid}}
 .formGrid.one{grid-template-columns:1fr}
+
+/* Approved LexLearn identity mark */
+.mark{background:transparent!important;box-shadow:none!important;border-radius:0!important;padding:0!important;overflow:visible!important}
+.mark img{display:block;width:100%;height:100%;object-fit:contain}
