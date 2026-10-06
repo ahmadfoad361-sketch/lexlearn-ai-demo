@@ -35,7 +35,9 @@ async function login(u,p){
 document.getElementById("studentLogin").addEventListener("submit",function(e){
   e.preventDefault();login(document.getElementById("studentUser").value.trim(),document.getElementById("studentPassword").value);
 });
-var demoButton=document.getElementById("demoStudent");\nif(demoButton&&window.LEX_CLOUD&&LEX_CLOUD.isConfigured&&LEX_CLOUD.isConfigured())demoButton.style.display="none";\ndemoButton.onclick=function(){
+var demoButton=document.getElementById("demoStudent");
+if(demoButton&&window.LEX_CLOUD&&LEX_CLOUD.isConfigured&&LEX_CLOUD.isConfigured())demoButton.style.display="none";
+demoButton.onclick=function(){
   if(window.LEX_CLOUD&&LEX_CLOUD.isConfigured&&LEX_CLOUD.isConfigured()){
     err.textContent="الحساب التجريبي المحلي غير متاح في وضع الإنتاج.";err.style.display="block";return;
   }
