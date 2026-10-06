@@ -43,6 +43,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Build public artifact
+        run: node scripts/build-public.js
       - name: Configure Pages
         uses: actions/configure-pages@v5
         with:
@@ -50,7 +52,7 @@ jobs:
       - name: Upload site
         uses: actions/upload-pages-artifact@v3
         with:
-          path: "."
+          path: "dist-site"
       - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v4
