@@ -129,9 +129,14 @@ function result(){
     try{p=JSON.parse(localStorage.getItem(pk)||"{\"results\":{}}")||{results:{}};}catch(e){}
     p.results=p.results||{};
     var gap=recall-understanding,profileType=gap>=12?"recall-led":gap<=-12?"understanding-led":"balanced";
-    p.results[COUNTRY+"-sources"]={metrics:{recall:recall,understanding:understanding,application:application,retention:null,exam:null},profileType:profileType,updatedAt:Date.now()};
+    p.results[COUNTRY+"-sources"]={metrics:{recall:recall,understanding:understanding,application:application,legal_precision:null,retention:null,exam:null},profileType:profileType,updatedAt:Date.now()};
     localStorage.setItem(pk,JSON.stringify(p));
+    if(studentSession.cloud&&window.LEX_CLOUD&&LEX_CLOUD.isConfigured&&LEX_CLOUD.isConfigured()){
+      LEX_CLOUD.saveSnapshot({courseId:COUNTRY+"-sources",snapshotType:"profile",state:p}).catch(function(){});
+      LEX_CLOUD.logEvent("DIAGNOSTIC_COMPLETED",{course_id:COUNTRY+"-sources",recall:recall,understanding:understanding,application:application,profile_type:profileType}).catch(function(){});
+    }
   }
+  var trainingQuery=(studentSession&&studentSession.cloud?"":"demo=1&")+"country="+COUNTRY+"&start=1";
   stage(97,'<div class="stageCard">'+
     '<span class="demoEyebrow">النتيجة</span>'+
     '<h2>نتيجتك في هذه المحاولة</h2>'+
@@ -139,7 +144,7 @@ function result(){
       metric("الاسترجاع",recall)+metric("الفهم",understanding)+metric("التطبيق",application)+
     '</div>'+
     '<div class="planCard nextStep"><h3>الخطوة التالية</h3><p>'+esc(rec)+'</p></div>'+
-    '<div class="demoActions"><a class="btn primary" style="text-decoration:none" href="program.html?demo=1&country='+COUNTRY+'&start=1">ابدأ التدريب المقترح فعليًا</a><button class="btn secondary" id="toExam">سؤال امتحاني</button><button class="btn secondary" id="again">إعادة الاختبار</button></div>'+
+    '<div class="demoActions"><a class="btn primary" style="text-decoration:none" href="program.html?'+trainingQuery+'">ابدأ التدريب المقترح فعليًا</a><button class="btn secondary" id="toExam">سؤال امتحاني</button><button class="btn secondary" id="again">إعادة الاختبار</button></div>'+
   '</div>');
   document.getElementById("toExam").onclick=function(){state.view="exam";render();};
   document.getElementById("again").onclick=function(){state.view="hero";render();};
