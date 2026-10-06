@@ -31,6 +31,8 @@ jobs:
           node --check assets/app.js
       - name: Adaptive engine tests
         run: node tests/adaptive-engine.test.js
+      - name: Production boundary tests
+        run: node tests/production-boundaries.test.js
 
   deploy:
     needs: test
