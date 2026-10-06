@@ -137,7 +137,7 @@ function words(text){return norm(text).split(" ").filter(Boolean).length;}
 function readingSeconds(text){return clamp(Math.round((words(text)/145)*60*1.35),18,75);}
 function startDiagnostic(){
   var a=subject().diagnostic.anchor;
-  state.diagnostic={stage:"anchorRead",memoryIndex:0,delayedIndex:0,recallMCQ:null,recallFree:"",understanding:null,application:null,memoryReadTimes:[],delayedCorrect:0,distractorIndex:0,startedAt:Date.now(),anchorReadSeconds:null,retentionMode:false};
+  state.diagnostic={stage:"anchorRead",memoryIndex:0,delayedIndex:0,recallMCQ:null,recallFree:"",understanding:null,application:null,examAnswer:"",examScore:null,memoryReadTimes:[],delayedCorrect:0,distractorIndex:0,startedAt:Date.now(),anchorReadSeconds:null,retentionMode:false};
   state.view="diagnostic";render();
 }
 function startRetention(){
@@ -145,7 +145,7 @@ function startRetention(){
   state.view="diagnostic";render();
 }
 function diagnosticProgress(d){
-  var order={anchorRead:8,recallMCQ:16,recallFree:24,understand:34,apply:44,memoryRead:55,distractor:68,delayedRecall:82,finish:100};
+  var order={anchorRead:7,recallMCQ:14,recallFree:21,understand:30,apply:39,memoryRead:49,distractor:63,delayedRecall:76,exam:92,finish:100};
   if(d.stage==="memoryRead")return 45+Math.round((d.memoryIndex/5)*18);
   if(d.stage==="distractor")return 64+Math.round((d.distractorIndex/3)*10);
   if(d.stage==="delayedRecall")return 75+Math.round((d.delayedIndex/5)*22);
@@ -171,6 +171,7 @@ function renderDiagnosticStage(){
   if(d.stage==="memoryRead")return renderMemoryRead();
   if(d.stage==="distractor")return renderDistractor();
   if(d.stage==="delayedRecall")return renderDelayedRecall();
+  if(d.stage==="exam")return renderExamDiagnostic();
 }
 function renderReading(text,title,source,done){
   var seconds=readingSeconds(text),left=seconds,start=Date.now();
@@ -227,10 +228,30 @@ function delayedOptions(index){
 }
 function renderDelayedRecall(){
   var d=state.diagnostic,set=subject().diagnostic.memorySet;
-  if(d.delayedIndex>=set.length)return finishDiagnostic();
+  if(d.delayedIndex>=set.length){if(d.retentionMode)return finishDiagnostic();d.stage="exam";return renderDiagnostic();}
   var item=set[d.delayedIndex];
   var q='أي عبارة مفتاحية كانت مرتبطة بـ «'+item.label+'»؟';
   renderQuestion(d.retentionMode?"مراجعة لاحقة":"السؤال التالي",q,delayedOptions(d.delayedIndex),function(score){if(score)d.delayedCorrect++;d.delayedIndex++;renderDiagnostic();});
+}
+function examAnswerScore(text){
+  text=String(text||"").trim();if(!text)return 0;
+  var n=norm(text),tokens=[];
+  (subject().diagnostic.memorySet||[]).forEach(function(x){
+    norm((x.label||"")+" "+(x.key||"")).split(" ").forEach(function(w){if(w.length>3&&STOP.indexOf(w)<0&&tokens.indexOf(w)<0)tokens.push(w);});
+  });
+  var hits=tokens.filter(function(t){return n.indexOf(t)>=0;}).length;
+  var structure=["لان","لأن","وفقا","وفق","بما ان","لذلك","وبالتالي","ومن ثم","القاعده","النتيجه"].some(function(k){return n.indexOf(norm(k))>=0;});
+  var wc=words(text),score=Math.min(50,hits*12)+(structure?25:0)+(wc>=22?25:wc>=12?15:wc>=6?8:0);
+  return clamp(Math.round(score),0,100);
+}
+function renderExamDiagnostic(){
+  var d=state.diagnostic,qs=(subject().exam&&subject().exam.questions)||[],q=qs.length?qs[0].q:"اكتب إجابة قانونية قصيرة: حدّد المسألة والقاعدة ثم طبّقها واكتب النتيجة.";
+  setStageBody('<section class="focus-panel" style="margin-top:18px"><span class="eyebrow">أداء امتحاني قصير</span><h2>'+esc(q)+'</h2><p class="small">اكتب إجابة قصيرة بطريقتك. المطلوب قياس البناء والتعبير القانوني، وليس حفظ نموذج حرفي.</p><textarea id="examDiagnosticAnswer" dir="rtl" style="width:100%;min-height:150px;border:1px solid var(--line);border-radius:16px;padding:14px;font:inherit;text-align:right"></textarea><div class="timer-row"><button class="btn primary" id="finishExamDiagnostic">حلّل وأظهر النتيجة</button></div></section>');
+  document.getElementById("finishExamDiagnostic").onclick=function(){
+    d.examAnswer=document.getElementById("examDiagnosticAnswer").value.trim();
+    d.examScore=examAnswerScore(d.examAnswer);
+    finishDiagnostic();
+  };
 }
 function freeRecallScore(text){
   if(!text)return 0;var n=norm(text),terms=keyTermsFromCorrect(),hits=terms.filter(function(t){return n.indexOf(t)>=0;}).length;
@@ -246,17 +267,23 @@ function finishDiagnostic(){
   var precision=freeRecallScore(d.recallFree);
   var recall=Math.round(((d.recallMCQ||0)+precision)/2);
   var retention=Math.round(d.delayedCorrect/5*100);
-  var metrics={recall:recall,understanding:d.understanding||0,application:d.application||0,legal_precision:precision,retention:retention,exam:null};
+  var metrics={recall:recall,understanding:d.understanding||0,application:d.application||0,legal_precision:precision,retention:retention,exam:d.examScore==null?0:d.examScore};
   var adaptiveModel=window.LEX_ENGINE?LEX_ENGINE.learnerModel({metrics:metrics,events:[
     {dimension:"recall",score:recall/100,difficulty:2,ts:Date.now()},
     {dimension:"understanding",score:(d.understanding||0)/100,difficulty:2,ts:Date.now()},
     {dimension:"application",score:(d.application||0)/100,difficulty:3,ts:Date.now()},
     {dimension:"legal_precision",score:precision/100,difficulty:2,ts:Date.now()},
-    {dimension:"retention",score:retention/100,difficulty:2,delayed:true,ts:Date.now()}
+    {dimension:"retention",score:retention/100,difficulty:2,delayed:true,ts:Date.now()},
+    {dimension:"exam",score:metrics.exam/100,difficulty:3,ts:Date.now()}
   ]}):null;
   var res={countryId:state.countryId,subjectId:state.subjectId,metrics:metrics,anchorReadSeconds:d.anchorReadSeconds,memoryReadTimes:d.memoryReadTimes,createdAt:Date.now(),profileType:profileType(metrics),adaptiveModel:adaptiveModel,analysisVersion:"adaptive-v9"};
   state.profile.results[key]=res;
   state.profile.retention[key]={dueAt:Date.now()+24*60*60*1000,completed:false};
+  if(window.LEX_CLOUD&&LEX_CLOUD.isConfigured&&LEX_CLOUD.isConfigured()&&STUDENT_SESSION&&STUDENT_SESSION.cloud){
+    [["recall",recall,2],["understanding",metrics.understanding,2],["application",metrics.application,3],["legal_precision",precision,2],["retention",retention,2],["exam",metrics.exam,3]].forEach(function(x){
+      LEX_CLOUD.recordAttempt({course_id:state.countryId==="qa"?"qa-qu-lawc213":"eg-civil-sources",item_id:null,dimension:x[0],score:x[1]/100,difficulty:x[2],grading_method:"diagnostic",answer_text:x[0]==="exam"?d.examAnswer:null}).catch(function(){});
+    });
+  }
   saveProfile();state.view="results";render();
 }
 function profileType(m){
