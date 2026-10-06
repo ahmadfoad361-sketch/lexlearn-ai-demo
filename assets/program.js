@@ -446,18 +446,30 @@ function train(){
     (t.showText?'<div class="legalBox"><small>النص القانوني</small><div>'+esc(TEXT64)+'</div></div>':'')+
     '<p>'+esc(t.q)+'</p>'+input+'<div id="feed"></div></div></section>');
   if(t.mode==="free"){
-    document.getElementById("checkFree").onclick=function(){
+    document.getElementById("checkFree").onclick=async function(){
       var answer=(document.getElementById("freeAnswer").value||"").trim();
       if(!answer){document.getElementById("feed").innerHTML='<div class="notice">اكتب محاولة قصيرة أولًا؛ الهدف أن نحلل بناء إجابتك، لا أن نريك النموذج مباشرة.</div>';return;}
-      var r=freeRubric(answer,t);
+      var r=freeRubric(answer,t),semantic=null,merged=null,itemId=taskItemId(t);
       document.getElementById("freeAnswer").disabled=true;document.getElementById("checkFree").disabled=true;
+      document.getElementById("feed").innerHTML='<div class="notice">يتم تحليل الإجابة وفق عناصر المعيار'+(itemId&&window.LEX_CLOUD&&LEX_CLOUD.isConfigured&&LEX_CLOUD.isConfigured()?" والمصدر القانوني المعتمد…":"…")+'</div>';
+      if(itemId&&window.LEX_CLOUD&&LEX_CLOUD.isConfigured&&LEX_CLOUD.isConfigured()&&STUDENT_SESSION&&STUDENT_SESSION.cloud){
+        try{semantic=await LEX_CLOUD.gradeAnswer({course_id:COURSE_DB_ID,item_id:itemId,answer:answer,language:"ar"});}catch(e){semantic=null;}
+      }
+      if(window.LEX_ENGINE&&semantic)merged=LEX_ENGINE.mergeSemanticGrade({score:r.score/100,matchedConcepts:[]},semantic);
+      var finalScore=merged&&merged.score!=null?Math.round(merged.score*100):r.score;
+      var pass=finalScore>=60;
+      var method=merged&&!merged.needsHumanReview?"grounded_semantic":"concept_rubric_v2";
+      var semanticNote=merged&&!merged.needsHumanReview?
+        '<div class="goodbox"><b>تحليل دلالي موثّق</b><div>'+esc(merged.feedback||"تم تقييم المعنى باستخدام المعيار والمصادر المعتمدة فقط.")+'</div><small>الثقة: '+Math.round((merged.confidence||0)*100)+'%</small></div>':
+        (itemId&&semantic&&semantic.needs_human_review?'<div class="notice">التحليل الدلالي لم يصل لثقة كافية؛ استخدم النظام Rubric البنائي ولم يخمّن.</div>':'');
       document.getElementById("feed").innerHTML=
-        taskStatusBox(r.pass,r.pass?"استوفيت "+r.hits+" من "+r.total+" عناصر مطلوبة.":"استوفيت "+r.hits+" من "+r.total+" عناصر. راجع العنصر الناقص.")+
-        '<div class="rubricMini"><b>تحليل سريع</b><span>'+r.score+'%</span><small>هذا تقييم بنائي داخل الـPrototype يعتمد على Rubric وكلمات مفتاحية؛ النسخة الإنتاجية ستستخدم تحليلًا دلاليًا أكثر دقة.</small></div>'+
+        taskStatusBox(pass,pass?"حققّت العناصر المطلوبة في هذه المحاولة.":"هناك عنصر أو أكثر يحتاج إلى استكمال.")+
+        '<div class="rubricMini"><b>التحليل البنائي</b><span>'+finalScore+'%</span><small>'+(method==="grounded_semantic"?"تقييم دلالي مقيّد بالمصادر المعتمدة.":"Rubric بنائي احتياطي حتى تتوافر مراجعة دلالية موثوقة.")+'</small></div>'+
+        semanticNote+
         '<div class="modelAnswer"><b>نموذج للمقارنة</b><p>'+esc(t.model)+'</p></div><div class="feedback">'+esc(t.why)+'</div>'+
         (t.memory?'<div class="memoryAnchor"><b>مرساة الذاكرة</b><span>'+esc(t.memory)+'</span></div>':'')+
         '<div class="choiceRow"><button class="primary" id="nextFree">'+(state.task<q.length-1?"التالي":"إنهاء الجلسة")+'</button></div>';
-      document.getElementById("nextFree").onclick=function(){completeTask(t,r.pass,q,{rubricScore:r.score,answer:answer});};
+      document.getElementById("nextFree").onclick=function(){completeTask(t,pass,q,{rubricScore:r.score,semanticScore:merged&&merged.score!=null?merged.score:null,gradingMethod:method,answer:answer,needsHumanReview:!!(merged&&merged.needsHumanReview)});};
     };
   }else{
     document.querySelectorAll("[data-orig]").forEach(function(b){b.onclick=function(){
