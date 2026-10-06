@@ -24,7 +24,15 @@ form.addEventListener("submit",async function(e){
     if(r.error)throw r.error;
     show("تم تغيير كلمة المرور بنجاح. سيتم تحويلك إلى صفحة دخول المدير.",true);
     setTimeout(function(){location.href="admin-login.html";},1400);
-  }catch(err){show("تعذر تغيير كلمة المرور. اطلب رابط استعادة جديدًا.",false);btn.disabled=false;}
+  }catch(err){
+    var m=String(err&&err.message||"");
+    if((err&&err.code==="same_password")||/different from the old password|same password/i.test(m)){
+      show("كلمة المرور الجديدة هي نفسها كلمة المرور الحالية. استخدم كلمة مختلفة، أو ارجع وسجّل الدخول بهذه الكلمة.",false);
+    }else{
+      show("تعذر تغيير كلمة المرور. اطلب رابط استعادة جديدًا.",false);
+    }
+    btn.disabled=false;
+  }
 });
 ready();
 })();
