@@ -6,7 +6,7 @@ async function login(email,password){
   err.style.display="none";
   if(window.LEX_CLOUD&&LEX_CLOUD.isConfigured&&LEX_CLOUD.isConfigured()){
     try{
-      var cloud=await LEX_CLOUD.signInEmail(email,password),pr=cloud.profile;
+      var cloud=await LEX_CLOUD.signInAdmin(email,password),pr=cloud.profile;
       localStorage.setItem(SESSION_KEY,JSON.stringify({
         adminId:pr.id,name:pr.display_name||pr.username,role:pr.role,cloud:true,at:Date.now()
       }));
@@ -30,7 +30,7 @@ form.addEventListener("submit",function(e){
   login(document.getElementById("adminEmail").value.trim(),document.getElementById("adminPassword").value);
 });
 var demo=document.getElementById("demoAdmin");
-if(demo)demo.onclick=function(){
+if(demo&&window.LEX_CLOUD&&LEX_CLOUD.isConfigured&&LEX_CLOUD.isConfigured())demo.style.display="none";\nif(demo)demo.onclick=function(){
   if(window.LEX_CLOUD&&LEX_CLOUD.isConfigured&&LEX_CLOUD.isConfigured()){
     err.textContent="حساب الإدارة التجريبي المحلي غير متاح في وضع الإنتاج.";
   }else{
