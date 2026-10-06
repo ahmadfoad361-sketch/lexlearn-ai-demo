@@ -7,6 +7,7 @@ var AUTO_START=qs.get("start")==="1";
 var STUDENT_SESSION=(function(){try{return JSON.parse(localStorage.getItem("lexlearn_student_session"))||null;}catch(e){return null;}})();
 var COUNTRY=String(qs.get("country")||(STUDENT_SESSION&&STUDENT_SESSION.country)||"qa").toLowerCase();
 var SUBJECT=qs.get("subject")||"sources";
+var COURSE_DB_ID=COUNTRY==="qa"?"qa-qu-lawc213":"eg-civil-sources";
 var COUNTRY_LABELS={qa:"قطر",eg:"مصر",sa:"السعودية",ae:"الإمارات",other:"دولة أخرى"};
 function countryLabel(){return COUNTRY_LABELS[COUNTRY]||"الدولة المختارة";}
 var STUDENT_SCOPE=STUDENT_SESSION&&STUDENT_SESSION.studentId?("_"+STUDENT_SESSION.studentId):"";
@@ -226,7 +227,7 @@ function loadCourse(){
     return c;
   }catch(e){return defaultCourse();}
 }
-var state={view:"home",task:0,answers:[],assessmentAnswers:[],queue:[],course:loadCourse(),diag:diagnostic(),repairMode:false,weekPreview:null};
+var state={view:"home",task:0,answers:[],assessmentAnswers:[],queue:[],course:loadCourse(),diag:diagnostic(),repairMode:false,weekPreview:null,taskStartedAt:null};
 function save(){
   localStorage.setItem(COURSE_KEY,JSON.stringify(state.course));
   if(window.LEX_ENGINE){
@@ -328,7 +329,7 @@ function home(){
 }
 function kindLabel(k){return k==="assessment"?"تقييم مستقل":k==="review"?"مراجعة متباعدة":k==="adaptive"?"تدريب متكيف":"تدريب أساسي";}
 function priorityText(m){
-  var list=[["الاسترجاع",m.recall||0],["الفهم",m.understanding||0],["التطبيق",m.application||0],["الاحتفاظ",m.retention||0],["الصياغة",m.exam||0]].sort(function(a,b){return a[1]-b[1];});
+  var list=[["الاسترجاع",m.recall],["الفهم",m.understanding],["التطبيق",m.application],["الدقة القانونية",m.legal_precision],["الاحتفاظ",m.retention],["الأداء الامتحاني",m.exam]].filter(function(x){return x[1]!=null;}).sort(function(a,b){return a[1]-b[1];});
   return "الأولوية الحالية: "+list[0][0]+". الجلسات القادمة ستزيد تدريب هذا الجانب بدون إعادة ما أتقنته بالكامل.";
 }
 function bridgeCard(m){
@@ -435,6 +436,7 @@ function orderedOptions(t,salt){
 }
 function train(){
   var q=state.queue.length?state.queue:buildTrainingQueue(),t=q[state.task%q.length],meta=sessionMeta(state.course.session);
+  state.taskStartedAt=Date.now();
   var ordered=t.mode==="free"?[]:orderedOptions(t,0);
   var input=t.mode==="free"?
     '<textarea class="textarea" id="freeAnswer" placeholder="اكتب إجابتك بطريقتك..."></textarea><div class="choiceRow"><button class="primary" id="checkFree">حلّل إجابتي</button></div>':
@@ -509,7 +511,8 @@ function buildRepairQueue(){
   return [targeted,pool[0],pool[1],learningBridge().primary,pool[2]].filter(Boolean);
 }
 function finishTraining(){
-  state.course.history.push({session:state.course.session,type:state.repairMode?"repair":"training",answers:state.answers,ts:Date.now()});
+  var model=recomputeAdaptiveModel();
+  state.course.history.push({session:state.course.session,type:state.repairMode?"repair":"training_summary",answers:state.answers,adaptiveModel:model,ts:Date.now()});
   if(state.repairMode){
     state.repairMode=false;state.assessmentAnswers=[];state.task=0;state.view="repairAssessment";save();render();return;
   }
