@@ -1,5 +1,13 @@
 import { corsHeaders,json,requireStaff } from "../_shared/auth.ts";
 
+function temporaryPassword(){
+  const bytes=crypto.getRandomValues(new Uint8Array(12));
+  const alphabet="ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789";
+  let out="Lx!";
+  for(const b of bytes)out+=alphabet[b%alphabet.length];
+  return out+"9";
+}
+
 Deno.serve(async(req)=>{
   if(req.method==="OPTIONS")return new Response("ok",{headers:corsHeaders});
   try{
@@ -8,11 +16,11 @@ Deno.serve(async(req)=>{
     if(!target)return json({error:"user_id_required"},400);
     const action=String(b.action||"");
     if(action==="reset_password"){
-      const p=String(b.password||"");
+      const p=String(b.password||temporaryPassword());
       if(p.length<10)return json({error:"password_too_short"},400);
       const r=await admin.auth.admin.updateUserById(target,{password:p,user_metadata:{must_change_password:true}});
       if(r.error)throw r.error;
-      await admin.from("profiles").update({must_change_password:true}).eq("id",target);
+      await admin.from("profiles").update({must_change_password:true}).eq("id",target);\n      b.generated_password=p;
     }else if(action==="toggle_active"){
       const active=!!b.active;
       const r=await admin.from("profiles").update({active}).eq("id",target);if(r.error)throw r.error;
@@ -27,7 +35,7 @@ Deno.serve(async(req)=>{
       if(r.error)throw r.error;
     }else return json({error:"unknown_action"},400);
     await admin.from("admin_audit").insert({actor_user_id:user.id,target_user_id:target,action:action.toUpperCase(),details:b.details||{}});
-    return json({ok:true});
+    return json({ok:true,temporary_password:b.generated_password||null});
   }catch(e){
     const m=e instanceof Error?e.message:String(e);
     return json({error:m},m==="UNAUTHORIZED"?401:m==="FORBIDDEN"?403:500);
