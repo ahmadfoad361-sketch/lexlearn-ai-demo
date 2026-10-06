@@ -48,3 +48,13 @@ LexLearn must separate:
 - **Egypt track:** eg-civil-sources
 
 A learner may share the same Qatari Civil Code concepts across Qatar institutions, but institution-specific assessment wording, learning objectives and official materials must remain versioned separately.
+
+
+### Ahmed Bin Mohammed Military College — Law program
+- The current official study-plan page and the 2023 student guide place **2502102 — Sources of Obligations** as a 3-credit course after Principles of Law.
+- The 2023 guide places it in **second year, fall**, so it is useful as a Qatar comparison track but **not** part of the first-year baseline used by LexLearn.
+- Official source:
+  - https://www.abmmc.edu.qa/wp/bachelors-degree-in-law-study-plan/?lang=en
+
+## Baseline decision
+For the first-year Qatar production baseline, LexLearn uses **Qatar University LAWC 213** and **Lusail University LAWC 104**. ABMMC is retained as a later comparative institutional mapping because its current guide places Sources of Obligations in second year.
