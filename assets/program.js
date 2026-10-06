@@ -765,22 +765,39 @@ function finishAssessment(){
   save();state.view=(week===6&&status!=="repair")?"completion":"achievement";render();
 }
 function achievementSkill(name,v,iconName){
-  var label=v==null?"لم يُقَس":v>=80?"قوي":v>=60?"جيد":v>=40?"متوسط":"يحتاج إعادة";
-  return '<div class="achievementSkill"><span>'+ico(iconName)+'</span><div><b>'+name+'</b><small>'+label+(v==null?"":" • "+v+"%")+'</small></div></div>';
+  var label=v==null?"لم يُقَس":v>=80?"قوي":v>=60?"جيد":v>=40?"يحتاج تركيز":"يحتاج تثبيت";
+  var pct=v==null?0:Math.max(0,Math.min(100,Math.round(v)));
+  return '<div class="stageMetricCard"><div class="stageMetricTop"><span class="stageMetricIcon">'+ico(iconName)+'</span><b>'+name+'</b></div><div class="stageMetricValue">'+(v==null?"—":pct+"%")+'</div><div class="stageMetricBar"><i style="width:'+(v==null?4:pct)+'%"></i></div><small>'+label+'</small></div>';
+}
+function averageScores(values){
+  var a=values.filter(function(v){return v!=null&&!isNaN(Number(v));}).map(Number);
+  if(!a.length)return null;
+  return Math.round(a.reduce(function(x,y){return x+y;},0)/a.length);
+}
+function stageAdvice(knowledge,analysis,exam){
+  var items=[["المعرفة القانونية",knowledge],["التحليل والتطبيق",analysis],["الإجابة الامتحانية",exam]].filter(function(x){return x[1]!=null;}).sort(function(a,b){return a[1]-b[1];});
+  if(!items.length)return "ابدأ جلسة التثبيت القصيرة ثم أعد القياس.";
+  if(items[0][0]==="المعرفة القانونية")return "راجع عناصر القاعدة ومصدر الالتزام في صورة نقاط قصيرة قبل إعادة القياس.";
+  if(items[0][0]==="التحليل والتطبيق")return "ركز على الواقعة الحاسمة ثم اربطها بالقاعدة بدل إعادة حفظ النص.";
+  return "استخدم ترتيبًا ثابتًا للإجابة: المسألة ثم القاعدة ثم التطبيق ثم النتيجة.";
 }
 function achievementBoard(){
   var last=state.course.lastAssessment||{},week=last.week||state.course.repairWeek||sessionMeta(state.course.session).week,r=state.course.weekResults[week]||last,status=r.status||"repair",scores=r.skillScores||{};
-  var need=status==="repair",title=need?"المرحلة تحتاج جلسة تثبيت":achievementLabel(status);
-  chrome('<section class="stage"><div class="achievementCard '+(need?"needsRepair":"success")+'"><span class="achievementIcon">'+ico(need?"repeat":"trophy")+'</span><span class="kicker">لوحة إنجاز • الأسبوع '+week+'</span><h2>'+title+'</h2><p>'+(need?"لم نفتح الأسبوع التالي بعد. ستأخذ جلسة دعم قصيرة ثم إعادة قياس مصغرة.":"تم إنهاء هذه المرحلة وفتح المسار التالي.")+'</p>'+
-    '<div class="achievementSkills">'+
-      achievementSkill("القاعدة والدقة",scores.contract,"brain")+
-      achievementSkill("تمييز المصادر",scores.sources,"bulb")+
-      achievementSkill("التطبيق",scores.apply,"scale")+
-      achievementSkill("التقاط الواقعة",scores.spot,"star")+
-      achievementSkill("الإجابة الامتحانية",scores.exam,"pen")+
+  var need=status==="repair",knowledge=averageScores([scores.contract,scores.sources]),analysis=averageScores([scores.apply,scores.spot]),exam=scores.exam;
+  var title=need?"تحتاج تقوية بسيطة قبل الانتقال":"أحسنت، المرحلة مكتملة";
+  var intro=need?"جلسة تثبيت قصيرة ثم إعادة قياس. الهدف تحسين أضعف نقطة قبل فتح المرحلة التالية.":"تم اجتياز المرحلة وفتح المسار التالي.";
+  chrome('<section class="stage"><div class="achievementCard '+(need?"needsRepair":"success")+'">'+
+    '<span class="achievementIcon">'+ico(need?"repeat":"check")+'</span>'+
+    '<span class="kicker">نتيجة الأسبوع '+week+'</span><h2>'+title+'</h2><p>'+intro+'</p>'+
+    '<div class="studentStageInfographic">'+
+      achievementSkill("المعرفة القانونية",knowledge,"brain")+
+      achievementSkill("التحليل والتطبيق",analysis,"scale")+
+      achievementSkill("الإجابة الامتحانية",exam,"pen")+
     '</div>'+
-    '<div class="achievementState '+(need?"need":"ok")+'">'+achievementLabel(status)+' • '+(r.score==null?"—":r.score+"%")+'</div>'+
-    '<div class="choiceRow">'+(need?'<button class="primary" id="startRepair">ابدأ جلسة التثبيت</button><button class="secondary" id="backHome">ارجع للمسار</button>':'<button class="primary" id="backHome">افتح المرحلة التالية</button>')+'</div></div></section>');
+    '<div class="stageTip"><span>'+ico("bulb")+'</span><div><small>نصيحة الآن</small><b>'+esc(stageAdvice(knowledge,analysis,exam))+'</b></div></div>'+
+    '<div class="achievementState '+(need?"need":"ok")+'">'+achievementLabel(status)+(r.score==null?"":" • "+r.score+"%")+'</div>'+
+    '<div class="choiceRow">'+(need?'<button class="primary" id="startRepair">ابدأ جلسة التثبيت</button><button class="secondary" id="backHome">ارجع للمسار</button>':'<button class="primary" id="backHome">افتح المرحلة التالية</button>')+'</div>'+
+  '</div></section>');
   var sr=document.getElementById("startRepair");if(sr)sr.onclick=function(){state.answers=[];state.task=0;state.queue=buildRepairQueue();state.repairMode=true;state.view="train";render();};
   var bh=document.getElementById("backHome");if(bh)bh.onclick=function(){state.view="home";render();};
 }
@@ -825,19 +842,15 @@ function completion(){
   var r=(state.course.weekResults||{})[6]||state.course.lastAssessment||{};
   var score=r.score==null?"—":r.score+"%";
   var date=state.course.completedAt?new Date(state.course.completedAt).toLocaleDateString("ar-EG"):"اليوم";
-  var pieces=["✦","◆","★","✦","●","★","◆","✦","★","●","✦","◆"].map(function(x,i){
-    return '<span class="confetti c'+(i+1)+'">'+x+'</span>';
-  }).join("");
-  chrome('<section class="stage finalStage"><div class="confettiLayer">'+pieces+'</div><div class="finalCard">'+
-    '<div class="finalTrophy">🏆</div><span class="kicker">تم إنجاز البرنامج بالكامل</span>'+
-    '<h1>مبروك! أنهيت تدريب LexLearn 🎉</h1>'+
-    '<p>أكملت المراحل الست ونجحت في التقييم النهائي. تم تسجيل البرنامج كمكتمل لهذا المسار.</p>'+
+  chrome('<section class="stage finalStage"><div class="finalCard professionalFinal">'+
+    '<div class="finalSeal">'+ico("trophy")+'</div><span class="kicker">إتمام البرنامج</span>'+
+    '<h1>أنهيت تدريب LexLearn بنجاح</h1>'+
+    '<p>أكملت المراحل الست واجتزت التقييم النهائي. تم تسجيل المسار كمكتمل.</p>'+
     '<div class="finalStats"><div><span>المراحل</span><b>6 / 6</b></div><div><span>الجلسات</span><b>30 / 30</b></div><div><span>التقييم النهائي</span><b>'+score+'</b></div></div>'+
-    '<div class="finalRibbon">★ إنجاز مكتمل • '+date+' ★</div>'+
+    '<div class="finalRibbon">إنجاز أكاديمي مكتمل • '+date+'</div>'+
     '<div class="finalChecks">'+curriculum.map(function(w){return '<div><span>✓</span><b>الأسبوع '+w.week+'</b><small>'+esc(w.title)+'</small></div>';}).join("")+'</div>'+
-    '<div class="choiceRow"><a class="primary finalLink" href="student.html">العودة إلى حساب الطالب</a><button class="secondary" id="showFinalAgain">عرض لوحة الإنجاز</button></div>'+
+    '<div class="choiceRow"><a class="primary finalLink" href="student.html">العودة إلى حساب الطالب</a></div>'+
   '</div></section>');
-  var b=document.getElementById("showFinalAgain");if(b)b.onclick=function(){state.view="completion";render();};
 }
 function assessmentResult(){state.view="achievement";render();}
 async function boot(){
