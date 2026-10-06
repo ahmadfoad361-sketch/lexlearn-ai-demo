@@ -599,6 +599,18 @@ function completion(){
   var b=document.getElementById("showFinalAgain");if(b)b.onclick=function(){state.view="completion";render();};
 }
 function assessmentResult(){state.view="achievement";render();}
-if(DEMO&&AUTO_START){if(state.course.completedProgram){state.view="completion";}else{var autoMeta=sessionMeta(state.course.session);state.answers=[];state.assessmentAnswers=[];state.task=0;state.queue=buildTrainingQueue();state.view=autoMeta.kind==="assessment"?"assessment":"train";}}
-render();
+async function boot(){
+  if(!DEMO&&STUDENT_SESSION&&STUDENT_SESSION.cloud&&window.LEX_CLOUD&&LEX_CLOUD.isConfigured&&LEX_CLOUD.isConfigured()){
+    try{
+      var ps=await LEX_CLOUD.loadSnapshot({courseId:COUNTRY+"-"+SUBJECT,snapshotType:"profile"});
+      if(ps&&ps.state)localStorage.setItem(PROFILE_KEY,JSON.stringify(ps.state));
+      var cs=await LEX_CLOUD.loadSnapshot({courseId:COUNTRY+"-"+SUBJECT,snapshotType:"course"});
+      if(cs&&cs.state){localStorage.setItem(COURSE_KEY,JSON.stringify(cs.state));state.course=loadCourse();}
+      state.diag=diagnostic();
+    }catch(e){}
+  }
+  if(DEMO&&AUTO_START){if(state.course.completedProgram){state.view="completion";}else{var autoMeta=sessionMeta(state.course.session);state.answers=[];state.assessmentAnswers=[];state.task=0;state.queue=buildTrainingQueue();state.view=autoMeta.kind==="assessment"?"assessment":"train";}}
+  render();
+}
+boot();
 })();
