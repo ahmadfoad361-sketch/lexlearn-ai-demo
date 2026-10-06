@@ -77,6 +77,7 @@ async function setOwnPassword(password){
   if(String(password||"").length<10)throw new Error("password_too_short");
   return invoke("account-set-password",{password:String(password)});
 }
+async function updateOwnProfile(patch){return invoke("account-update-profile",patch||{});}
 async function gradeAnswer(data){return invoke("grade-answer",data);}
 async function recordAttempt(row){
   var c=db();if(!c)return null;
@@ -90,5 +91,5 @@ async function saveLearningPlan(row){
   row=Object.assign({},row,{user_id:u.data.user.id,updated_at:new Date().toISOString()});
   var r=await c.from("learning_plans").upsert(row,{onConflict:"user_id,course_id"}).select().single();if(r.error)throw r.error;return r.data;
 }
-root.LEX_CLOUD={isConfigured:isConfigured,db:db,studentEmail:studentEmail,profile:profile,signInStudent:signInStudent,signInAdmin:signInAdmin,signOut:signOut,loadSnapshot:loadSnapshot,saveSnapshot:saveSnapshot,listStudents:listStudents,listCohorts:listCohorts,listAudit:listAudit,createStudent:createStudent,manageStudent:manageStudent,createCohort:createCohort,setOwnPassword:setOwnPassword,gradeAnswer:gradeAnswer,recordAttempt:recordAttempt,saveLearningPlan:saveLearningPlan};
+root.LEX_CLOUD={isConfigured:isConfigured,db:db,studentEmail:studentEmail,profile:profile,signInStudent:signInStudent,signInAdmin:signInAdmin,signOut:signOut,loadSnapshot:loadSnapshot,saveSnapshot:saveSnapshot,listStudents:listStudents,listCohorts:listCohorts,listAudit:listAudit,createStudent:createStudent,manageStudent:manageStudent,createCohort:createCohort,setOwnPassword:setOwnPassword,updateOwnProfile:updateOwnProfile,gradeAnswer:gradeAnswer,recordAttempt:recordAttempt,saveLearningPlan:saveLearningPlan};
 })(typeof globalThis!=="undefined"?globalThis:this);
