@@ -322,7 +322,7 @@ function save(){
     var m=(state.diag&&state.diag.metrics)||{},model=LEX_ENGINE.learnerModel({metrics:m,events:state.course.evidence||[]});
     state.course.adaptiveModel=model;
     if(window.LEX_CLOUD&&LEX_CLOUD.isConfigured&&LEX_CLOUD.isConfigured()&&STUDENT_SESSION&&STUDENT_SESSION.cloud){
-      LEX_CLOUD.saveLearningPlan({course_id:COUNTRY+"-"+SUBJECT,weakest_dimension:model.weakest,strongest_dimension:model.strongest,bridge_mode:model.bridge.mode,goals_json:[{dimension:model.weakest,reason:model.reasons}],model_json:model}).catch(function(){});
+      LEX_CLOUD.saveLearningPlan({course_id:COURSE_DB_ID,weakest_dimension:model.weakest,strongest_dimension:model.strongest,bridge_mode:model.bridge.mode,goals_json:[{dimension:model.weakest,reason:model.reasons}],model_json:model}).catch(function(){});
     }
   }
   if(window.LEX_CLOUD&&LEX_CLOUD.isConfigured&&LEX_CLOUD.isConfigured()&&STUDENT_SESSION&&STUDENT_SESSION.cloud){
