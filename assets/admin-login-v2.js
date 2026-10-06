@@ -30,7 +30,8 @@ form.addEventListener("submit",function(e){
   login(document.getElementById("adminEmail").value.trim(),document.getElementById("adminPassword").value);
 });
 var demo=document.getElementById("demoAdmin");
-if(demo&&window.LEX_CLOUD&&LEX_CLOUD.isConfigured&&LEX_CLOUD.isConfigured())demo.style.display="none";\nif(demo)demo.onclick=function(){
+if(demo&&window.LEX_CLOUD&&LEX_CLOUD.isConfigured&&LEX_CLOUD.isConfigured())demo.style.display="none";
+if(demo)demo.onclick=function(){
   if(window.LEX_CLOUD&&LEX_CLOUD.isConfigured&&LEX_CLOUD.isConfigured()){
     err.textContent="حساب الإدارة التجريبي المحلي غير متاح في وضع الإنتاج.";
   }else{
