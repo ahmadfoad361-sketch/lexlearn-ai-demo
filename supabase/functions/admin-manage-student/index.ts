@@ -20,7 +20,8 @@ Deno.serve(async(req)=>{
       if(p.length<10)return json({error:"password_too_short"},400);
       const r=await admin.auth.admin.updateUserById(target,{password:p,user_metadata:{must_change_password:true}});
       if(r.error)throw r.error;
-      await admin.from("profiles").update({must_change_password:true}).eq("id",target);\n      b.generated_password=p;
+      await admin.from("profiles").update({must_change_password:true}).eq("id",target);
+      b.generated_password=p;
     }else if(action==="toggle_active"){
       const active=!!b.active;
       const r=await admin.from("profiles").update({active}).eq("id",target);if(r.error)throw r.error;
