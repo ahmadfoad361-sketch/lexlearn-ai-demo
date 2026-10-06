@@ -346,7 +346,7 @@ function strongestErrorSkill(){
   return es.length?es[0].skill:null;
 }
 function learningBridge(){
-  var model=state.course.adaptiveModel||recomputeAdaptiveModel();
+  var model=recomputeAdaptiveModel()||state.course.adaptiveModel;
   if(model&&model.bridge){
     var map={
       explain_from_memory:{title:"من الحفظ إلى الفهم",primary:taskBank.explainRule,secondary:taskBank.whyContrast},
@@ -424,7 +424,7 @@ function render(){
 }
 function currentStudentMetrics(){
   var base=(state.diag&&state.diag.metrics)||{};
-  var model=state.course.adaptiveModel||recomputeAdaptiveModel(),axes=model&&model.axes||{};
+  var model=recomputeAdaptiveModel()||state.course.adaptiveModel,axes=model&&model.axes||{};
   var out={};
   ["recall","understanding","application","legal_precision","retention","exam"].forEach(function(k){
     var a=axes[k];
