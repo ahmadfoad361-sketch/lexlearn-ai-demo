@@ -141,3 +141,8 @@ button,input,textarea{font:inherit}.courseShell{min-height:100vh}
   --maroon:#8a1f39;
   --maroon-2:#5b0d26;
 }
+
+/* Adaptive assessment confidence */
+.confidencePrompt{margin-top:16px;padding:14px;border:1px solid var(--line);border-radius:15px;background:#f8f5f1}
+.confidencePrompt>b{display:block;color:var(--navy);font-size:13px;margin-bottom:8px}
+.confidencePrompt .choiceRow{margin-top:0}
