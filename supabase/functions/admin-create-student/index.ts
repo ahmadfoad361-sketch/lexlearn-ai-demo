@@ -1,12 +1,20 @@
 import { corsHeaders,json,requireStaff } from "../_shared/auth.ts";
 
+function temporaryPassword(){
+  const bytes=crypto.getRandomValues(new Uint8Array(12));
+  const alphabet="ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789";
+  let out="Lx!";
+  for(const b of bytes)out+=alphabet[b%alphabet.length];
+  return out+"9";
+}
+
 Deno.serve(async(req)=>{
   if(req.method==="OPTIONS")return new Response("ok",{headers:corsHeaders});
   try{
     const {user,admin}=await requireStaff(req);
     const body=await req.json();
     const username=String(body.username||"").trim().toLowerCase();
-    const password=String(body.password||"");
+    const password=String(body.password||temporaryPassword());
     const displayName=String(body.name||body.display_name||"").trim();
     if(!/^[a-z0-9._-]{3,32}$/.test(username))return json({error:"invalid_username"},400);
     if(password.length<10)return json({error:"password_too_short"},400);
