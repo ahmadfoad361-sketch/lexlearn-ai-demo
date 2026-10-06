@@ -751,7 +751,14 @@ function completeTask(t,correct,q,extra){
   var score=extra.semanticScore!=null?Number(extra.semanticScore):(extra.rubricScore!=null?Number(extra.rubricScore)/100:(correct?1:0)),dim=taskDimension(t);
   state.answers.push({skill:t.skill,dimension:dim,score:score,correct:correct,bridge:(state.course.adaptiveModel&&state.course.adaptiveModel.bridge&&state.course.adaptiveModel.bridge.mode)||learningBridge().type,extra:extra});
   state.course.evidence=state.course.evidence||[];
-  state.course.evidence.push({itemId:taskItemId(t),dimension:dim,score:score,difficulty:taskDifficulty(t),confidence:extra.confidence||null,latency_ms:Math.max(0,Date.now()-(state.taskStartedAt||Date.now())),grading_method:extra.gradingMethod||"adaptive_local",ts:Date.now(),session:state.course.session,week:sessionMeta(state.course.session).week});
+  if(extra.essayProfile&&extra.essayProfile.axes){
+    state.course.lastEssayProfile={session:state.course.session,week:sessionMeta(state.course.session).week,overall:extra.essayProfile.overall,axes:extra.essayProfile.axes,style:extra.essayProfile.style,note:extra.essayProfile.note,ts:Date.now()};
+    Object.keys(extra.essayProfile.axes).forEach(function(k){
+      state.course.evidence.push({itemId:taskItemId(t),dimension:k,score:Number(extra.essayProfile.axes[k])/100,difficulty:taskDifficulty(t),confidence:null,latency_ms:Math.max(0,Date.now()-(state.taskStartedAt||Date.now())),grading_method:"essay_profile_v1",ts:Date.now(),session:state.course.session,week:sessionMeta(state.course.session).week});
+    });
+  }else{
+    state.course.evidence.push({itemId:taskItemId(t),dimension:dim,score:score,difficulty:taskDifficulty(t),confidence:extra.confidence||null,latency_ms:Math.max(0,Date.now()-(state.taskStartedAt||Date.now())),grading_method:extra.gradingMethod||"adaptive_local",ts:Date.now(),session:state.course.session,week:sessionMeta(state.course.session).week});
+  }
   if(state.course.evidence.length>240)state.course.evidence=state.course.evidence.slice(-240);
   if(!correct)addError(t.skill,errorLabel(t.skill));
   if(window.LEX_ENGINE){
