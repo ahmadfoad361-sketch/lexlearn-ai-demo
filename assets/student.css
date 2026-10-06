@@ -109,3 +109,13 @@
 .countryGate #passError{color:var(--red);font-size:10px;min-height:22px}
 @media(max-width:760px){.countryCards{grid-template-columns:1fr 1fr}.countryGateCard{padding:22px;border-radius:24px}.countryCard{min-height:155px}.countryBrand{align-items:flex-start}.countryBrand .mark{width:52px;height:52px}}
 @media(max-width:420px){.countryCards{grid-template-columns:1fr 1fr;gap:8px}.countryCard{padding:14px 8px}.countryCard .countryFlag{font-size:30px}.countryCard b{font-size:16px}}
+
+
+/* Professional law-student visual refinement */
+.heroVisual{font-family:Georgia,"Times New Roman",serif;font-weight:700;color:var(--navy);background:linear-gradient(145deg,#f7f1e6,#ead8ac);border:1px solid rgba(199,166,106,.55)}
+.heroVisual{font-size:34px}
+.simpleIcon,.tipCard>span,.badgeIcon{font-family:Georgia,"Times New Roman",serif;font-weight:700;color:var(--navy)}
+.simpleIcon{font-size:25px}
+.tipCard>span{font-size:21px}
+.badgeIcon{font-size:21px}
+.countryMessage>span{font-family:Georgia,"Times New Roman",serif;color:var(--navy);font-size:22px}
