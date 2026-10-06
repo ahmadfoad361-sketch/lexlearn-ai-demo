@@ -422,6 +422,75 @@
     hours=hours/Math.pow(1.45,repeats+retentionFailures);
     return Math.max(4,Math.round(hours));
   }
+  function challengeZone(model){
+    var weak=model&&model.axes&&model.axes[model.weakest];
+    if(!weak)return 2;
+    if(weak.uncertainty>26)return weak.value>=70?3:2;
+    if(weak.value>=90)return 5;
+    if(weak.value>=80)return 4;
+    if(weak.value>=60)return 3;
+    if(weak.value>=40)return 2;
+    return 1;
+  }
+  function adaptiveCandidateScore(model,item,history,context,now){
+    item=item||{};history=history||[];context=context||{};now=now==null?Date.now():now;
+    var target=model&&model.weakest||"application",score=0,reasons=[];
+    var dim=item.dimension||"understanding";
+    if(dim===target||(target==="application"&&dim==="transfer")||(target==="exam"&&dim==="exam_execution")){score+=50;reasons.push("targets_priority_dimension");}
+    if(item.status==="approved"||item.approved===true){score+=18;reasons.push("approved_content");}
+    if(item.sourceIds&&item.sourceIds.length){score+=10;reasons.push("grounded_source");}
+    var desired=challengeZone(model),difficulty=Number(item.difficulty)||2;
+    var distance=Math.abs(difficulty-desired);score+=Math.max(0,15-distance*5);
+    if(distance===0)reasons.push("challenge_zone_match");
+    var recent=history.slice(-24),seen=recent.filter(function(h){return h&&h.itemId===item.id;}).length;
+    score-=Math.min(24,seen*10);
+    if(!seen){score+=8;reasons.push("novel_item");}
+    var sameDim=recent.slice(-4).filter(function(h){return h&&h.dimension===dim;}).length;
+    score-=sameDim*3;
+    if(item.dueAt&&new Date(item.dueAt).getTime()<=now){score+=24;reasons.push("review_due");}
+    if(item.examImportanceWeight){score+=12*Number(item.examImportanceWeight);reasons.push("exam_relevance");}
+    if(context.errorType==="high_confidence_misconception"&&item.conceptId&&item.conceptId===context.conceptId){score+=22;reasons.push("repairs_confident_error");}
+    var weak=model&&model.axes&&model.axes[target];
+    if(weak&&weak.uncertainty>22&&dim===target){score+=10;reasons.push("reduces_uncertainty");}
+    return {score:Math.round(score*100)/100,reasons:reasons,desiredDifficulty:desired};
+  }
+  function buildAdaptivePlan(model,candidates,history,context,limit){
+    candidates=candidates||[];history=history||[];context=context||{};limit=limit||3;
+    var ranked=candidates.map(function(item){
+      var r=adaptiveCandidateScore(model,item,history,context);
+      return {item:item,score:r.score,reasons:r.reasons,desiredDifficulty:r.desiredDifficulty};
+    }).sort(function(a,b){return b.score-a.score;});
+    var selected=[],concepts={};
+    for(var i=0;i<ranked.length&&selected.length<limit;i++){
+      var x=ranked[i],concept=x.item.conceptId||null;
+      if(concept&&concepts[concept]&&selected.length<Math.min(2,limit))continue;
+      if(concept)concepts[concept]=true;
+      selected.push(x);
+    }
+    return {version:"adaptive-policy-v2",target:model&&model.weakest||"application",selected:selected,considered:ranked.length};
+  }
+  function masteryGate(model,required){
+    required=required||["recall","understanding","legal_precision","application","exam","retention"];
+    var reasons=[],axes=model&&model.axes||{};
+    required.forEach(function(k){
+      var a=axes[k];
+      if(!a||a.evidence<2)reasons.push(k+":insufficient_evidence");
+      else{
+        if(a.value<75)reasons.push(k+":below_mastery");
+        if(a.uncertainty>24)reasons.push(k+":high_uncertainty");
+      }
+    });
+    var ret=axes.retention;
+    if(!ret||ret.evidence<2||ret.value<75)reasons.push("retention:not_confirmed");
+    return {ready:reasons.length===0,reasons:reasons};
+  }
+  function adaptiveDecision(input,now){
+    input=input||{};var model=learnerModel({metrics:input.metrics||{},events:input.events||[]},now);
+    var plan=buildAdaptivePlan(model,input.candidates||[],input.history||input.events||[],input.context||{},input.limit||3);
+    var gate=masteryGate(model,input.requiredDimensions);
+    return {model:model,plan:plan,masteryGate:gate};
+  }
+
   function mergeSemanticGrade(localGrade,semanticGrade){
     localGrade=localGrade||{};semanticGrade=semanticGrade||{};
     var ls=localGrade.score==null?null:Number(localGrade.score);
@@ -469,6 +538,11 @@
     targetDifficulty:targetDifficulty,
     recommendNextTask:recommendNextTask,
     adaptiveReviewInterval:adaptiveReviewInterval,
+    challengeZone:challengeZone,
+    adaptiveCandidateScore:adaptiveCandidateScore,
+    buildAdaptivePlan:buildAdaptivePlan,
+    masteryGate:masteryGate,
+    adaptiveDecision:adaptiveDecision,
     mergeSemanticGrade:mergeSemanticGrade
   };
 });
