@@ -10,7 +10,7 @@ Deno.serve(async(req)=>{
   if(req.method==="OPTIONS")return new Response("ok",{headers:corsHeaders});
   const started=Date.now();
   try{
-    const {user,admin}=await requireUser(req);
+    const {user,profile,admin}=await requireUser(req);
     const b=await req.json();
     const itemId=String(b.item_id||""),answer=String(b.answer||"").trim(),courseId=String(b.course_id||"");
     if(!itemId||!answer||!courseId)return json({error:"missing_fields"},400);
@@ -51,6 +51,7 @@ Deno.serve(async(req)=>{
       method:"POST",headers:{"Authorization":"Bearer "+key,"Content-Type":"application/json"},
       body:JSON.stringify({
         model,
+        store:false,
         instructions:"أنت مصحح تدريب قانوني في LexLearn. قيّم فقط بالـrubric والمصادر المعتمدة المرسلة. لا تستخدم معرفة قانونية خارجها ولا تضف مادة أو حكمًا غير موجود. اقبل الصياغات القانونية المكافئة. ميّز بين النقص والتناقض. إذا كانت المصادر غير كافية أو الإجابة ملتبسة بدرجة لا تسمح بتقييم موثوق فضع needs_human_review=true وscore=null. اكتب feedback_ar مختصرًا وتعليميًا، وليس درجة جامعية رسمية.",
         input:JSON.stringify(grounded),
         text:{format:{type:"json_schema",name:"lexlearn_grounded_grade",strict:true,schema}}
