@@ -67,6 +67,13 @@ async function invoke(name,body){
 }
 async function createStudent(data){return invoke("admin-create-student",data);}
 async function manageStudent(data){return invoke("admin-manage-student",data);}
+async function listContentItems(courseId){
+  var c=db();if(!c)return[];
+  var q=c.from("content_items").select("id,course_id,unit_id,concept_id,dimension,difficulty,item_type,prompt_ar,source_ids,status,version,reviewed_at,metadata").order("updated_at",{ascending:false});
+  if(courseId)q=q.eq("course_id",courseId);
+  var r=await q;if(r.error)throw r.error;return r.data||[];
+}
+async function reviewContent(data){return invoke("content-review",data);}
 async function createCohort(data){
   var c=db();if(!c)throw new Error("cloud_not_configured");
   var row={name:String(data.name||"").trim(),institution:data.institution||null,academic_year:data.academic_year||null,active:true};
@@ -103,5 +110,5 @@ async function saveLearningPlan(row){
   row=Object.assign({},row,{user_id:u.data.user.id,updated_at:new Date().toISOString()});
   var r=await c.from("learning_plans").upsert(row,{onConflict:"user_id,course_id"}).select().single();if(r.error)throw r.error;return r.data;
 }
-root.LEX_CLOUD={isConfigured:isConfigured,db:db,studentEmail:studentEmail,profile:profile,signInStudent:signInStudent,signInAdmin:signInAdmin,signOut:signOut,loadSnapshot:loadSnapshot,saveSnapshot:saveSnapshot,listStudents:listStudents,listCohorts:listCohorts,listAudit:listAudit,createStudent:createStudent,manageStudent:manageStudent,createCohort:createCohort,setOwnPassword:setOwnPassword,updateOwnProfile:updateOwnProfile,gradeAnswer:gradeAnswer,getConsent:getConsent,recordConsent:recordConsent,recordAttempt:recordAttempt,saveLearningPlan:saveLearningPlan};
+root.LEX_CLOUD={isConfigured:isConfigured,db:db,studentEmail:studentEmail,profile:profile,signInStudent:signInStudent,signInAdmin:signInAdmin,signOut:signOut,loadSnapshot:loadSnapshot,saveSnapshot:saveSnapshot,listStudents:listStudents,listCohorts:listCohorts,listAudit:listAudit,listContentItems:listContentItems,reviewContent:reviewContent,createStudent:createStudent,manageStudent:manageStudent,createCohort:createCohort,setOwnPassword:setOwnPassword,updateOwnProfile:updateOwnProfile,gradeAnswer:gradeAnswer,getConsent:getConsent,recordConsent:recordConsent,recordAttempt:recordAttempt,saveLearningPlan:saveLearningPlan};
 })(typeof globalThis!=="undefined"?globalThis:this);
