@@ -6,7 +6,7 @@ fs.mkdirSync(path.join(out,"assets"),{recursive:true});
 const pages=[
   "index.html","showcase.html","program.html",
   "student-login.html","student.html","admin-login.html","admin.html",
-  "privacy.html","terms.html",".nojekyll"
+  "privacy.html","terms.html","reset-password.html",".nojekyll"
 ];
 const assets=[
   "lexlearn-logo.svg",
@@ -17,7 +17,7 @@ const assets=[
   "portal.css","student-login.js","admin-login-v2.js",
   "student.css","student.js",
   "admin.css","admin-entry.js","admin-cloud.js","admin.js",
-  "lexlearn-config.js","cloud-data.js",
+  "lexlearn-config.js","cloud-data.js","reset-password.js",
   "legal-pages.css"
 ];
 function cp(src,dst){
