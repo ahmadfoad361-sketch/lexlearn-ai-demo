@@ -145,6 +145,32 @@ function profileTitle(){
   if(result.profileType==="understanding-led")return "فهمك أقوى من الاسترجاع — هنحوّل المعنى إلى ذاكرة سريعة";
   return "أداء متوازن — هنركز على أقل مهارة حاليًا";
 }
+function studentInsight(){
+  var items=[
+    {key:"recall",label:"الاسترجاع",icon:"🧠",value:adaptiveValue("recall")},
+    {key:"understanding",label:"الفهم",icon:"💡",value:adaptiveValue("understanding")},
+    {key:"application",label:"التطبيق",icon:"⚖️",value:adaptiveValue("application")}
+  ].filter(function(x){return x.value!=null;});
+  if(!items.length)return {best:null,focus:null,tip:"ابدأ التقييم القصير وسنبني لك تدريبك."};
+  var sorted=items.slice().sort(function(a,b){return a.value-b.value;});
+  var focus=sorted[0],best=sorted[sorted.length-1];
+  var tips={
+    recall:"استرجع الفكرة من ذاكرتك قبل أن ترجع للنص.",
+    understanding:"اسأل نفسك: لماذا هذه القاعدة تعمل بهذه الطريقة؟",
+    application:"جرّب القاعدة على واقعة قصيرة وحدد العنصر الحاسم أولًا."
+  };
+  return {best:best,focus:focus,tip:tips[focus.key]};
+}
+function simpleSkillCard(item){
+  var value=adaptiveValue(item.key),level=status(value),pct=value==null?0:Math.round(value);
+  return "<div class='simpleSkill "+item.key+"'>"+
+    "<div class='simpleIcon'>"+item.icon+"</div>"+
+    "<b>"+item.label+"</b>"+
+    "<strong>"+(value==null?"—":pct+"%")+"</strong>"+
+    "<span>"+level+"</span>"+
+    "<div class='miniBar'><i style='width:"+(value==null?5:Math.max(5,Math.min(100,value)))+"%'></i></div>"+
+  "</div>";
+}
 function skillCard(title,key,ic){
   var value=adaptiveValue(key);
   var width=value==null?6:Math.max(6,Math.min(100,value));
@@ -280,20 +306,22 @@ function render(){
       ? "<a class='actionCard primary' href='showcase.html?country="+country+"&subject=sources'><span class='actionIcon'>"+icon("test")+"</span><span class='actionCopy'><b>ابدأ التقييم التشخيصي</b><small>يفتح الاختبار مباشرة بدل الرجوع للصفحة الرئيسية.</small></span></a>"
       : "<a class='actionCard primary' href='program.html?"+demoPrefix+"country="+country+"&subject=sources&start=1'><span class='actionIcon'>"+icon("play")+"</span><span class='actionCopy'><b>أكمل جلسة اليوم</b><small>يفتح التدريب الفعلي مباشرة.</small></span></a>";
 
+  var insight=studentInsight();
   var learningProfile=result
-    ? "<section class='resultCard'>"+
-        "<div class='resultIntro'><div><h3>"+esc(profileTitle())+"</h3><p>المؤشرات تتحدث مع كل دليل جديد من التدريب، وليست درجة جامعية.</p></div>"+
-        "<span class='profilePill'>"+(course.adaptiveModel?"تحليل متكيف":"تقييم البداية")+"</span></div>"+
-        "<div class='skillGrid'>"+
-          skillCard("الذاكرة القانونية","recall","brain")+
-          skillCard("الفهم","understanding","bulb")+
-          skillCard("التطبيق","application","scale")+
-          skillCard("الدقة القانونية","legal_precision","scale")+
-          skillCard("ثبات المعلومة","retention","repeat")+
-          skillCard("الإجابة الامتحانية","exam","pen")+
+    ? "<section class='simpleProfile'>"+
+        "<div class='simpleIntro'><div><span class='eyebrow'>مستواك الآن</span><h3>"+esc(profileTitle())+"</h3></div></div>"+
+        "<div class='simpleSkillGrid'>"+
+          simpleSkillCard({key:"recall",label:"الاسترجاع",icon:"🧠"})+
+          simpleSkillCard({key:"understanding",label:"الفهم",icon:"💡"})+
+          simpleSkillCard({key:"application",label:"التطبيق",icon:"⚖️"})+
+        "</div>"+
+        "<div class='studentTipGrid'>"+
+          "<div class='tipCard good'><span>⭐</span><div><small>أقوى نقطة</small><b>"+esc(insight.best?insight.best.label:"—")+"</b></div></div>"+
+          "<div class='tipCard focus'><span>🎯</span><div><small>ركز الآن على</small><b>"+esc(insight.focus?insight.focus.label:"—")+"</b></div></div>"+
+          "<div class='tipCard today'><span>✨</span><div><small>نصيحة اليوم</small><b>"+esc(insight.tip)+"</b></div></div>"+
         "</div>"+
       "</section>"
-    : "<div class='empty'>بعد أول تقييم سيظهر هنا Infographic واضح لنقاط القوة والأولوية التدريبية.</div>";
+    : "<div class='empty studentEmpty'>ابدأ التقييم القصير، وبعده سترى 3 مؤشرات بسيطة: الاسترجاع، الفهم، والتطبيق.</div>";
 
   var achievements=course.achievements.length
     ? course.achievements.map(function(a){
@@ -311,17 +339,14 @@ function render(){
       "<section class='hero "+(course.completedProgram?"heroComplete":"")+"'>"+
         "<div class='heroMain'><span class='eyebrow'>"+esc(student.cohort||"برنامج التدريب")+"</span><h1>"+(course.completedProgram?"🎉 مبروك "+esc(student.name)+"!":"أهلًا "+esc(student.name))+"</h1><p>"+countryLabel(country)+" • برنامج مصادر الالتزام • 6 أسابيع • 30 جلسة عملية</p>"+
         "<div class='heroMeta'><span>"+(course.completedProgram?"6 / 6 مراحل مكتملة":"الأسبوع "+w+" من 6")+"</span><span>"+(course.completedProgram?"30 / 30 جلسة":"الجلسة "+(course.session||1)+" من 30")+"</span><span>"+(course.completedProgram?"🏆 تم إنهاء التدريب":course.completed.length+" جلسة مكتملة")+"</span></div></div>"+
-        "<div class='heroSide'><h3>"+(course.completedProgram?"تم إنهاء البرنامج بنجاح 🏆":esc(profileTitle()))+"</h3><p>"+(course.completedProgram?"أكملت جميع المراحل واجتزت التقييم النهائي. يمكنك فتح شاشة الإنجاز في أي وقت.":(result?"الجلسة التالية ستستخدم نتيجتك الحالية والأخطاء المسجلة لتحديد نوع التدريب.":"التقييم الأول هو الذي يبني أول مسار تدريبي لك."))+"</p></div>"+
+        "<div class='heroSide studentHeroSide'><div class='heroVisual'>"+(course.completedProgram?"🏆":"🚀")+"</div><h3>"+(course.completedProgram?"أحسنت! أنهيت البرنامج":"جاهز للجلسة التالية؟")+"</h3><p>"+(course.completedProgram?"يمكنك عرض إنجازك النهائي في أي وقت.":(result?"جلسة واحدة قصيرة، ومحتواها يتغير حسب مستواك.":"ابدأ التقييم القصير لنحدد أفضل بداية لك."))+"</p></div>"+
       "</section>"+
-      "<section class='actionGrid'>"+
-        actionPrimary+
-        (course.completedProgram?"":"<a class='actionCard' href='program.html?"+demoPrefix+"country="+country+"&subject=sources&start=1'><span class='actionIcon'>"+icon("play")+"</span><span class='actionCopy'><b>جرّب المستوى الأول</b><small>ادخل مباشرة إلى أول جلسة تدريب عملية.</small></span></a>")+
-      "</section>"+
-      "<div class='sectionHead'><div><h2>مسار الأسابيع</h2><p>"+"كل مرحلة تفتح بعد إكمال السابقة أو بقرار دعم من المشرف."+"</p></div><span class='progressTag'>"+course.completed.length+" / 30</span></div>"+
+      "<section class='actionGrid singleAction'>"+actionPrimary+"</section>"+
+      "<div class='sectionHead'><div><h2>رحلتك</h2><p>كلما أنهيت مرحلة، تفتح التالية تلقائيًا.</p></div><span class='progressTag'>"+course.completed.length+" / 30</span></div>"+
       "<section class='weekGrid'>"+weeks+"</section>"+
-      "<div class='sectionHead'><div><h2>ملف تعلمك</h2><p>عرض مبسط لك — التفاصيل الرقمية الكاملة تظهر للمشرف.</p></div></div>"+
+      "<div class='sectionHead'><div><h2>مستواك ببساطة</h2><p>3 مؤشرات فقط تساعدك تعرف أين أنت الآن.</p></div></div>"+
       learningProfile+
-      "<div class='sectionHead'><div><h2>الإنجازات</h2><p>إنجازات أكاديمية مرتبطة بإتمام المراحل والمهارات.</p></div></div>"+
+      "<div class='sectionHead'><div><h2>إنجازاتك</h2><p>كل مرحلة تنهيها تضيف إنجازًا جديدًا.</p></div></div>"+
       "<section class='achievementStrip'>"+achievements+"</section>"+
     "</main>";
 
