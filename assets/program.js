@@ -521,6 +521,23 @@ function train(){
     };});
   }
 }
+function taskItemId(t){
+  if(!t||COUNTRY!=="qa")return null;
+  if(t.itemId)return t.itemId;
+  var hay=String(t.title||"")+" "+String(t.q||"");
+  if(t===taskBank.explainRule||/وجود الإيجاب والقبول وحدهما/.test(hay))return "qa213-contract-explain-01";
+  if(/وعد بجائزة|جائزة للجمهور/.test(hay))return "qa213-unilateral-reward-01";
+  if(/الفعل الضار/.test(hay)&&/خطأ|ضرر|المصدر/.test(hay))return "qa213-tort-source-01";
+  if(/الإثراء/.test(hay)&&/مصدر|أثر|سبب/.test(hay))return "qa213-enrichment-01";
+  return null;
+}
+function recomputeAdaptiveModel(){
+  if(!window.LEX_ENGINE)return null;
+  state.course.evidence=Array.isArray(state.course.evidence)?state.course.evidence:[];
+  var model=LEX_ENGINE.learnerModel({metrics:(state.diag&&state.diag.metrics)||{},events:state.course.evidence});
+  state.course.adaptiveModel=model;
+  return model;
+}
 function taskDimension(t){
   var title=String(t.title||"");
   if(t.dimension)return t.dimension;
@@ -534,19 +551,19 @@ function taskDimension(t){
 function taskDifficulty(t){return t.difficulty||((t.kind==="adaptive")?3:(t.kind==="review"?2:2));}
 function completeTask(t,correct,q,extra){
   extra=extra||{};
-  var score=extra.rubricScore!=null?Number(extra.rubricScore)/100:(correct?1:0),dim=taskDimension(t);
+  var score=extra.semanticScore!=null?Number(extra.semanticScore):(extra.rubricScore!=null?Number(extra.rubricScore)/100:(correct?1:0)),dim=taskDimension(t);
   state.answers.push({skill:t.skill,dimension:dim,score:score,correct:correct,bridge:(state.course.adaptiveModel&&state.course.adaptiveModel.bridge&&state.course.adaptiveModel.bridge.mode)||learningBridge().type,extra:extra});
   state.course.evidence=state.course.evidence||[];
-  state.course.evidence.push({itemId:t.itemId||null,dimension:dim,score:score,difficulty:taskDifficulty(t),confidence:extra.confidence||null,ts:Date.now(),session:state.course.session,week:sessionMeta(state.course.session).week});
+  state.course.evidence.push({itemId:taskItemId(t),dimension:dim,score:score,difficulty:taskDifficulty(t),confidence:extra.confidence||null,latency_ms:Math.max(0,Date.now()-(state.taskStartedAt||Date.now())),grading_method:extra.gradingMethod||"adaptive_local",ts:Date.now(),session:state.course.session,week:sessionMeta(state.course.session).week});
   if(state.course.evidence.length>240)state.course.evidence=state.course.evidence.slice(-240);
   if(!correct)addError(t.skill,errorLabel(t.skill));
   if(window.LEX_ENGINE){
     state.course.adaptiveModel=LEX_ENGINE.learnerModel({metrics:(state.diag&&state.diag.metrics)||{},events:state.course.evidence});
   }
   if(window.LEX_CLOUD&&LEX_CLOUD.isConfigured&&LEX_CLOUD.isConfigured()&&STUDENT_SESSION&&STUDENT_SESSION.cloud){
-    LEX_CLOUD.recordAttempt({course_id:COUNTRY+"-"+SUBJECT,item_id:t.itemId||null,dimension:dim,answer_text:extra.answer||null,selected_option:extra.selected==null?null:String(extra.selected),score:score,confidence:extra.confidence||null,difficulty:taskDifficulty(t),grading_method:extra.gradingMethod||"adaptive_local",error_type:correct?null:errorLabel(t.skill)}).catch(function(){});
+    LEX_CLOUD.recordAttempt({course_id:COURSE_DB_ID,item_id:taskItemId(t),dimension:dim,answer_text:extra.answer||null,selected_option:extra.selected==null?null:String(extra.selected),score:score,confidence:extra.confidence||null,latency_ms:Math.max(0,Date.now()-(state.taskStartedAt||Date.now())),difficulty:taskDifficulty(t),grading_method:extra.gradingMethod||"adaptive_local",error_type:correct?null:errorLabel(t.skill)}).catch(function(){});
   }
-  if(state.task<q.length-1){state.task++;render();}else finishTraining();
+  state.taskStartedAt=null;\n  if(state.task<q.length-1){state.task++;render();}else finishTraining();
 }
 function errorLabel(skill){var map={apply:"يحتاج نقل القاعدة إلى الواقعة بدقة",spot:"لا يلتقط العنصر الحاسم",sources:"يخلط بين مصادر الالتزام",contract:"يسقط عنصرًا من شروط الانعقاد",exam:"هيكل الإجابة غير مكتمل"};return map[skill]||"خطأ متكرر"; }
 function addError(skill,label){
