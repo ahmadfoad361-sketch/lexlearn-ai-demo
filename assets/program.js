@@ -630,7 +630,8 @@ function completeTask(t,correct,q,extra){
   if(window.LEX_CLOUD&&LEX_CLOUD.isConfigured&&LEX_CLOUD.isConfigured()&&STUDENT_SESSION&&STUDENT_SESSION.cloud){
     LEX_CLOUD.recordAttempt({course_id:COURSE_DB_ID,item_id:taskItemId(t),dimension:dim,answer_text:extra.answer||null,selected_option:extra.selected==null?null:String(extra.selected),score:score,confidence:extra.confidence||null,latency_ms:Math.max(0,Date.now()-(state.taskStartedAt||Date.now())),difficulty:taskDifficulty(t),grading_method:extra.gradingMethod||"adaptive_local",error_type:correct?null:errorLabel(t.skill)}).catch(function(){});
   }
-  state.taskStartedAt=null;\n  if(state.task<q.length-1){state.task++;render();}else finishTraining();
+  state.taskStartedAt=null;
+  if(state.task<q.length-1){state.task++;render();}else finishTraining();
 }
 function errorLabel(skill){var map={apply:"يحتاج نقل القاعدة إلى الواقعة بدقة",spot:"لا يلتقط العنصر الحاسم",sources:"يخلط بين مصادر الالتزام",contract:"يسقط عنصرًا من شروط الانعقاد",exam:"هيكل الإجابة غير مكتمل"};return map[skill]||"خطأ متكرر"; }
 function addError(skill,label){
