@@ -22,6 +22,7 @@ create table if not exists public.profiles (
   year_label text,
   cohort_id uuid references public.cohorts(id) on delete set null,
   locale text not null default 'ar',
+  country_code text not null default 'qa',
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
