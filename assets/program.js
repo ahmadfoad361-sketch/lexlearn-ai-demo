@@ -293,6 +293,21 @@ function strongestErrorSkill(){
   return es.length?es[0].skill:null;
 }
 function learningBridge(){
+  var model=state.course.adaptiveModel||recomputeAdaptiveModel();
+  if(model&&model.bridge){
+    var map={
+      explain_from_memory:{title:"من الحفظ إلى الفهم",primary:taskBank.explainRule,secondary:taskBank.whyContrast},
+      change_one_fact:{title:"من المعرفة إلى التطبيق",primary:taskBank.apply,secondary:taskBank.whyContrast},
+      memory_keys:{title:"من الفهم إلى التثبيت",primary:taskBank.memoryAnchor,secondary:taskBank.reconstruct},
+      precision_contrast:{title:"رفع الدقة القانونية",primary:taskBank.whyContrast,secondary:taskBank.spot},
+      boundary_case:{title:"تطبيق على الحالات الحدودية",primary:taskBank.apply,secondary:taskBank.spot},
+      structured_answer:{title:"تحويل التطبيق إلى إجابة امتحانية",primary:taskBank.exam,secondary:taskBank.reconstruct},
+      retrieval_rebuild:{title:"إعادة بناء القاعدة من الذاكرة",primary:taskBank.reconstruct,secondary:taskBank.retention},
+      evidence_bridge:{title:"جسر من نقطة القوة إلى الأولوية",primary:taskBank.memoryAnchor,secondary:taskBank.whyContrast}
+    };
+    var x=map[model.bridge.mode]||map.evidence_bridge;
+    return {type:model.bridge.mode,title:x.title,lead:model.bridge.label,primary:x.primary,secondary:x.secondary,strongest:model.strongest,weakest:model.weakest,confidence:model.confidence};
+  }
   var m=(state.diag&&state.diag.metrics)||{};
   var recall=m.recall==null?50:m.recall,understanding=m.understanding==null?50:m.understanding;
   var gap=recall-understanding;
