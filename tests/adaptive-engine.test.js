@@ -110,4 +110,39 @@ function near(a,b,eps=1e-9){ assert.ok(Math.abs(a-b)<=eps, `${a} != ${b}`); }
   assert.deepEqual(s.conceptMastery,{});
 })();
 
+(function advancedEvidenceModel(){
+  const now=Date.UTC(2026,9,6,8,0,0);
+  const events=[
+    {dimension:"recall",score:.95,difficulty:2,ts:now-2*86400000},
+    {dimension:"recall",score:.90,difficulty:2,ts:now-1*86400000},
+    {dimension:"application",score:.45,difficulty:2,ts:now-2*86400000},
+    {dimension:"application",score:.55,difficulty:3,ts:now-1*86400000},
+    {dimension:"legal_precision",score:.60,difficulty:2,ts:now-1*86400000}
+  ];
+  const m=E.learnerModel({events},now);
+  assert.equal(m.strongest,"recall");
+  assert.equal(m.weakest,"application");
+  assert.equal(m.bridge.mode,"change_one_fact");
+  assert.ok(m.axes.application.uncertainty>0);
+})();
+
+(function reviewIntervalAndTaskChoice(){
+  assert.ok(E.adaptiveReviewInterval({score:.3,confidence:3,repeatErrors:2})<=6);
+  const model={weakest:"application",axes:{application:{value:52,uncertainty:15,trend:0}}};
+  const pick=E.recommendNextTask(model,[
+    {id:"a",dimension:"recall",difficulty:2,status:"approved",sourceIds:["s"]},
+    {id:"b",dimension:"transfer",difficulty:1,status:"approved",sourceIds:["s"],variantGroupId:"v"}
+  ],[]);
+  assert.equal(pick.item.id,"b");
+})();
+
+(function semanticMergeSafety(){
+  const g=E.mergeSemanticGrade({score:.9,matchedConcepts:["a"]},{score:.2,model_confidence:.9,feedback_ar:"x"});
+  assert.equal(g.needsHumanReview,true);
+  assert.equal(g.score,null);
+  const ok=E.mergeSemanticGrade({score:.8},{score:.82,model_confidence:.91,feedback_ar:"ok"});
+  assert.equal(ok.needsHumanReview,false);
+  assert.equal(ok.gradingMethod,"grounded_semantic");
+})();
+
 console.log("adaptive-engine tests: PASS");
