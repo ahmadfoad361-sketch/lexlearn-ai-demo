@@ -12,14 +12,16 @@ Deno.serve(async(req)=>{
     const {user,profile,admin}=await requireContentReviewer(req);
     const b=await req.json(),itemId=String(b.item_id||""),action=String(b.action||"advance");
     if(!itemId)return json({error:"item_id_required"},400);
-    const current=await admin.from("content_items").select("id,status,course_id,metadata").eq("id",itemId).single();
+    const current=await admin.from("content_items").select("id,status,course_id,metadata,legal_reviewer,learning_reviewer").eq("id",itemId).single();
     if(current.error||!current.data)return json({error:"item_not_found"},404);
     let target=current.data.status;
     if(action==="advance"){
       target=nextStatus[current.data.status];
       if(!target)return json({error:"no_valid_next_status"},409);
-      if(current.data.status==="legal_review"&&profile.role==="content_reviewer"&&b.review_type==="learning")
+      if(current.data.status==="legal_review"&&b.review_type==="learning")
         return json({error:"legal_review_must_precede_learning_review"},409);
+      if(current.data.status==="learning_review"&&current.data.legal_reviewer===user.id)
+        return json({error:"second_reviewer_required"},409);
     }else if(action==="retire"){
       target="retired";
     }else if(action==="return_to_legal_review"){
