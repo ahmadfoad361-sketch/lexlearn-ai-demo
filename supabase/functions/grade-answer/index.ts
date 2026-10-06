@@ -14,6 +14,14 @@ Deno.serve(async(req)=>{
     const b=await req.json();
     const itemId=String(b.item_id||""),answer=String(b.answer||"").trim(),courseId=String(b.course_id||"");
     if(!itemId||!answer||!courseId)return json({error:"missing_fields"},400);
+    if(answer.length>12000)return json({error:"answer_too_long"},413);
+    if(profile.role==="student"){
+      const er=await admin.from("enrollments").select("status").eq("user_id",user.id).eq("course_id",courseId).maybeSingle();
+      if(er.error||!er.data||er.data.status!=="active")return json({error:"course_access_denied"},403);
+    }
+    const since=new Date(Date.now()-60*60*1000).toISOString();
+    const usage=await admin.from("ai_grading_runs").select("id",{count:"exact",head:true}).eq("user_id",user.id).gte("created_at",since);
+    if((usage.count||0)>=40)return json({error:"grading_rate_limit"},429);
     const itemR=await admin.from("content_items").select("id,course_id,prompt_ar,rubric_json,source_ids,status,dimension").eq("id",itemId).eq("course_id",courseId).single();
     if(itemR.error||!itemR.data||itemR.data.status!=="approved")return json({needs_human_review:true,score:null,reason:"item_not_approved"},422);
     const item=itemR.data;
@@ -23,7 +31,8 @@ Deno.serve(async(req)=>{
 
     const key=Deno.env.get("OPENAI_API_KEY");
     if(!key)return json({needs_human_review:true,score:null,reason:"semantic_grading_not_configured"},503);
-    const model=Deno.env.get("OPENAI_MODEL")||"gpt-6-sol";
+    const model=Deno.env.get("OPENAI_MODEL");
+    if(!model)return json({needs_human_review:true,score:null,reason:"semantic_model_not_configured"},503);
     const schema={
       type:"object",additionalProperties:false,
       properties:{
