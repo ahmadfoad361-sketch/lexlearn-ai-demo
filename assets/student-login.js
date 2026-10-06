@@ -16,10 +16,10 @@ async function login(u,p){
   err.style.display="none";
   if(window.LEX_CLOUD&&LEX_CLOUD.isConfigured&&LEX_CLOUD.isConfigured()){
     try{
-      var cloud=await LEX_CLOUD.signInUsername(u,p),pr=cloud.profile;
+      var cloud=await LEX_CLOUD.signInStudent(u,p),pr=cloud.profile;
       localStorage.setItem(SESSION,JSON.stringify({
         studentId:pr.id,name:pr.display_name,username:pr.username,
-        country:null,cloud:true,at:Date.now()
+        country:pr.country_code||null,cloud:true,at:Date.now()
       }));
       location.href="student.html";return;
     }catch(e){
@@ -35,7 +35,7 @@ async function login(u,p){
 document.getElementById("studentLogin").addEventListener("submit",function(e){
   e.preventDefault();login(document.getElementById("studentUser").value.trim(),document.getElementById("studentPassword").value);
 });
-document.getElementById("demoStudent").onclick=function(){
+var demoButton=document.getElementById("demoStudent");\nif(demoButton&&window.LEX_CLOUD&&LEX_CLOUD.isConfigured&&LEX_CLOUD.isConfigured())demoButton.style.display="none";\ndemoButton.onclick=function(){
   if(window.LEX_CLOUD&&LEX_CLOUD.isConfigured&&LEX_CLOUD.isConfigured()){
     err.textContent="الحساب التجريبي المحلي غير متاح في وضع الإنتاج.";err.style.display="block";return;
   }
