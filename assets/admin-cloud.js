@@ -125,7 +125,7 @@ function bind(){
    var prompt=item.status==="legal_review"?"أؤكد أن القاعدة القانونية والمصادر صحيحة لهذا السؤال؟":item.status==="learning_review"?"أؤكد أن السؤال يقيس المهارة المقصودة بوضوح وأنه جاهز للنشر؟":"إرسال السؤال للمرحلة التالية؟";
    if(!confirm(prompt))return;
    try{await LEX_CLOUD.reviewContent({action:"advance",item_id:item.id,review_type:item.status==="learning_review"?"learning":"legal"});await load();state.tab="content";render();}catch(e){alert("تعذر تحديث حالة المحتوى: "+(e.message||e));}
- });});
+   };});
  var ex=document.getElementById("export");if(ex)ex.onclick=exportCsv;
 }
 async function snapshotAction(id,mode){
