@@ -422,16 +422,26 @@ function render(){
   if(state.view==="weekSummary")return weekSummary();
   if(state.view==="completion")return completion();
 }
+function currentStudentMetrics(){
+  var base=(state.diag&&state.diag.metrics)||{};
+  var model=state.course.adaptiveModel||recomputeAdaptiveModel(),axes=model&&model.axes||{};
+  var out={};
+  ["recall","understanding","application","legal_precision","retention","exam"].forEach(function(k){
+    var a=axes[k];
+    out[k]=(a&&a.evidence>0&&a.value!=null)?Math.round(Number(a.value)):(base[k]==null?null:Math.round(Number(base[k])));
+  });
+  return out;
+}
 function studentSnapshot(metrics){
   var items=[
-    ["🧠","الاسترجاع",metrics.recall],
-    ["💡","الفهم",metrics.understanding],
-    ["⚖️","التطبيق",metrics.application]
+    ["brain","الاسترجاع",metrics.recall],
+    ["bulb","الفهم",metrics.understanding],
+    ["scale","التطبيق",metrics.application]
   ];
   return '<section class="studentSnapshot">'+items.map(function(x){
     var v=x[2],known=v!=null,num=known?Math.round(v):0;
-    var word=!known?"ابدأ التقييم":num>=80?"قوي":num>=60?"جيد":num>=40?"نطوره":"نركز عليه";
-    return '<div class="snapshotCard"><span class="snapshotEmoji">'+x[0]+'</span><div class="snapshotRing" style="--p:'+(known?num:0)+'"><b>'+(known?num+"%":"—")+'</b></div><strong>'+x[1]+'</strong><small>'+word+'</small></div>';
+    var word=!known?"ابدأ التقييم":num>=80?"قوي":num>=60?"جيد":num>=40?"يتطور":"نركز عليه";
+    return '<div class="snapshotCard"><span class="snapshotEmoji">'+ico(x[0])+'</span><div class="snapshotRing" style="--p:'+(known?num:0)+'"><b>'+(known?num+"%":"—")+'</b></div><strong>'+x[1]+'</strong><small>'+word+'</small></div>';
   }).join("")+'</section>';
 }
 function shortStudentTip(metrics){
@@ -447,7 +457,7 @@ function home(){
       '<section class="simpleSteps"><div><span>1</span><b>اختبر</b><small>أسئلة قصيرة</small></div><div><span>2</span><b>تدرّب</b><small>على ما تحتاجه</small></div><div><span>3</span><b>تقدّم</b><small>خطوة بعد خطوة</small></div></section>');
     return;
   }
-  var metrics=d?d.metrics:{recall:null,understanding:null,application:null,retention:null,exam:null};
+  var metrics=currentStudentMetrics();
   chrome(
     '<section class="simpleStudentHero"><div><span class="kicker">جلسة اليوم</span>'+
       '<h1>'+esc(m.title)+'</h1><p>'+esc(m.detail)+'</p>'+
