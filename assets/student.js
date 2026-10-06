@@ -27,7 +27,7 @@ function esc(value){
   });
 }
 function icon(name){
-  var symbols={lock:"🔒",check:"✓",play:"▶",test:"◎",brain:"◉",bulb:"✦",scale:"⚖",repeat:"↻",pen:"✎",trophy:"◆"};
+  var symbols={lock:"▣",check:"✓",play:"▶",test:"◎",brain:"◉",bulb:"◇",scale:"§",repeat:"↻",pen:"✎",trophy:"◆",compass:"⌖",target:"◎",book:"▤",chart:"▥"};
   return symbols[name]||"•";
 }
 function ensureDemoStudent(){
@@ -166,7 +166,7 @@ function studentInsight(){
 function simpleSkillCard(item){
   var value=adaptiveValue(item.key),level=status(value),pct=value==null?0:Math.round(value);
   return "<div class='simpleSkill "+item.key+"'>"+
-    "<div class='simpleIcon'>"+item.icon+"</div>"+
+    "<div class='simpleIcon'>"+icon(item.icon)+"</div>"+
     "<b>"+item.label+"</b>"+
     "<strong>"+(value==null?"—":pct+"%")+"</strong>"+
     "<span>"+level+"</span>"+
@@ -250,7 +250,7 @@ function countryGateView(){
         "<button class='countryCard muted' type='button' disabled aria-disabled='true'><span class='countryFlag'>🇸🇦</span><b>السعودية</b><small>قريبًا</small><em>قيد التجهيز</em></button>"+
         "<button class='countryCard muted' type='button' disabled aria-disabled='true'><span class='countryFlag'>🇦🇪</span><b>الإمارات</b><small>قريبًا</small><em>قيد التجهيز</em></button>"+
       "</div>"+
-      "<div class='countryMessage'><span>✨</span><p><b>قطر أولًا</b><br>نسخة LexLearn الحالية مهيأة لمسار قطر، وباقي الدول ستُفتح تباعًا.</p></div>"+
+      "<div class='countryMessage'><span>"+icon("compass")+"</span><p><b>قطر أولًا</b><br>نسخة LexLearn الحالية مهيأة لمسار قطر، وباقي الدول ستُفتح تباعًا.</p></div>"+
       "<div id='passError'></div>"+
       "<button class='btn primary countryStart' id='saveCountry'>ابدأ مسار قطر</button>"+
     "</section></main>";
@@ -324,14 +324,14 @@ function render(){
     ? "<section class='simpleProfile'>"+
         "<div class='simpleIntro'><div><span class='eyebrow'>مستواك الآن</span><h3>"+esc(profileTitle())+"</h3></div></div>"+
         "<div class='simpleSkillGrid'>"+
-          simpleSkillCard({key:"recall",label:"الاسترجاع",icon:"🧠"})+
-          simpleSkillCard({key:"understanding",label:"الفهم",icon:"💡"})+
-          simpleSkillCard({key:"application",label:"التطبيق",icon:"⚖️"})+
+          simpleSkillCard({key:"recall",label:"الاسترجاع",icon:"brain"})+
+          simpleSkillCard({key:"understanding",label:"الفهم",icon:"bulb"})+
+          simpleSkillCard({key:"application",label:"التطبيق",icon:"scale"})+
         "</div>"+
         "<div class='studentTipGrid'>"+
-          "<div class='tipCard good'><span>⭐</span><div><small>أقوى نقطة</small><b>"+esc(insight.best?insight.best.label:"—")+"</b></div></div>"+
-          "<div class='tipCard focus'><span>🎯</span><div><small>ركز الآن على</small><b>"+esc(insight.focus?insight.focus.label:"—")+"</b></div></div>"+
-          "<div class='tipCard today'><span>✨</span><div><small>نصيحة اليوم</small><b>"+esc(insight.tip)+"</b></div></div>"+
+          "<div class='tipCard good'><span>"+icon("chart")+"</span><div><small>أقوى نقطة</small><b>"+esc(insight.best?insight.best.label:"—")+"</b></div></div>"+
+          "<div class='tipCard focus'><span>"+icon("target")+"</span><div><small>ركز الآن على</small><b>"+esc(insight.focus?insight.focus.label:"—")+"</b></div></div>"+
+          "<div class='tipCard today'><span>"+icon("book")+"</span><div><small>نصيحة اليوم</small><b>"+esc(insight.tip)+"</b></div></div>"+
         "</div>"+
       "</section>"
     : "<div class='empty studentEmpty'>ابدأ التقييم القصير، وبعده سترى 3 مؤشرات بسيطة: الاسترجاع، الفهم، والتطبيق.</div>";
@@ -339,7 +339,7 @@ function render(){
   var achievements=course.achievements.length
     ? course.achievements.map(function(a){
         var sub=a.status==="program-complete"?"6 مراحل • 30 جلسة • مكتمل":("الأسبوع "+a.week+" • "+(a.status==="mastered"?"بإتقان":"مكتمل"));
-        return "<div class='badge "+(a.status==="program-complete"?"finalBadge":"")+"'><span class='badgeIcon'>"+(a.status==="program-complete"?"🏆":icon("trophy"))+"</span><div><b>"+achievementName(a)+"</b><small>"+sub+"</small></div></div>";
+        return "<div class='badge "+(a.status==="program-complete"?"finalBadge":"")+"'><span class='badgeIcon'>"+icon("trophy")+"</span><div><b>"+achievementName(a)+"</b><small>"+sub+"</small></div></div>";
       }).join("")
     : "<div class='empty'>أول Badge يظهر بعد إنهاء تقييم الأسبوع الأول.</div>";
 
@@ -350,9 +350,9 @@ function render(){
     "</div></header>"+
     "<main class='wrap'>"+
       "<section class='hero "+(course.completedProgram?"heroComplete":"")+"'>"+
-        "<div class='heroMain'><span class='eyebrow'>"+esc(student.cohort||"برنامج التدريب")+"</span><h1>"+(course.completedProgram?"🎉 مبروك "+esc(student.name)+"!":"أهلًا "+esc(student.name))+"</h1><p>"+countryLabel(country)+" • برنامج مصادر الالتزام • 6 أسابيع • 30 جلسة عملية</p>"+
-        "<div class='heroMeta'><span>"+(course.completedProgram?"6 / 6 مراحل مكتملة":"الأسبوع "+w+" من 6")+"</span><span>"+(course.completedProgram?"30 / 30 جلسة":"الجلسة "+(course.session||1)+" من 30")+"</span><span>"+(course.completedProgram?"🏆 تم إنهاء التدريب":course.completed.length+" جلسة مكتملة")+"</span></div></div>"+
-        "<div class='heroSide studentHeroSide'><div class='heroVisual'>"+(course.completedProgram?"🏆":"🚀")+"</div><h3>"+(course.completedProgram?"أحسنت! أنهيت البرنامج":"جاهز للجلسة التالية؟")+"</h3><p>"+(course.completedProgram?"يمكنك عرض إنجازك النهائي في أي وقت.":(result?"جلسة واحدة قصيرة، ومحتواها يتغير حسب مستواك.":"ابدأ التقييم القصير لنحدد أفضل بداية لك."))+"</p></div>"+
+        "<div class='heroMain'><span class='eyebrow'>"+esc(student.cohort||"برنامج التدريب")+"</span><h1>"+(course.completedProgram?"مبروك "+esc(student.name)+"!":"أهلًا "+esc(student.name))+"</h1><p>"+countryLabel(country)+" • برنامج مصادر الالتزام • 6 أسابيع • 30 جلسة عملية</p>"+
+        "<div class='heroMeta'><span>"+(course.completedProgram?"6 / 6 مراحل مكتملة":"الأسبوع "+w+" من 6")+"</span><span>"+(course.completedProgram?"30 / 30 جلسة":"الجلسة "+(course.session||1)+" من 30")+"</span><span>"+(course.completedProgram?"تم إنهاء التدريب":course.completed.length+" جلسة مكتملة")+"</span></div></div>"+
+        "<div class='heroSide studentHeroSide'><div class='heroVisual'>"+icon(course.completedProgram?"trophy":"compass")+"</div><h3>"+(course.completedProgram?"أحسنت! أنهيت البرنامج":"جاهز للجلسة التالية؟")+"</h3><p>"+(course.completedProgram?"يمكنك عرض إنجازك النهائي في أي وقت.":(result?"جلسة واحدة قصيرة، ومحتواها يتغير حسب مستواك.":"ابدأ التقييم القصير لنحدد أفضل بداية لك."))+"</p></div>"+
       "</section>"+
       "<section class='actionGrid singleAction'>"+actionPrimary+"</section>"+
       "<div class='sectionHead'><div><h2>رحلتك</h2><p>كلما أنهيت مرحلة، تفتح التالية تلقائيًا.</p></div><span class='progressTag'>"+course.completed.length+" / 30</span></div>"+
