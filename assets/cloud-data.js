@@ -11,7 +11,7 @@ function studentEmail(username){return String(username||"").trim().toLowerCase()
 async function profile(){
   var c=db();if(!c)return null;
   var u=await c.auth.getUser();if(u.error||!u.data.user)return null;
-  var p=await c.from("profiles").select("id,role,username,display_name,active,must_change_password,university,year_label,cohort_id,locale").eq("id",u.data.user.id).single();
+  var p=await c.from("profiles").select("id,role,username,display_name,active,must_change_password,university,year_label,cohort_id,locale,country_code").eq("id",u.data.user.id).single();
   if(p.error)throw p.error;return p.data;
 }
 async function signInStudent(username,password){
@@ -48,7 +48,7 @@ async function listStudents(){
   var c=db();if(!c)return [];
   var r=await c.from("profiles").select("id,username,display_name,active,must_change_password,university,year_label,cohort_id,created_at,cohorts(name)").eq("role","student").order("created_at",{ascending:false});
   if(r.error)throw r.error;
-  return (r.data||[]).map(function(x){return{id:x.id,name:x.display_name,username:x.username,active:x.active,mustChangePassword:x.must_change_password,university:x.university,year:x.year_label,cohort:x.cohorts&&x.cohorts.name||"",createdAt:x.created_at,cloud:true};});
+  return (r.data||[]).map(function(x){return{id:x.id,name:x.display_name,username:x.username,active:x.active,mustChangePassword:x.must_change_password,university:x.university,year:x.year_label,country:x.country_code||"qa",cohort:x.cohorts&&x.cohorts.name||"",createdAt:x.created_at,cloud:true};});
 }
 async function listCohorts(){
   var c=db();if(!c)return[];
