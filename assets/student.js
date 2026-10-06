@@ -125,6 +125,11 @@ function weekStatus(n){
   if(n===1||passedWeek(n-1))return ["current","متاح الآن","play"];
   return ["locked","مغلق حتى اجتياز المرحلة السابقة","lock"];
 }
+function adaptiveValue(key){
+  var model=course&&course.adaptiveModel,axis=model&&model.axes&&model.axes[key];
+  if(axis&&axis.evidence>0)return axis.value;
+  return result&&result.metrics?result.metrics[key]:null;
+}
 function status(value){
   if(value==null)return "لم يُقَس";
   if(value>=80)return "قوي";
@@ -133,13 +138,15 @@ function status(value){
   return "أولوية تدريب";
 }
 function profileTitle(){
+  var model=course&&course.adaptiveModel;
+  if(model&&model.bridge&&model.bridge.label)return model.bridge.label;
   if(!result)return "ابدأ بالتقييم التشخيصي";
   if(result.profileType==="recall-led")return "ذاكرتك أقوى من الفهم — هنحوّل الحفظ إلى استخدام";
   if(result.profileType==="understanding-led")return "فهمك أقوى من الاسترجاع — هنحوّل المعنى إلى ذاكرة سريعة";
   return "أداء متوازن — هنركز على أقل مهارة حاليًا";
 }
 function skillCard(title,key,ic){
-  var value=result&&result.metrics?result.metrics[key]:null;
+  var value=adaptiveValue(key);
   var width=value==null?6:Math.max(6,Math.min(100,value));
   return "<div class='skill'>"+
     "<div class='skillHead'><span class='skillIcon'>"+icon(ic)+"</span><div><b>"+esc(title)+"</b><small>"+status(value)+(value==null?"":" • "+value+"%")+"</small></div></div>"+
@@ -275,8 +282,8 @@ function render(){
 
   var learningProfile=result
     ? "<section class='resultCard'>"+
-        "<div class='resultIntro'><div><h3>"+esc(profileTitle())+"</h3><p>المؤشرات التالية تساعدك تعرف إيه اللي محتاج تدريب الآن، وليست درجة جامعية.</p></div>"+
-        "<span class='profilePill'>"+(result.profileType==="recall-led"?"نمط حفظي":result.profileType==="understanding-led"?"نمط فهمي":"متوازن")+"</span></div>"+
+        "<div class='resultIntro'><div><h3>"+esc(profileTitle())+"</h3><p>المؤشرات تتحدث مع كل دليل جديد من التدريب، وليست درجة جامعية.</p></div>"+
+        "<span class='profilePill'>"+(course.adaptiveModel?"تحليل متكيف":"تقييم البداية")+"</span></div>"+
         "<div class='skillGrid'>"+
           skillCard("الذاكرة القانونية","recall","brain")+
           skillCard("الفهم","understanding","bulb")+
