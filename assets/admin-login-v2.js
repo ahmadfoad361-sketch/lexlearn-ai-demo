@@ -29,6 +29,16 @@ form.addEventListener("submit",function(e){
   e.preventDefault();
   login(document.getElementById("adminEmail").value.trim(),document.getElementById("adminPassword").value);
 });
+var forgot=document.getElementById("forgotAdminPassword");
+if(forgot)forgot.onclick=async function(){
+  var email=document.getElementById("adminEmail").value.trim();
+  if(!email){err.textContent="اكتب البريد الإلكتروني أولًا.";err.style.display="block";return;}
+  try{
+    await LEX_CLOUD.requestPasswordReset(email,location.origin+location.pathname.replace("admin-login.html","reset-password.html"));
+    err.textContent="تم إرسال رابط استعادة جديد إلى بريدك. افتح أحدث رسالة فقط.";
+    err.style.display="block";
+  }catch(e){err.textContent="تعذر إرسال رابط الاستعادة الآن.";err.style.display="block";}
+};
 var demo=document.getElementById("demoAdmin");
 if(demo&&window.LEX_CLOUD&&LEX_CLOUD.isConfigured&&LEX_CLOUD.isConfigured())demo.style.display="none";
 if(demo)demo.onclick=function(){
