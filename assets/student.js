@@ -82,6 +82,8 @@ if(!student){
 }
 
 var country=student.country||session.country||null;
+var COUNTRY_SETUP_KEY="lexlearn_country_setup_v1_"+student.id;
+var countrySetupDone=read(COUNTRY_SETUP_KEY,false)===true;
 var PROFILE_KEY="lexlearn_v9_profile_"+student.id;
 var COURSE_KEY=country?"lexlearn_course_v1_"+country+"_sources_"+student.id:null;
 var profile=read(PROFILE_KEY,{results:{}});
@@ -240,20 +242,27 @@ function changePasswordView(force){
 }
 function countryGateView(){
   APP.innerHTML=
-    "<main class='passwordGate'><section>"+
-      "<div class='mark'><img src='assets/lexlearn-logo.svg' alt='LexLearn'></div><span class='eyebrow'>إعداد التدريب</span>"+
-      "<h1>اختر الدولة</h1>"+
-      "<p>سيُحفظ تقدمك لكل دولة بصورة مستقلة، ويمكنك تغيير الدولة لاحقًا من حسابك.</p>"+
-      "<select id='countryPick' class='countryPick'>"+countryOptions("qa")+"</select>"+
+    "<main class='countryGate'><section class='countryGateCard'>"+
+      "<div class='countryBrand'><div class='mark'><img src='assets/lexlearn-logo.svg' alt='LexLearn'></div><div><span class='eyebrow'>ابدأ من هنا</span><h1>اختر دولتك</h1><p>سنضبط المحتوى القانوني والتدريب على المسار المناسب.</p></div></div>"+
+      "<div class='countryCards' role='list' aria-label='اختيار الدولة'>"+
+        "<button class='countryCard live selected' type='button' data-country-choice='qa'><span class='countryFlag'>🇶🇦</span><b>قطر</b><small>المسار المتاح الآن</small><em>ابدأ</em></button>"+
+        "<button class='countryCard muted' type='button' disabled aria-disabled='true'><span class='countryFlag'>🇪🇬</span><b>مصر</b><small>قريبًا</small><em>قيد التجهيز</em></button>"+
+        "<button class='countryCard muted' type='button' disabled aria-disabled='true'><span class='countryFlag'>🇸🇦</span><b>السعودية</b><small>قريبًا</small><em>قيد التجهيز</em></button>"+
+        "<button class='countryCard muted' type='button' disabled aria-disabled='true'><span class='countryFlag'>🇦🇪</span><b>الإمارات</b><small>قريبًا</small><em>قيد التجهيز</em></button>"+
+      "</div>"+
+      "<div class='countryMessage'><span>✨</span><p><b>قطر أولًا</b><br>نسخة LexLearn الحالية مهيأة لمسار قطر، وباقي الدول ستُفتح تباعًا.</p></div>"+
       "<div id='passError'></div>"+
-      "<button class='btn primary' id='saveCountry'>حفظ وفتح التدريب</button>"+
+      "<button class='btn primary countryStart' id='saveCountry'>ابدأ مسار قطر</button>"+
     "</section></main>";
   document.getElementById("saveCountry").onclick=async function(){
-    var code=document.getElementById("countryPick").value;
+    var code="qa";
+    var err=document.getElementById("passError");
     if(session.cloud&&window.LEX_CLOUD&&LEX_CLOUD.isConfigured&&LEX_CLOUD.isConfigured()){
-      try{await LEX_CLOUD.updateOwnProfile({country_code:code});}catch(e){document.getElementById("passError").textContent="تعذر حفظ الدولة الآن.";return;}
+      try{await LEX_CLOUD.updateOwnProfile({country_code:code});}catch(e){err.textContent="تعذر حفظ الدولة الآن. حاول مرة أخرى.";return;}
     }
     saveStudentPatch({country:code});
+    write(COUNTRY_SETUP_KEY,true);
+    countrySetupDone=true;
     location.reload();
   };
 }
@@ -277,6 +286,10 @@ function render(){
   if(session.cloud&&!consentOk){consentGateView();return;}
   if(student.mustChangePassword){
     changePasswordView(true);
+    return;
+  }
+  if(!countrySetupDone){
+    countryGateView();
     return;
   }
   if(!student.country){
