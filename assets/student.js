@@ -355,9 +355,20 @@ async function boot(){
       PROFILE_KEY="lexlearn_v9_profile_"+student.id;
       COURSE_KEY="lexlearn_course_v1_"+country+"_sources_"+student.id;
       var ps=await LEX_CLOUD.loadSnapshot({courseId:country+"-sources",snapshotType:"profile"});
-      if(ps&&ps.state){profile=ps.state;write(PROFILE_KEY,profile);result=profile.results&&profile.results[country+"-sources"]||null;}
+      if(ps&&ps.state){
+        profile=ps.state;write(PROFILE_KEY,profile);result=profile.results&&profile.results[country+"-sources"]||null;
+      }else if(profile&&profile.results&&profile.results[country+"-sources"]){
+        // Recover a diagnostic that was completed in this browser before central sync was enabled.
+        await LEX_CLOUD.saveSnapshot({courseId:country+"-sources",snapshotType:"profile",state:profile});
+        result=profile.results[country+"-sources"]||null;
+      }
       var cs=await LEX_CLOUD.loadSnapshot({courseId:country+"-sources",snapshotType:"course"});
-      if(cs&&cs.state){course=cs.state;write(COURSE_KEY,course);}
+      if(cs&&cs.state){
+        course=cs.state;write(COURSE_KEY,course);
+      }else if(course&&((course.completed&&course.completed.length)||(course.evidence&&course.evidence.length)||Number(course.session)>1)){
+        // Recover real training progress already completed by this signed-in student in this browser.
+        await LEX_CLOUD.saveSnapshot({courseId:country+"-sources",snapshotType:"course",state:course});
+      }
     }catch(e){}
   }
   render();
