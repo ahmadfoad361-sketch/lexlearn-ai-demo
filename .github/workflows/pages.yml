@@ -35,7 +35,8 @@ jobs:
           ! grep -R "async async" assets
           test -f privacy.html
           test -f terms.html
-          test -f supabase/migrations/001_lexlearn_production.sql
+          test -f supabase/migrations/20261006_001_production_core.sql
+          test -f supabase/migrations/20261006_002_hardening_and_qatar_curriculum.sql
           test -f supabase/functions/grade-answer/index.ts
       - name: Adaptive engine tests
         run: node tests/adaptive-engine.test.js
