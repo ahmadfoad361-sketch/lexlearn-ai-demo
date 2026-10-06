@@ -162,7 +162,7 @@ function saveStudentPatch(patch){
 function changePasswordView(force){
   APP.innerHTML=
     "<main class='passwordGate'><section>"+
-      "<div class='mark'>Lx</div>"+
+      "<div class='mark'><img src='assets/lexlearn-logo.svg' alt='LexLearn'></div>"+
       "<span class='eyebrow'>"+(force?"أول تسجيل دخول":"أمان الحساب")+"</span>"+
       "<h1>"+(force?"اختر كلمة مرور جديدة":"تغيير كلمة المرور")+"</h1>"+
       "<p>"+(force?"غيّر كلمة المرور المؤقتة قبل بدء التدريب.":"اكتب كلمة المرور الحالية ثم اختر كلمة مرور جديدة.")+"</p>"+
@@ -190,7 +190,7 @@ function changePasswordView(force){
 function countryGateView(){
   APP.innerHTML=
     "<main class='passwordGate'><section>"+
-      "<div class='mark'>Lx</div><span class='eyebrow'>إعداد التدريب</span>"+
+      "<div class='mark'><img src='assets/lexlearn-logo.svg' alt='LexLearn'></div><span class='eyebrow'>إعداد التدريب</span>"+
       "<h1>اختر الدولة</h1>"+
       "<p>سيُحفظ تقدمك لكل دولة بصورة مستقلة، ويمكنك تغيير الدولة لاحقًا من حسابك.</p>"+
       "<select id='countryPick' class='countryPick'>"+countryOptions("qa")+"</select>"+
@@ -257,7 +257,7 @@ function render(){
 
   APP.innerHTML=
     "<header class='top'><div class='topin'>"+
-      "<div class='brand'><div class='mark'>Lx</div><div><b>LexLearn</b><small>حساب الطالب</small></div></div>"+
+      "<div class='brand'><div class='mark'><img src='assets/lexlearn-logo.svg' alt='LexLearn'></div><div><b>LexLearn</b><small>حساب الطالب</small></div></div>"+
       "<div class='topactions'><select class='topbtn countryTop' id='countrySwitch'>"+countryOptions(country)+"</select><button class='topbtn' id='changePass'>تغيير كلمة المرور</button><a class='topbtn' href='index.html'>الموقع</a><button class='topbtn' id='logout'>خروج</button></div>"+
     "</div></header>"+
     "<main class='wrap'>"+
