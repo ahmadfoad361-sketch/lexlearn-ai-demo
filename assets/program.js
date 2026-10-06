@@ -2,9 +2,10 @@
 "use strict";
 var APP=document.getElementById("programApp");
 var qs=new URLSearchParams(location.search);
-var DEMO=qs.get("demo")==="1";
 var AUTO_START=qs.get("start")==="1";
 var STUDENT_SESSION=(function(){try{return JSON.parse(localStorage.getItem("lexlearn_student_session"))||null;}catch(e){return null;}})();
+// A signed-in cloud student must always use the real tracked path, even if an old demo=1 link is opened.
+var DEMO=qs.get("demo")==="1"&&!(STUDENT_SESSION&&STUDENT_SESSION.cloud&&STUDENT_SESSION.studentId);
 var COUNTRY=String(qs.get("country")||(STUDENT_SESSION&&STUDENT_SESSION.country)||"qa").toLowerCase();
 var SUBJECT=qs.get("subject")||"sources";
 var COURSE_DB_ID=COUNTRY==="qa"?"qa-qu-lawc213":"eg-civil-sources";
