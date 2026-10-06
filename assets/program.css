@@ -146,3 +146,18 @@ button,input,textarea{font:inherit}.courseShell{min-height:100vh}
 .confidencePrompt{margin-top:16px;padding:14px;border:1px solid var(--line);border-radius:15px;background:#f8f5f1}
 .confidencePrompt>b{display:block;color:var(--navy);font-size:13px;margin-bottom:8px}
 .confidencePrompt .choiceRow{margin-top:0}
+
+
+/* v30 — simple infographic-first student home */
+.simpleStudentHero{display:grid;grid-template-columns:1fr auto;gap:24px;align-items:center;padding:30px 32px;border-radius:28px;background:linear-gradient(145deg,#101c38,#203256);color:#fff;box-shadow:var(--shadow)}
+.simpleStudentHero h1{font-size:clamp(34px,5vw,54px);line-height:1.15;margin:12px 0 7px}.simpleStudentHero p{margin:0;color:#d2d9e4;line-height:1.75;font-size:15px}.simpleMeta{display:flex;gap:8px;flex-wrap:wrap;margin-top:17px}.simpleMeta span{padding:8px 11px;border-radius:999px;background:rgba(255,255,255,.08);font-size:11px}
+.bigStudentCta{min-width:190px;min-height:58px;font-size:16px;display:inline-flex;align-items:center;justify-content:center;text-decoration:none}
+.simpleSectionTitle{display:flex;justify-content:space-between;align-items:end;margin:24px 0 10px}.simpleSectionTitle h2{margin:0;color:var(--navy);font-size:25px}.simpleSectionTitle p{margin:3px 0 0;color:var(--muted);font-size:12px}
+.studentSnapshot{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.snapshotCard{background:#fffdfa;border:1px solid rgba(100,80,65,.11);border-radius:24px;padding:18px;text-align:center;box-shadow:0 12px 32px rgba(20,24,32,.05)}
+.snapshotEmoji{display:block;font-size:28px;margin-bottom:7px}.snapshotRing{--p:0;width:88px;height:88px;margin:0 auto 10px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--maroon) calc(var(--p)*1%),#eee8e1 0);position:relative}.snapshotRing:after{content:"";position:absolute;width:68px;height:68px;border-radius:50%;background:#fffdfa}.snapshotRing b{position:relative;z-index:1;color:var(--navy);font-size:18px}.snapshotCard strong{display:block;color:var(--navy);font-size:15px}.snapshotCard small{display:block;color:var(--muted);margin-top:3px}
+.studentTip{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:center;margin:16px 0 22px;padding:16px 18px;border-radius:20px;background:#fff7e8;border:1px solid #ead7b5}.studentTip>span{font-size:30px}.studentTip b{display:block;color:#6d4d18}.studentTip p{margin:3px 0 0;color:#6a5a42;line-height:1.7}
+.simpleSteps{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:18px}.simpleSteps>div{background:#fff;border:1px solid var(--line);border-radius:20px;padding:18px;text-align:center}.simpleSteps span{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;margin:0 auto 8px;background:#f2e8ec;color:var(--maroon);font-weight:800}.simpleSteps b{display:block;color:var(--navy)}.simpleSteps small{display:block;margin-top:3px;color:var(--muted)}
+.weekRoadmap .roadmapTitle h2{font-size:22px}.weekRoadmap .roadmapTitle .kicker{display:none}
+@media(max-width:760px){.simpleStudentHero{grid-template-columns:1fr;padding:22px}.bigStudentCta{width:100%}.studentSnapshot{grid-template-columns:1fr}.simpleSteps{grid-template-columns:1fr 1fr 1fr}.snapshotCard{display:grid;grid-template-columns:auto auto 1fr;align-items:center;text-align:right;gap:12px}.snapshotEmoji{margin:0}.snapshotRing{width:64px;height:64px;margin:0}.snapshotRing:after{width:48px;height:48px}.snapshotCard strong,.snapshotCard small{grid-column:3}.snapshotCard small{margin-top:-8px}}
+@media(max-width:520px){.simpleSteps{grid-template-columns:1fr}.simpleStudentHero h1{font-size:34px}}
