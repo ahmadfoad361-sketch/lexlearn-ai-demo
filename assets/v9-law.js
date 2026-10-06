@@ -3,7 +3,7 @@
 var D=window.LEX_V9_CONTENT;
 var APP=document.getElementById("lawApp");
 var BOOT_QS=new URLSearchParams(location.search);
-var BOOT_COUNTRY=BOOT_QS.get("country");
+var BOOT_COUNTRY=(BOOT_QS.get("country")||"").toLowerCase()||null;
 var BOOT_SUBJECT=BOOT_QS.get("subject");
 var BOOT_AUTODIAG=BOOT_QS.get("autodiag")==="1";
 var STUDENT_SESSION=(function(){try{return JSON.parse(localStorage.getItem("lexlearn_student_session"))||null;}catch(e){return null;}})();
@@ -50,7 +50,7 @@ function clearTimer(){if(state.timer){clearInterval(state.timer);state.timer=nul
 function chrome(inner){
   var res=currentResult();
   var metrics=res?res.metrics:{recall:null,understanding:null,application:null,retention:null,exam:null};
-  var labels=[["recall","استرجاع"],["understanding","فهم"],["application","تطبيق"],["retention","احتفاظ"],["exam","صياغة"]];
+  var labels=[["recall","استرجاع"],["understanding","فهم"],["application","تطبيق"],["legal_precision","دقة قانونية"],["retention","احتفاظ"],["exam","أداء امتحاني"]];
   APP.innerHTML='<div class="v9-shell"><header class="v9-top"><div class="v9-topin">'+
     '<div class="v9-brand"><div class="v9-mark"><img src="assets/lexlearn-logo.svg" alt="LexLearn"></div><div><b>LexLearn</b><small>دراسة القانون بطريقة تناسب أداءك</small></div></div>'+
     '<div class="v9-topactions">'+
@@ -234,14 +234,22 @@ function freeRecallScore(text){
 function finishDiagnostic(){
   var d=state.diagnostic,key=resultKey();
   if(d.retentionMode){
-    var old=state.profile.results[key];if(old){old.metrics.retention=Math.round(d.delayedCorrect/5*100);old.lastRetentionAt=Date.now();}
+    var old=state.profile.results[key];if(old){old.metrics.retention=Math.round(d.delayedCorrect/5*100);old.lastRetentionAt=Date.now();if(window.LEX_ENGINE){old.adaptiveModel=LEX_ENGINE.learnerModel({metrics:old.metrics,events:[{dimension:"retention",score:old.metrics.retention/100,difficulty:3,delayed:true,ts:Date.now()}]});}}
     if(state.profile.retention[key])state.profile.retention[key].completed=true;
     saveProfile();state.view="results";return render();
   }
-  var recall=Math.round(((d.recallMCQ||0)+freeRecallScore(d.recallFree))/2);
+  var precision=freeRecallScore(d.recallFree);
+  var recall=Math.round(((d.recallMCQ||0)+precision)/2);
   var retention=Math.round(d.delayedCorrect/5*100);
-  var metrics={recall:recall,understanding:d.understanding||0,application:d.application||0,retention:retention,exam:null};
-  var res={countryId:state.countryId,subjectId:state.subjectId,metrics:metrics,anchorReadSeconds:d.anchorReadSeconds,memoryReadTimes:d.memoryReadTimes,createdAt:Date.now(),profileType:profileType(metrics)};
+  var metrics={recall:recall,understanding:d.understanding||0,application:d.application||0,legal_precision:precision,retention:retention,exam:null};
+  var adaptiveModel=window.LEX_ENGINE?LEX_ENGINE.learnerModel({metrics:metrics,events:[
+    {dimension:"recall",score:recall/100,difficulty:2,ts:Date.now()},
+    {dimension:"understanding",score:(d.understanding||0)/100,difficulty:2,ts:Date.now()},
+    {dimension:"application",score:(d.application||0)/100,difficulty:3,ts:Date.now()},
+    {dimension:"legal_precision",score:precision/100,difficulty:2,ts:Date.now()},
+    {dimension:"retention",score:retention/100,difficulty:2,delayed:true,ts:Date.now()}
+  ]}):null;
+  var res={countryId:state.countryId,subjectId:state.subjectId,metrics:metrics,anchorReadSeconds:d.anchorReadSeconds,memoryReadTimes:d.memoryReadTimes,createdAt:Date.now(),profileType:profileType(metrics),adaptiveModel:adaptiveModel,analysisVersion:"adaptive-v9"};
   state.profile.results[key]=res;
   state.profile.retention[key]={dueAt:Date.now()+24*60*60*1000,completed:false};
   saveProfile();state.view="results";render();
@@ -253,6 +261,7 @@ function profileType(m){
 }
 function profileSentence(res){
   var m=res.metrics;
+  if(res.adaptiveModel&&res.adaptiveModel.bridge)return res.adaptiveModel.bridge.label;
   if(res.profileType==="understanding-led")return "كان الفهم أقوى من الاسترجاع اللفظي. ابدأ بخريطة منطقية للنص، ثم ثبّت الكلمات القانونية الأساسية باسترجاع متباعد.";
   if(res.profileType==="recall-led")return "كان الاسترجاع اللفظي أقوى من التطبيق. ابدأ من النص الذي تتذكره، ثم فككه وغيّر الوقائع حتى تتحول القاعدة إلى فهم قابل للاستخدام.";
   if(m.retention+20<m.recall)return "كان الأداء الفوري أقوى من الاحتفاظ. ابدأ بمراجعات قصيرة متباعدة واختبارات استرجاع.";
@@ -270,13 +279,15 @@ function resultSkillInfo(key){
     recall:["🧠","الذاكرة القانونية","تسترجع القاعدة والمصطلحات من غير فتح النص."],
     understanding:["💡","فهم القاعدة","تعرف لماذا تعمل القاعدة وما وظيفة كل عنصر."],
     application:["⚖️","التطبيق","تنقل القاعدة من النص إلى واقعة جديدة."],
+    legal_precision:["§","الدقة القانونية","تلتقط اللفظ أو العنصر الذي يغيّر التكييف والنتيجة."],
     retention:["🔁","ثبات المعلومة","تظل المعلومة متاحة بعد مرور وقت."],
     exam:["✍️","الإجابة الامتحانية","تنظم القاعدة والتطبيق والنتيجة في إجابة واضحة."]
   };
   return map[key];
 }
 function resultProfileTitle(res){
-  var m=res.metrics,items=[["recall",m.recall],["understanding",m.understanding],["application",m.application],["retention",m.retention],["exam",m.exam==null?55:m.exam]].sort(function(a,b){return (a[1]||0)-(b[1]||0);});
+  var m=res.metrics,items=[["recall",m.recall],["understanding",m.understanding],["application",m.application],["legal_precision",m.legal_precision],["retention",m.retention],["exam",m.exam]].filter(function(x){return x[1]!=null;}).sort(function(a,b){return a[1]-b[1];});
+  if(res.adaptiveModel&&res.adaptiveModel.weakest&&res.adaptiveModel.strongest){var wi=resultSkillInfo(res.adaptiveModel.weakest),si=resultSkillInfo(res.adaptiveModel.strongest);return si[1]+" نقطة قوة مثبتة، و"+wi[1]+" هي الأولوية الحالية";}
   var weak=resultSkillInfo(items[0][0])[1],strong=resultSkillInfo(items[items.length-1][0])[1];
   if(res.profileType==="recall-led")return "ذاكرتك أقوى من الفهم — هنحوّل الحفظ إلى استخدام";
   if(res.profileType==="understanding-led")return "فهمك أقوى من الاسترجاع — هنحوّل المعنى إلى ذاكرة سريعة";
@@ -295,6 +306,7 @@ function renderResults(){
     resultSkillCard("recall",m.recall)+
     resultSkillCard("understanding",m.understanding)+
     resultSkillCard("application",m.application)+
+    resultSkillCard("legal_precision",m.legal_precision)+
     resultSkillCard("retention",m.retention)+
     resultSkillCard("exam",m.exam)+
   '</div>'+
