@@ -11,7 +11,18 @@ function seed(){
   return a;
 }
 var students=seed(),err=document.getElementById("studentError");
-async function login(u,p){
+async async function login(u,p){
+  if(window.LEX_CLOUD&&LEX_CLOUD.isConfigured()){
+    try{
+      var r=await LEX_CLOUD.signInUsername(u,p),pr=r.profile;
+      localStorage.setItem(SESSION,JSON.stringify({studentId:pr.id,name:pr.display_name,username:pr.username,country:null,cloud:true,at:Date.now()}));
+      location.href="student.html";return;
+    }catch(e){
+      err.textContent="تعذر تسجيل الدخول. تحقق من اسم المستخدم وكلمة المرور أو حالة الحساب.";
+      err.style.display="block";return;
+    }
+  }
+
   if(window.LEX_CLOUD&&LEX_CLOUD.isConfigured&&LEX_CLOUD.isConfigured()){
     try{
       var cloud=await LEX_CLOUD.signInStudent(u,p),pr=cloud.profile;
