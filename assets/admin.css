@@ -30,3 +30,6 @@
   --maroon:#8a1f39;
   --maroon-2:#5b0d26;
 }
+
+/* central adaptive six-axis */
+@media(min-width:1101px){.metricGrid,.evidenceGrid{grid-template-columns:repeat(6,1fr)}}
