@@ -5,14 +5,37 @@ var qs=new URLSearchParams(location.search);
 var DEMO=qs.get("demo")==="1";
 var AUTO_START=qs.get("start")==="1";
 var STUDENT_SESSION=(function(){try{return JSON.parse(localStorage.getItem("lexlearn_student_session"))||null;}catch(e){return null;}})();
-var COUNTRY=qs.get("country")||(STUDENT_SESSION&&STUDENT_SESSION.country)||"qa";
+var COUNTRY=String(qs.get("country")||(STUDENT_SESSION&&STUDENT_SESSION.country)||"qa").toLowerCase();
 var SUBJECT=qs.get("subject")||"sources";
 var COUNTRY_LABELS={qa:"قطر",eg:"مصر",sa:"السعودية",ae:"الإمارات",other:"دولة أخرى"};
 function countryLabel(){return COUNTRY_LABELS[COUNTRY]||"الدولة المختارة";}
 var STUDENT_SCOPE=STUDENT_SESSION&&STUDENT_SESSION.studentId?("_"+STUDENT_SESSION.studentId):"";
 var PROFILE_KEY="lexlearn_v9_profile"+STUDENT_SCOPE;
 var COURSE_KEY="lexlearn_course_v1_"+COUNTRY+"_"+SUBJECT+STUDENT_SCOPE;
-var TEXT64="ينعقد العقد بمجرد ارتباط الإيجاب بالقبول، إذا كان محله وسببه معتبرين قانونًا، وذلك دون إخلال بما يتطلبه القانون من أوضاع خاصة لانعقاد بعض العقود.";
+var LAW_PACKS={
+  qa:{
+    institution:"Qatar University / Qatar track",
+    article:"المادة 64",
+    anchor:"ينعقد العقد بمجرد ارتباط الإيجاب بالقبول، إذا كان محله وسببه معتبرين قانونًا، وذلك دون إخلال بما يتطلبه القانون من أوضاع خاصة لانعقاد بعض العقود.",
+    memory:"إيجاب/قبول ← محل/سبب معتبران قانونًا ← أوضاع خاصة عند اللزوم",
+    recallQ:"أي مجموعة تجمع أهم عناصر المادة 64؟",
+    recallA:["الإيجاب والقبول + المحل والسبب + الأوضاع الخاصة عند اللزوم","الضرر + الخطأ + السببية","الإثراء + الافتقار فقط"],
+    restrictionQ:"لماذا لا يكفي مجرد الإيجاب والقبول دائمًا وفق النص القطري المدروس؟",
+    restrictionA:"لأن النص يربط الانعقاد أيضًا باعتبار المحل والسبب وبالأوضاع الخاصة عند اللزوم"
+  },
+  eg:{
+    institution:"Egypt track",
+    article:"المادة 89",
+    anchor:"يتم العقد بمجرد أن يتبادل طرفان التعبير عن إرادتين متطابقتين، مع مراعاة ما يقرره القانون فوق ذلك من أوضاع معينة لانعقاد العقد.",
+    memory:"تعبيران متطابقان عن الإرادة ← أوضاع خاصة إذا قررها القانون",
+    recallQ:"أي عبارة تجمع جوهر المادة 89؟",
+    recallA:["تبادل تعبيرين متطابقين عن الإرادة مع مراعاة الأوضاع الخاصة التي يقررها القانون","الضرر + الخطأ + السببية","الإثراء + الافتقار فقط"],
+    restrictionQ:"لماذا لا يكفي تبادل الإرادتين في كل حالة وفق المادة 89؟",
+    restrictionA:"لأن القانون قد يقرر أوضاعًا خاصة لانعقاد بعض العقود"
+  }
+};
+var LAW=LAW_PACKS[COUNTRY]||LAW_PACKS.qa;
+var TEXT64=LAW.anchor;
 var curriculum=[
   {week:1,title:"أساس القاعدة القانونية",sessions:[
     ["بداية البرنامج","العقد: الفكرة والعناصر","core"],
@@ -79,6 +102,25 @@ var taskBank={
   memoryAnchor:{kind:"adaptive",title:"من الفهم إلى التثبيت",q:"أي مفتاح ذاكرة يحفظ بنية القاعدة دون فصلها عن معناها؟",opts:["إيجاب/قبول ← محل/سبب ← أوضاع خاصة عند اللزوم","ضرر ← خطأ ← سببية","زمن ← مكان ← شاهد"],a:0,skill:"contract",why:"نحن لا نحفظ فقرة صماء؛ نحفظ هيكلًا ذا معنى يمكن إعادة بناء القاعدة منه.",memory:"مفتاح الذاكرة: تراضٍ → صحة العناصر → شكل خاص عند اللزوم."},
   reconstruct:{kind:"adaptive",mode:"free",title:"استرجاع مع معنى",q:"من ذاكرتك، اكتب 3 مفاتيح فقط تعيد بها بناء قاعدة انعقاد العقد، ثم اكتب بجانب كل مفتاح وظيفته.",skill:"contract",model:"1) الإيجاب والقبول: وجود التراضي. 2) المحل والسبب المعتبران قانونًا: سلامة عناصر العقد. 3) الأوضاع الخاصة عند اللزوم: احترام الشكل الذي يفرضه القانون لبعض العقود.",why:"هذا التدريب يربط الذاكرة بالسبب القانوني، فلا يبقى الحفظ منفصلًا عن الفهم.",memory:"إذا نسيت العبارة الطويلة، استرجع الهيكل ثم أعد بناء الصياغة."}
 };
+
+function localizeCountryTasks(){
+  taskBank.review.q="ما القيد أو العنصر الذي يجب ألا تسقطه عند استرجاع "+LAW.article+"؟";
+  taskBank.review.opts=COUNTRY==="eg"?["مراعاة الأوضاع الخاصة التي يقررها القانون","وقوع ضرر","مرور سنة"]:["المحل والسبب المعتبران قانونًا والأوضاع الخاصة عند اللزوم","وقوع ضرر","مرور سنة"];
+  taskBank.review.why="الهدف هو استرجاع القاعدة كاملة دون إسقاط القيود التي تغيّر النتيجة.";
+  taskBank.understanding.q=LAW.restrictionQ;
+  taskBank.understanding.opts=[LAW.restrictionA,"لأن كل عقد يحتاج شاهدين","لأن العقد لا ينعقد إلا بعد سنة"];
+  taskBank.understanding.why="الفهم هنا يقوم على ربط التراضي بالقيود القانونية التي قد تغيّر الحكم.";
+  taskBank.recall.q=LAW.recallQ;
+  taskBank.recall.opts=LAW.recallA.slice();
+  taskBank.recall.why="هذه العناصر مأخوذة من النص الرسمي المختار لهذا المسار.";
+  taskBank.retention.q="من غير الرجوع للنص: ما القيد الذي تحفظه "+LAW.article+" إلى جانب التراضي؟";
+  taskBank.retention.opts=COUNTRY==="eg"?["مراعاة الأوضاع الخاصة التي يقررها القانون","وجوب وجود ضرر","وجوب مرور مدة"]:["سلامة المحل والسبب ومراعاة الأوضاع الخاصة عند اللزوم","وجوب وجود ضرر","وجوب مرور مدة"];
+  taskBank.retention.why="الاسترجاع المتأخر يجب أن يحافظ على القيد الذي يمنع الفهم المبتور للنص.";
+  taskBank.memoryAnchor.opts=[LAW.memory,"ضرر ← خطأ ← سببية","زمن ← مكان ← شاهد"];
+  taskBank.memoryAnchor.memory="مفتاح الذاكرة: "+LAW.memory+".";
+}
+localizeCountryTasks();
+
 var weekTasks={
   1:[
     {kind:"core",title:"التقاط القاعدة",q:"أي عبارة تعبّر عن جوهر انعقاد العقد في النص المعروض؟",opts:["تطابق الإرادتين مع سلامة العناصر القانونية","وجود ضرر فقط","مرور مدة زمنية"],a:0,skill:"contract",why:"جوهر القاعدة هو التراضي مع بقاء باقي العناصر القانونية معتبرة.",memory:"ابدأ دائمًا بالسؤال: هل يوجد تراضٍ؟ وهل العناصر صحيحة قانونًا؟"},
@@ -174,10 +216,20 @@ function loadCourse(){
   }catch(e){return defaultCourse();}
 }
 var state={view:"home",task:0,answers:[],assessmentAnswers:[],queue:[],course:loadCourse(),diag:diagnostic(),repairMode:false,weekPreview:null};
-function save(){localStorage.setItem(COURSE_KEY,JSON.stringify(state.course));}
+function save(){
+  localStorage.setItem(COURSE_KEY,JSON.stringify(state.course));
+  if(window.LEX_CLOUD&&LEX_CLOUD.isConfigured&&LEX_CLOUD.isConfigured()&&STUDENT_SESSION&&STUDENT_SESSION.cloud){
+    LEX_CLOUD.saveSnapshot({courseId:COUNTRY+"-"+SUBJECT,snapshotType:"course",state:state.course}).catch(function(){});
+  }
+}
 function sessionMeta(n){var idx=Math.max(1,Math.min(30,n))-1;var w=Math.floor(idx/5),d=idx%5;var x=curriculum[w].sessions[d];return {week:w+1,day:d+1,title:x[0],detail:x[1],kind:x[2],weekTitle:curriculum[w].title};}
 function weakestDimension(){
   var m=(state.diag&&state.diag.metrics)||{};
+  if(window.LEX_ENGINE){
+    var model=LEX_ENGINE.learnerModel({metrics:m,events:(state.course.history||[]).map(function(h){return {dimension:h.dimension||h.skill,score:h.score,confidence:h.confidence,difficulty:h.difficulty||2,ts:h.ts||h.at};})});
+    state.course.adaptiveModel=model;
+    return model.weakest==="legal_precision"?"understanding":model.weakest;
+  }
   var list=[["recall",m.recall==null?100:m.recall],["understanding",m.understanding==null?100:m.understanding],["application",m.application==null?100:m.application],["retention",m.retention==null?100:m.retention],["exam",m.exam==null?100:m.exam]];
   return list.sort(function(a,b){return a[1]-b[1];})[0][0];
 }
