@@ -4,7 +4,7 @@ var APP=document.getElementById("adminApp");
 var SKEY="lexlearn_admin_session";
 var ss=null;try{ss=JSON.parse(localStorage.getItem(SKEY)||"null");}catch(e){}
 if(!ss||!ss.cloud||!window.LEX_CLOUD||!LEX_CLOUD.isConfigured()){location.replace("admin-login.html");return;}
-var state={tab:"dashboard",students:[],cohorts:[],audit:[],snapshots:[],attempts:[],selected:null,q:"",busy:false,error:"",creds:null};
+var state={tab:"dashboard",students:[],cohorts:[],audit:[],content:[],snapshots:[],attempts:[],selected:null,q:"",busy:false,error:"",creds:null};
 
 function esc(v){return String(v==null?"":v).replace(/[&<>"']/g,function(c){return({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"})[c];});}
 function ico(n){var p={chart:'<path d="M12 50h40M17 43V29M28 43V19M39 43V34M50 43V13"/>',users:'<circle cx="23" cy="22" r="8"/><circle cx="44" cy="25" r="6"/><path d="M9 50c2-10 8-15 14-15s12 5 14 15M38 39c7 0 12 4 14 11"/>',group:'<circle cx="22" cy="23" r="7"/><circle cx="42" cy="23" r="7"/><path d="M8 49c2-10 7-15 14-15s12 5 14 15M28 49c2-10 7-15 14-15s12 5 14 15"/>',audit:'<path d="M17 10h30v44H17z"/><path d="M24 21h16M24 29h16M24 37h11"/>',plus:'<path d="M32 13v38M13 32h38"/>',key:'<path d="M10 35a12 12 0 1 0 18-10l22-11 5 5-4 7-7-1-2 7-7-1-6 4"/>'};return '<svg class="uiIcon" viewBox="0 0 64 64">'+(p[n]||p.chart)+'</svg>';}
@@ -39,7 +39,7 @@ function modelText(v){
 }
 function shell(body){
  APP.innerHTML='<header class="top"><div class="topin"><div class="brand"><div class="mark"><img src="assets/lexlearn-logo.svg" alt="LexLearn"></div><div><b>LexLearn Admin</b><small>قاعدة بيانات مركزية</small></div></div>'+
- '<nav class="nav"><button data-tab="dashboard" class="'+(state.tab==="dashboard"?"active":"")+'">'+ico("chart")+'<span>الرئيسية</span></button><button data-tab="students" class="'+(state.tab==="students"?"active":"")+'">'+ico("users")+'<span>الطلاب</span></button><button data-tab="cohorts" class="'+(state.tab==="cohorts"?"active":"")+'">'+ico("group")+'<span>المجموعات</span></button><button data-tab="audit" class="'+(state.tab==="audit"?"active":"")+'">'+ico("audit")+'<span>السجل</span></button></nav>'+
+ '<nav class="nav"><button data-tab="dashboard" class="'+(state.tab==="dashboard"?"active":"")+'">'+ico("chart")+'<span>الرئيسية</span></button><button data-tab="students" class="'+(state.tab==="students"?"active":"")+'">'+ico("users")+'<span>الطلاب</span></button><button data-tab="cohorts" class="'+(state.tab==="cohorts"?"active":"")+'">'+ico("group")+'<span>المجموعات</span></button><button data-tab="content" class="'+(state.tab==="content"?"active":"")+'">'+ico("audit")+'<span>المحتوى</span></button><button data-tab="audit" class="'+(state.tab==="audit"?"active":"")+'">'+ico("audit")+'<span>السجل</span></button></nav>'+
  '<div class="topActions"><span class="topLink">● مركزي</span><a class="topLink" href="index.html">الموقع</a><button class="topLink" id="logout">خروج</button></div></div></header><main class="wrap">'+body+'</main>'+modal();
  document.querySelectorAll("[data-tab]").forEach(function(b){b.onclick=function(){state.tab=b.dataset.tab;render();};});
  var lo=document.getElementById("logout");if(lo)lo.onclick=async function(){await LEX_CLOUD.signOut();localStorage.removeItem(SKEY);location.replace("admin-login.html");};
@@ -74,6 +74,14 @@ function studentsTab(){
 function cohortsTab(){
  return '<section class="pageTitle"><div><span class="overline">Cohorts</span><h1>المجموعات</h1><p>مجموعات الـPilot والمؤسسات.</p></div><button class="btn primary" id="newCohort">'+ico("plus")+' مجموعة جديدة</button></section><section class="cohortGrid">'+state.cohorts.map(function(c){return '<div class="panel cohortCard"><span class="cohortIcon">'+ico("group")+'</span><h3>'+esc(c.name)+'</h3><p>'+state.students.filter(function(s){return s.cohort===c.name;}).length+' طالب</p><div class="cohortMeta"><span>'+esc(c.institution||"—")+'</span><span>'+esc(c.academic_year||"—")+'</span></div></div>';}).join("")+'</section>';
 }
+function contentStatusLabel(s){return ({draft:"مسودة",legal_review:"مراجعة قانونية",learning_review:"مراجعة تعليمية",approved:"معتمد",retired:"متقاعد"})[s]||s;}
+function contentTab(){
+ var items=state.content||[],pending=items.filter(function(x){return x.status!=="approved"&&x.status!=="retired";});
+ return '<section class="pageTitle"><div><span class="overline">Content Governance</span><h1>اعتماد المحتوى القانوني</h1><p>لا يستخدم التصحيح الدلالي سؤالًا قبل إكمال المراجعة القانونية ثم التعليمية.</p></div><span class="risk '+(pending.length?"mid":"low")+'">'+pending.length+' قيد المراجعة</span></section>'+
+ '<section class="panel"><div class="studentTable"><div class="tr head"><span>السؤال</span><span>البعد</span><span>المصادر</span><span>الحالة</span><span>الإجراء</span></div>'+
+ items.map(function(x){var next=x.status==="draft"?"إرسال للمراجعة القانونية":x.status==="legal_review"?"اعتماد قانوني":x.status==="learning_review"?"اعتماد تعليمي ونشر":x.status==="approved"?"معتمد":"—";return '<div class="tr"><span><b>'+esc(x.prompt_ar)+'</b><small>'+esc(x.id)+'</small></span><span>'+esc(label(x.dimension))+' • مستوى '+x.difficulty+'</span><span>'+esc((x.source_ids||[]).join("، ")||"—")+'</span><span class="risk '+(x.status==="approved"?"low":"mid")+'">'+contentStatusLabel(x.status)+'</span><span>'+(x.status!=="approved"&&x.status!=="retired"?'<button class="btn secondary" data-review="'+x.id+'">'+next+'</button>':'✓')+'</span></div>';}).join("")+
+ '</div><div class="warn" style="margin-top:14px">المراجعة القانونية تؤكد صحة القاعدة والمصدر. المراجعة التعليمية تؤكد وضوح السؤال وقياسه للمهارة المقصودة. لا ندمج المرحلتين تلقائيًا.</div></section>';
+}
 function auditTab(){
  return '<section class="pageTitle"><div><span class="overline">Audit Log</span><h1>السجل المركزي</h1><p>أثر تدقيقي لتدخلات الإدارة.</p></div></section><section class="panel"><div class="auditList">'+(state.audit.length?state.audit.map(function(x){return '<div class="auditRow"><span class="auditIcon">'+ico("audit")+'</span><div><b>'+esc(x.action)+'</b><small>'+esc(JSON.stringify(x.details||{}))+'</small></div><time>'+new Date(x.created_at).toLocaleString("ar-EG")+'</time></div>';}).join(""):'<div class="empty">لا توجد إجراءات بعد.</div>')+'</div></section>';
 }
@@ -87,17 +95,17 @@ async function load(){
  state.busy=true;renderLoading();
  try{
   var c=LEX_CLOUD.db(),results=await Promise.all([
-    LEX_CLOUD.listStudents(),LEX_CLOUD.listCohorts(),LEX_CLOUD.listAudit(),
+    LEX_CLOUD.listStudents(),LEX_CLOUD.listCohorts(),LEX_CLOUD.listAudit(),LEX_CLOUD.listContentItems("qa-qu-lawc213"),
     c.from("learner_snapshots").select("user_id,course_id,snapshot_type,state,updated_at"),
     c.from("attempts").select("user_id,course_id,dimension,score,confidence,error_type,created_at").order("created_at",{ascending:false}).limit(1000)
   ]);
-  state.students=results[0];state.cohorts=results[1];state.audit=results[2];state.snapshots=results[3].data||[];state.attempts=results[4].data||[];
+  state.students=results[0];state.cohorts=results[1];state.audit=results[2];state.content=results[3];state.snapshots=results[4].data||[];state.attempts=results[5].data||[];
   if(!state.selected&&state.students[0])state.selected=state.students[0].id;
  }catch(e){state.error=e&&e.message||String(e);}
  state.busy=false;render();
 }
 function renderLoading(){APP.innerHTML='<main class="wrap"><section class="panel"><h2>تحميل البيانات المركزية…</h2><p>يتم التحقق من الحسابات والتقدم والسجل.</p></section></main>';}
-function render(){if(state.error){APP.innerHTML='<main class="wrap"><section class="panel"><h2>تعذر تحميل لوحة الإدارة</h2><p>'+esc(state.error)+'</p><button class="btn primary" id="retry">إعادة المحاولة</button></section></main>';var r=document.getElementById("retry");if(r)r.onclick=load;return;}shell(state.tab==="dashboard"?dashboard():state.tab==="students"?studentsTab():state.tab==="cohorts"?cohortsTab():auditTab());}
+function render(){if(state.error){APP.innerHTML='<main class="wrap"><section class="panel"><h2>تعذر تحميل لوحة الإدارة</h2><p>'+esc(state.error)+'</p><button class="btn primary" id="retry">إعادة المحاولة</button></section></main>';var r=document.getElementById("retry");if(r)r.onclick=load;return;}shell(state.tab==="dashboard"?dashboard():state.tab==="students"?studentsTab():state.tab==="cohorts"?cohortsTab():state.tab==="content"?contentTab():auditTab());}
 function bind(){
  document.querySelectorAll("[data-student]").forEach(function(b){b.onclick=function(){state.selected=b.dataset.student;render();};});
  document.querySelectorAll("[data-open]").forEach(function(b){b.onclick=function(){state.selected=b.dataset.open;state.tab="dashboard";render();};});
@@ -112,6 +120,12 @@ function bind(){
  document.querySelectorAll("[data-toggle]").forEach(function(b){b.onclick=async function(){try{await LEX_CLOUD.manageStudent({action:"toggle_active",user_id:b.dataset.toggle,active:b.dataset.active!=="true"});await load();}catch(e){alert("تعذر تغيير الحالة");}};});
  document.querySelectorAll("[data-unlock]").forEach(function(b){b.onclick=function(){snapshotAction(b.dataset.unlock,"unlock");};});
  document.querySelectorAll("[data-repair]").forEach(function(b){b.onclick=function(){snapshotAction(b.dataset.repair,"repair");};});
+ document.querySelectorAll("[data-review]").forEach(function(b){b.onclick=async function(){
+   var item=state.content.find(function(x){return x.id===b.dataset.review;});if(!item)return;
+   var prompt=item.status==="legal_review"?"أؤكد أن القاعدة القانونية والمصادر صحيحة لهذا السؤال؟":item.status==="learning_review"?"أؤكد أن السؤال يقيس المهارة المقصودة بوضوح وأنه جاهز للنشر؟":"إرسال السؤال للمرحلة التالية؟";
+   if(!confirm(prompt))return;
+   try{await LEX_CLOUD.reviewContent({action:"advance",item_id:item.id,review_type:item.status==="learning_review"?"learning":"legal"});await load();state.tab="content";render();}catch(e){alert("تعذر تحديث حالة المحتوى: "+(e.message||e));}
+ });});
  var ex=document.getElementById("export");if(ex)ex.onclick=exportCsv;
 }
 async function snapshotAction(id,mode){
