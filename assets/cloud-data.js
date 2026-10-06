@@ -75,7 +75,7 @@ async function createCohort(data){
 }
 async function setOwnPassword(password){
   if(String(password||"").length<10)throw new Error("password_too_short");
-  return invoke("account-set-password",{password:String(password)});
+  return invoke("account-update-profile",{password:String(password)});
 }
 async function updateOwnProfile(patch){return invoke("account-update-profile",patch||{});}
 async function gradeAnswer(data){return invoke("grade-answer",data);}
