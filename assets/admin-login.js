@@ -7,7 +7,18 @@ function seed(){
   return a;
 }
 var admin=seed(),form=document.getElementById("adminLogin"),err=document.getElementById("adminError");
-async function login(email,password){
+async async function login(email,password){
+  if(window.LEX_CLOUD&&LEX_CLOUD.isConfigured()){
+    try{
+      var r=await LEX_CLOUD.signInEmail(email,password),pr=r.profile;
+      localStorage.setItem(SESSION_KEY,JSON.stringify({adminId:pr.id,name:pr.display_name||pr.username,role:pr.role,cloud:true,at:Date.now()}));
+      location.href="admin.html";return;
+    }catch(e){
+      err.textContent="بيانات الدخول غير صحيحة أو الحساب لا يملك صلاحية الإدارة.";
+      err.style.display="block";return;
+    }
+  }
+
   if(window.LEX_CLOUD&&LEX_CLOUD.isConfigured&&LEX_CLOUD.isConfigured()){
     try{
       var cloud=await LEX_CLOUD.signInAdmin(email,password),pr=cloud.profile;
