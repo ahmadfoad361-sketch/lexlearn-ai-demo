@@ -664,14 +664,34 @@ function sessionResult(){
   };
   document.getElementById("backHome").onclick=function(){state.view="home";render();};
 }
+function recordAssessmentEvidence(q,correct,confidence,repair){
+  var dim=q.dimension||taskDimension(q),score=correct?1:0,latency=Math.max(0,Date.now()-(state.taskStartedAt||Date.now()));
+  state.course.evidence=Array.isArray(state.course.evidence)?state.course.evidence:[];
+  state.course.evidence.push({itemId:null,dimension:dim,score:score,difficulty:q.difficulty||3,confidence:confidence||null,latency_ms:latency,grading_method:repair?"repair_assessment":"stage_assessment",ts:Date.now(),session:state.course.session,week:sessionMeta(state.course.session).week});
+  if(state.course.evidence.length>240)state.course.evidence=state.course.evidence.slice(-240);
+  recomputeAdaptiveModel();
+  if(window.LEX_CLOUD&&LEX_CLOUD.isConfigured&&LEX_CLOUD.isConfigured()&&STUDENT_SESSION&&STUDENT_SESSION.cloud){
+    LEX_CLOUD.recordAttempt({course_id:COURSE_DB_ID,item_id:null,dimension:dim,score:score,confidence:confidence||null,latency_ms:latency,difficulty:q.difficulty||3,grading_method:repair?"repair_assessment":"stage_assessment",error_type:correct?null:errorLabel(q.skill)}).catch(function(){});
+  }
+  return {skill:q.skill,dimension:dim,correct:correct,confidence:confidence||null,score:score};
+}
 function assessment(){
-  var q=assessmentBank[state.task%assessmentBank.length],ordered=orderedOptions(q,7);
-  chrome('<section class="stage"><div class="progress"><i style="width:'+((state.task+1)/assessmentBank.length*100)+'%"></i></div><div class="taskCard">'+
-    '<span class="kicker">تقييم نهاية الأسبوع • '+(state.task+1)+' / '+assessmentBank.length+'</span><h2>'+esc(q.q)+'</h2>'+
-    '<div class="options">'+ordered.map(function(o){return '<button class="option" data-assess-orig="'+o.orig+'">'+esc(o.text)+'</button>';}).join("")+'</div><div class="assessmentNote">لا تظهر الإجابة الصحيحة أثناء التقييم حتى لا نخلط بين التدريب والقياس.</div></div></section>');
+  var week=sessionMeta(state.course.session).week,bank=assessmentBankForWeek(week),q=bank[state.task%bank.length],ordered=orderedOptions(q,7);
+  state.taskStartedAt=Date.now();
+  chrome('<section class="stage"><div class="progress"><i style="width:'+((state.task+1)/bank.length*100)+'%"></i></div><div class="taskCard">'+
+    '<span class="kicker">تقييم نهاية الأسبوع '+week+' • '+(state.task+1)+' / '+bank.length+'</span><h2>'+esc(q.q)+'</h2>'+
+    '<div class="options">'+ordered.map(function(o){return '<button class="option" data-assess-orig="'+o.orig+'">'+esc(o.text)+'</button>';}).join("")+'</div>'+
+    '<div class="assessmentNote">لن تظهر الإجابة الصحيحة أثناء القياس. بعد اختيارك سنسألك فقط عن درجة ثقتك في الإجابة.</div><div id="assessmentConfidence"></div></div></section>');
   document.querySelectorAll("[data-assess-orig]").forEach(function(b){b.onclick=function(){
-    state.assessmentAnswers.push({skill:q.skill,correct:Number(b.dataset.assessOrig)===q.a});
-    if(state.task<assessmentBank.length-1){state.task++;render();}else finishAssessment();
+    var selected=Number(b.dataset.assessOrig),correct=selected===q.a;
+    document.querySelectorAll("[data-assess-orig]").forEach(function(x){x.disabled=true;});
+    var box=document.getElementById("assessmentConfidence");
+    box.innerHTML='<div class="confidencePrompt"><b>قد إيه كنت واثق في إجابتك؟</b><div class="choiceRow"><button class="secondary" data-conf="1">غير متأكد</button><button class="secondary" data-conf="2">إلى حد ما</button><button class="secondary" data-conf="3">متأكد</button></div></div>';
+    box.querySelectorAll("[data-conf]").forEach(function(cb){cb.onclick=function(){
+      var confidence=Number(cb.dataset.conf),entry=recordAssessmentEvidence(q,correct,confidence,false);
+      entry.selected=selected;state.assessmentAnswers.push(entry);state.taskStartedAt=null;
+      if(state.task<bank.length-1){state.task++;render();}else finishAssessment();
+    };});
   };});
 }
 function skillScores(answers){
@@ -730,11 +750,21 @@ function achievementBoard(){
   var bh=document.getElementById("backHome");if(bh)bh.onclick=function(){state.view="home";render();};
 }
 function repairAssessment(){
-  var bank=assessmentBank.slice(0,4),q=bank[state.task%bank.length],ordered=orderedOptions(q,13);
-  chrome('<section class="stage"><div class="progress"><i style="width:'+((state.task+1)/bank.length*100)+'%"></i></div><div class="taskCard"><span class="kicker">إعادة قياس قصيرة • '+(state.task+1)+' / '+bank.length+'</span><h2>'+esc(q.q)+'</h2><div class="options">'+ordered.map(function(o){return '<button class="option" data-r-orig="'+o.orig+'">'+esc(o.text)+'</button>';}).join("")+'</div><div class="assessmentNote">الهدف التأكد من تحسن المهارة بعد جلسة التثبيت.</div></div></section>');
+  var week=state.course.repairWeek||sessionMeta(state.course.session).week,full=assessmentBankForWeek(week);
+  var weakest=state.course.adaptiveModel&&state.course.adaptiveModel.weakest;
+  var orderedBank=full.slice().sort(function(x,y){return (x.dimension===weakest?-1:0)-(y.dimension===weakest?-1:0);});
+  var bank=orderedBank.slice(0,4),q=bank[state.task%bank.length],ordered=orderedOptions(q,13);
+  state.taskStartedAt=Date.now();
+  chrome('<section class="stage"><div class="progress"><i style="width:'+((state.task+1)/bank.length*100)+'%"></i></div><div class="taskCard"><span class="kicker">إعادة قياس قصيرة • '+(state.task+1)+' / '+bank.length+'</span><h2>'+esc(q.q)+'</h2><div class="options">'+ordered.map(function(o){return '<button class="option" data-r-orig="'+o.orig+'">'+esc(o.text)+'</button>';}).join("")+'</div><div class="assessmentNote">إعادة القياس تستهدف الأولوية التي ظهرت في نموذجك التكيفي.</div><div id="repairConfidence"></div></div></section>');
   document.querySelectorAll("[data-r-orig]").forEach(function(b){b.onclick=function(){
-    state.assessmentAnswers.push({skill:q.skill,correct:Number(b.dataset.rOrig)===q.a});
-    if(state.task<bank.length-1){state.task++;render();}else finishRepairAssessment();
+    var selected=Number(b.dataset.rOrig),correct=selected===q.a;
+    document.querySelectorAll("[data-r-orig]").forEach(function(x){x.disabled=true;});
+    var box=document.getElementById("repairConfidence");
+    box.innerHTML='<div class="confidencePrompt"><b>درجة ثقتك؟</b><div class="choiceRow"><button class="secondary" data-rconf="1">غير متأكد</button><button class="secondary" data-rconf="2">إلى حد ما</button><button class="secondary" data-rconf="3">متأكد</button></div></div>';
+    box.querySelectorAll("[data-rconf]").forEach(function(cb){cb.onclick=function(){
+      var entry=recordAssessmentEvidence(q,correct,Number(cb.dataset.rconf),true);entry.selected=selected;state.assessmentAnswers.push(entry);state.taskStartedAt=null;
+      if(state.task<bank.length-1){state.task++;render();}else finishRepairAssessment();
+    };});
   };});
 }
 function finishRepairAssessment(){
