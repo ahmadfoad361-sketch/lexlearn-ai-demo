@@ -43,6 +43,8 @@ function modelText(v){
 }
 function adminAdvice(v){
  var keys=["recall","understanding","application","legal_precision","retention","exam"];
+ var livePlan=v.course&&v.course.teachingPlan||null;
+ var essay=v.course&&v.course.lastEssayProfile||null;
  var measured=keys.filter(function(k){return v.m[k]!=null;}).sort(function(a,b){return v.m[a]-v.m[b];});
  if(!measured.length)return {
    summary:"لا توجد نتائج حقيقية لهذا الطالب حتى الآن. اطلب منه إكمال التقييم التشخيصي من حسابه المسجل.",
@@ -67,7 +69,10 @@ function adminAdvice(v){
  var watch="راقب "+label(weak)+" في الجلستين القادمتين";
  if(topErr)watch+="، وهل يقل تكرار خطأ «"+topErr.label+"»";
  watch+=". إذا لم يظهر تحسن، استخدم «جلسة تثبيت» قبل فتح مستوى أصعب.";
- return {summary:summary,advice:adviceMap[weak]||modelText(v),watch:watch};
+ var systemAdvice=livePlan&&livePlan.method?livePlan.method:(adviceMap[weak]||modelText(v));
+ if(essay&&essay.note)summary+=" آخر إجابة مقالية: "+essay.note;
+ if(livePlan&&livePlan.tasks&&livePlan.tasks.length)watch+=" المهام التي سيطبقها النظام تلقائيًا: "+livePlan.tasks.join("، ")+".";
+ return {summary:summary,advice:systemAdvice,watch:watch,plan:livePlan,essay:essay};
 }
 function shell(body){
  APP.innerHTML='<header class="top"><div class="topin"><div class="brand"><div class="mark"><img src="assets/lexlearn-logo.svg" alt="LexLearn"></div><div><b>LexLearn Admin</b><small>قاعدة بيانات مركزية</small></div></div>'+
@@ -93,7 +98,10 @@ function detail(v){
  '<section class="panel"><div class="panelHead"><div><h3>ملاحظات ونصائح للمشرف</h3><p>قراءة تلقائية مبنية على تجربة الطالب الفعلية، وليست درجة جامعية.</p></div><span class="realTag">Supervisor Note</span></div>'+
  '<div class="recommend"><b>ملحوظة على الأداء</b><span>'+esc(advice.summary)+'</span></div>'+
  '<div class="recommend" style="margin-top:10px"><b>النصيحة للمشرف</b><span>'+esc(advice.advice)+'</span></div>'+
- '<div class="recommend" style="margin-top:10px"><b>ما الذي نراقبه بعد ذلك؟</b><span>'+esc(advice.watch)+'</span></div></section>'+
+ '<div class="recommend" style="margin-top:10px"><b>ما الذي نراقبه بعد ذلك؟</b><span>'+esc(advice.watch)+'</span></div>'+
+ (advice.plan?'<div class="recommend appliedPlan" style="margin-top:10px"><b>ما يطبقه LexLearn فعليًا في الجلسات التالية</b><span>'+esc(advice.plan.method)+'<br><small>'+esc((advice.plan.tasks||[]).join(" • "))+'</small></span></div>':'')+
+ (advice.essay?'<div class="recommend" style="margin-top:10px"><b>تحليل آخر إجابة مقالية</b><span>'+esc(advice.essay.style||"—")+' — '+esc(advice.essay.note||"")+'</span></div>':'')+
+ '</section>'+
  '<section class="twoCols"><div class="panel"><h3>التقدم</h3><div class="progressWrap"><div class="progressLine"><i style="width:'+Math.round(v.completed/30*100)+'%"></i></div><b>'+v.completed+'/30</b></div><p>الجلسة الحالية: '+v.session+' • '+(v.course.completedProgram?"البرنامج مكتمل":"البرنامج مستمر")+'</p><div class="recommend"><b>التدخل المقترح</b><span>'+esc(modelText(v))+'</span></div></div>'+
  '<div class="panel"><h3>إجراءات الإدارة</h3><div class="adminActions"><button data-reset="'+s.id+'">'+ico("key")+' كلمة مرور مؤقتة</button><button data-toggle="'+s.id+'" data-active="'+(s.active!==false)+'">'+ico("users")+' '+(s.active===false?"تفعيل":"تعطيل")+'</button><button data-unlock="'+s.id+'">فتح الأسبوع التالي</button><button data-repair="'+s.id+'">جلسة تثبيت</button></div></div></section>'+
  '<section class="panel evidence"><h3>لماذا اتخذ النظام هذا القرار؟</h3><div class="evidenceGrid">'+["recall","understanding","application","legal_precision","retention","exam"].map(function(k){var a=axes[k];return '<div><b>'+label(k)+'</b><span>'+(a?("تقدير "+a.value+"% • عدم يقين ±"+a.uncertainty+" • اتجاه "+(a.trend>0?"+":"")+a.trend):"لا توجد أدلة كافية بعد")+'</span></div>';}).join("")+'</div></section>';
