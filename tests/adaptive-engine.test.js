@@ -145,4 +145,54 @@ function near(a,b,eps=1e-9){ assert.ok(Math.abs(a-b)<=eps, `${a} != ${b}`); }
   assert.equal(ok.gradingMethod,"grounded_semantic");
 })();
 
+
+(function adaptivePolicyPlanning(){
+  const now=Date.UTC(2026,9,6,8,0,0);
+  const events=[
+    {itemId:"r1",dimension:"recall",score:.95,difficulty:2,ts:now-86400000},
+    {itemId:"a1",dimension:"application",score:.45,difficulty:2,ts:now-86400000},
+    {itemId:"a2",dimension:"application",score:.50,difficulty:2,ts:now-3600000}
+  ];
+  const model=E.learnerModel({events},now);
+  const candidates=[
+    {id:"r2",dimension:"recall",difficulty:2,status:"approved",sourceIds:["s1"],conceptId:"c-r"},
+    {id:"a3",dimension:"application",difficulty:2,status:"approved",sourceIds:["s1"],conceptId:"c-a"},
+    {id:"a4",dimension:"application",difficulty:3,status:"approved",sourceIds:["s1"],conceptId:"c-b"}
+  ];
+  const plan=E.buildAdaptivePlan(model,candidates,events,{},2);
+  assert.equal(plan.selected.length,2);
+  assert.equal(plan.selected[0].item.dimension,"application");
+  assert.ok(plan.selected[0].reasons.includes("targets_priority_dimension"));
+})();
+
+(function masteryGateNeedsDelayedEvidence(){
+  const model={axes:{
+    recall:{value:85,uncertainty:10,evidence:3},
+    understanding:{value:84,uncertainty:10,evidence:3},
+    legal_precision:{value:82,uncertainty:12,evidence:3},
+    application:{value:81,uncertainty:13,evidence:3},
+    exam:{value:80,uncertainty:14,evidence:3},
+    retention:{value:60,uncertainty:16,evidence:1}
+  }};
+  const g=E.masteryGate(model);
+  assert.equal(g.ready,false);
+  assert.ok(g.reasons.some(x=>x.indexOf("retention")===0));
+  model.axes.retention={value:82,uncertainty:12,evidence:3};
+  assert.equal(E.masteryGate(model).ready,true);
+})();
+
+(function adaptiveDecisionBundlesModelPlanGate(){
+  const now=Date.UTC(2026,9,6,8,0,0);
+  const d=E.adaptiveDecision({
+    events:[
+      {dimension:"understanding",score:.9,difficulty:2,ts:now},
+      {dimension:"application",score:.4,difficulty:2,ts:now}
+    ],
+    candidates:[{id:"x",dimension:"application",difficulty:2,status:"approved",sourceIds:["s"]}]
+  },now);
+  assert.ok(d.model);
+  assert.ok(d.plan);
+  assert.ok(d.masteryGate);
+})();
+
 console.log("adaptive-engine tests: PASS");
