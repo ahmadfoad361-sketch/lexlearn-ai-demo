@@ -28,3 +28,13 @@
 /* Approved LexLearn identity mark */
 .mark{background:transparent!important;box-shadow:none!important;border-radius:0!important;padding:0!important;overflow:visible!important}
 .mark img{display:block;width:100%;height:100%;object-fit:contain}
+
+
+/* LexLearn approved brand palette */
+:root{
+  --navy:#101c38;
+  --navy2:#203256;
+  --navy-2:#203256;
+  --maroon:#8a1f39;
+  --maroon-2:#5b0d26;
+}
