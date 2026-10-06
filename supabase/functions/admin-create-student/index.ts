@@ -26,11 +26,11 @@ Deno.serve(async(req)=>{
     const email=username+"@"+domain;
     const created=await admin.auth.admin.createUser({
       email,password,email_confirm:true,
-      user_metadata:{role:"student",username,display_name:displayName,must_change_password:true,university:body.university||null,year_label:body.year||body.year_label||"السنة الأولى"}
+      user_metadata:{role:"student",username,display_name:displayName,must_change_password:true,university:body.university||null,year_label:body.year||body.year_label||"السنة الأولى",country_code:body.country_code||"qa"}
     });
     if(created.error)return json({error:"create_user_failed",detail:created.error.message},409);
     const uid=created.data.user.id;
-    const upd=await admin.from("profiles").update({cohort_id:cohortId,university:body.university||null,year_label:body.year||body.year_label||"السنة الأولى"}).eq("id",uid);
+    const upd=await admin.from("profiles").update({cohort_id:cohortId,university:body.university||null,year_label:body.year||body.year_label||"السنة الأولى",country_code:body.country_code||"qa"}).eq("id",uid);
     if(upd.error)throw upd.error;
     const courseId=String(body.course_id||"qa-qu-lawc213");
     await admin.from("enrollments").upsert({user_id:uid,course_id:courseId,status:"active"},{onConflict:"user_id,course_id"});
