@@ -422,28 +422,46 @@ function render(){
   if(state.view==="weekSummary")return weekSummary();
   if(state.view==="completion")return completion();
 }
+function studentSnapshot(metrics){
+  var items=[
+    ["🧠","الاسترجاع",metrics.recall],
+    ["💡","الفهم",metrics.understanding],
+    ["⚖️","التطبيق",metrics.application]
+  ];
+  return '<section class="studentSnapshot">'+items.map(function(x){
+    var v=x[2],known=v!=null,num=known?Math.round(v):0;
+    var word=!known?"ابدأ التقييم":num>=80?"قوي":num>=60?"جيد":num>=40?"نطوره":"نركز عليه";
+    return '<div class="snapshotCard"><span class="snapshotEmoji">'+x[0]+'</span><div class="snapshotRing" style="--p:'+(known?num:0)+'"><b>'+(known?num+"%":"—")+'</b></div><strong>'+x[1]+'</strong><small>'+word+'</small></div>';
+  }).join("")+'</section>';
+}
+function shortStudentTip(metrics){
+  var list=[["الاسترجاع",metrics.recall,"استرجع القاعدة من ذاكرتك قبل أن تفتح النص."],["الفهم",metrics.understanding,"اشرح القاعدة بكلماتك: لماذا تعمل بهذه الطريقة؟"],["التطبيق",metrics.application,"حل واقعة قصيرة وحدد العنصر الذي غيّر النتيجة."]].filter(function(x){return x[1]!=null;}).sort(function(a,b){return a[1]-b[1];});
+  if(!list.length)return "ابدأ التقييم القصير، وبعده سنحدد لك خطوة واحدة واضحة.";
+  return list[0][2];
+}
 function home(){
   if(state.course.completedProgram){state.view="completion";return completion();}
   var m=sessionMeta(state.course.session),d=state.diag;
   if(!d&&!DEMO){
-    chrome('<section class="hero"><div class="heroMain"><span class="kicker">برنامج التدريب</span><h1>مصادر الالتزام</h1><p>البرنامج يحتاج تقييم بداية حتى يبني أول جلسة على أدائك الحقيقي.</p><div class="choiceRow"><a class="primary" style="text-decoration:none" href="index.html">ابدأ تقييم البداية</a></div></div><div class="heroSide"><h3>التقييم مستقل</h3><p>يمكنك إجراء التقييم فقط والخروج، أو العودة بعده وبدء البرنامج.</p></div></section>');
+    chrome('<section class="simpleStudentHero"><div><span class="kicker">جاهز نبدأ؟</span><h1>ابدأ بتقييم قصير</h1><p>بضع أسئلة فقط، وبعدها يظهر لك تدريب مناسب لمستواك.</p></div><a class="primary bigStudentCta" href="showcase.html?country='+COUNTRY+'&subject='+SUBJECT+'">ابدأ التقييم</a></section>'+
+      '<section class="simpleSteps"><div><span>1</span><b>اختبر</b><small>أسئلة قصيرة</small></div><div><span>2</span><b>تدرّب</b><small>على ما تحتاجه</small></div><div><span>3</span><b>تقدّم</b><small>خطوة بعد خطوة</small></div></section>');
     return;
   }
-  var metrics=d?d.metrics:{recall:0,understanding:0,application:0,retention:0,exam:0};
+  var metrics=d?d.metrics:{recall:null,understanding:null,application:null,retention:null,exam:null};
   chrome(
-    '<section class="hero"><div class="heroMain"><span class="kicker">'+(DEMO?'برنامجك':'برنامجك')+'</span>'+
-    '<h1>جلسة اليوم '+state.course.session+' من 30</h1><p>'+esc(m.title)+' • '+esc(m.detail)+'</p>'+
-    '<div class="heroMeta"><span>≈ 20 دقيقة</span><span>الأسبوع '+m.week+' من 6</span><span>30 جلسة عملية</span><span>'+kindLabel(m.kind)+'</span></div>'+
-    '<div class="choiceRow"><button class="primary" id="startSession">'+(m.kind==="assessment"?"ابدأ تقييم التقدم":(DEMO?"ابدأ التدريب الفعلي الآن":"ابدأ جلسة اليوم"))+'</button>'+(DEMO?'<a class="secondary" style="text-decoration:none" href="showcase.html">جرّب التقييم الذي يبني المسار</a>':'')+'</div></div>'+
-    '<div class="heroSide"><h3>أولوية اليوم</h3><p>'+priorityText(metrics)+'</p><div class="notice">ابدأ بالأولوية الحالية، ثم تابع جلسات التدريب بالتدرج.</div></div></section>'+
-    (DEMO?'<section class="practiceNow"><div><span class="kicker">تجربة عملية</span><h2>الجزء التالي ليس شرحًا للخطة</h2><p>عند الضغط على الزر ستجيب بنفسك: استرجاع من الذاكرة، سؤال يحوّل الحفظ إلى فهم أو الفهم إلى تثبيت، ثم تطبيق على واقعة قانونية.</p></div><button class="primary" id="practiceNowBtn">ادخل الجلسة العملية</button></section>':'')+
-    bridgeCard(metrics)+
-    weekBar(m.week)+
-    '<section class="grid"><div class="card">'+sessionCard(m)+'</div><div class="card">'+skillsCard()+'</div></section>'+
-    '<section class="grid" style="margin-top:18px"><div class="card">'+errorCard()+'</div><div class="card">'+assessmentCard(metrics)+'</div></section>'
+    '<section class="simpleStudentHero"><div><span class="kicker">جلسة اليوم</span>'+
+      '<h1>'+esc(m.title)+'</h1><p>'+esc(m.detail)+'</p>'+
+      '<div class="simpleMeta"><span>الأسبوع '+m.week+' من 6</span><span>الجلسة '+state.course.session+' من 30</span><span>≈ 20 دقيقة</span></div></div>'+
+      '<button class="primary bigStudentCta" id="startSession">'+(m.kind==="assessment"?"ابدأ تقييم الأسبوع":"ابدأ الجلسة")+'</button></section>'+
+    '<div class="simpleSectionTitle"><div><h2>مستواك بسرعة</h2><p>ثلاث إشارات فقط تكفيك الآن.</p></div></div>'+
+    studentSnapshot(metrics)+
+    '<section class="studentTip"><span>✨</span><div><b>نصيحة اليوم</b><p>'+esc(shortStudentTip(metrics))+'</p></div></section>'+
+    weekBar(m.week)
   );
-  document.getElementById("startSession").onclick=function(){state.answers=[];state.assessmentAnswers=[];state.task=0;state.queue=buildTrainingQueue();state.view=m.kind==="assessment"?"assessment":"train";render();};
-  var pn=document.getElementById("practiceNowBtn");if(pn)pn.onclick=function(){state.answers=[];state.assessmentAnswers=[];state.task=0;state.queue=buildTrainingQueue();state.view="train";render();};
+  document.getElementById("startSession").onclick=function(){
+    state.answers=[];state.assessmentAnswers=[];state.task=0;state.queue=buildTrainingQueue();
+    state.view=m.kind==="assessment"?"assessment":"train";render();
+  };
   bindWeekRoadmap(m.week);
 }
 function kindLabel(k){return k==="assessment"?"تقييم مستقل":k==="review"?"مراجعة متباعدة":k==="adaptive"?"تدريب متكيف":"تدريب أساسي";}
