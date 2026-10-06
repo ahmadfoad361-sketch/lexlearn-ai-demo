@@ -370,7 +370,17 @@
     });
     var weak=ranked[0]||"application";
     var strong=ranked.slice().sort(function(a,b){return axes[b].value-axes[a].value;})[0]||"understanding";
-    var bridge=bridgeStrategy(strong,weak);
+    // Core LexLearn bridge: if recall and understanding are imbalanced,
+    // use the stronger one to build the weaker one before generic bridging.
+    var bridgeStrong=strong,bridgeWeak=weak;
+    var rAxis=axes.recall,uAxis=axes.understanding;
+    if(rAxis&&uAxis&&rAxis.evidence>0&&uAxis.evidence>0){
+      var ruGap=Number(rAxis.value)-Number(uAxis.value);
+      if(ruGap>=12){bridgeStrong="recall";bridgeWeak="understanding";}
+      else if(ruGap<=-12){bridgeStrong="understanding";bridgeWeak="recall";}
+    }
+    var bridge=bridgeStrategy(bridgeStrong,bridgeWeak);
+    bridge.from=bridgeStrong;bridge.to=bridgeWeak;
     return {
       version:"adaptive-v9",
       axes:axes,
