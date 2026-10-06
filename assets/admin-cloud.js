@@ -15,9 +15,13 @@ function profileSnap(id,country){return state.snapshots.find(function(x){return 
 function courseSnap(id,country){return state.snapshots.find(function(x){return x.user_id===id&&x.course_id===(country||"qa")+"-sources"&&x.snapshot_type==="course";});}
 function view(s){
  var ps=profileSnap(s.id,s.country),cs=courseSnap(s.id,s.country),profile=ps&&ps.state||{results:{}},course=cs&&cs.state||{};
- var res=profile.results&&profile.results[courseKey(s)]||{},m=res.metrics||{};
- var model=res.adaptiveModel||course.adaptiveModel||{};
- return {s:s,m:m,model:model,course:course,completed:(course.completed||[]).length,session:Number(course.session)||1,errors:course.errors||[]};
+ var res=profile.results&&profile.results[courseKey(s)]||{},base=res.metrics||{};
+ var model=course.adaptiveModel||res.adaptiveModel||{},m={};
+ ["recall","understanding","application","legal_precision","retention","exam"].forEach(function(k){
+   var axis=model.axes&&model.axes[k];
+   m[k]=(axis&&axis.evidence>0&&axis.value!=null)?axis.value:(base[k]==null?null:base[k]);
+ });
+ return {s:s,m:m,model:model,course:course,completed:(course.completed||[]).length,session:Number(course.session)||1,errors:course.errors||[],profileUpdated:ps&&ps.updated_at||null,courseUpdated:cs&&cs.updated_at||null};
 }
 function risk(v){
  var vals=["recall","understanding","application","legal_precision","retention","exam"].map(function(k){return v.m[k];}).filter(function(x){return x!=null;});
@@ -37,6 +41,34 @@ function modelText(v){
  var entries=["recall","understanding","application","legal_precision","retention","exam"].filter(function(k){return v.m[k]!=null;}).sort(function(a,b){return v.m[a]-v.m[b];});
  return entries.length?"الأولوية الحالية: "+label(entries[0]):"يحتاج تقييمًا تشخيصيًا أولًا.";
 }
+function adminAdvice(v){
+ var keys=["recall","understanding","application","legal_precision","retention","exam"];
+ var measured=keys.filter(function(k){return v.m[k]!=null;}).sort(function(a,b){return v.m[a]-v.m[b];});
+ if(!measured.length)return {
+   summary:"لا توجد نتائج حقيقية لهذا الطالب حتى الآن. اطلب منه إكمال التقييم التشخيصي من حسابه المسجل.",
+   advice:"لا تتخذ قرار تدريب قبل ظهور بيانات الطالب المركزية.",
+   watch:"بعد التقييم، راقب أول جلستين للتأكد من أن المسار يتغير وفق الأداء."
+ };
+ var weak=measured[0],strong=measured[measured.length-1],gap=Math.round((v.m[strong]||0)-(v.m[weak]||0));
+ var errs=(v.errors||[]).slice().sort(function(a,b){return (b.count||0)-(a.count||0);}),topErr=errs[0];
+ var attempts=(state.attempts||[]).filter(function(a){return a.user_id===v.s.id;}),highConf=attempts.filter(function(a){return Number(a.confidence)===3&&a.score!=null&&Number(a.score)<.55;}).length;
+ var summary="أقوى جانب حاليًا: "+label(strong)+" ("+Math.round(v.m[strong])+"%). أولوية التحسين: "+label(weak)+" ("+Math.round(v.m[weak])+"%).";
+ if(gap>=20)summary+=" الفجوة بينهما واضحة ("+gap+" نقطة)، لذلك لا يُفضّل إعطاء تدريب عام موحد.";
+ if(topErr)summary+=" أكثر خطأ متكرر: «"+topErr.label+"»"+(topErr.count?" ("+topErr.count+" مرات).":".");
+ if(highConf)summary+=" توجد "+highConf+" محاولة خاطئة بثقة مرتفعة؛ راجع الفهم قبل زيادة الصعوبة.";
+ var adviceMap={
+   recall:"استخدم استرجاعًا قصيرًا من غير فتح النص، ثم مراجعة متباعدة بدل إعادة الشرح الكامل.",
+   understanding:"اطلب من الطالب تفسير «لماذا» تعمل القاعدة وربط كل عنصر بأثره القانوني قبل الانتقال للحفظ.",
+   application:"قلّل الشرح النظري وزِد مسائل Case Detective وChange One Fact؛ يحدد الطالب أولًا الواقعة الحاسمة ثم يطبق القاعدة.",
+   legal_precision:"استخدم Missing Element والمقارنات بين صيغ متقاربة، واطلب تحديد اللفظ الذي يغيّر التكييف أو النتيجة.",
+   retention:"حوّل ما يفهمه الطالب إلى مفاتيح ذاكرة قصيرة، ثم اختبره بعد فاصل زمني بدل المراجعة الفورية.",
+   exam:"درّبه على قالب ثابت: المسألة → القاعدة → العناصر → التطبيق → النتيجة، مع إجابات قصيرة تحت وقت."
+ };
+ var watch="راقب "+label(weak)+" في الجلستين القادمتين";
+ if(topErr)watch+="، وهل يقل تكرار خطأ «"+topErr.label+"»";
+ watch+=". إذا لم يظهر تحسن، استخدم «جلسة تثبيت» قبل فتح مستوى أصعب.";
+ return {summary:summary,advice:adviceMap[weak]||modelText(v),watch:watch};
+}
 function shell(body){
  APP.innerHTML='<header class="top"><div class="topin"><div class="brand"><div class="mark"><img src="assets/lexlearn-logo.svg" alt="LexLearn"></div><div><b>LexLearn Admin</b><small>قاعدة بيانات مركزية</small></div></div>'+
  '<nav class="nav"><button data-tab="dashboard" class="'+(state.tab==="dashboard"?"active":"")+'">'+ico("chart")+'<span>الرئيسية</span></button><button data-tab="students" class="'+(state.tab==="students"?"active":"")+'">'+ico("users")+'<span>الطلاب</span></button><button data-tab="cohorts" class="'+(state.tab==="cohorts"?"active":"")+'">'+ico("group")+'<span>المجموعات</span></button><button data-tab="content" class="'+(state.tab==="content"?"active":"")+'">'+ico("audit")+'<span>المحتوى</span></button><button data-tab="audit" class="'+(state.tab==="audit"?"active":"")+'">'+ico("audit")+'<span>السجل</span></button></nav>'+
@@ -54,10 +86,14 @@ function studentList(){
  return state.students.filter(function(s){return !q||String(s.name+" "+s.username+" "+s.cohort).toLowerCase().indexOf(q)>=0;});
 }
 function detail(v){
- var s=v.s,r=risk(v),axes=v.model.axes||{};
+ var s=v.s,r=risk(v),axes=v.model.axes||{},advice=adminAdvice(v),lastUpdate=v.courseUpdated||v.profileUpdated;
  return '<section class="panel studentHero"><div><span class="overline">'+esc(s.cohort||"بدون مجموعة")+'</span><h2>'+esc(s.name||s.username)+'</h2><p>@'+esc(s.username)+' • '+countryName(s.country)+' • '+esc(s.university||"—")+' • '+esc(s.year||"—")+'</p></div><span class="risk big '+r+'">'+rlabel(r)+'</span></section>'+
  '<section class="panel metricsPanel"><div class="panelHead"><div><h3>الملف التكيفي</h3><p>'+esc(modelText(v))+'</p></div><span class="realTag">Central DB</span></div><div class="metricGrid">'+
- ["recall","understanding","application","legal_precision","retention","exam"].map(function(k){return metric(k,v.m[k],axes[k]);}).join("")+'</div></section>'+
+ ["recall","understanding","application","legal_precision","retention","exam"].map(function(k){return metric(k,v.m[k],axes[k]);}).join("")+'</div>'+(lastUpdate?'<p style="margin:14px 0 0;color:#6f7782;font-size:13px">آخر بيانات مستلمة: '+new Date(lastUpdate).toLocaleString("ar-EG")+'</p>':'')+'</section>'+
+ '<section class="panel"><div class="panelHead"><div><h3>ملاحظات ونصائح للمشرف</h3><p>قراءة تلقائية مبنية على تجربة الطالب الفعلية، وليست درجة جامعية.</p></div><span class="realTag">Supervisor Note</span></div>'+
+ '<div class="recommend"><b>ملحوظة على الأداء</b><span>'+esc(advice.summary)+'</span></div>'+
+ '<div class="recommend" style="margin-top:10px"><b>النصيحة للمشرف</b><span>'+esc(advice.advice)+'</span></div>'+
+ '<div class="recommend" style="margin-top:10px"><b>ما الذي نراقبه بعد ذلك؟</b><span>'+esc(advice.watch)+'</span></div></section>'+
  '<section class="twoCols"><div class="panel"><h3>التقدم</h3><div class="progressWrap"><div class="progressLine"><i style="width:'+Math.round(v.completed/30*100)+'%"></i></div><b>'+v.completed+'/30</b></div><p>الجلسة الحالية: '+v.session+' • '+(v.course.completedProgram?"البرنامج مكتمل":"البرنامج مستمر")+'</p><div class="recommend"><b>التدخل المقترح</b><span>'+esc(modelText(v))+'</span></div></div>'+
  '<div class="panel"><h3>إجراءات الإدارة</h3><div class="adminActions"><button data-reset="'+s.id+'">'+ico("key")+' كلمة مرور مؤقتة</button><button data-toggle="'+s.id+'" data-active="'+(s.active!==false)+'">'+ico("users")+' '+(s.active===false?"تفعيل":"تعطيل")+'</button><button data-unlock="'+s.id+'">فتح الأسبوع التالي</button><button data-repair="'+s.id+'">جلسة تثبيت</button></div></div></section>'+
  '<section class="panel evidence"><h3>لماذا اتخذ النظام هذا القرار؟</h3><div class="evidenceGrid">'+["recall","understanding","application","legal_precision","retention","exam"].map(function(k){var a=axes[k];return '<div><b>'+label(k)+'</b><span>'+(a?("تقدير "+a.value+"% • عدم يقين ±"+a.uncertainty+" • اتجاه "+(a.trend>0?"+":"")+a.trend):"لا توجد أدلة كافية بعد")+'</span></div>';}).join("")+'</div></section>';
