@@ -387,7 +387,22 @@ function buildTrainingQueue(){
   }
   if(errorTask&&q.indexOf(errorTask)===-1)q.push(errorTask);
   if(adaptive&&q.indexOf(adaptive)===-1)q.push(adaptive);
-  return q.filter(Boolean).filter(function(t,i,a){return a.indexOf(t)===i;}).slice(0,6);
+  q=q.filter(Boolean).filter(function(t,i,a){return a.indexOf(t)===i;});
+  if(window.LEX_ENGINE&&LEX_ENGINE.buildAdaptivePlan){
+    var model=state.course.adaptiveModel||recomputeAdaptiveModel();
+    var candidates=q.map(function(t,i){return {
+      id:taskItemId(t)||("local-"+meta.week+"-"+meta.day+"-"+i+"-"+String(t.title||"task").replace(/\s+/g,"-")),
+      dimension:taskDimension(t),difficulty:taskDifficulty(t),status:"approved",approved:true,
+      sourceIds:COUNTRY==="qa"?["QA-CURRICULUM"]:["EG-CURRICULUM"],conceptId:t.skill||taskDimension(t),_task:t
+    };});
+    var history=(state.course.evidence||[]).map(function(e){return {itemId:e.itemId,dimension:e.dimension,score:e.score,ts:e.ts};});
+    var plan=LEX_ENGINE.buildAdaptivePlan(model,candidates,history,{errorType:null},6);
+    state.course.adaptivePlan=plan;
+    var ordered=plan.selected.map(function(x){return x.item._task;});
+    q.forEach(function(t){if(ordered.indexOf(t)===-1)ordered.push(t);});
+    q=ordered;
+  }
+  return q.slice(0,6);
 }
 function chrome(inner){
   APP.innerHTML='<div class="courseShell"><header class="courseTop"><div class="courseTopIn">'+
