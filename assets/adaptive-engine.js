@@ -341,12 +341,25 @@
   function bridgeStrategy(strong,weak){
     var key=(strong||"")+"->"+(weak||"");
     var map={
-      "recall->understanding":{mode:"explain_from_memory",label:"استخدم ما يتذكره الطالب لتفسير لماذا تعمل القاعدة."},
+      "recall->understanding":{mode:"explain_from_memory",label:"استخدم ما يتذكره الطالب لتفسير لماذا تعمل القاعدة، بدل إضافة حفظ جديد."},
       "recall->application":{mode:"change_one_fact",label:"ابدأ بالنص المحفوظ ثم غيّر واقعة واحدة لاختبار التطبيق."},
+      "recall->legal_precision":{mode:"precision_from_recall",label:"حوّل الحفظ الجيد إلى تمييز دقيق بين الألفاظ والعناصر التي تغيّر الحكم."},
+      "recall->exam":{mode:"answer_from_memory",label:"استخدم الاسترجاع القوي لبناء إجابة قانونية منظمة لا مجرد ترديد النص."},
       "understanding->recall":{mode:"memory_keys",label:"حوّل الفهم إلى مفاتيح استرجاع قصيرة مرتبطة بالمعنى."},
+      "understanding->application":{mode:"reason_to_fact",label:"ابدأ من السبب الذي يفهمه الطالب ثم اربطه بواقعة جديدة ليصل للنتيجة."},
       "understanding->legal_precision":{mode:"precision_contrast",label:"استخدم الفهم للتمييز بين الألفاظ القانونية المتقاربة."},
+      "understanding->exam":{mode:"structured_answer",label:"حوّل الفهم الجيد إلى إجابة مرتبة: مسألة، قاعدة، تطبيق، نتيجة."},
+      "legal_precision->understanding":{mode:"precision_to_meaning",label:"استخدم دقة الطالب في الألفاظ لشرح وظيفة كل عنصر ولماذا يغيّر النتيجة."},
       "legal_precision->application":{mode:"boundary_case",label:"استثمر الدقة في حالات حدودية ووقائع متقاربة."},
+      "legal_precision->exam":{mode:"precise_answer",label:"استخدم الدقة القانونية لتحسين صياغة الإجابة وربط المصطلح بأثره."},
+      "application->understanding":{mode:"reverse_explain",label:"ارجع من التطبيق الصحيح إلى تفسير القاعدة: لماذا أعطت هذه الواقعة هذه النتيجة؟"},
+      "application->recall":{mode:"case_to_memory",label:"حوّل الواقعة التي يطبقها الطالب جيدًا إلى مفاتيح استرجاع مرتبطة بالمثال."},
       "application->exam":{mode:"structured_answer",label:"حوّل التطبيق الجيد إلى إجابة: مسألة، قاعدة، تطبيق، نتيجة."},
+      "retention->understanding":{mode:"retrieval_to_meaning",label:"استخدم ثبات المعلومة لشرح معناها ووظيفتها بدل تكرار استرجاعها فقط."},
+      "retention->application":{mode:"retained_to_case",label:"استخدم المعلومة الثابتة في واقعة جديدة حتى تتحول من ذاكرة إلى أداء."},
+      "retention->exam":{mode:"retained_to_answer",label:"استخدم ما ثبت في الذاكرة لبناء إجابة امتحانية قصيرة ومنظمة."},
+      "exam->understanding":{mode:"unpack_answer",label:"فكّك الإجابة الجيدة إلى أسباب وعلاقات للتأكد أن التنظيم لا يخفي فهمًا سطحيًا."},
+      "exam->recall":{mode:"answer_to_keys",label:"استخرج من الإجابة الجيدة مفاتيح ذاكرة قصيرة تسرّع الاسترجاع."},
       "exam->retention":{mode:"retrieval_rebuild",label:"أعد بناء الإجابة من مفاتيح قصيرة بعد فاصل زمني."}
     };
     return map[key]||{mode:"evidence_bridge",label:"ابدأ من أقوى مهارة مثبتة لبناء أضعف مهارة بدل تكرار التدريب نفسه."};
