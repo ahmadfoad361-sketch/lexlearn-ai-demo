@@ -69,7 +69,7 @@ with check (public.is_staff() or public.is_content_reviewer());
 
 insert into public.courses(id,country_code,institution_key,course_code,title_ar,title_en,academic_year,status,metadata)
 values
-('qa-abmmc-2502102','qa','ahmed-bin-mohammed-military-college','2502102','مصادر الالتزام','Sources of Obligations','2026','approved','{"year":"first","credits":3}'::jsonb),
+('qa-abmmc-2502102','qa','ahmed-bin-mohammed-military-college','2502102','مصادر الالتزام','Sources of Obligations','2026','approved','{"year":"second","credits":3}'::jsonb),
 ('eg-civil-sources','eg','lexlearn-egypt','CIV-SOURCES','مصادر الالتزام','Sources of Obligations','2026','approved','{"pilot":true,"institution_specific":false}'::jsonb)
 on conflict(id) do update set metadata=excluded.metadata,status=excluded.status,updated_at=now();
 
@@ -82,7 +82,7 @@ values
 ('qa-lu-lawc104-map','qa-lu-lawc104','Lusail University College of Law','LAWC 104',true,'Spring',3,'LAWC 101',
  'https://www.lu.edu.qa/downloads/Law-Study-Plan.pdf',
  '["Sources of obligations; first-year spring course","Prerequisite: Introduction to Law"]'::jsonb),
-('qa-abmmc-2502102-map','qa-abmmc-2502102','Ahmed Bin Mohammed Military College','2502102',true,'Fall',3,null,
+('qa-abmmc-2502102-map','qa-abmmc-2502102','Ahmed Bin Mohammed Military College','2502102',false,'Fall',3,'2502101',
  'https://www.abmmc.edu.qa/wp/bachelors-degree-in-law-study-plan/?lang=en',
  '["Sources of obligations; first-year law study plan"]'::jsonb)
 on conflict(id) do update set coverage=excluded.coverage,verified_at=now();
