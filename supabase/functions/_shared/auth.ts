@@ -32,3 +32,14 @@ export async function requireUser(req:Request){
   if(!profile||profile.active===false)throw new Error("FORBIDDEN");
   return {user,profile,admin};
 }
+
+export async function requireContentReviewer(req:Request){
+  const auth=req.headers.get("Authorization")||"";
+  const userClient=createClient(Deno.env.get("SUPABASE_URL")!,Deno.env.get("SUPABASE_ANON_KEY")!,{global:{headers:{Authorization:auth}},auth:{persistSession:false}});
+  const {data:{user},error}=await userClient.auth.getUser();
+  if(error||!user)throw new Error("UNAUTHORIZED");
+  const admin=adminClient();
+  const {data:profile,error:pe}=await admin.from("profiles").select("id,role,active,display_name").eq("id",user.id).single();
+  if(pe||!profile||profile.active===false||!["owner","admin","content_reviewer"].includes(profile.role))throw new Error("FORBIDDEN");
+  return {user,profile,admin};
+}
