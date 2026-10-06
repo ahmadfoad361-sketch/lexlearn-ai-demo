@@ -24,11 +24,19 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "20"
-      - name: Syntax check
+      - name: Syntax check all shipped JavaScript
         run: |
-          node --check assets/adaptive-engine.js
-          node --check assets/content.js
-          node --check assets/app.js
+          for f in assets/*.js namaa/assets/*.js; do
+            echo "Checking $f"
+            node --check "$f"
+          done
+      - name: Production guardrails
+        run: |
+          ! grep -R "async async" assets
+          test -f privacy.html
+          test -f terms.html
+          test -f supabase/migrations/001_lexlearn_production.sql
+          test -f supabase/functions/grade-answer/index.ts
       - name: Adaptive engine tests
         run: node tests/adaptive-engine.test.js
       - name: Production boundary tests
