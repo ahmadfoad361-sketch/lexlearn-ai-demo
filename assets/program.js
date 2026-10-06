@@ -346,13 +346,47 @@ function loadCourse(){
   }catch(e){return defaultCourse();}
 }
 var state={view:"home",task:0,answers:[],assessmentAnswers:[],queue:[],course:loadCourse(),diag:diagnostic(),repairMode:false,weekPreview:null,taskStartedAt:null};
+function adaptiveTeachingPlan(model){
+  model=model||recomputeAdaptiveModel()||state.course.adaptiveModel||{};
+  var axes=model.axes||{},weak=model.weakest||"application",strong=model.strongest||"recall";
+  var topError=(state.course.errors||[]).slice().sort(function(a,b){return (b.count||0)-(a.count||0);})[0]||null;
+  var bridge=model.bridge||{},method="",tasks=[];
+  if(bridge.mode==="explain_from_memory"||strong==="recall"&&weak==="understanding"){
+    method="استخدم ما يحفظه الطالب ليشرح وظيفة كل عنصر ولماذا يغيّر الحكم، ثم اختبره بواقعة جديدة.";
+    tasks=["شرح من الذاكرة","لماذا؟","تغيير واقعة واحدة"];
+  }else if(bridge.mode==="memory_keys"||strong==="understanding"&&weak==="recall"){
+    method="حوّل الفهم إلى مفاتيح استرجاع قصيرة، ثم أعد بناء القاعدة من الذاكرة بعد فاصل.";
+    tasks=["مفاتيح ذاكرة","إعادة بناء","استرجاع مؤجل"];
+  }else if(weak==="application"){
+    method="قلّل الشرح النظري، واطلب تحديد الواقعة الحاسمة ثم تطبيق القاعدة عليها وتغيير واقعة واحدة.";
+    tasks=["Case Detective","Change One Fact","تحليل واقعة"];
+  }else if(weak==="legal_precision"){
+    method="استخدم المقارنات والصياغات المتقاربة لاكتشاف اللفظ أو العنصر الذي يغيّر التكييف.";
+    tasks=["Missing Element","تصحيح صياغة","مقارنة قانونية"];
+  }else if(weak==="exam"){
+    method="حوّل المعرفة إلى إجابة منظمة: المسألة ثم القاعدة ثم العناصر ثم التطبيق ثم النتيجة.";
+    tasks=["إجابة مقالية","نقد إجابة","Mini Mock"];
+  }else if(weak==="retention"){
+    method="ثبّت ما يفهمه الطالب باسترجاع متباعد ومفاتيح مرتبطة بالمعنى، لا بإعادة القراءة.";
+    tasks=["استرجاع مؤجل","مرساة معنى","إعادة قياس"];
+  }else{
+    method="استخدم أقوى مهارة مثبتة لبناء أضعف مهارة، ثم أعد القياس قبل رفع الصعوبة.";
+    tasks=["جسر مهاري","تطبيق متكيف","إعادة قياس"];
+  }
+  if(topError)method+=" راقب خصوصًا: "+topError.label+".";
+  return {weakest:weak,strongest:strong,bridge_mode:bridge.mode||"evidence_bridge",method:method,tasks:tasks,error:topError?topError.label:null,updatedAt:Date.now()};
+}
 function save(){
-  localStorage.setItem(COURSE_KEY,JSON.stringify(state.course));
   if(window.LEX_ENGINE){
     var m=(state.diag&&state.diag.metrics)||{},model=LEX_ENGINE.learnerModel({metrics:m,events:state.course.evidence||[]});
     state.course.adaptiveModel=model;
+    state.course.teachingPlan=adaptiveTeachingPlan(model);
+  }
+  localStorage.setItem(COURSE_KEY,JSON.stringify(state.course));
+  if(window.LEX_ENGINE){
+    var model=state.course.adaptiveModel;
     if(window.LEX_CLOUD&&LEX_CLOUD.isConfigured&&LEX_CLOUD.isConfigured()&&STUDENT_SESSION&&STUDENT_SESSION.cloud){
-      LEX_CLOUD.saveLearningPlan({course_id:COURSE_DB_ID,weakest_dimension:model.weakest,strongest_dimension:model.strongest,bridge_mode:model.bridge.mode,goals_json:[{dimension:model.weakest,reason:model.reasons}],model_json:model}).catch(function(){});
+      LEX_CLOUD.saveLearningPlan({course_id:COURSE_DB_ID,weakest_dimension:model.weakest,strongest_dimension:model.strongest,bridge_mode:model.bridge.mode,goals_json:[{dimension:model.weakest,reason:model.reasons,teaching_plan:state.course.teachingPlan}],model_json:model}).catch(function(){});
     }
   }
   if(window.LEX_CLOUD&&LEX_CLOUD.isConfigured&&LEX_CLOUD.isConfigured()&&STUDENT_SESSION&&STUDENT_SESSION.cloud){
@@ -399,6 +433,8 @@ function learningBridge(){
 }
 function buildTrainingQueue(){
   var dim=weakestDimension(),err=strongestErrorSkill(),bridge=learningBridge(),meta=sessionMeta(state.course.session);
+  var model=recomputeAdaptiveModel()||state.course.adaptiveModel||{},teaching=adaptiveTeachingPlan(model);
+  state.course.teachingPlan=teaching;
   var adaptive=dim==="application"?taskBank.apply:dim==="understanding"?taskBank.understanding:dim==="recall"?taskBank.recall:dim==="retention"?taskBank.retention:taskBank.exam;
   var errorTask=err==="spot"?taskBank.spot:err==="apply"?taskBank.apply:err==="exam"?taskBank.exam:null;
   var pool=(weekTasks[meta.week]||weekTasks[1]).slice();
@@ -417,6 +453,32 @@ function buildTrainingQueue(){
   }
   if(errorTask&&q.indexOf(errorTask)===-1)q.push(errorTask);
   if(adaptive&&q.indexOf(adaptive)===-1)q.push(adaptive);
+
+  // From week 3 onward, every normal training session includes at least one
+  // constructed-response task. Weeks 5-6 may include two. The selected essay
+  // follows the current teaching prescription instead of repeating a fixed level.
+  var essayPool=advancedEssayBank[meta.week]||[];
+  if(essayPool.length){
+    var preferred=essayPool.filter(function(x){return x.dimension===dim;})[0]||
+      essayPool.filter(function(x){return x.dimension===teaching.weakest;})[0]||
+      essayPool[(meta.day-1)%essayPool.length];
+    if(preferred&&q.indexOf(preferred)===-1)q.splice(Math.min(2,q.length),0,preferred);
+    if(meta.week>=5&&meta.day>=3&&essayPool.length>1){
+      var second=essayPool.filter(function(x){return x!==preferred;})[(meta.day-1)%Math.max(1,essayPool.length-1)];
+      if(second&&q.indexOf(second)===-1)q.push(second);
+    }
+  }
+
+  // The same note shown to the supervisor directly changes the next tasks.
+  if(teaching.bridge_mode==="explain_from_memory"){
+    [taskBank.explainRule,taskBank.whyContrast].forEach(function(t){if(q.indexOf(t)===-1)q.push(t);});
+  }else if(teaching.bridge_mode==="memory_keys"){
+    [taskBank.memoryAnchor,taskBank.reconstruct].forEach(function(t){if(q.indexOf(t)===-1)q.push(t);});
+  }else if(dim==="application"){
+    [taskBank.spot,taskBank.apply].forEach(function(t){if(q.indexOf(t)===-1)q.push(t);});
+  }else if(dim==="exam"){
+    [taskBank.exam,taskBank.reconstruct].forEach(function(t){if(q.indexOf(t)===-1)q.push(t);});
+  }
   q=q.filter(Boolean).filter(function(t,i,a){return a.indexOf(t)===i;});
   if(window.LEX_ENGINE&&LEX_ENGINE.buildAdaptivePlan){
     var model=state.course.adaptiveModel||recomputeAdaptiveModel();
@@ -432,7 +494,12 @@ function buildTrainingQueue(){
     q.forEach(function(t){if(ordered.indexOf(t)===-1)ordered.push(t);});
     q=ordered;
   }
-  return q.slice(0,6);
+  var finalQ=q.slice(0,6);
+  if(meta.week>=3&&essayPool&&essayPool.length&&!finalQ.some(function(t){return t&&t.essayProfile;})){
+    var requiredEssay=essayPool.filter(function(x){return x.dimension===dim;})[0]||essayPool[0];
+    finalQ[finalQ.length?finalQ.length-1:0]=requiredEssay;
+  }
+  return finalQ;
 }
 function chrome(inner){
   APP.innerHTML='<div class="courseShell"><header class="courseTop"><div class="courseTopIn">'+
@@ -655,15 +722,27 @@ function essayMini(profile){
 function taskStatusBox(correct,label){
   return '<div class="answerStatus '+(correct?"correct":"wrong")+'"><span class="answerStatusIcon">'+ico(correct?"check":"repeat")+'</span><div><b>'+(correct?"إجابتك صحيحة":"إجابتك تحتاج تعديل")+'</b><small>'+esc(label||"راجع السبب ثم انتقل للمهمة التالية.")+'</small></div></div>';
 }
+function balanceOptionTexts(opts){
+  opts=(opts||[]).slice();
+  if(opts.length<2)return opts;
+  var lens=opts.map(function(x){return normText(x).length;}),max=Math.max.apply(null,lens),min=Math.min.apply(null,lens);
+  if(max<34||min>=max*.7)return opts;
+  var tails=["، في ضوء الوقائع المعروضة","، عند تطبيق القاعدة على الحالة","، بحسب التكييف القانوني للمسألة"];
+  return opts.map(function(x,i){
+    var out=String(x),guard=0;
+    while(normText(out).length<max*.68&&guard<2){out+=tails[(i+guard)%tails.length];guard++;}
+    return out;
+  });
+}
 function orderedOptions(t,salt){
-  var n=(t.opts||[]).length;
+  var opts=balanceOptionTexts(t.opts||[]),n=opts.length;
   if(!n)return [];
   var correct=t.a;
   var target=(Number(state.course.session||1)+Number(state.task||0)+Number(salt||0))%n;
   var order=[];
   for(var i=0;i<n;i++){if(i!==correct)order.push(i);}
   order.splice(target,0,correct);
-  return order.map(function(orig){return {orig:orig,text:t.opts[orig]};});
+  return order.map(function(orig){return {orig:orig,text:opts[orig]};});
 }
 function train(){
   var q=state.queue.length?state.queue:buildTrainingQueue(),t=q[state.task%q.length],meta=sessionMeta(state.course.session);
@@ -814,8 +893,36 @@ function recordAssessmentEvidence(q,correct,confidence,repair){
   return {skill:q.skill,dimension:dim,correct:correct,confidence:confidence||null,score:score};
 }
 function assessment(){
-  var week=sessionMeta(state.course.session).week,bank=assessmentBankForWeek(week),q=bank[state.task%bank.length],ordered=orderedOptions(q,7);
+  var week=sessionMeta(state.course.session).week,bank=assessmentBankForWeek(week),q=bank[state.task%bank.length],ordered=q.mode==="free"?[]:orderedOptions(q,7);
   state.taskStartedAt=Date.now();
+  if(q.mode==="free"){
+    chrome('<section class="stage"><div class="progress"><i style="width:'+((state.task+1)/bank.length*100)+'%"></i></div><div class="taskCard">'+
+      '<span class="kicker">تقييم تحليلي • الأسبوع '+week+' • '+(state.task+1)+' / '+bank.length+'</span><h2>'+esc(q.title||"سؤال مقالي")+'</h2><p>'+esc(q.q)+'</p>'+
+      '<textarea class="textarea essayAssessmentInput" id="assessmentEssay" placeholder="اكتب إجابتك كاملة بطريقتك..."></textarea>'+
+      '<div class="assessmentNote">هذا السؤال يقيس الاسترجاع والفهم والتطبيق وأسلوب بناء الإجابة. لن يظهر نموذج الإجابة أثناء القياس.</div>'+
+      '<div class="choiceRow"><button class="primary" id="submitAssessmentEssay">تسليم الإجابة</button></div></div></section>');
+    document.getElementById("submitAssessmentEssay").onclick=function(){
+      var answer=(document.getElementById("assessmentEssay").value||"").trim();
+      if(answer.split(/\s+/).filter(Boolean).length<18){
+        var old=document.querySelector(".assessmentNote");if(old)old.textContent="اكتب إجابة أوسع قليلًا حتى يمكن تحليل طريقة التفكير، وليس النتيجة فقط.";
+        return;
+      }
+      var essay=essayAnalysis(answer,q),primary=q.dimension||"exam",score=(essay.axes&&essay.axes[primary]!=null?essay.axes[primary]:essay.overall)/100;
+      state.course.evidence=Array.isArray(state.course.evidence)?state.course.evidence:[];
+      Object.keys(essay.axes||{}).forEach(function(k){
+        state.course.evidence.push({itemId:null,dimension:k,score:Number(essay.axes[k])/100,difficulty:q.difficulty||4,confidence:null,latency_ms:Math.max(0,Date.now()-(state.taskStartedAt||Date.now())),grading_method:"assessment_essay_profile_v1",ts:Date.now(),session:state.course.session,week:week});
+      });
+      state.course.lastEssayProfile={session:state.course.session,week:week,overall:essay.overall,axes:essay.axes,style:essay.style,note:essay.note,ts:Date.now()};
+      recomputeAdaptiveModel();
+      if(window.LEX_CLOUD&&LEX_CLOUD.isConfigured&&LEX_CLOUD.isConfigured()&&STUDENT_SESSION&&STUDENT_SESSION.cloud){
+        LEX_CLOUD.recordAttempt({course_id:COURSE_DB_ID,item_id:null,dimension:primary,answer_text:answer,score:score,confidence:null,latency_ms:Math.max(0,Date.now()-(state.taskStartedAt||Date.now())),difficulty:q.difficulty||4,grading_method:"assessment_essay_profile_v1",error_type:essay.overall>=60?null:"constructed_response_gap"}).catch(function(){});
+      }
+      state.assessmentAnswers.push({skill:q.skill,dimension:primary,correct:essay.overall>=60,score:score,essayProfile:essay});
+      state.taskStartedAt=null;
+      if(state.task<bank.length-1){state.task++;render();}else finishAssessment();
+    };
+    return;
+  }
   chrome('<section class="stage"><div class="progress"><i style="width:'+((state.task+1)/bank.length*100)+'%"></i></div><div class="taskCard">'+
     '<span class="kicker">تقييم نهاية الأسبوع '+week+' • '+(state.task+1)+' / '+bank.length+'</span><h2>'+esc(q.q)+'</h2>'+
     '<div class="options">'+ordered.map(function(o){return '<button class="option" data-assess-orig="'+o.orig+'">'+esc(o.text)+'</button>';}).join("")+'</div>'+
