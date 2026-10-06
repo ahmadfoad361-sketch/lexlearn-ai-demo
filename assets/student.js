@@ -57,6 +57,7 @@ var seeded=ensureDemoStudent();
 var students=seeded.list;
 var params=new URLSearchParams(location.search);
 var session=read(SESSION_KEY,null);
+var CONSENT_VERSION="2026-10-06-v1",consentOk=true;
 
 if(params.get("demo")==="1"){
   session={studentId:seeded.demo.id,name:seeded.demo.name,username:seeded.demo.username,at:Date.now()};
@@ -223,7 +224,24 @@ function countryGateView(){
     location.reload();
   };
 }
+function consentGateView(){
+  APP.innerHTML="<main class='passwordGate'><section>"+
+    "<div class='mark'><img src='assets/lexlearn-logo.svg' alt='LexLearn'></div>"+
+    "<span class='eyebrow'>الخصوصية واستخدام بيانات التعلم</span>"+
+    "<h1>قبل بدء المسار</h1>"+
+    "<p>يستخدم LexLearn إجاباتك ونتائجك ووقت الاستجابة ومستوى الثقة لبناء تدريب شخصي وقياس التقدم. هذه المؤشرات للتعلم والتدريب وليست درجة جامعية رسمية.</p>"+
+    "<p><a href='privacy.html' target='_blank'>سياسة الخصوصية</a> • <a href='terms.html' target='_blank'>شروط الاستخدام</a></p>"+
+    "<div id='consentError'></div>"+
+    "<button class='btn primary' id='acceptConsent'>أوافق وأبدأ</button>"+
+  "</section></main>";
+  document.getElementById("acceptConsent").onclick=async function(){
+    var e=document.getElementById("consentError");
+    try{await LEX_CLOUD.recordConsent(CONSENT_VERSION,"learning_data",true);consentOk=true;render();}
+    catch(err){e.textContent="تعذر حفظ الموافقة الآن. حاول مرة أخرى.";e.style.color="var(--red)";}
+  };
+}
 function render(){
+  if(session.cloud&&!consentOk){consentGateView();return;}
   if(student.mustChangePassword){
     changePasswordView(true);
     return;
@@ -263,6 +281,7 @@ function render(){
           skillCard("الذاكرة القانونية","recall","brain")+
           skillCard("الفهم","understanding","bulb")+
           skillCard("التطبيق","application","scale")+
+          skillCard("الدقة القانونية","legal_precision","scale")+
           skillCard("ثبات المعلومة","retention","repeat")+
           skillCard("الإجابة الامتحانية","exam","pen")+
         "</div>"+
@@ -314,6 +333,8 @@ async function boot(){
   if(session.cloud&&window.LEX_CLOUD&&LEX_CLOUD.isConfigured&&LEX_CLOUD.isConfigured()){
     try{
       var cloudProfile=await LEX_CLOUD.profile();
+      var consent=await LEX_CLOUD.getConsent(CONSENT_VERSION,"learning_data");
+      consentOk=!!consent;
       if(cloudProfile){
         student.name=cloudProfile.display_name||student.name;
         student.username=cloudProfile.username||student.username;
