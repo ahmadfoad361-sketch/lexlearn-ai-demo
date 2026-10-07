@@ -42,7 +42,7 @@ function ensureDemoStudent(){
       cohort:"Pilot A",
       university:"Qatar University",
       year:"السنة الأولى",
-      subject:"sources",
+      subject:"rights",
       country:"qa",
       active:true,
       createdAt:Date.now()
@@ -72,7 +72,7 @@ if(!session){
 var student=students.find(function(x){return x.id===session.studentId;});
 if(!student){
   if(session.cloud){
-    student={id:session.studentId,name:session.name||session.username,username:session.username,cohort:"",university:"Qatar University",year:"السنة الأولى",subject:"sources",country:session.country||"qa",active:true,cloud:true,createdAt:Date.now()};
+    student={id:session.studentId,name:session.name||session.username,username:session.username,cohort:"",university:"Qatar University",year:"السنة الأولى",subject:"rights",country:session.country||"qa",active:true,cloud:true,createdAt:Date.now()};
     students.unshift(student);write(STUDENTS_KEY,students);
   }else{
     session={studentId:seeded.demo.id,name:seeded.demo.name,username:seeded.demo.username,at:Date.now()};
@@ -85,9 +85,10 @@ var country=student.country||session.country||null;
 var COUNTRY_SETUP_KEY="lexlearn_country_setup_v1_"+student.id;
 var countrySetupDone=read(COUNTRY_SETUP_KEY,false)===true;
 var PROFILE_KEY="lexlearn_v9_profile_"+student.id;
-var COURSE_KEY=country?"lexlearn_course_v1_"+country+"_sources_"+student.id:null;
+var COURSE_KEY=country?"lexlearn_course_v2_"+country+"_"+(country==="qa"?"rights":"sources")+"_"+student.id:null;
 var profile=read(PROFILE_KEY,{results:{}});
-var result=country&&profile.results&&profile.results[country+"-sources"]?profile.results[country+"-sources"]:null;
+var profileCourseKey=country+"-"+(country==="qa"?"rights":"sources");
+var result=country&&profile.results&&profile.results[profileCourseKey]?profile.results[profileCourseKey]:null;
 var course=COURSE_KEY?read(COURSE_KEY,{
   session:1,
   completed:[],
@@ -104,12 +105,12 @@ course.achievements=Array.isArray(course.achievements)?course.achievements:[];
 course.adminOverrideWeeks=course.adminOverrideWeeks||{};
 
 var weekTitles=[
-  "أساس القاعدة القانونية",
-  "مصادر الالتزام",
-  "التطبيق على الوقائع",
-  "الذاكرة القانونية الدقيقة",
-  "الإجابة الامتحانية",
-  "التثبيت والمحاكاة"
+  "الشخصية القانونية والموطن",
+  "القرابة والأهلية",
+  "الشخص المعنوي",
+  "الأشياء والأموال كمحل للحق",
+  "استعمال الحق والتعسف فيه",
+  "التكامل في نظرية الحق"
 ];
 
 function currentWeek(){
@@ -304,7 +305,7 @@ function render(){
     var st=weekStatus(n);
     var open=st[0]==="current"||st[0]==="need";
     var tag=open?"a":"div";
-    var href=open?" href='program.html?"+demoPrefix+"country="+country+"&subject=sources&start=1'":"";
+    var href=open?" href='program.html?"+demoPrefix+"country="+country+"&subject=rights&start=1'":"";
     return "<"+tag+href+" class='week "+st[0]+"'>"+
       "<span class='weekIcon'>"+icon(st[2])+"</span>"+
       "<b>الأسبوع "+n+"</b>"+
@@ -314,10 +315,10 @@ function render(){
   }).join("");
 
   var actionPrimary=course.completedProgram
-    ? "<a class='actionCard primary completeAction' href='program.html?"+demoPrefix+"country="+country+"&subject=sources&start=1'><span class='actionIcon'>🏆</span><span class='actionCopy'><b>عرض إنجازك النهائي</b><small>لقد أنهيت البرنامج بالكامل — افتح شاشة الفوز والإنهاء.</small></span></a>"
+    ? "<a class='actionCard primary completeAction' href='program.html?"+demoPrefix+"country="+country+"&subject=rights&start=1'><span class='actionIcon'>🏆</span><span class='actionCopy'><b>عرض إنجازك النهائي</b><small>لقد أنهيت البرنامج بالكامل — افتح شاشة الفوز والإنهاء.</small></span></a>"
     : !result
-      ? "<a class='actionCard primary' href='showcase.html?country="+country+"&subject=sources'><span class='actionIcon'>"+icon("test")+"</span><span class='actionCopy'><b>ابدأ التقييم التشخيصي</b><small>يفتح الاختبار مباشرة بدل الرجوع للصفحة الرئيسية.</small></span></a>"
-      : "<a class='actionCard primary' href='program.html?"+demoPrefix+"country="+country+"&subject=sources&start=1'><span class='actionIcon'>"+icon("play")+"</span><span class='actionCopy'><b>أكمل جلسة اليوم</b><small>يفتح التدريب الفعلي مباشرة.</small></span></a>";
+      ? "<a class='actionCard primary' href='showcase.html?country="+country+"&subject=rights'><span class='actionIcon'>"+icon("test")+"</span><span class='actionCopy'><b>ابدأ التقييم التشخيصي</b><small>يفتح الاختبار مباشرة بدل الرجوع للصفحة الرئيسية.</small></span></a>"
+      : "<a class='actionCard primary' href='program.html?"+demoPrefix+"country="+country+"&subject=rights&start=1'><span class='actionIcon'>"+icon("play")+"</span><span class='actionCopy'><b>أكمل جلسة اليوم</b><small>يفتح التدريب الفعلي مباشرة.</small></span></a>";
 
   var insight=studentInsight();
   var learningProfile=result
@@ -392,20 +393,20 @@ async function boot(){
       country=student.country||session.country||"qa";
       PROFILE_KEY="lexlearn_v9_profile_"+student.id;
       COURSE_KEY="lexlearn_course_v1_"+country+"_sources_"+student.id;
-      var ps=await LEX_CLOUD.loadSnapshot({courseId:country+"-sources",snapshotType:"profile"});
+      var ps=await LEX_CLOUD.loadSnapshot({courseId:country+"-"+(country==="qa"?"rights":"sources"),snapshotType:"profile"});
       if(ps&&ps.state){
-        profile=ps.state;write(PROFILE_KEY,profile);result=profile.results&&profile.results[country+"-sources"]||null;
-      }else if(profile&&profile.results&&profile.results[country+"-sources"]){
+        profile=ps.state;write(PROFILE_KEY,profile);result=profile.results&&profile.results[country+"-"+(country==="qa"?"rights":"sources")]||null;
+      }else if(profile&&profile.results&&profile.results[country+"-"+(country==="qa"?"rights":"sources")]){
         // Recover a diagnostic that was completed in this browser before central sync was enabled.
-        await LEX_CLOUD.saveSnapshot({courseId:country+"-sources",snapshotType:"profile",state:profile});
-        result=profile.results[country+"-sources"]||null;
+        await LEX_CLOUD.saveSnapshot({courseId:country+"-"+(country==="qa"?"rights":"sources"),snapshotType:"profile",state:profile});
+        result=profile.results[country+"-"+(country==="qa"?"rights":"sources")]||null;
       }
-      var cs=await LEX_CLOUD.loadSnapshot({courseId:country+"-sources",snapshotType:"course"});
+      var cs=await LEX_CLOUD.loadSnapshot({courseId:country+"-"+(country==="qa"?"rights":"sources"),snapshotType:"course"});
       if(cs&&cs.state){
         course=cs.state;write(COURSE_KEY,course);
       }else if(course&&((course.completed&&course.completed.length)||(course.evidence&&course.evidence.length)||Number(course.session)>1)){
         // Recover real training progress already completed by this signed-in student in this browser.
-        await LEX_CLOUD.saveSnapshot({courseId:country+"-sources",snapshotType:"course",state:course});
+        await LEX_CLOUD.saveSnapshot({courseId:country+"-"+(country==="qa"?"rights":"sources"),snapshotType:"course",state:course});
       }
     }catch(e){}
   }
