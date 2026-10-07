@@ -3,18 +3,24 @@
 var APP=document.getElementById("showcaseApp");
 var qs=new URLSearchParams(location.search),studentSession=null;try{studentSession=JSON.parse(localStorage.getItem("lexlearn_student_session")||"null");}catch(e){}
 var COUNTRY=qs.get("country")||(studentSession&&studentSession.country)||"qa";
+var SUBJECT=qs.get("subject")||(COUNTRY==="qa"?"rights":"sources");
+var COURSE_KEY=COUNTRY+"-"+SUBJECT;
 var COUNTRY_LABELS={qa:"قطر",eg:"مصر",sa:"السعودية",ae:"الإمارات",other:"دولة أخرى"};
 function countryLabel(){return COUNTRY_LABELS[COUNTRY]||"الدولة المختارة";}
 var state={view:"hero",step:0,timer:null,answers:[],free:"",runQuestions:[]};
 
-var text64="ينعقد العقد بمجرد ارتباط الإيجاب بالقبول، إذا كان محله وسببه معتبرين قانونًا، وذلك دون إخلال بما يتطلبه القانون من أوضاع خاصة لانعقاد بعض العقود.";
+var text64=COUNTRY==="qa"?"تبدأ شخصية الإنسان بتمام ولادته حيًا، وتنتهي بموته. والحمل المستكن أهل لثبوت الحقوق التي لا يحتاج سببها إلى قبول، وذلك بشرط تمام ولادته حيًا.":"يتم العقد بمجرد أن يتبادل طرفان التعبير عن إرادتين متطابقتين، مع مراعاة ما يقرره القانون من أوضاع خاصة.";
 
-var questions=[
-  {type:"recall",q:"ما أول عنصر ذكره النص لانعقاد العقد؟",opts:["وقوع ضرر","ارتباط الإيجاب بالقبول","تحقق إثراء بلا سبب"],a:1},
-  {type:"recall",q:"إلى جانب الإيجاب والقبول، ماذا اشترط النص؟",opts:["وجود شاهدين دائمًا","مرور مدة زمنية","أن يكون المحل والسبب معتبرين قانونًا"],a:2},
-  {type:"understanding",q:"هل كل عقد ينعقد بمجرد الإيجاب والقبول مهما كان نوعه؟",opts:["لا، فقد يتطلب القانون أوضاعًا خاصة لبعض العقود","نعم، بلا استثناء","فقط إذا كان أحد الطرفين تاجرًا"],a:0},
-  {type:"application",q:"اتفق شخصان على بيع شيء لا يجيز القانون التعامل فيه. هل يكفي تطابق الإرادتين؟",opts:["نعم، لأن الإرادتين تطابقتا","لا، لأن اعتبار المحل قانونًا ما زال لازمًا","نعم إذا كان الثمن معلومًا"],a:1},
-  {type:"application",q:"اتفق الطرفان، لكن القانون يشترط شكلًا خاصًا لهذا النوع من العقود ولم يلتزما به. أي إجابة أدق؟",opts:["العقد صحيح دائمًا بمجرد الاتفاق","يكفي أن يكون السبب مشروعًا فقط","يجب مراعاة الشكل الخاص الذي يتطلبه القانون"],a:2}
+var questions=COUNTRY==="qa"?[
+  {type:"recall",q:"متى تبدأ الشخصية القانونية للإنسان وفق النص؟",opts:["بتمام ولادته حيًا","عند سن السابعة","بمجرد الحمل في جميع الحقوق"],a:0},
+  {type:"recall",q:"ما الشرط المرتبط بثبوت الحقوق للحمل المستكن في النص؟",opts:["تمام ولادته حيًا","بلوغه 18 سنة","وجود موطن مستقل"],a:0},
+  {type:"understanding",q:"هل يعني ثبوت بعض الحقوق للحمل المستكن أنه كامل أهلية الأداء؟",opts:["لا، النص يقرر ثبوت حقوق محددة ولا يجعله كامل أهلية الأداء","نعم في كل التصرفات","نعم إذا كان الحق ماليًا فقط"],a:0},
+  {type:"application",q:"وُلد الطفل حيًا بعد أن كان له حق لا يحتاج سببه إلى قبول. ما الفكرة القانونية الأقرب؟",opts:["يمكن أن يثبت له الحق وفق الشرط الوارد بالنص","لا يثبت له أي حق","يصبح شخصًا معنويًا"],a:0},
+  {type:"application",q:"إذا لم تتم الولادة حية، ما أثر الشرط المذكور في النص على الحقوق المقصودة؟",opts:["لا يتحقق الشرط الذي علق عليه ثبوتها","تثبت دائمًا بلا شرط","تتحول إلى حقوق شخص معنوي"],a:0}
+]:[
+  {type:"recall",q:"ما أول عنصر في انعقاد العقد؟",opts:["وقوع ضرر","تطابق الإرادتين","تحقق إثراء"],a:1},
+  {type:"understanding",q:"هل تكفي الإرادتان في كل عقد؟",opts:["لا، قد يقرر القانون أوضاعًا خاصة","نعم دائمًا","فقط إذا كان أحدهما تاجرًا"],a:0},
+  {type:"application",q:"إذا اشترط القانون شكلًا خاصًا ولم يتحقق، ماذا تفحص؟",opts:["أثر الشكل المطلوب","الضرر فقط","سن الطرفين فقط"],a:0}
 ];
 
 var arabicNums=["١","٢","٣","٤","٥"];
@@ -36,7 +42,7 @@ function prepareQuestions(){
 function chrome(inner){
   APP.innerHTML='<div class="demoShell"><header class="demoTop"><div class="demoTopIn">'+
     '<div class="demoBrand"><div class="demoLogo" dir="ltr"><img src="assets/lexlearn-logo.svg" alt="LexLearn"></div><div><b dir="ltr">LexLearn</b><small>تعلم قانوني متكيف</small></div></div>'+
-    '<div class="demoMeta"><span class="demoPill">'+countryLabel()+' • مصادر الالتزام</span><a class="demoGhost" href="index.html">الرئيسية</a></div>'+
+    '<div class="demoMeta"><span class="demoPill">'+countryLabel()+' • '+(COUNTRY==="qa"?"نظرية الحق":"مصادر الالتزام")</span><a class="demoGhost" href="index.html">الرئيسية</a></div>'+
     '</div></header><main class="demoWrap">'+inner+'</main><footer class="demoFooter">LexLearn</footer></div>';
 }
 function render(){
@@ -65,8 +71,8 @@ function read(){
   var total=22,left=total,start=Date.now();
   stage(12,'<div class="stageCard">'+
     '<span class="demoEyebrow">اقرأ النص جيدًا</span>'+
-    '<h2>المادة ٦٤ — انعقاد العقد</h2>'+
-    '<div class="legalPaper" dir="rtl"><small>'+(COUNTRY==="qa"?"القانون المدني القطري رقم ٢٢ لسنة ٢٠٠٤ — المادة ٦٤":"نص تدريبي تجريبي — انعقاد العقد")+'</small><div class="txt">'+esc(text64)+'</div></div>'+
+    '<h2>'+(COUNTRY==="qa"?"المادتان ٣٩ و٤٠ — الشخصية القانونية":"قاعدة انعقاد العقد")+'</h2>'+
+    '<div class="legalPaper" dir="rtl"><small>'+(COUNTRY==="qa"?"القانون المدني القطري رقم ٢٢ لسنة ٢٠٠٤ — المادتان ٣٩ و٤٠":"نص تدريبي تجريبي")+'</small><div class="txt">'+esc(text64)+'</div></div>'+
     '<div class="timerRow"><button class="btn primary" id="finishRead">انتهيت</button><div class="timerCircle" id="ring"><b id="num">'+total+'</b></div></div>'+
   '</div>');
   state.timer=setInterval(function(){
@@ -113,7 +119,7 @@ function pct(type){
 function qualitative(v){if(v>=80)return "قوي";if(v>=45)return "متوسط";return "يحتاج تدريبًا";}
 function freeScore(){
   var n=(state.free||"").replace(/[أإآ]/g,"ا").replace(/[ًٌٍَُِّْـ]/g,"");
-  var keys=["ايجاب","قبول","محل","سبب","اوضاع","خاصه","العقد"];
+  var keys=COUNTRY==="qa"?["شخصيه","ولاده","حيا","حمل","مستكن","حقوق"]:["ايجاب","قبول","محل","سبب","العقد"];
   var hits=keys.filter(function(k){return n.indexOf(k)>=0;}).length;
   return Math.min(100,hits*25);
 }
@@ -129,14 +135,14 @@ function result(){
     try{p=JSON.parse(localStorage.getItem(pk)||"{\"results\":{}}")||{results:{}};}catch(e){}
     p.results=p.results||{};
     var gap=recall-understanding,profileType=gap>=12?"recall-led":gap<=-12?"understanding-led":"balanced";
-    p.results[COUNTRY+"-sources"]={metrics:{recall:recall,understanding:understanding,application:application,legal_precision:null,retention:null,exam:null},profileType:profileType,updatedAt:Date.now()};
+    p.results[COURSE_KEY]={metrics:{recall:recall,understanding:understanding,application:application,legal_precision:null,retention:null,exam:null},profileType:profileType,updatedAt:Date.now()};
     localStorage.setItem(pk,JSON.stringify(p));
     if(studentSession.cloud&&window.LEX_CLOUD&&LEX_CLOUD.isConfigured&&LEX_CLOUD.isConfigured()){
-      LEX_CLOUD.saveSnapshot({courseId:COUNTRY+"-sources",snapshotType:"profile",state:p}).catch(function(){});
-      LEX_CLOUD.logEvent("DIAGNOSTIC_COMPLETED",{course_id:COUNTRY+"-sources",recall:recall,understanding:understanding,application:application,profile_type:profileType}).catch(function(){});
+      LEX_CLOUD.saveSnapshot({courseId:COURSE_KEY,snapshotType:"profile",state:p}).catch(function(){});
+      LEX_CLOUD.logEvent("DIAGNOSTIC_COMPLETED",{course_id:COURSE_KEY,recall:recall,understanding:understanding,application:application,profile_type:profileType}).catch(function(){});
     }
   }
-  var trainingQuery=(studentSession&&studentSession.cloud?"":"demo=1&")+"country="+COUNTRY+"&start=1";
+  var trainingQuery=(studentSession&&studentSession.cloud?"":"demo=1&")+"country="+COUNTRY+"&subject="+SUBJECT+"&start=1";
   stage(97,'<div class="stageCard">'+
     '<span class="demoEyebrow">النتيجة</span>'+
     '<h2>نتيجتك في هذه المحاولة</h2>'+
@@ -153,13 +159,13 @@ function metric(name,v){return '<div class="metric"><span>'+name+'</span><b>'+qu
 function exam(){
   stage(100,'<div class="stageCard">'+
     '<span class="demoEyebrow">سؤال امتحاني</span>'+
-    '<h2>اشرح متى ينعقد العقد وفقًا للمادة ٦٤.</h2>'+
+    '<h2>'+(COUNTRY==="qa"?"اشرح الفرق بين بدء الشخصية القانونية وثبوت بعض الحقوق للحمل المستكن.":"اشرح قاعدة انعقاد العقد.")+'</h2>'+
     '<textarea class="freeInput" id="examText" dir="rtl" placeholder="اكتب إجابتك هنا..."></textarea>'+
     '<div class="demoActions"><button class="btn primary" id="showStructure">راجع عناصر الإجابة</button></div>'+
     '<div id="examStructure"></div>'+
   '</div>');
   document.getElementById("showStructure").onclick=function(){
-    document.getElementById("examStructure").innerHTML='<div class="feedback"><b>عناصر الإجابة:</b><br>القاعدة ← الإيجاب والقبول ← المحل والسبب ← الشكل الخاص عند اشتراطه ← النتيجة.</div>';
+    document.getElementById("examStructure").innerHTML='<div class="feedback"><b>عناصر الإجابة:</b><br>'+(COUNTRY==="qa"?"بدء الشخصية بالولادة حية ← مركز الحمل المستكن ← نوع الحقوق ← شرط الولادة حية ← النتيجة.":"القاعدة ← الإرادة ← القيود القانونية ← النتيجة.")+'</div>';
   };
 }
 render();
