@@ -392,7 +392,7 @@ async function boot(){
       }
       country=student.country||session.country||"qa";
       PROFILE_KEY="lexlearn_v9_profile_"+student.id;
-      COURSE_KEY="lexlearn_course_v1_"+country+"_sources_"+student.id;
+      COURSE_KEY="lexlearn_course_v2_"+country+"_"+(country==="qa"?"rights":"sources")+"_"+student.id;
       var ps=await LEX_CLOUD.loadSnapshot({courseId:country+"-"+(country==="qa"?"rights":"sources"),snapshotType:"profile"});
       if(ps&&ps.state){
         profile=ps.state;write(PROFILE_KEY,profile);result=profile.results&&profile.results[country+"-"+(country==="qa"?"rights":"sources")]||null;
