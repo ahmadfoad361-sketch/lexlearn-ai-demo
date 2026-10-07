@@ -10,9 +10,9 @@ function esc(v){return String(v==null?"":v).replace(/[&<>"']/g,function(c){retur
 function ico(n){var p={chart:'<path d="M12 50h40M17 43V29M28 43V19M39 43V34M50 43V13"/>',users:'<circle cx="23" cy="22" r="8"/><circle cx="44" cy="25" r="6"/><path d="M9 50c2-10 8-15 14-15s12 5 14 15M38 39c7 0 12 4 14 11"/>',group:'<circle cx="22" cy="23" r="7"/><circle cx="42" cy="23" r="7"/><path d="M8 49c2-10 7-15 14-15s12 5 14 15M28 49c2-10 7-15 14-15s12 5 14 15"/>',audit:'<path d="M17 10h30v44H17z"/><path d="M24 21h16M24 29h16M24 37h11"/>',plus:'<path d="M32 13v38M13 32h38"/>',key:'<path d="M10 35a12 12 0 1 0 18-10l22-11 5 5-4 7-7-1-2 7-7-1-6 4"/>'};return '<svg class="uiIcon" viewBox="0 0 64 64">'+(p[n]||p.chart)+'</svg>';}
 function label(k){return({recall:"الاسترجاع",understanding:"الفهم",application:"التطبيق",legal_precision:"الدقة القانونية",retention:"ثبات المعلومة",exam:"الأداء الامتحاني"})[k]||k;}
 function countryName(c){return c==="eg"?"مصر":"قطر";}
-function courseKey(s){return (s.country||"qa")+"-sources";}
-function profileSnap(id,country){return state.snapshots.find(function(x){return x.user_id===id&&x.course_id===(country||"qa")+"-sources"&&x.snapshot_type==="profile";});}
-function courseSnap(id,country){return state.snapshots.find(function(x){return x.user_id===id&&x.course_id===(country||"qa")+"-sources"&&x.snapshot_type==="course";});}
+function courseKey(s){var country=s.country||"qa";return country+"-"+(country==="qa"?"rights":"sources");}
+function profileSnap(id,country){country=country||"qa";var key=country+"-"+(country==="qa"?"rights":"sources");return state.snapshots.find(function(x){return x.user_id===id&&x.course_id===key&&x.snapshot_type==="profile";});}
+function courseSnap(id,country){country=country||"qa";var key=country+"-"+(country==="qa"?"rights":"sources");return state.snapshots.find(function(x){return x.user_id===id&&x.course_id===key&&x.snapshot_type==="course";});}
 function view(s){
  var ps=profileSnap(s.id,s.country),cs=courseSnap(s.id,s.country),profile=ps&&ps.state||{results:{}},course=cs&&cs.state||{};
  var res=profile.results&&profile.results[courseKey(s)]||{},base=res.metrics||{};
