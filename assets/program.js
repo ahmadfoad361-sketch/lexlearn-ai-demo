@@ -7,13 +7,13 @@ var STUDENT_SESSION=(function(){try{return JSON.parse(localStorage.getItem("lexl
 // A signed-in cloud student must always use the real tracked path, even if an old demo=1 link is opened.
 var DEMO=qs.get("demo")==="1"&&!(STUDENT_SESSION&&STUDENT_SESSION.cloud&&STUDENT_SESSION.studentId);
 var COUNTRY=String(qs.get("country")||(STUDENT_SESSION&&STUDENT_SESSION.country)||"qa").toLowerCase();
-var SUBJECT=qs.get("subject")||"sources";
-var COURSE_DB_ID=COUNTRY==="qa"?"qa-qu-lawc213":"eg-civil-sources";
+var SUBJECT=qs.get("subject")||(COUNTRY==="qa"?"rights":"sources");
+var COURSE_DB_ID=COUNTRY==="qa"?"qa-qu-lawc101-rights":"eg-civil-sources";
 var COUNTRY_LABELS={qa:"قطر",eg:"مصر",sa:"السعودية",ae:"الإمارات",other:"دولة أخرى"};
 function countryLabel(){return COUNTRY_LABELS[COUNTRY]||"الدولة المختارة";}
 var STUDENT_SCOPE=STUDENT_SESSION&&STUDENT_SESSION.studentId?("_"+STUDENT_SESSION.studentId):"";
 var PROFILE_KEY="lexlearn_v9_profile"+STUDENT_SCOPE;
-var COURSE_KEY="lexlearn_course_v1_"+COUNTRY+"_"+SUBJECT+STUDENT_SCOPE;
+var COURSE_KEY="lexlearn_course_v2_"+COUNTRY+"_"+SUBJECT+STUDENT_SCOPE;
 var LAW_PACKS={
   qa:{
     institution:"Qatar University College of Law / LAWC 101",
@@ -66,7 +66,7 @@ var RIGHTS_ARTICLES={
 };
 function rightsText(){var nums=[].slice.call(arguments);return nums.map(function(n){return "المادة "+n+": "+(RIGHTS_ARTICLES[n]||"");}).join("\n\n");}
 var LAW=LAW_PACKS[COUNTRY]||LAW_PACKS.qa;
-var TEXT64=LAW.anchor;
+var TEXT64=COUNTRY==="qa"?rightsText("39","40"):LAW.anchor;
 var curriculum=[
   {
     "week": 1,
@@ -678,7 +678,7 @@ function buildTrainingQueue(){
 }
 function chrome(inner){
   APP.innerHTML='<div class="courseShell"><header class="courseTop"><div class="courseTopIn">'+
-    '<div class="brand"><div class="mark"><img src="assets/lexlearn-logo.svg" alt="LexLearn"></div><div><b>LexLearn</b><small>'+countryLabel()+' • برنامج التدريب</small></div></div>'+
+    '<div class="brand"><div class="mark"><img src="assets/lexlearn-logo.svg" alt="LexLearn"></div><div><b>LexLearn</b><small>'+countryLabel()+' • نظرية الحق</small></div></div>'+
     '<div class="topActions"><a class="topBtn" href="showcase.html?country='+COUNTRY+'">الديمو التشخيصي</a><a class="topBtn" href="index.html">الرئيسية</a></div>'+
   '</div></header><main class="courseWrap">'+inner+'</main></div>';
 }
