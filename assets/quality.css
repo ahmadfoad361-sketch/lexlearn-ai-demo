@@ -9,6 +9,7 @@ body{font-size:1rem}button,a,input,textarea,summary{touch-action:manipulation}bu
 @media(max-width:760px){.qualityHero{grid-template-columns:1fr;gap:20px;padding-block:24px}.qualityJurisdictions,.qualityMethod{padding:20px}.qualityActions .btn{flex:1;text-align:center}.studentSnapshot{grid-template-columns:1fr!important}.snapshotCard{display:block!important;text-align:center!important}.snapshotCard small{margin-top:5px!important}.metrics{grid-template-columns:repeat(2,minmax(0,1fr))!important}.brand small,.v9-brand small{max-width:230px}.qualityExample{padding:20px}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;scroll-behavior:auto!important;transition:none!important}}
 
+.stageCard .planCard p{color:#e7edf6!important}
 /* Homepage title: two deliberate lines, then a quieter AI descriptor. */
 .qualityHero>div,.en-hero>div{min-width:0}
 .qualityHero .qualityHeroTitle,.en-hero .qualityHeroTitle{font-family:inherit;font-weight:600;font-size:clamp(1.75rem,3.2vw,2.625rem);line-height:1.5;letter-spacing:normal;margin:14px 0 0;max-width:36rem;color:var(--quality-navy)}
