@@ -14,9 +14,9 @@ var text64=COUNTRY==="qa"?"A human being acquires legal personality upon being b
 var questions=COUNTRY==="qa"?[
   {type:"recall",q:"According to the text, when does a human being acquire legal personality?",opts:["Upon being born alive","At the age of seven","From conception for all rights"],a:0},
   {type:"recall",q:"What condition is attached to the unborn child's acquisition of the rights described in the text?",opts:["Being born alive","Reaching the age of 18","Having an independent domicile"],a:0},
-  {type:"understanding",q:"Does the unborn child's ability to acquire certain rights mean that it has full capacity to perform legal acts?",opts:["No. The text allows the acquisition of specific rights; it does not confer full capacity to perform legal acts","Yes, for all legal acts","Yes, whenever the right is financial"],a:0},
-  {type:"application",q:"A child is born alive after a right that did not require acceptance had arisen in the child's favour. Which legal idea is most relevant?",opts:["The right may vest because the condition stated in the provision has been satisfied","No right can vest in the child","The child becomes a legal person"],a:0},
-  {type:"application",q:"If the child is not born alive, what is the effect of the condition stated in the text on those rights?",opts:["The condition on which those rights depended is not satisfied","The rights always vest without condition","They become rights of a legal person"],a:0}
+  {type:"understanding",q:"Does the unborn child's ability to acquire certain rights mean that it has full capacity to perform legal acts?",opts:["No. Certain rights may vest conditionally, but this does not confer full capacity to perform legal acts","Yes. Any ability to acquire a right necessarily gives full capacity to perform legal acts","Yes. Full capacity exists whenever the right concerned has an economic value"],a:0},
+  {type:"application",q:"A child is born alive after a right that did not require acceptance had arisen in the child's favour. Which legal idea is most relevant?",opts:["The right may vest because the live-birth condition stated in the provision has been satisfied","The right cannot vest because rights arising before birth are always legally ineffective","The child acquires the right only because birth automatically gives retroactive full capacity"],a:0},
+  {type:"application",q:"If the child is not born alive, what is the effect of the condition stated in the text on those rights?",opts:["The condition on which those particular rights depended has not been satisfied","The rights vest permanently because the legal cause arose before the expected birth","The rights are transferred automatically to a separate legal person created by the law"],a:0}
 ]:[
   {type:"recall",q:"What is the first element to examine in contract formation?",opts:["Occurrence of damage","Matching intentions","Unjust enrichment"],a:1},
   {type:"understanding",q:"Are matching intentions sufficient for every contract?",opts:["No. The law may require special formalities","Yes, always","Only if one party is a trader"],a:0},
@@ -72,7 +72,7 @@ function read(){
   stage(12,'<div class="stageCard">'+
     '<span class="demoEyebrow">Read the text carefully</span>'+
     '<h2>'+(COUNTRY==="qa"?"Articles 39 and 40 — Legal Personality":"Contract formation rule")+'</h2>'+
-    '<div class="legalPaper" dir="rtl"><small>'+(COUNTRY==="qa"?"Qatar Civil Code No. 22 of 2004 — Articles 39 and 40":"Training text")+'</small><div class="txt">'+esc(text64)+'</div></div>'+
+    '<div class="legalPaper" dir="ltr"><small>'+(COUNTRY==="qa"?"Qatar Civil Code No. 22 of 2004 — Articles 39 and 40 • educational English rendering":"Training text")+'</small><div class="txt">'+esc(text64)+'</div></div>'+
     '<div class="timerRow"><button class="btn primary" id="finishRead">Done</button><div class="timerCircle" id="ring"><b id="num">'+total+'</b></div></div>'+
   '</div>');
   state.timer=setInterval(function(){
