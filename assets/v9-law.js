@@ -89,9 +89,9 @@ function renderCountry(){
   var html='<section class="entry-screen entry-country-first">'+
     '<div class="entry-intro"><div class="entry-seal"><img src="assets/lexlearn-logo.svg" alt="LexLearn"></div><span class="section-overline">LEXLEARN</span>'+
     '<h1>اختر الدولة</h1>'+
-    '<p>يتم ضبط المحتوى القانوني والتدريب بحسب النظام القانوني المختار. مسار قطر هو النسخة العاملة حاليًا.</p></div>'+
+    '<p>يتم ضبط المحتوى القانوني والتدريب بحسب النظام القانوني المختار. برنامج قطر هو النسخة العاملة حاليًا.</p></div>'+
     '<div class="entry-options country-launch-grid">'+
-      '<button class="entry-option country-live" data-country="qa"><span class="entry-flag">🇶🇦</span><span class="entry-copy"><b>قطر</b><small>المسار المتاح الآن • نظرية الحق</small></span><span class="entry-arrow">ابدأ ←</span></button>'+
+      '<button class="entry-option country-live" data-country="qa"><span class="entry-flag">🇶🇦</span><span class="entry-copy"><b>قطر</b><small>البرنامج المتاح الآن • نظرية الحق</small></span><span class="entry-arrow">ابدأ ←</span></button>'+
       '<button class="entry-option country-muted" disabled aria-disabled="true"><span class="entry-flag">🇪🇬</span><span class="entry-copy"><b>مصر</b><small>قريبًا</small></span><span class="entry-arrow">قيد التجهيز</span></button>'+
       '<button class="entry-option country-muted" disabled aria-disabled="true"><span class="entry-flag">🇸🇦</span><span class="entry-copy"><b>السعودية</b><small>قريبًا</small></span><span class="entry-arrow">قيد التجهيز</span></button>'+
       '<button class="entry-option country-muted" disabled aria-disabled="true"><span class="entry-flag">🇦🇪</span><span class="entry-copy"><b>الإمارات</b><small>قريبًا</small></span><span class="entry-arrow">قيد التجهيز</span></button>'+
@@ -105,10 +105,10 @@ function renderCountry(){
 }
 function renderSubjects(){
   state.countryId="qa";
-  var html='<section class="subject-hero pilot-subject-hero"><div><span class="section-overline">🇶🇦 قطر • المسار الحالي</span><h1>نظرية الحق</h1><p>برنامج قانوني تكيفي لمدة 6 أسابيع و30 جلسة، مبني على المواد 39–63 من القانون المدني القطري وموجه لقياس الاسترجاع والفهم والتطبيق والدقة القانونية.</p></div><button class="btn soft-outline" id="backCountry">تغيير الدولة</button></section>'+
+  var html='<section class="subject-hero pilot-subject-hero"><div><span class="section-overline">🇶🇦 قطر • البرنامج الحالي</span><h1>نظرية الحق</h1><p>برنامج قانوني تكيفي لمدة 6 أسابيع و30 جلسة، مبني على المواد 39–63 من القانون المدني القطري وموجه لقياس الاسترجاع والفهم والتطبيق والدقة القانونية.</p></div><button class="btn soft-outline" id="backCountry">تغيير الدولة</button></section>'+
   '<section class="pilot-course-card">'+
     '<div class="pilot-course-icon">'+icon("rights")+'</div>'+
-    '<div class="pilot-course-copy"><span class="section-overline">LAWC 101 • THEORY OF RIGHT</span><h2>ابدأ من التقييم ثم يتحول المسار حسب طريقة تعلمك</h2><p>التقييم التشخيصي يحدد نقطة القوة والأولوية، ثم يفتح برنامج الأسابيع الستة. في المستويات الأصعب تدخل الأسئلة المقالية وتحليل أسلوب الإجابة.</p>'+
+    '<div class="pilot-course-copy"><span class="section-overline">LAWC 101 • THEORY OF RIGHT</span><h2>ابدأ من التقييم ثم يتحول البرنامج حسب طريقة تعلمك</h2><p>التقييم التشخيصي يحدد نقطة القوة والأولوية، ثم يفتح برنامج الأسابيع الستة. في المستويات الأصعب تدخل الأسئلة المقالية وتحليل أسلوب الإجابة.</p>'+
     '<div class="pilot-course-weeks"><span>1 الشخصية والموطن</span><span>2 القرابة والأهلية</span><span>3 الشخص المعنوي</span><span>4 الأموال</span><span>5 استعمال الحق</span><span>6 التكامل</span></div></div>'+
     '<div class="pilot-course-actions"><a class="quick-live-btn primary-live" href="showcase.html?country=qa&subject=rights">جرّب التقييم</a><a class="quick-live-btn training-live" href="student-login.html?country=qa">دخول الطالب</a><a class="quick-live-btn admin-live" href="admin-login.html">دخول المشرف</a></div>'+
   '</section>';
@@ -348,7 +348,7 @@ function renderResults(){
     resultSkillCard("exam",m.exam)+
   '</div>'+
   '<section class="student-next"><div><span class="section-overline">إيه اللي يحصل بعد كده؟</span><h2>ابدأ التدريب بدل ما تقرأ خطة فقط</h2><p>البرنامج مدته 6 أسابيع / 30 جلسة. كل جلسة فيها استرجاع، مهمة من موضوع الأسبوع، تدريب على نقطة ضعفك، تطبيق على واقعة جديدة، وتغذية راجعة.</p></div><div class="student-next-actions"><a class="btn primary" style="text-decoration:none" href="program.html?country='+encodeURIComponent(state.countryId)+'&subject='+encodeURIComponent(state.subjectId)+'">ابدأ أول جلسة تدريب</a><button class="btn secondary" id="openPlan">شوف خطة الـ6 أسابيع</button></div></section>'+
-  '<div class="result-note-simple"><b>مهم:</b> لو أعدت التقييم أو أكملت تقييم التثبيت، المسار يتغير تلقائيًا حسب أدائك الجديد.</div>';
+  '<div class="result-note-simple"><b>مهم:</b> لو أعدت التقييم أو أكملت تقييم التثبيت، البرنامج يتغير تلقائيًا حسب أدائك الجديد.</div>';
   chrome(html);
   document.getElementById("backHub").onclick=function(){state.view="hub";render();};
   document.getElementById("openPlan").onclick=function(){state.view="plan";render();};
@@ -371,7 +371,7 @@ function renderPlan(){
   document.getElementById("backHub").onclick=function(){state.view="hub";render();};
 }
 function noResultView(title){
-  chrome('<div class="section-title"><div><h1>'+title+'</h1><p>المسار ده يحتاج نتيجة تشخيص أولًا.</p></div></div><div class="empty-note">ابدأ «اختباري» أولًا عشان نبني المسار على أدائك الفعلي.<br><button class="btn primary" id="nrTest" style="margin-top:12px">ابدأ الاختبار</button></div>');
+  chrome('<div class="section-title"><div><h1>'+title+'</h1><p>البرنامج ده يحتاج نتيجة تشخيص أولًا.</p></div></div><div class="empty-note">ابدأ «اختباري» أولًا عشان نبني البرنامج على أدائك الفعلي.<br><button class="btn primary" id="nrTest" style="margin-top:12px">ابدأ الاختبار</button></div>');
   document.getElementById("nrTest").onclick=startDiagnostic;
 }
 function renderLearn(){
@@ -383,7 +383,7 @@ function renderTrain(){
   var a=subject().diagnostic.anchor;
   chrome('<div class="section-title"><div><h1>أتدرب</h1><p>التطبيق يبدأ بتغيير واقعة واحدة بدل إعادة سؤال الحفظ بصياغة أخرى.</p></div><button class="btn ghost" id="backHub">رجوع</button></div><section class="focus-panel"><span class="eyebrow">Change One Fact</span><h2>'+esc(a.applyQuestion)+'</h2><div class="choices">'+a.applyOptions.map(function(o,i){return '<button class="choice" data-train="'+i+'">'+esc(o.t)+'</button>';}).join("")+'</div><div id="trainFeed"></div></section>');
   document.getElementById("backHub").onclick=function(){state.view="hub";render();};
-  document.querySelectorAll("[data-train]").forEach(function(b){b.onclick=function(){var o=a.applyOptions[Number(b.dataset.train)];document.querySelectorAll("[data-train]").forEach(function(x){x.disabled=true;});b.classList.add(o.s?"good":"bad");document.getElementById("trainFeed").innerHTML='<div class="archive-note">'+(o.s?"التكييف أقرب للصواب. الآن اشرح لنفسك: ما الواقعة التي غيرت المسار؟":"ارجع للواقعة الحاسمة في السؤال، مش للكلمات العامة.")+'</div>';};});
+  document.querySelectorAll("[data-train]").forEach(function(b){b.onclick=function(){var o=a.applyOptions[Number(b.dataset.train)];document.querySelectorAll("[data-train]").forEach(function(x){x.disabled=true;});b.classList.add(o.s?"good":"bad");document.getElementById("trainFeed").innerHTML='<div class="archive-note">'+(o.s?"التكييف أقرب للصواب. الآن اشرح لنفسك: ما الواقعة التي غيرت البرنامج؟":"ارجع للواقعة الحاسمة في السؤال، مش للكلمات العامة.")+'</div>';};});
 }
 function renderExam(){
   var e=subject().exam,res=currentResult();
