@@ -20,7 +20,7 @@ var LAW_PACKS={
     article:"القانون المدني القطري — المواد 39 إلى 63",
     anchor:"نظرية الحق: الشخص الطبيعي والمعنوي، الأهلية والموطن، الأشياء والأموال، واستعمال الحق وحدوده.",
     memory:"صاحب الحق ← محل الحق ← أهلية ومركز قانوني ← استعمال مشروع وحدوده",
-    recallQ:"أي خريطة تجمع موضوعات نظرية الحق في هذا المسار؟",
+    recallQ:"أي خريطة تجمع موضوعات نظرية الحق في هذا البرنامج؟",
     recallA:["الأشخاص + الأهلية والموطن + الأموال + استعمال الحق","العقد فقط","الفعل الضار فقط"],
     restrictionQ:"لماذا لا يكفي حفظ تعريف الحق وحده؟",
     restrictionA:"لأن التطبيق يتطلب تحديد صاحب الحق وأهليته ومحل الحق وحدود استعماله في الواقعة."
@@ -268,8 +268,8 @@ var skills=[
 var taskBank={
   review:{kind:"review",title:"استرجاع قانوني",q:"من غير الرجوع للنص: ما القاعدة التي درستها في الجلسة السابقة؟ اذكر العنصر الحاسم فيها.",opts:["أسترجع القاعدة وعناصرها ثم أختبر أثرها","أختار أي عبارة طويلة","أكتفي باسم الباب"],a:0,skill:"person",dimension:"recall",why:"الاسترجاع الجيد لا يكتفي باسم الموضوع؛ بل يستعيد العنصر الذي يغير الحكم."},
   core:{kind:"core",title:"حدّد المركز القانوني",q:"ما أول خطوة قبل تطبيق قاعدة من نظرية الحق على واقعة؟",opts:["تحديد صاحب الحق أو مركزه القانوني ثم القاعدة ذات الصلة","كتابة النتيجة مباشرة","اختيار أطول إجابة"],a:0,skill:"person",dimension:"understanding",why:"نظرية الحق تبدأ بتحديد الشخص أو المال أو طريقة استعمال الحق قبل النتيجة."},
-  apply:{kind:"adaptive",title:"Change One Fact",q:"إذا غيّرنا واقعة قانونية حاسمة مع بقاء باقي الوقائع، ماذا يجب أن تفعل؟",opts:["أعيد تطبيق القاعدة لأرى هل تغير المركز أو النتيجة","أبقي النتيجة كما هي دائمًا","أعيد حفظ النص فقط"],a:0,skill:"apply",dimension:"application",why:"التطبيق الحقيقي يظهر عندما تعرف أي واقعة تغير الحكم ولماذا."},
-  spot:{kind:"adaptive",title:"Case Detective",q:"في مسألة قانونية، أي واقعة تبحث عنها أولًا؟",opts:["الواقعة المرتبطة بعنصر القاعدة القانونية","تفصيل لا يؤثر في الحكم","طول صياغة السؤال"],a:0,skill:"spot",dimension:"application",why:"التقاط الواقعة الحاسمة هو جسر الانتقال من النص إلى التطبيق."},
+  apply:{kind:"adaptive",title:"غيّر واقعة واحدة",q:"إذا غيّرنا واقعة قانونية حاسمة مع بقاء باقي الوقائع، ماذا يجب أن تفعل؟",opts:["أعيد تطبيق القاعدة لأرى هل تغير المركز أو النتيجة","أبقي النتيجة كما هي دائمًا","أعيد حفظ النص فقط"],a:0,skill:"apply",dimension:"application",why:"التطبيق الحقيقي يظهر عندما تعرف أي واقعة تغير الحكم ولماذا."},
+  spot:{kind:"adaptive",title:"اكتشف الواقعة الحاسمة",q:"في مسألة قانونية، أي واقعة تبحث عنها أولًا؟",opts:["الواقعة المرتبطة بعنصر القاعدة القانونية","تفصيل لا يؤثر في الحكم","طول صياغة السؤال"],a:0,skill:"spot",dimension:"application",why:"التقاط الواقعة الحاسمة هو جسر الانتقال من النص إلى التطبيق."},
   exam:{kind:"adaptive",title:"بناء الإجابة القانونية",q:"أي ترتيب أقوى لإجابة قانونية قصيرة؟",opts:["المسألة ثم القاعدة ثم العنصر الحاسم ثم التطبيق ثم النتيجة","النتيجة فقط","نسخ الوقائع دون تكييف"],a:0,skill:"exam",dimension:"exam",why:"الإجابة القانونية الجيدة تجعل طريق التفكير ظاهرًا."},
   understanding:{kind:"adaptive",title:"افهم وظيفة النص",q:"لماذا لا يكفي حفظ رقم المادة وعبارتها؟",opts:["لأن المطلوب معرفة وظيفة كل عنصر ومتى يغير الحكم","لأن أرقام المواد غير مهمة إطلاقًا","لأن كل الوقائع لها نفس النتيجة"],a:0,skill:"person",dimension:"understanding",why:"الفهم يعني معرفة العلاقة بين النص والواقعة، لا ترديد النص فقط."},
   recall:{kind:"adaptive",title:"استرجاع منظم",q:"أي طريقة أفضل لاسترجاع قاعدة قانونية؟",opts:["اسم القاعدة ← عناصرها ← القيد أو الاستثناء ← أثرها","حفظ كلمة واحدة فقط","قراءة النص كل مرة دون اختبار"],a:0,skill:"person",dimension:"recall",why:"هذا الهيكل يسمح بإعادة بناء القاعدة من الذاكرة."},
@@ -277,7 +277,7 @@ var taskBank={
   explainRule:{kind:"adaptive",mode:"free",essayProfile:true,title:"من الحفظ إلى الفهم",q:"اكتب القاعدة التي تحفظها بطريقتك، ثم اشرح في جملة لماذا يؤثر كل عنصر فيها في الحكم.",skill:"person",dimension:"understanding",difficulty:4,why:"نستخدم قوة الحفظ لبناء الفهم بدل مطالبتك بحفظ المزيد.",memory:"نص محفوظ → وظيفة العنصر → أثره في الواقعة."},
   whyContrast:{kind:"adaptive",title:"لماذا تغيّر الحكم؟",q:"واقعتان متشابهتان اختلفتا في عنصر قانوني واحد. ما المطلوب منك؟",opts:["تحديد العنصر المتغير وشرح علاقته باختلاف النتيجة","اختيار نفس النتيجة للواقعتين","التركيز على تفاصيل غير قانونية"],a:0,skill:"apply",dimension:"understanding",why:"الفهم يظهر في تفسير سبب اختلاف الحكم، لا في معرفة النتيجة وحدها."},
   memoryAnchor:{kind:"adaptive",title:"من الفهم إلى التثبيت",q:"إذا كنت تفهم القاعدة لكن لا تسترجعها بسرعة، ما الأسلوب الأنسب؟",opts:["تحويل المعنى إلى مفاتيح قصيرة ثم إعادة بناء القاعدة منها","حفظ فقرة طويلة بلا معنى","تجنب الاسترجاع"],a:0,skill:"person",dimension:"recall",why:"نحوّل الفهم إلى مفاتيح ذاكرة قابلة للاسترجاع."},
-  reconstruct:{kind:"adaptive",mode:"free",essayProfile:true,title:"أعد بناء القاعدة",q:"اكتب ثلاثة مفاتيح من ذاكرتك تعيد بها بناء القاعدة القانونية، ثم اذكر وظيفة كل مفتاح.",skill:"person",dimension:"recall",difficulty:4,why:"الهدف تحويل الفهم إلى استرجاع نشط، لا نسخ العبارة.",memory:"مفتاح → معنى → إعادة بناء النص."}
+  reconstruct:{kind:"adaptive",mode:"free",essayProfile:true,title:"أعد بناء القاعدة القانونية",q:"سيظهر لك موضوع القاعدة المطلوب استرجاعها داخل الجلسة، ثم تكتب ثلاثة مفاتيح وتشرح وظيفة كل مفتاح.",skill:"person",dimension:"recall",difficulty:4,why:"الهدف تحويل الفهم إلى استرجاع نشط مرتبط بموضوع قانوني محدد، لا نسخ عبارة عامة.",memory:"موضوع محدد → مفاتيح → معنى → إعادة بناء القاعدة."}
 };
 
 function localizeCountryTasks(){
@@ -353,8 +353,8 @@ var weekTasks={
 ],
 2:[
  {kind:"core",title:"الرشد والتمييز",q:"ما الفرق بين سن التمييز وسن الرشد في بناء الأهلية؟",opts:["التمييز مرحلة قبل كمال الأهلية، والرشد في الأصل عند 18 سنة كاملة","هما شيء واحد دائمًا","الرشد يبدأ عند السابعة"],a:0,skill:"capacity",dimension:"understanding",why:"المواد 49–51 تبني درجات الأهلية."},
- {kind:"adaptive",title:"Case Detective — الأهلية",q:"قاصر عمره 16 سنة. ما الوصف الأولي الذي تبدأ منه؟",opts:["ناقص الأهلية وفق القانون","كامل الأهلية دائمًا","عديم الشخصية"],a:0,skill:"capacity",dimension:"application",why:"العمر هنا واقعة حاسمة لتحديد المركز القانوني."},
- {kind:"adaptive",title:"غيّر العمر",q:"غيّرنا عمر الشخص من 6 سنوات إلى 17 سنة. ما الذي تغير قانونيًا؟",opts:["انتقلنا من عدم التمييز إلى حالة نقص أهلية لا كمالها","لا شيء تغير","أصبح كامل الأهلية"],a:0,skill:"capacity",dimension:"application",why:"Change One Fact هنا يكشف فهم حدود كل مرحلة."},
+ {kind:"adaptive",title:"اكتشف الواقعة الحاسمة — الأهلية",q:"قاصر عمره 16 سنة. ما الوصف الأولي الذي تبدأ منه؟",opts:["ناقص الأهلية وفق القانون","كامل الأهلية دائمًا","عديم الشخصية"],a:0,skill:"capacity",dimension:"application",why:"العمر هنا واقعة حاسمة لتحديد المركز القانوني."},
+ {kind:"adaptive",title:"غيّر العمر",q:"غيّرنا عمر الشخص من 6 سنوات إلى 17 سنة. ما الذي تغير قانونيًا؟",opts:["انتقلنا من عدم التمييز إلى حالة نقص أهلية لا كمالها","لا شيء تغير","أصبح كامل الأهلية"],a:0,skill:"capacity",dimension:"application",why:"غيّر واقعة واحدة هنا يكشف فهم حدود كل مرحلة."},
  {kind:"adaptive",mode:"free",essayProfile:true,title:"تحليل أهلية",q:"اكتب 5 جمل تقارن بين شخص عمره 6 سنوات وآخر 17 سنة وثالث 18 سنة كاملة من حيث التمييز والأهلية، دون نسخ النص.",skill:"capacity",dimension:"application",difficulty:4,why:"نقيس الاسترجاع والفهم والقدرة على التصنيف معًا.",essayKeys:{recall:[["7","سبع"],["18","ثمانيه عشر"]],legal_precision:[["عديم","تمييز"],["ناقص","اهليه"],["كامل","اهليه"]]}}
 ],
 3:[
@@ -371,7 +371,7 @@ var weekTasks={
 ],
 5:[
  {kind:"core",title:"وجود الحق لا يكفي",q:"لماذا لا يكفي أن تقول «هو صاحب حق» وتنهي التحليل؟",opts:["لأن طريقة استعمال الحق نفسها قد تكون غير مشروعة وفق المادة 63","لأن الحقوق لا تستعمل","لأن كل ضرر يساوي تعسفًا"],a:0,skill:"use_right",dimension:"understanding",why:"المادتان 62 و63 تفرقان بين وجود الحق ومشروعية طريقة استعماله."},
- {kind:"adaptive",title:"Change One Fact — التعسف",q:"في الحالة الأولى يحقق الاستعمال مصلحة جدية مع ضرر محدود، وفي الثانية مصلحة تافهة مع ضرر جسيم. ماذا تغيّر؟",opts:["ميزان التناسب بين المصلحة والضرر","وجود الشخصية القانونية","سن الرشد"],a:0,skill:"use_right",dimension:"application",why:"التناسب معيار محوري في المادة 63."},
+ {kind:"adaptive",title:"غيّر واقعة واحدة — التعسف",q:"في الحالة الأولى يحقق الاستعمال مصلحة جدية مع ضرر محدود، وفي الثانية مصلحة تافهة مع ضرر جسيم. ماذا تغيّر؟",opts:["ميزان التناسب بين المصلحة والضرر","وجود الشخصية القانونية","سن الرشد"],a:0,skill:"use_right",dimension:"application",why:"التناسب معيار محوري في المادة 63."},
  {kind:"adaptive",title:"قصد الإضرار",q:"شخص لا يحقق أي مصلحة حقيقية ويقصد فقط إيذاء جاره. ما العنصر الحاسم؟",opts:["قصد الإضرار بالغير وحده","موطنه","نوع المال فقط"],a:0,skill:"use_right",dimension:"application",why:"القصد الخالص للإضرار حالة صريحة من عدم مشروعية الاستعمال."},
  {kind:"adaptive",mode:"free",essayProfile:true,title:"حلّل حالتين متقاربتين",q:"اكتب 6 إلى 8 جمل تقارن بين استعمالين لحق واحد: الأول يحقق مصلحة جدية بضرر معتاد، والثاني يحقق مصلحة ضئيلة مع ضرر فاحش. بيّن لماذا قد تختلف النتيجة وفق المادتين 62 و63.",skill:"use_right",dimension:"application",difficulty:5,why:"هذا من أفضل أسئلة التمييز بين حفظ معايير التعسف والقدرة على تطبيقها.",essayKeys:{recall:[["مشروع"],["اضرار","ضرر"],["تناسب"],["فاحش"]],legal_precision:[["استعمال الحق"],["غير مشروع"]]}}
 ],
@@ -386,7 +386,7 @@ var weekTasks={
 var advancedEssayBank={
 3:[
  {kind:"adaptive",mode:"free",essayProfile:true,title:"الشخص المعنوي في واقعة",q:"شركة ذات شخصية معنوية أبرمت تصرفًا بواسطة ممثلها. اكتب 5 إلى 7 جمل تشرح لماذا لا نعاملها كشخص طبيعي، وما أثر الذمة المستقلة والتمثيل القانوني.",skill:"legal_person",dimension:"understanding",difficulty:4,why:"نقيس فهم آثار الشخصية المعنوية وقدرتك على استخدامها في واقعة.",essayKeys:{recall:[["ذمه"],["ممثل"],["اهليه"]],legal_precision:[["شخص معنوي"],["مستقله"]]}},
- {kind:"adaptive",mode:"free",essayProfile:true,title:"Change One Fact — الموطن",q:"شركة أجنبية كان نشاطها خارج قطر ثم افتتحت إدارة محلية في قطر. اشرح في 4 إلى 6 جمل ما الواقعة الجديدة وما أثرها على الموطن بالنسبة للنشاط القطري.",skill:"legal_person",dimension:"application",difficulty:4,why:"تغيير واقعة واحدة يجب أن يغير التحليل عندما يرتبط بعنصر النص.",essayKeys:{recall:[["اداره محليه"],["موطن"]],legal_precision:[["نشاط"],["قطر"]]}}
+ {kind:"adaptive",mode:"free",essayProfile:true,title:"غيّر واقعة واحدة — الموطن",q:"شركة أجنبية كان نشاطها خارج قطر ثم افتتحت إدارة محلية في قطر. اشرح في 4 إلى 6 جمل ما الواقعة الجديدة وما أثرها على الموطن بالنسبة للنشاط القطري.",skill:"legal_person",dimension:"application",difficulty:4,why:"تغيير واقعة واحدة يجب أن يغير التحليل عندما يرتبط بعنصر النص.",essayKeys:{recall:[["اداره محليه"],["موطن"]],legal_precision:[["نشاط"],["قطر"]]}}
 ],
 4:[
  {kind:"review",mode:"free",essayProfile:true,title:"استرجاع تصنيفات الأموال",q:"من غير الرجوع للنص، اكتب الفروق الأساسية بين العقار والمنقول، والمثلي والقيمي، والاستهلاكي وغير الاستهلاكي، مع مثال لكل تصنيف.",skill:"property",dimension:"recall",difficulty:4,why:"الحفظ المتقدم هو استرجاع المعيار مع مثال، لا الاسم فقط.",essayKeys:{recall:[["عقار","منقول"],["مثلي","قيمي"],["استهلاكي"]],legal_precision:[["معيار"],["مثال"]]}},
@@ -534,13 +534,13 @@ function adaptiveTeachingPlan(model){
     tasks=["مفاتيح ذاكرة","إعادة بناء","استرجاع مؤجل"];
   }else if(weak==="application"){
     method="قلّل الشرح النظري، واطلب تحديد الواقعة الحاسمة ثم تطبيق القاعدة عليها وتغيير واقعة واحدة.";
-    tasks=["Case Detective","Change One Fact","تحليل واقعة"];
+    tasks=["اكتشف الواقعة الحاسمة","غيّر واقعة واحدة","تحليل واقعة"];
   }else if(weak==="legal_precision"){
     method="استخدم المقارنات والصياغات المتقاربة لاكتشاف اللفظ أو العنصر الذي يغيّر التكييف.";
-    tasks=["Missing Element","تصحيح صياغة","مقارنة قانونية"];
+    tasks=["اكتشف العنصر الناقص","تصحيح صياغة","مقارنة قانونية"];
   }else if(weak==="exam"){
     method="حوّل المعرفة إلى إجابة منظمة: المسألة ثم القاعدة ثم العناصر ثم التطبيق ثم النتيجة.";
-    tasks=["إجابة مقالية","نقد إجابة","Mini Mock"];
+    tasks=["إجابة مقالية","نقد إجابة","محاكاة قصيرة"];
   }else if(weak==="retention"){
     method="ثبّت ما يفهمه الطالب باسترجاع متباعد ومفاتيح مرتبطة بالمعنى، لا بإعادة القراءة.";
     tasks=["استرجاع مؤجل","مرساة معنى","إعادة قياس"];
@@ -605,6 +605,61 @@ function learningBridge(){
   if(gap>=12)return {type:"memorizer",title:"من الحفظ إلى الفهم",lead:"ذاكرتك أقوى من تفسيرك للقاعدة. لن نطلب منك حفظًا أكثر؛ سنحوّل ما تحفظه إلى أسباب وعلاقات وتطبيق.",primary:taskBank.explainRule,secondary:taskBank.whyContrast};
   if(gap<=-12)return {type:"understander",title:"من الفهم إلى التثبيت",lead:"فهمك أقوى من سرعة الاسترجاع. سنحوّل المعنى الذي تفهمه إلى مفاتيح ذاكرة قصيرة ثم نسترجعها على فترات.",primary:taskBank.memoryAnchor,secondary:taskBank.reconstruct};
   return {type:"balanced",title:"ربط الفهم بالذاكرة",lead:"سنحافظ على التوازن: استرجاع قصير للقاعدة ثم تفسير أو تطبيق حتى لا يتحول الحفظ إلى ترديد ولا الفهم إلى معرفة يصعب استدعاؤها.",primary:taskBank.memoryAnchor,secondary:taskBank.whyContrast};
+}
+function weekTopicContext(meta){
+  var map={
+    1:{label:"الشخصية القانونية والموطن",ref:"المواد 39–44",keys:{recall:[["شخصيه"],["ولاده","حيا"],["موطن","اقامه"]],legal_precision:[["حمل","مستكن"],["موطن","خاص"]]}},
+    2:{label:"القرابة والأهلية",ref:"المواد 45–52",keys:{recall:[["قرابه"],["7","سبع"],["18","ثمانيه عشر"]],legal_precision:[["عديم","تمييز"],["ناقص","اهليه"],["كامل","اهليه"]]}},
+    3:{label:"الشخص المعنوي",ref:"المواد 53–55",keys:{recall:[["شخص","معنوي"],["ذمه"],["موطن"]],legal_precision:[["ممثل","اراده"],["اهليه"],["تقاضي"]]}},
+    4:{label:"الأشياء والأموال",ref:"المواد 56–61",keys:{recall:[["مال","حقوق"],["عقار","منقول"],["مثلي","قيمي"]],legal_precision:[["مال عام"],["تخصيص"],["استهلاكي"]]}},
+    5:{label:"استعمال الحق والتعسف فيه",ref:"المادتان 62–63",keys:{recall:[["استعمال","حق"],["مشروع"],["ضرر"]],legal_precision:[["اضرار"],["تناسب"],["فاحش","مالوف"]]}},
+    6:{label:"التكامل في نظرية الحق",ref:"المواد 39–63",keys:{recall:[["شخص"],["اهليه"],["مال"],["استعمال الحق"]],legal_precision:[["تكييف"],["قاعد"],["تطبيق"],["نتيج"]]}}
+  };
+  return map[meta.week]||map[1];
+}
+function contextualizeTask(t,meta){
+  if(!t)return t;
+  var topic=weekTopicContext(meta),where=meta.title+" — "+meta.detail;
+  if(t===taskBank.reconstruct){
+    return Object.assign({},t,{
+      title:"أعد بناء قاعدة: "+meta.title,
+      q:"الموضوع المطلوب: "+where+". من ذاكرتك، اكتب ثلاثة مفاتيح تساعدك على إعادة بناء القاعدة القانونية في هذا الموضوع، ثم اشرح وظيفة كل مفتاح في الحكم.",
+      essayKeys:topic.keys,
+      memory:topic.label+" ("+topic.ref+") → 3 مفاتيح → وظيفة كل مفتاح → القاعدة."
+    });
+  }
+  if(t===taskBank.explainRule){
+    return Object.assign({},t,{
+      title:"اشرح قاعدة: "+meta.title,
+      q:"الموضوع المطلوب: "+where+". اكتب القاعدة التي تتذكرها بطريقتك، ثم اشرح لماذا يؤثر العنصر الحاسم فيها في النتيجة القانونية.",
+      essayKeys:topic.keys
+    });
+  }
+  if(t===taskBank.memoryAnchor){
+    return Object.assign({},t,{
+      title:"ثبّت قاعدة: "+meta.title,
+      q:"بالنسبة لموضوع "+where+"، أي طريقة تساعدك على تحويل الفهم إلى استرجاع سريع دون حفظ فقرة طويلة؟"
+    });
+  }
+  if(t===taskBank.apply){
+    return Object.assign({},t,{
+      title:"غيّر واقعة واحدة — "+meta.title,
+      q:"في موضوع "+where+"، إذا غيّرنا واقعة قانونية حاسمة مع بقاء باقي الوقائع، ماذا يجب أن تفعل لتعرف هل تغير الحكم؟"
+    });
+  }
+  if(t===taskBank.spot){
+    return Object.assign({},t,{
+      title:"اكتشف الواقعة الحاسمة — "+meta.title,
+      q:"في مسألة عن "+where+"، أي نوع من الوقائع يجب أن تبحث عنه أولًا قبل اختيار النتيجة؟"
+    });
+  }
+  if(t===taskBank.review){
+    return Object.assign({},t,{
+      title:"استرجاع موضوع: "+meta.title,
+      q:"من غير الرجوع للنص، اذكر القاعدة أو العنصر الحاسم الذي تتذكره من موضوع "+where+"."
+    });
+  }
+  return t;
 }
 function buildTrainingQueue(){
   var dim=weakestDimension(),err=strongestErrorSkill(),bridge=learningBridge(),meta=sessionMeta(state.course.session);
@@ -674,6 +729,7 @@ function buildTrainingQueue(){
     var requiredEssay=essayPool.filter(function(x){return x.dimension===dim;})[0]||essayPool[0];
     finalQ[finalQ.length?finalQ.length-1:0]=requiredEssay;
   }
+  finalQ=finalQ.map(function(t){return contextualizeTask(t,meta);});
   return finalQ;
 }
 function chrome(inner){
@@ -762,7 +818,7 @@ function weekUnlocked(w,current){
   return !!(prev&&(prev.status==="mastered"||prev.status==="completed"||prev.status==="completed_with_support"))||!!(state.course.adminOverrideWeeks&&state.course.adminOverrideWeeks[w]);
 }
 function weekBar(current){
-  return '<section class="weekRoadmap"><div class="roadmapTitle"><div><span class="kicker">مسار 6 أسابيع</span><h2>كل أسبوع يفتح بعد إكمال المرحلة السابقة</h2></div><span class="roadmapCount">'+Math.max(0,state.course.completed.length)+' / 30 جلسة</span></div><div class="weekBar">'+curriculum.map(function(w){
+  return '<section class="weekRoadmap"><div class="roadmapTitle"><div><span class="kicker">برنامج 6 أسابيع</span><h2>كل أسبوع يفتح بعد إكمال المرحلة السابقة</h2></div><span class="roadmapCount">'+Math.max(0,state.course.completed.length)+' / 30 جلسة</span></div><div class="weekBar">'+curriculum.map(function(w){
     var r=weekResult(w.week),open=weekUnlocked(w.week,current),cls="",status="",icon="lock";
     if(r&&r.status==="repair"){cls="needs";status="يحتاج تثبيت";icon="repeat";}
     else if(r){cls="done";status=r.status==="mastered"?"مكتمل بإتقان":"مكتمل";icon="check";}
@@ -801,7 +857,7 @@ function bindWeekRoadmap(current){
 function weekSummary(){
   var w=state.weekPreview||1,r=weekResult(w),meta=curriculum[w-1];
   var status=r?(r.status==="mastered"?"مكتمل بإتقان":r.status==="repair"?"يحتاج تثبيت":"مكتمل"):"لم يكتمل بعد";
-  chrome('<section class="stage"><div class="achievementCard compact"><span class="achievementIcon">'+ico(r&&r.status!=="repair"?"check":"repeat")+'</span><span class="kicker">ملخص الأسبوع '+w+'</span><h2>'+esc(meta.title)+'</h2><div class="achievementState '+(r&&r.status==="repair"?"need":"ok")+'">'+status+'</div>'+(r?'<p>نتيجة تقييم المرحلة: <b>'+r.score+'%</b></p>':'<p>لا توجد نتيجة نهائية لهذه المرحلة بعد.</p>')+'<div class="sessionPlan">'+meta.sessions.map(function(x,i){return '<div class="planItem"><span class="dot">'+(i+1)+'</span><div><b>'+esc(x[0])+'</b><small>'+esc(x[1])+'</small></div></div>';}).join("")+'</div><div class="choiceRow"><button class="primary" id="weekBack">العودة للمسار</button></div></div></section>');
+  chrome('<section class="stage"><div class="achievementCard compact"><span class="achievementIcon">'+ico(r&&r.status!=="repair"?"check":"repeat")+'</span><span class="kicker">ملخص الأسبوع '+w+'</span><h2>'+esc(meta.title)+'</h2><div class="achievementState '+(r&&r.status==="repair"?"need":"ok")+'">'+status+'</div>'+(r?'<p>نتيجة تقييم المرحلة: <b>'+r.score+'%</b></p>':'<p>لا توجد نتيجة نهائية لهذه المرحلة بعد.</p>')+'<div class="sessionPlan">'+meta.sessions.map(function(x,i){return '<div class="planItem"><span class="dot">'+(i+1)+'</span><div><b>'+esc(x[0])+'</b><small>'+esc(x[1])+'</small></div></div>';}).join("")+'</div><div class="choiceRow"><button class="primary" id="weekBack">العودة للبرنامج</button></div></div></section>');
   document.getElementById("weekBack").onclick=function(){state.view="home";render();};
 }
 function sessionCard(m){
@@ -898,14 +954,18 @@ function taskStatusBox(correct,label){
   return '<div class="answerStatus '+(correct?"correct":"wrong")+'"><span class="answerStatusIcon">'+ico(correct?"check":"repeat")+'</span><div><b>'+(correct?"إجابتك صحيحة":"إجابتك تحتاج تعديل")+'</b><small>'+esc(label||"راجع السبب ثم انتقل للمهمة التالية.")+'</small></div></div>';
 }
 function balanceOptionTexts(opts){
-  opts=(opts||[]).slice();
+  opts=(opts||[]).map(function(x){return String(x);});
   if(opts.length<2)return opts;
-  var lens=opts.map(function(x){return normText(x).length;}),max=Math.max.apply(null,lens),min=Math.min.apply(null,lens);
-  if(max<34||min>=max*.7)return opts;
-  var tails=["، في ضوء الوقائع المعروضة","، عند تطبيق القاعدة على الحالة","، بحسب التكييف القانوني للمسألة"];
+  var lens=opts.map(function(x){return normText(x).length;}),max=Math.max.apply(null,lens);
+  if(!max)return opts;
+  var target=Math.max(10,Math.round(max*.88));
+  var tails=["، في هذه الحالة","، وفق السؤال","، في الواقعة","، قانونًا هنا"];
   return opts.map(function(x,i){
-    var out=String(x),guard=0;
-    while(normText(out).length<max*.68&&guard<2){out+=tails[(i+guard)%tails.length];guard++;}
+    var out=x,guard=0;
+    while(normText(out).length<target&&guard<4){
+      out+=tails[(i+guard)%tails.length];
+      guard++;
+    }
     return out;
   });
 }
@@ -1224,7 +1284,7 @@ function completion(){
   chrome('<section class="stage finalStage"><div class="finalCard professionalFinal">'+
     '<div class="finalSeal">'+ico("trophy")+'</div><span class="kicker">إتمام البرنامج</span>'+
     '<h1>أنهيت تدريب LexLearn بنجاح</h1>'+
-    '<p>أكملت المراحل الست واجتزت التقييم النهائي. تم تسجيل المسار كمكتمل.</p>'+
+    '<p>أكملت المراحل الست واجتزت التقييم النهائي. تم تسجيل البرنامج كمكتمل.</p>'+
     '<div class="finalStats"><div><span>المراحل</span><b>6 / 6</b></div><div><span>الجلسات</span><b>30 / 30</b></div><div><span>التقييم النهائي</span><b>'+score+'</b></div></div>'+
     '<div class="finalRibbon">إنجاز أكاديمي مكتمل • '+date+'</div>'+
     '<div class="finalChecks">'+curriculum.map(function(w){return '<div><span>✓</span><b>الأسبوع '+w.week+'</b><small>'+esc(w.title)+'</small></div>';}).join("")+'</div>'+
