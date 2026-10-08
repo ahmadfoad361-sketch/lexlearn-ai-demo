@@ -55,7 +55,7 @@ function clearTimer(){if(state.timer){clearInterval(state.timer);state.timer=nul
 function chrome(inner){
   var res=currentResult();
   var metrics=res?res.metrics:{recall:null,understanding:null,application:null,retention:null,exam:null};
-  var labels=[["recall","استرجاع"],["understanding","فهم"],["application","تطبيق"],["legal_precision","دقة قانونية"],["retention","احتفاظ"],["exam","أداء امتحاني"]];
+  var labels=[["recall","حفظ"],["understanding","فهم"],["application","تطبيق على الوقائع"],["legal_precision","دقة قانونية"],["retention","احتفاظ"],["exam","أداء امتحاني"]];
   APP.innerHTML='<div class="v9-shell"><header class="v9-top"><div class="v9-topin">'+
     '<div class="v9-brand"><div class="v9-mark"><img src="assets/lexlearn-logo.svg" alt="LexLearn"></div><div><b>LexLearn</b><small>نفهم طريقة تفكيرك، ونبني طريقك.</small></div></div>'+
     '<div class="v9-topactions">'+
@@ -105,7 +105,7 @@ function renderCountry(){
 }
 function renderSubjects(){
   state.countryId="qa";
-  var html='<section class="subject-hero pilot-subject-hero"><div><span class="section-overline">🇶🇦 قطر • البرنامج الحالي</span><h1>نظرية الحق</h1><p>برنامج قانوني تكيفي لمدة 6 أسابيع و30 جلسة، مبني على المواد 39–63 من القانون المدني القطري وموجه لقياس الاسترجاع والفهم والتطبيق والدقة القانونية.</p></div><button class="btn soft-outline" id="backCountry">تغيير الدولة</button></section>'+
+  var html='<section class="subject-hero pilot-subject-hero"><div><span class="section-overline">🇶🇦 قطر • البرنامج الحالي</span><h1>نظرية الحق</h1><p>برنامج قانوني تكيفي لمدة 6 أسابيع و30 جلسة، مبني على المواد 39–63 من القانون المدني القطري وموجه لقياس الحفظ والفهم والتطبيق على الوقائع والدقة القانونية.</p></div><button class="btn soft-outline" id="backCountry">تغيير الدولة</button></section>'+
   '<section class="pilot-course-card">'+
     '<div class="pilot-course-icon">'+icon("rights")+'</div>'+
     '<div class="pilot-course-copy"><span class="section-overline">LAWC 101 • THEORY OF RIGHT</span><h2>ابدأ من التقييم ثم يتحول البرنامج حسب طريقة تعلمك</h2><p>التقييم التشخيصي يحدد نقطة القوة والأولوية، ثم يفتح برنامج الأسابيع الستة. في المستويات الأصعب تدخل الأسئلة المقالية وتحليل أسلوب الإجابة.</p>'+
@@ -315,7 +315,7 @@ function resultSkillInfo(key){
   var map={
     recall:["🧠","الذاكرة القانونية","تسترجع القاعدة والمصطلحات من غير فتح النص."],
     understanding:["💡","فهم القاعدة","تعرف لماذا تعمل القاعدة وما وظيفة كل عنصر."],
-    application:["⚖️","التطبيق","تنقل القاعدة من النص إلى واقعة جديدة."],
+    application:["⚖️","التطبيق على الوقائع","تستخدم القاعدة القانونية في واقعة جديدة وتحدد أثرها على النتيجة."],
     legal_precision:["§","الدقة القانونية","تلتقط اللفظ أو العنصر الذي يغيّر التكييف والنتيجة."],
     retention:["🔁","ثبات المعلومة","تظل المعلومة متاحة بعد مرور وقت."],
     exam:["✍️","الإجابة الامتحانية","تنظم القاعدة والتطبيق والنتيجة في إجابة واضحة."]
@@ -327,7 +327,7 @@ function resultProfileTitle(res){
   if(res.adaptiveModel&&res.adaptiveModel.weakest&&res.adaptiveModel.strongest){var wi=resultSkillInfo(res.adaptiveModel.weakest),si=resultSkillInfo(res.adaptiveModel.strongest);return si[1]+" نقطة قوة مثبتة، و"+wi[1]+" هي الأولوية الحالية";}
   var weak=resultSkillInfo(items[0][0])[1],strong=resultSkillInfo(items[items.length-1][0])[1];
   if(res.profileType==="recall-led")return "ذاكرتك أقوى من الفهم — هنحوّل الحفظ إلى استخدام";
-  if(res.profileType==="understanding-led")return "فهمك أقوى من الاسترجاع — هنحوّل المعنى إلى ذاكرة سريعة";
+  if(res.profileType==="understanding-led")return "فهمك أقوى من الحفظ — هنحوّل المعنى إلى تذكّر أسرع";
   return strong+" نقطة قوة، و"+weak+" هي الأولوية الحالية";
 }
 function resultSkillCard(key,v){
