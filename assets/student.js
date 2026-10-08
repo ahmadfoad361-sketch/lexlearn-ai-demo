@@ -343,11 +343,11 @@ function render(){
   APP.innerHTML=
     "<header class='top'><div class='topin'>"+
       "<div class='brand'><div class='mark'><img src='assets/lexlearn-logo.svg' alt='LexLearn'></div><div><b>LexLearn</b><small>حساب الطالب</small></div></div>"+
-      "<div class='topactions'><select class='topbtn countryTop' id='countrySwitch'>"+countryOptions(country)+"</select><button class='topbtn' id='changePass'>تغيير كلمة المرور</button><a class='topbtn' href='index.html'>الموقع</a><button class='topbtn' id='logout'>خروج</button></div>"+
+      "<div class='topactions'><span class='topbtn countryTop staticCountry'>🇶🇦 قطر</span><button class='topbtn' id='changePass'>تغيير كلمة المرور</button><a class='topbtn' href='index.html'>الموقع</a><button class='topbtn' id='logout'>خروج</button></div>"+
     "</div></header>"+
     "<main class='wrap'>"+
       "<section class='hero "+(course.completedProgram?"heroComplete":"")+"'>"+
-        "<div class='heroMain'><span class='eyebrow'>"+esc(student.cohort||"برنامج التدريب")+"</span><h1>"+(course.completedProgram?"مبروك "+esc(student.name)+"!":"أهلًا "+esc(student.name))+"</h1><p>"+countryLabel(country)+" • برنامج مصادر الالتزام • 6 أسابيع • 30 جلسة عملية</p>"+
+        "<div class='heroMain'><span class='eyebrow'>"+esc(student.cohort||"برنامج التدريب")+"</span><h1>"+(course.completedProgram?"مبروك "+esc(student.name)+"!":"أهلًا "+esc(student.name))+"</h1><p>"+countryLabel(country)+" • نظرية الحق • 6 أسابيع • 30 جلسة عملية</p>"+
         "<div class='heroMeta'><span>"+(course.completedProgram?"6 / 6 مراحل مكتملة":"الأسبوع "+w+" من 6")+"</span><span>"+(course.completedProgram?"30 / 30 جلسة":"الجلسة "+(course.session||1)+" من 30")+"</span><span>"+(course.completedProgram?"تم إنهاء التدريب":course.completed.length+" جلسة مكتملة")+"</span></div></div>"+
         "<div class='heroSide studentHeroSide'><div class='heroVisual'>"+icon(course.completedProgram?"trophy":"compass")+"</div><h3>"+(course.completedProgram?"أحسنت! أنهيت البرنامج":"جاهز للجلسة التالية؟")+"</h3><p>"+(course.completedProgram?"يمكنك عرض إنجازك النهائي في أي وقت.":(result?"جلسة واحدة قصيرة، ومحتواها يتغير حسب مستواك.":"ابدأ التقييم القصير لنحدد أفضل بداية لك."))+"</p></div>"+
       "</section>"+
