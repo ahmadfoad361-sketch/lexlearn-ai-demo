@@ -663,7 +663,7 @@ function contextualizeTask(t,meta){
   return t;
 }
 function buildTrainingQueue(){
-  if(COUNTRY==="qa"&&window.LEX_QUALITY)return LEX_QUALITY.queue(state.course.session,"ar",weakestDimension());
+  if(COUNTRY==="qa"&&window.LEX_QUALITY)return LEX_QUALITY.queue(state.course.session,"ar",weakestDimension(),null,LEX_QUALITY.learnerContext(state.course,(state.diag&&state.diag.metrics)||{}));
   var dim=weakestDimension(),err=strongestErrorSkill(),bridge=learningBridge(),meta=sessionMeta(state.course.session);
   var model=recomputeAdaptiveModel()||state.course.adaptiveModel||{},teaching=adaptiveTeachingPlan(model);
   state.course.teachingPlan=teaching;
@@ -931,7 +931,8 @@ function train(){
     document.getElementById("checkFree").onclick=async function(){
       var answer=(document.getElementById("freeAnswer").value||"").trim();
       if(!answer){document.getElementById("feed").innerHTML='<div class="notice">اكتب محاولة قصيرة أولًا؛ الهدف أن نحلل بناء إجابتك، لا أن نريك النموذج مباشرة.</div>';return;}
-      var essay=t.essayProfile?essayAnalysis(answer,t):null;
+      document.getElementById("freeAnswer").disabled=true;document.getElementById("checkFree").disabled=true;
+      var essay=t.essayProfile?await LEX_QUALITY.gradeAsync(answer,t,"ar",STUDENT_SESSION&&STUDENT_SESSION.cloud?window.LEX_CLOUD:null,COURSE_DB_ID):null;
       var r=essay?{score:essay.overall,pass:essay.overall>=60}:freeRubric(answer,t),semantic=null,merged=null,itemId=taskItemId(t);
       document.getElementById("freeAnswer").disabled=true;document.getElementById("checkFree").disabled=true;
       document.getElementById("feed").innerHTML='<div class="notice">يتم تحليل الإجابة وفق عناصر المعيار'+(t.essayProfile?" الخاصة بالسؤال؛ المحاور الأخرى لا تُخصم":"")+(itemId&&window.LEX_CLOUD&&LEX_CLOUD.isConfigured&&LEX_CLOUD.isConfigured()?" والمصدر القانوني المعتمد…":"…")+'</div>';
@@ -941,12 +942,12 @@ function train(){
       if(window.LEX_ENGINE&&semantic)merged=LEX_ENGINE.mergeSemanticGrade({score:r.score/100,matchedConcepts:[]},semantic);
       var finalScore=merged&&merged.score!=null?Math.round(merged.score*100):r.score;
       var pass=finalScore>=60;
-      var method=merged&&!merged.needsHumanReview?"grounded_semantic":(t.essayProfile?"prompt_rubric_v3":"concept_rubric_v2");
+      var method=essay?essay.gradingMethod:(merged&&!merged.needsHumanReview?"grounded_semantic":"concept_rubric_v2");
       var semanticNote=merged&&!merged.needsHumanReview?
         '<div class="goodbox"><b>تحليل دلالي موثّق</b><div>'+esc(merged.feedback||"تم تقييم المعنى باستخدام المعيار والمصادر المعتمدة فقط.")+'</div><small>الثقة: '+Math.round((merged.confidence||0)*100)+'%</small></div>':
         (itemId&&semantic&&semantic.needs_human_review?'<div class="notice">التحليل الدلالي لم يصل لثقة كافية؛ استخدم النظام التحليل البنائي ولم يخمّن.</div>':'');
       document.getElementById("feed").innerHTML=
-        taskStatusBox(pass,pass?"ظهرت مؤشرات العناصر المطلوبة في هذه المحاولة.":"راجع العناصر التي لم نتحقق منها أدناه.",!!essay)+
+        taskStatusBox(pass,essay&&essay.pending?"الدرجة القانونية معلّقة لحين التحقق من المعنى؛ لم يُسجّل نجاح أو ضعف.":pass?"تم التحقق من العناصر القانونية المطلوبة.":"راجع العناصر التي لم نتحقق منها أدناه.",!!(essay&&essay.pending))+
         (essay?essayMini(essay):'<div class="rubricMini"><b>التحليل البنائي</b><span>'+finalScore+'%</span><small>'+(method==="grounded_semantic"?"تقييم دلالي مقيّد بالمصادر المعتمدة.":"Rubric بنائي احتياطي حتى تتوافر مراجعة دلالية موثوقة.")+'</small></div>')+
         semanticNote+
         (t.model?'<div class="modelAnswer"><b>نموذج للمقارنة</b><p>'+esc(t.model)+'</p></div>':'')+
@@ -994,24 +995,24 @@ function taskDimension(t){
 function taskDifficulty(t){return t.difficulty||((t.kind==="adaptive")?3:(t.kind==="review"?2:2));}
 function completeTask(t,correct,q,extra){
   extra=extra||{};
-  var score=extra.semanticScore!=null?Number(extra.semanticScore):(extra.rubricScore!=null?Number(extra.rubricScore)/100:(correct?1:0)),dim=taskDimension(t);
+  var score=extra.essayProfile&&extra.essayProfile.pending?null:extra.semanticScore!=null?Number(extra.semanticScore):(extra.rubricScore!=null?Number(extra.rubricScore)/100:(correct?1:0)),dim=taskDimension(t);
   state.answers.push({skill:t.skill,dimension:dim,score:score,correct:correct,bridge:(state.course.adaptiveModel&&state.course.adaptiveModel.bridge&&state.course.adaptiveModel.bridge.mode)||learningBridge().type,extra:extra});
   state.course.evidence=state.course.evidence||[];
   if(extra.essayProfile&&extra.essayProfile.axes){
-    state.course.lastEssayProfile={session:state.course.session,week:sessionMeta(state.course.session).week,overall:extra.essayProfile.overall,axes:extra.essayProfile.axes,style:extra.essayProfile.style,note:extra.essayProfile.note,checks:extra.essayProfile.checks,answer:extra.answer,conflicts:extra.essayProfile.conflicts,needsHumanReview:true,gradingMethod:"prompt_rubric_v3",provisional:true,ts:Date.now()};
+    state.course.lastEssayProfile={session:state.course.session,week:sessionMeta(state.course.session).week,overall:extra.essayProfile.overall,axes:extra.essayProfile.axes,style:extra.essayProfile.style,note:extra.essayProfile.note,checks:extra.essayProfile.checks,answer:extra.answer,conflicts:extra.essayProfile.conflicts,needsHumanReview:extra.essayProfile.needsHumanReview,gradingMethod:extra.essayProfile.gradingMethod,provisional:extra.essayProfile.provisional,ts:Date.now()};
     Object.keys(extra.essayProfile.axes).filter(function(k){return extra.essayProfile.axes[k]!=null;}).forEach(function(k){
-      state.course.evidence.push({itemId:taskItemId(t),dimension:k,score:Number(extra.essayProfile.axes[k])/100,difficulty:taskDifficulty(t),confidence:null,latency_ms:Math.max(0,Date.now()-(state.taskStartedAt||Date.now())),grading_method:"prompt_rubric_v3",ts:Date.now(),session:state.course.session,week:sessionMeta(state.course.session).week});
+      state.course.evidence.push({itemId:taskItemId(t),dimension:k,score:Number(extra.essayProfile.axes[k])/100,difficulty:taskDifficulty(t),confidence:null,latency_ms:Math.max(0,Date.now()-(state.taskStartedAt||Date.now())),grading_method:extra.essayProfile.gradingMethod,ts:Date.now(),session:state.course.session,week:sessionMeta(state.course.session).week});
     });
   }else{
-    state.course.evidence.push({itemId:taskItemId(t),dimension:dim,score:score,difficulty:taskDifficulty(t),confidence:extra.confidence||null,latency_ms:Math.max(0,Date.now()-(state.taskStartedAt||Date.now())),grading_method:extra.gradingMethod||"adaptive_local",ts:Date.now(),session:state.course.session,week:sessionMeta(state.course.session).week});
+    state.course.evidence.push({itemId:taskItemId(t),dimension:dim,score:score,difficulty:taskDifficulty(t),confidence:extra.confidence||null,latency_ms:Math.max(0,Date.now()-(state.taskStartedAt||Date.now())),topicSession:t.topicSession,variantId:t.variantId,grading_method:extra.gradingMethod||"adaptive_local",ts:Date.now(),session:state.course.session,week:sessionMeta(state.course.session).week});
   }
   if(state.course.evidence.length>240)state.course.evidence=state.course.evidence.slice(-240);
-  if(!correct)addError(t.skill,errorLabel(t.skill));
+  if(!correct&&score!=null)addError(t.skill,errorLabel(t.skill));
   if(window.LEX_ENGINE){
     state.course.adaptiveModel=LEX_ENGINE.learnerModel({metrics:(state.diag&&state.diag.metrics)||{},events:state.course.evidence});
   }
   if(window.LEX_CLOUD&&LEX_CLOUD.isConfigured&&LEX_CLOUD.isConfigured()&&STUDENT_SESSION&&STUDENT_SESSION.cloud){
-    LEX_CLOUD.recordAttempt({course_id:COURSE_DB_ID,item_id:taskItemId(t),dimension:dim,answer_text:extra.answer||null,selected_option:extra.selected==null?null:String(extra.selected),score:score,confidence:extra.confidence||null,latency_ms:Math.max(0,Date.now()-(state.taskStartedAt||Date.now())),difficulty:taskDifficulty(t),grading_method:extra.gradingMethod||"adaptive_local",error_type:correct?null:errorLabel(t.skill)}).catch(function(){});
+    LEX_CLOUD.recordAttempt({course_id:COURSE_DB_ID,item_id:taskItemId(t),dimension:dim,answer_text:extra.answer||null,selected_option:extra.selected==null?null:String(extra.selected),score:score,confidence:extra.confidence||null,latency_ms:Math.max(0,Date.now()-(state.taskStartedAt||Date.now())),difficulty:taskDifficulty(t),grading_method:extra.gradingMethod||"adaptive_local",error_type:score==null||correct?null:errorLabel(t.skill)}).catch(function(){});
   }
   state.taskStartedAt=null;
   if(state.task<q.length-1){state.task++;render();}else finishTraining();
@@ -1022,7 +1023,7 @@ function addError(skill,label){
 }
 function pushUnique(arr,val){if(arr.indexOf(val)===-1)arr.push(val);}
 function buildRepairQueue(){
-  if(COUNTRY==="qa"&&window.LEX_QUALITY)return LEX_QUALITY.queue(state.course.session,"ar",weakestDimension());
+  if(COUNTRY==="qa"&&window.LEX_QUALITY)return LEX_QUALITY.queue(state.course.session,"ar",weakestDimension(),null,LEX_QUALITY.learnerContext(state.course,(state.diag&&state.diag.metrics)||{}));
   var meta=sessionMeta(state.course.session),w=state.course.repairWeek||meta.week,pool=(weekTasks[w]||weekTasks[1]).slice(),weak=weakestDimension();
   var targeted=weak==="application"?taskBank.apply:weak==="understanding"?taskBank.understanding:weak==="recall"?taskBank.recall:weak==="retention"?taskBank.retention:taskBank.exam;
   return [targeted,pool[0],pool[1],learningBridge().primary,pool[2]].filter(Boolean).map(function(t){return contextualizeTask(t,meta);});
@@ -1069,21 +1070,22 @@ function assessment(){
       '<textarea class="textarea essayAssessmentInput" id="assessmentEssay" placeholder="اكتب إجابتك كاملة بطريقتك..."></textarea>'+
       '<div class="assessmentNote">هذا السؤال يقيس الحفظ والفهم والتطبيق على الوقائع وأسلوب بناء الإجابة. لن يظهر نموذج الإجابة أثناء القياس.</div>'+
       '<div class="choiceRow"><button class="primary" id="submitAssessmentEssay">تسليم الإجابة</button></div></div></section>');
-    document.getElementById("submitAssessmentEssay").onclick=function(){
+    document.getElementById("submitAssessmentEssay").onclick=async function(){
       var answer=(document.getElementById("assessmentEssay").value||"").trim();
       if(!answer){
         var old=document.querySelector(".assessmentNote");if(old)old.textContent="اكتب إجابتك أولًا؛ يُراجع السؤال وفق عناصره المطلوبة.";
         return;
       }
-      var essay=essayAnalysis(answer,q),primary=q.dimension||"exam",score=(essay.axes&&essay.axes[primary]!=null?essay.axes[primary]:essay.overall)/100;
+      document.getElementById("submitAssessmentEssay").disabled=true;
+      var essay=await LEX_QUALITY.gradeAsync(answer,q,"ar",STUDENT_SESSION&&STUDENT_SESSION.cloud?window.LEX_CLOUD:null,COURSE_DB_ID),primary=q.dimension||"exam",score=essay.overall==null?null:essay.overall/100;
       state.course.evidence=Array.isArray(state.course.evidence)?state.course.evidence:[];
       Object.keys(essay.axes||{}).filter(function(k){return essay.axes[k]!=null;}).forEach(function(k){
-        state.course.evidence.push({itemId:null,dimension:k,score:Number(essay.axes[k])/100,difficulty:q.difficulty||4,confidence:null,latency_ms:Math.max(0,Date.now()-(state.taskStartedAt||Date.now())),grading_method:"assessment_essay_profile_v1",ts:Date.now(),session:state.course.session,week:week});
+        state.course.evidence.push({itemId:null,dimension:k,score:Number(essay.axes[k])/100,difficulty:q.difficulty||4,confidence:null,latency_ms:Math.max(0,Date.now()-(state.taskStartedAt||Date.now())),grading_method:essay.gradingMethod,ts:Date.now(),session:state.course.session,week:week});
       });
-      state.course.lastEssayProfile={session:state.course.session,week:week,overall:essay.overall,axes:essay.axes,style:essay.style,note:essay.note,checks:essay.checks,answer:answer,conflicts:essay.conflicts,needsHumanReview:true,gradingMethod:essay.gradingMethod,provisional:true,ts:Date.now()};
+      state.course.lastEssayProfile={session:state.course.session,week:week,overall:essay.overall,axes:essay.axes,style:essay.style,note:essay.note,checks:essay.checks,answer:answer,conflicts:essay.conflicts,needsHumanReview:essay.needsHumanReview,gradingMethod:essay.gradingMethod,provisional:essay.provisional,ts:Date.now()};
       recomputeAdaptiveModel();
       if(window.LEX_CLOUD&&LEX_CLOUD.isConfigured&&LEX_CLOUD.isConfigured()&&STUDENT_SESSION&&STUDENT_SESSION.cloud){
-        LEX_CLOUD.recordAttempt({course_id:COURSE_DB_ID,item_id:null,dimension:primary,answer_text:answer,score:score,confidence:null,latency_ms:Math.max(0,Date.now()-(state.taskStartedAt||Date.now())),difficulty:q.difficulty||4,grading_method:"assessment_essay_profile_v1",error_type:essay.overall>=60?null:"constructed_response_gap"}).catch(function(){});
+        LEX_CLOUD.recordAttempt({course_id:COURSE_DB_ID,item_id:null,dimension:primary,answer_text:answer,score:score,confidence:null,latency_ms:Math.max(0,Date.now()-(state.taskStartedAt||Date.now())),difficulty:q.difficulty||4,grading_method:essay.gradingMethod,error_type:score==null||essay.overall>=60?null:"constructed_response_gap"}).catch(function(){});
       }
       state.assessmentAnswers.push({skill:q.skill,dimension:primary,correct:essay.overall>=60,score:score,answer:answer,essayProfile:essay});
       state.taskStartedAt=null;
@@ -1109,7 +1111,7 @@ function assessment(){
 }
 function skillScores(answers){
   var out={contract:[],sources:[],apply:[],spot:[],exam:[]};
-  (answers||[]).forEach(function(a){if(!out[a.skill])out[a.skill]=[];out[a.skill].push(a.correct?1:0);});
+  (answers||[]).filter(function(a){return a.score!=null;}).forEach(function(a){if(!out[a.skill])out[a.skill]=[];out[a.skill].push(a.correct?1:0);});
   Object.keys(out).forEach(function(k){var a=out[k];out[k]=a.length?Math.round(a.reduce(function(x,y){return x+y;},0)/a.length*100):null;});
   return out;
 }
@@ -1121,13 +1123,14 @@ function addAchievement(week,status){
 }
 function finishAssessment(){
   var a=state.assessmentAnswers,c=a.filter(function(x){return x.correct;}).length,p=Math.round(c/(a.length||1)*100),week=sessionMeta(state.course.session).week;
-  var status=p>=80?"mastered":p>=60?"completed":"repair";
+  var pending=a.some(function(x){return x.essayProfile&&x.essayProfile.pending;});if(pending)p=null;
+  var status=pending?"pending_review":p>=80?"mastered":p>=60?"completed":"repair";
   var r={week:week,score:p,status:status,skillScores:skillScores(a),ts:Date.now()};
   state.course.lastAssessment={session:state.course.session,score:p,week:week,status:status,ts:Date.now()};
   state.course.weekResults[week]=r;
   state.course.history.push({session:state.course.session,type:"assessment",score:p,answers:a,week:week,ts:Date.now()});
-  pushUnique(state.course.completed,state.course.session);
-  if(status==="repair"){
+  if(status!=="pending_review")pushUnique(state.course.completed,state.course.session);
+  if(status==="pending_review"){state.course.repairRequired=false;state.course.repairWeek=null;}else if(status==="repair"){
     state.course.repairRequired=true;state.course.repairWeek=week;
   }else{
     state.course.repairRequired=false;state.course.repairWeek=null;addAchievement(week,status);
@@ -1140,7 +1143,7 @@ function finishAssessment(){
       state.course.session=Math.min(30,state.course.session+1);
     }
   }
-  save();state.view=(week===6&&status!=="repair")?"completion":"achievement";render();
+  save();state.view=(week===6&&status!=="repair"&&status!=="pending_review")?"completion":"achievement";render();
 }
 function achievementSkill(name,v,iconName){
   var label=v==null?"لم يُقَس":v>=80?"قوي":v>=60?"جيد":v>=40?"يحتاج تركيز":"يحتاج تثبيت";
@@ -1161,9 +1164,9 @@ function stageAdvice(knowledge,analysis,exam){
 }
 function achievementBoard(){
   var last=state.course.lastAssessment||{},week=last.week||state.course.repairWeek||sessionMeta(state.course.session).week,r=state.course.weekResults[week]||last,status=r.status||"repair",scores=r.skillScores||{};
-  var need=status==="repair",knowledge=averageScores([scores.contract,scores.sources]),analysis=averageScores([scores.apply,scores.spot]),exam=scores.exam;
-  var title=need?"تحتاج تقوية بسيطة قبل الانتقال":"أحسنت، المرحلة مكتملة";
-  var intro=need?"جلسة تثبيت قصيرة ثم إعادة قياس. الهدف تحسين أضعف نقطة قبل فتح المرحلة التالية.":"تم اجتياز المرحلة وفتح المرحلة التالية.";
+  var pending=status==="pending_review",need=status==="repair",knowledge=averageScores([scores.contract,scores.sources]),analysis=averageScores([scores.apply,scores.spot]),exam=scores.exam;
+  var title=pending?"الدرجة المقالية معلّقة للمراجعة":need?"تحتاج تقوية بسيطة قبل الانتقال":"أحسنت، المرحلة مكتملة";
+  var intro=pending?"لم تُفتح المرحلة التالية؛ التنظيم وحده لا يثبت صحة المعنى. أعد التقييم بعد إتاحة التصحيح الدلالي أو مراجعة المشرف.":need?"جلسة تثبيت قصيرة ثم إعادة قياس. الهدف تحسين أضعف نقطة قبل فتح المرحلة التالية.":"تم اجتياز المرحلة وفتح المرحلة التالية.";
   chrome('<section class="stage"><div class="achievementCard '+(need?"needsRepair":"success")+'">'+
     '<span class="achievementIcon">'+ico(need?"repeat":"check")+'</span>'+
     '<span class="kicker">نتيجة الأسبوع '+week+'</span><h2>'+title+'</h2><p>'+intro+'</p>'+
@@ -1173,8 +1176,8 @@ function achievementBoard(){
       achievementSkill("الإجابة الامتحانية",exam,"pen")+
     '</div>'+
     '<div class="stageTip"><span>'+ico("bulb")+'</span><div><small>نصيحة الآن</small><b>'+esc(stageAdvice(knowledge,analysis,exam))+'</b></div></div>'+
-    '<div class="achievementState '+(need?"need":"ok")+'">'+achievementLabel(status)+(r.score==null?"":" • "+r.score+"%")+'</div>'+
-    '<div class="choiceRow">'+(need?'<button class="primary" id="startRepair">ابدأ جلسة التثبيت</button><button class="secondary" id="backHome">ارجع للبرنامج</button>':'<button class="primary" id="backHome">افتح المرحلة التالية</button>')+'</div>'+
+    '<div class="achievementState '+(need?"need":"ok")+'">'+(pending?"بانتظار التصحيح القانوني":achievementLabel(status))+(r.score==null?"":" • "+r.score+"%")+'</div>'+
+    '<div class="choiceRow">'+(need?'<button class="primary" id="startRepair">ابدأ جلسة التثبيت</button><button class="secondary" id="backHome">ارجع للبرنامج</button>':'<button class="primary" id="backHome">'+(pending?'ارجع للبرنامج':'افتح المرحلة التالية')+'</button>')+'</div>'+
   '</div></section>');
   var sr=document.getElementById("startRepair");if(sr)sr.onclick=function(){state.answers=[];state.task=0;state.queue=buildRepairQueue();state.repairMode=true;state.view="train";render();};
   var bh=document.getElementById("backHome");if(bh)bh.onclick=function(){state.view="home";render();};
@@ -1201,7 +1204,7 @@ function finishRepairAssessment(){
   var a=state.assessmentAnswers,c=a.filter(function(x){return x.correct;}).length,p=Math.round(c/(a.length||1)*100),week=state.course.repairWeek||sessionMeta(state.course.session).week;
   var existing=state.course.weekResults[week]||{week:week};
   existing.repairScore=p;existing.skillScores=skillScores(a);
-  if(p>=60||state.course.adminOverrideWeeks[week+1]){
+  if(existing.status!=="pending_review"&&(p>=60||state.course.adminOverrideWeeks[week+1])){
     existing.status="completed_with_support";existing.score=Math.max(existing.score||0,p);state.course.repairRequired=false;state.course.repairWeek=null;addAchievement(week,"completed_with_support");
     if(week===6){
       state.course.completedProgram=true;
@@ -1212,7 +1215,7 @@ function finishRepairAssessment(){
       state.course.session=Math.min(30,state.course.session+1);
     }
   }else{
-    existing.status="repair";existing.score=Math.max(existing.score||0,p);state.course.repairRequired=true;state.course.repairWeek=week;
+    existing.status=existing.status==="pending_review"?"pending_review":"repair";existing.score=Math.max(existing.score||0,p);state.course.repairRequired=true;state.course.repairWeek=week;
   }
   state.course.weekResults[week]=existing;state.course.lastAssessment={week:week,score:existing.score,status:existing.status,ts:Date.now()};save();state.view=(week===6&&existing.status!=="repair")?"completion":"achievement";render();
 }

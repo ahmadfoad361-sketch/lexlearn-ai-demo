@@ -302,7 +302,7 @@
     return recency*difficulty*transfer*delayed;
   }
   function betaEstimate(events,now){
-    events=(events||[]).filter(function(e){return e&&e.score!=null;});
+    events=(events||[]).filter(function(e){return e&&e.score!=null&&e.grading_method!=="prompt_rubric_v3"&&e.grading_method!=="assessment_essay_profile_v1";});
     var a=2,b=2,w=0;
     events.forEach(function(e){
       var ew=evidenceWeight(e,now),s=clamp(Number(e.score),0,1);
@@ -319,7 +319,7 @@
     };
   }
   function trendScore(events){
-    var xs=(events||[]).filter(function(e){return e&&e.score!=null;}).slice(-10);
+    var xs=(events||[]).filter(function(e){return e&&e.score!=null&&e.grading_method!=="prompt_rubric_v3"&&e.grading_method!=="assessment_essay_profile_v1";}).slice(-10);
     if(xs.length<4)return 0;
     var cut=Math.floor(xs.length/2),a=xs.slice(0,cut),b=xs.slice(cut);
     function avg(arr){return arr.reduce(function(s,e){return s+Number(e.score||0);},0)/Math.max(1,arr.length);}
