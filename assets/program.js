@@ -593,7 +593,7 @@ function learningBridge(){
       precision_contrast:{title:"رفع الدقة القانونية",primary:taskBank.whyContrast,secondary:taskBank.spot},
       boundary_case:{title:"تطبيق على الحالات الحدودية",primary:taskBank.apply,secondary:taskBank.spot},
       structured_answer:{title:"تحويل التطبيق إلى إجابة امتحانية",primary:taskBank.exam,secondary:taskBank.reconstruct},
-      retrieval_rebuild:{title:"إعادة بناء القاعدة من الذاكرة",primary:taskBank.reconstruct,secondary:taskBank.retention},
+      retrieval_rebuild:{title:"إعادة بناء قاعدة موضوع الجلسة من الذاكرة",primary:taskBank.reconstruct,secondary:taskBank.retention},
       evidence_bridge:{title:"جسر من نقطة القوة إلى الأولوية",primary:taskBank.memoryAnchor,secondary:taskBank.whyContrast}
     };
     var x=map[model.bridge.mode]||map.evidence_bridge;
@@ -937,7 +937,7 @@ function essayAnalysis(answer,t){
   var weakest=Object.keys(axes).sort(function(a,b){return axes[a]-axes[b];})[0];
   var style=organization<55?"الإجابة تحتاج ترتيبًا أوضح بين المسألة والقاعدة والتطبيق والنتيجة":clarity<55?"الجمل طويلة أو غير مفصولة بما يكفي":"أسلوب الإجابة منظم وواضح نسبيًا";
   var noteMap={
-    recall:"الاسترجاع القانوني ناقص؛ أعد بناء القاعدة من مفاتيح قصيرة قبل التطبيق.",
+    recall:"الاسترجاع القانوني ناقص؛ أعد بناء القاعدة القانونية الخاصة بموضوع الجلسة من مفاتيح قصيرة قبل التطبيق.",
     understanding:"الإجابة تذكر عناصر أكثر مما تشرح لماذا تؤثر في الحكم.",
     application:"القاعدة موجودة لكن الربط بالواقعة يحتاج أن يكون أوضح.",
     legal_precision:"استخدم مصطلحات قانونية أدق وحدد العنصر الذي يغيّر التكييف.",
@@ -1094,9 +1094,9 @@ function addError(skill,label){
 }
 function pushUnique(arr,val){if(arr.indexOf(val)===-1)arr.push(val);}
 function buildRepairQueue(){
-  var w=state.course.repairWeek||sessionMeta(state.course.session).week,pool=(weekTasks[w]||weekTasks[1]).slice(),weak=weakestDimension();
+  var meta=sessionMeta(state.course.session),w=state.course.repairWeek||meta.week,pool=(weekTasks[w]||weekTasks[1]).slice(),weak=weakestDimension();
   var targeted=weak==="application"?taskBank.apply:weak==="understanding"?taskBank.understanding:weak==="recall"?taskBank.recall:weak==="retention"?taskBank.retention:taskBank.exam;
-  return [targeted,pool[0],pool[1],learningBridge().primary,pool[2]].filter(Boolean);
+  return [targeted,pool[0],pool[1],learningBridge().primary,pool[2]].filter(Boolean).map(function(t){return contextualizeTask(t,meta);});
 }
 function finishTraining(){
   var model=recomputeAdaptiveModel();
