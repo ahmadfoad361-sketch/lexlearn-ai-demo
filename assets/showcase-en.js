@@ -41,7 +41,7 @@ function prepareQuestions(){
 }
 function chrome(inner){
   APP.innerHTML='<div class="demoShell"><header class="demoTop"><div class="demoTopIn">'+
-    '<div class="demoBrand"><div class="demoLogo" dir="ltr"><img src="assets/lexlearn-logo.svg" alt="LexLearn"></div><div><b dir="ltr">LexLearn</b><small>Adaptive legal learning</small></div></div>'+
+    '<div class="demoBrand"><div class="demoLogo" dir="ltr"><img src="assets/lexlearn-logo.svg" alt="LexLearn"></div><div><b dir="ltr">LexLearn</b><small>We understand your mind and build your path.</small></div></div>'+
     '<div class="demoMeta"><span class="demoPill">'+countryLabel()+' • '+(COUNTRY==="qa"?"Theory of Rights":"Sources of Obligations")+'</span><a class="demoGhost" href="index-en.html">Home</a></div>'+
     '</div></header><main class="demoWrap">'+inner+'</main><footer class="demoFooter">LexLearn</footer></div>';
 }
