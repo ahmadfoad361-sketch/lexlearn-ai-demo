@@ -106,7 +106,7 @@ function neutral(){
 function free(){
   stage(90,'<div class="stageCard"><span class="demoEyebrow">Final question</span>'+
     '<h2>Write the two or three most important words you remember from the text.</h2>'+
-    '<textarea class="freeInput" id="freeText" dir="rtl" placeholder="اكتب ما تتذكره..."></textarea>'+
+    '<textarea class="freeInput" id="freeText" dir="rtl" placeholder="Write what you remember..."></textarea>'+
     '<div class="demoActions"><button class="btn primary" id="seeResult">Show result</button></div>'+
   '</div>');
   document.getElementById("seeResult").onclick=function(){state.free=document.getElementById("freeText").value.trim();state.view="result";render();};
@@ -119,7 +119,7 @@ function pct(type){
 function qualitative(v){if(v>=80)return "Strong";if(v>=45)return "Developing";return "Needs training";}
 function freeScore(){
   var n=(state.free||"").replace(/[أإآ]/g,"ا").replace(/[ًٌٍَُِّْـ]/g,"");
-  var keys=COUNTRY==="qa"?["شخصيه","ولاده","حيا","حمل","مستكن","حقوق"]:["ايجاب","قبول","محل","سبب","العقد"];
+  var keys=COUNTRY==="qa"?["personality","birth","alive","unborn","child","rights"]:["offer","acceptance","subject","cause","contract"];
   var hits=keys.filter(function(k){return n.indexOf(k)>=0;}).length;
   return Math.min(100,hits*25);
 }
