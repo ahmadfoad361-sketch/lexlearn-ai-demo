@@ -273,7 +273,7 @@ function consentGateView(){
     "<div class='mark'><img src='assets/lexlearn-logo.svg' alt='LexLearn'></div>"+
     "<span class='eyebrow'>Privacy and learning data</span>"+
     "<h1>Before you begin</h1>"+
-    "<p>LexLearn uses LexLearn your answers, results, response time, and confidence level to personalize training and measure progress. These indicators are for learning and training and are not an official university grade.</p>"+
+    "<p>LexLearn uses your answers, results, response time, and confidence level to personalize training and measure progress. These indicators are for learning and training and are not an official university grade.</p>"+
     "<p><a href='privacy.html' target='_blank'>Privacy Policy</a> • <a href='terms.html' target='_blank'>Terms of Use</a></p>"+
     "<div id='consentError'></div>"+
     "<button class='btn primary' id='acceptConsent'>I agree and continue</button>"+
@@ -339,17 +339,17 @@ function render(){
         var sub=a.status==="program-complete"?"6 stages • 30 sessions • completed":("Week "+a.week+" • "+(a.status==="mastered"?"with mastery":"Completed"));
         return "<div class='badge "+(a.status==="program-complete"?"finalBadge":"")+"'><span class='badgeIcon'>"+icon("trophy")+"</span><div><b>"+achievementName(a)+"</b><small>"+sub+"</small></div></div>";
       }).join("")
-    : "<div class='empty'>First Badge Appears after completing the first weekly assessment.</div>";
+    : "<div class='empty'>Your first achievement appears after completing the first weekly assessment.</div>";
 
   APP.innerHTML=
     "<header class='top'><div class='topin'>"+
       "<div class='brand'><div class='mark'><img src='assets/lexlearn-logo.svg' alt='LexLearn'></div><div><b>LexLearn</b><small>Student Portal</small></div></div>"+
-      "<div class='topactions'><span class='topbtn countryTop staticCountry'>🇶🇦 Qatar</span><button class='topbtn' id='changePass'>Change password</button><a class='topbtn' href='index-en.html'>Website</a><button class='topbtn' id='logout'>Sign out</button></div>"+
+      "<div class='topactions'><span class='topbtn countryTop staticCountry'>🇶🇦 Qatar</span><a class='topbtn' href='student.html'>العربية</a><button class='topbtn' id='changePass'>Change password</button><a class='topbtn' href='index-en.html'>Website</a><button class='topbtn' id='logout'>Sign out</button></div>"+
     "</div></header>"+
     "<main class='wrap'>"+
       "<section class='hero "+(course.completedProgram?"heroComplete":"")+"'>"+
         "<div class='heroMain'><span class='eyebrow'>"+esc(student.cohort||"Training Program")+"</span><h1>"+(course.completedProgram?"Congratulations "+esc(student.name)+"!":"Welcome "+esc(student.name))+"</h1><p>"+countryLabel(country)+" • Theory of Rights • 6 weeks • 30 practical sessions</p>"+
-        "<div class='heroMeta'><span>"+(course.completedProgram?"6 / 6 Stages completed":"Week "+w+" of 6")+"</span><span>"+(course.completedProgram?"30 / 30 Session":"Session "+(course.session||1)+" of 30")+"</span><span>"+(course.completedProgram?"Training completed":course.completed.length+" Session completed")+"</span></div></div>"+
+        "<div class='heroMeta'><span>"+(course.completedProgram?"6 / 6 Stages completed":"Week "+w+" of 6")+"</span><span>"+(course.completedProgram?"30 / 30 Sessions":"Session "+(course.session||1)+" of 30")+"</span><span>"+(course.completedProgram?"Training completed":course.completed.length+" sessions completed")+"</span></div></div>"+
         "<div class='heroSide studentHeroSide'><div class='heroVisual'>"+icon(course.completedProgram?"trophy":"compass")+"</div><h3>"+(course.completedProgram?"Well done! You completed the program":"Ready for the next session?")+"</h3><p>"+(course.completedProgram?"You can view your final achievement at any time.":(result?"One short session whose content changes with your performance.":"Start the short diagnostic so we can determine the best starting point."))+"</p></div>"+
       "</section>"+
       "<section class='actionGrid singleAction'>"+actionPrimary+"</section>"+
