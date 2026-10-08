@@ -169,6 +169,18 @@ var assessmentBanks={
 {q:"What distinguishes an advanced legal answer?",opts:["Each conclusion is linked to a rule and a decisive fact","It is simply the longest answer","It lists article numbers without application"],a:0,dimension:"exam"}]
 };
 
+var assessmentEssays={
+3:{mode:"essay",title:"Constructed Response — Legal Persons",q:"In 5–7 sentences, compare a natural person and a legal person in terms of patrimony, capacity, domicile and representation, then apply the distinction to a company acting through its representative.",dimension:"understanding",keys:["natural person","legal person","patrimony","capacity","domicile","representative"],why:"The assessment measures whether you can explain the legal consequences of personality, not merely list them."},
+4:{mode:"essay",title:"Constructed Response — Property Classification",q:"Classify three examples under Articles 59–61 and explain the legal criterion used for each classification. Your answer should distinguish movable/immovable, fungible/non-fungible, and consumable/non-consumable where relevant.",dimension:"application",keys:["movable","immovable","fungible","consumable","criterion"],why:"The assessment tests classification by legal criterion and fact."},
+5:{mode:"essay",title:"Constructed Response — Abuse of Rights",q:"In 6–8 sentences, analyse a case in which a right-holder pursues a very slight interest while causing severe harm to another person. Distinguish mere damage from unlawful exercise under Articles 62 and 63.",dimension:"application",keys:["Article 62","Article 63","interest","harm","disproportion","unlawful"],why:"The assessment tests whether you can move from the statutory criteria to a reasoned conclusion."},
+6:{mode:"essay",title:"Final Integrated Legal Answer",q:"In 8–10 sentences, analyse a problem involving a person with limited capacity, a legal person, public property, and an exercise of a right that may be abusive. Separate each issue, state the relevant rule, apply it to the decisive fact, and reach a conclusion.",dimension:"exam",keys:["limited capacity","legal person","public property","exercise of a right","rule","application","conclusion"],why:"The final answer measures integrated legal reasoning and answer structure."}
+};
+function assessmentQueue(week){
+ var q=assessmentQueue(week);
+ if(assessmentEssays[week])q.push(assessmentEssays[week]);
+ return q;
+}
+
 function loadProfile(){try{return JSON.parse(localStorage.getItem(PROFILE_KEY))||{results:{}};}catch(e){return {results:{}};}}
 function diagnostic(){var p=loadProfile();return p.results&&p.results[SNAPSHOT_COURSE]?p.results[SNAPSHOT_COURSE]:null;}
 function defaultCourse(){return {session:1,started:true,completed:[],evidence:[],errors:[],history:[],lastAssessment:null,weekResults:{},repairRequired:false,repairWeek:null,adminOverrideWeeks:{},achievements:[],completedProgram:false,completedAt:null};}
@@ -287,7 +299,7 @@ function home(){
  chrome('<section class="simpleStudentHero"><div><span class="kicker">Today’s session</span><h1>'+esc(meta.title)+'</h1><p>'+esc(meta.detail)+'</p><div class="simpleMeta"><span>Week '+meta.week+' of 6</span><span>Session '+state.course.session+' of 30</span><span>≈ 20 minutes</span></div></div><button class="primary bigStudentCta" id="startSession">'+(meta.kind==="assessment"?"Start weekly assessment":"Start session")+'</button></section>'+
  '<div class="simpleSectionTitle"><div><h2>Your level at a glance</h2><p>Three signals are enough for now.</p></div></div><section class="studentSnapshot">'+metricCard("Recall",m.recall)+metricCard("Understanding",m.understanding)+metricCard("Application",m.application)+'</section>'+
  '<section class="studentTip"><div><b>Adaptive teaching plan</b><p>'+esc(teachingPlan().method)+'</p></div></section>'+roadmap(meta.week));
- document.getElementById("startSession").onclick=function(){state.task=0;state.answers=[];state.assessmentAnswers=[];state.queue=meta.kind==="assessment"?assessmentBanks[meta.week].slice():buildQueue();state.view=meta.kind==="assessment"?"assessment":"train";render();};
+ document.getElementById("startSession").onclick=function(){state.task=0;state.answers=[];state.assessmentAnswers=[];state.queue=meta.kind==="assessment"?assessmentQueue(meta.week):buildQueue();state.view=meta.kind==="assessment"?"assessment":"train";render();};
  document.querySelectorAll("[data-week]").forEach(function(b){b.onclick=function(){var w=Number(b.dataset.week);if(w>meta.week){state.course.session=(w-1)*5+1;save();}state.task=0;state.queue=buildQueue();state.view="train";render();};});
 }
 function renderTask(t,assessment){
@@ -304,14 +316,14 @@ function nextTask(){if(state.task<state.queue.length-1){state.task++;render();}e
 function train(){var t=state.queue[state.task]||buildQueue()[0];renderTask(t,false);}
 function finishTraining(){
  state.course.history.push({session:state.course.session,type:state.repairMode?"repair":"training",answers:state.answers,ts:Date.now()});
- if(state.repairMode){state.repairMode=false;state.view="assessment";state.task=0;state.answers=[];state.queue=assessmentBanks[state.repairWeek||sessionMeta(state.course.session).week].slice();render();return;}
+ if(state.repairMode){state.repairMode=false;state.view="assessment";state.task=0;state.answers=[];state.queue=assessmentQueue(state.repairWeek||sessionMeta(state.course.session).week);render();return;}
  if(state.course.completed.indexOf(state.course.session)===-1)state.course.completed.push(state.course.session);
  state.course.session=Math.min(30,state.course.session+1);save();state.view="sessionResult";render();
 }
-function sessionResult(){var total=state.answers.length||1,correct=state.answers.filter(function(x){return x.correct;}).length,p=Math.round(correct/total*100),next=sessionMeta(state.course.session);chrome('<section class="stage"><div class="taskCard"><span class="kicker">Session complete</span><h2>Good work — your data has updated the next session.</h2><div class="resultGrid"><div class="metric"><span>Session performance</span><b>'+p+'%</b></div><div class="metric"><span>Next session</span><b>'+state.course.session+'</b></div></div><div class="notice">The next week will not unlock until you pass the current weekly assessment.</div><div class="choiceRow"><button class="primary" id="continueNext">'+(next.kind==="assessment"?"Start weekly assessment":"Start next session")+'</button><button class="secondary" id="goHome">Back to program</button></div></div></section>');document.getElementById("continueNext").onclick=function(){state.task=0;state.answers=[];state.queue=next.kind==="assessment"?assessmentBanks[next.week].slice():buildQueue();state.view=next.kind==="assessment"?"assessment":"train";render();};document.getElementById("goHome").onclick=function(){state.view="home";render();};}
+function sessionResult(){var total=state.answers.length||1,correct=state.answers.filter(function(x){return x.correct;}).length,p=Math.round(correct/total*100),next=sessionMeta(state.course.session);chrome('<section class="stage"><div class="taskCard"><span class="kicker">Session complete</span><h2>Good work — your data has updated the next session.</h2><div class="resultGrid"><div class="metric"><span>Session performance</span><b>'+p+'%</b></div><div class="metric"><span>Next session</span><b>'+state.course.session+'</b></div></div><div class="notice">The next week will not unlock until you pass the current weekly assessment.</div><div class="choiceRow"><button class="primary" id="continueNext">'+(next.kind==="assessment"?"Start weekly assessment":"Start next session")+'</button><button class="secondary" id="goHome">Back to program</button></div></div></section>');document.getElementById("continueNext").onclick=function(){state.task=0;state.answers=[];state.queue=next.kind==="assessment"?assessmentQueue(next.week):buildQueue();state.view=next.kind==="assessment"?"assessment":"train";render();};document.getElementById("goHome").onclick=function(){state.view="home";render();};}
 function assessment(){
  var week=sessionMeta(state.course.session).week;
- if(state.queue.length===0)state.queue=(assessmentBanks[week]||[]).slice();
+ if(state.queue.length===0)state.queue=assessmentQueue(week);
  var t=state.queue[state.task];
  renderTask(t,true);
 }
