@@ -8,7 +8,7 @@ var state={tab:"dashboard",students:[],cohorts:[],audit:[],content:[],snapshots:
 
 function esc(v){return String(v==null?"":v).replace(/[&<>"']/g,function(c){return({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"})[c];});}
 function ico(n){var p={chart:'<path d="M12 50h40M17 43V29M28 43V19M39 43V34M50 43V13"/>',users:'<circle cx="23" cy="22" r="8"/><circle cx="44" cy="25" r="6"/><path d="M9 50c2-10 8-15 14-15s12 5 14 15M38 39c7 0 12 4 14 11"/>',group:'<circle cx="22" cy="23" r="7"/><circle cx="42" cy="23" r="7"/><path d="M8 49c2-10 7-15 14-15s12 5 14 15M28 49c2-10 7-15 14-15s12 5 14 15"/>',audit:'<path d="M17 10h30v44H17z"/><path d="M24 21h16M24 29h16M24 37h11"/>',plus:'<path d="M32 13v38M13 32h38"/>',key:'<path d="M10 35a12 12 0 1 0 18-10l22-11 5 5-4 7-7-1-2 7-7-1-6 4"/>'};return '<svg class="uiIcon" viewBox="0 0 64 64">'+(p[n]||p.chart)+'</svg>';}
-function label(k){return({recall:"الاسترجاع",understanding:"الفهم",application:"التطبيق",legal_precision:"الدقة القانونية",retention:"ثبات المعلومة",exam:"الأداء الامتحاني"})[k]||k;}
+function label(k){return({recall:"الحفظ",understanding:"الفهم",application:"التطبيق على الوقائع",legal_precision:"الدقة القانونية",retention:"ثبات المعلومة",exam:"الأداء الامتحاني"})[k]||k;}
 function countryName(c){return c==="eg"?"مصر":"قطر";}
 function courseKey(s){var country=s.country||"qa";return country+"-"+(country==="qa"?"rights":"sources");}
 function profileSnap(id,country){country=country||"qa";var key=country+"-"+(country==="qa"?"rights":"sources");return state.snapshots.find(function(x){return x.user_id===id&&x.course_id===key&&x.snapshot_type==="profile";});}
@@ -59,7 +59,7 @@ function adminAdvice(v){
  if(topErr)summary+=" أكثر خطأ متكرر: «"+topErr.label+"»"+(topErr.count?" ("+topErr.count+" مرات).":".");
  if(highConf)summary+=" توجد "+highConf+" محاولة خاطئة بثقة مرتفعة؛ راجع الفهم قبل زيادة الصعوبة.";
  var adviceMap={
-   recall:"استخدم استرجاعًا قصيرًا من غير فتح النص، ثم مراجعة متباعدة بدل إعادة الشرح الكامل.",
+   recall:"اختبر الحفظ من غير فتح النص، ثم استخدم مراجعة متباعدة بدل إعادة الشرح الكامل.",
    understanding:"اطلب من الطالب تفسير «لماذا» تعمل القاعدة وربط كل عنصر بأثره القانوني قبل الانتقال للحفظ.",
    application:"قلّل الشرح النظري وزِد مسائل اكتشف الواقعة الحاسمة وغيّر واقعة واحدة؛ يحدد الطالب أولًا الواقعة الحاسمة ثم يطبق القاعدة.",
    legal_precision:"استخدم اكتشف العنصر الناقص والمقارنات بين صيغ متقاربة، واطلب تحديد اللفظ الذي يغيّر التكييف أو النتيجة.",
