@@ -492,10 +492,10 @@ function ico(name){
 }
 function loadProfile(){try{return JSON.parse(localStorage.getItem(PROFILE_KEY))||{results:{}};}catch(e){return {results:{}};}}
 function diagnostic(){
-  if(DEMO)return {metrics:{recall:82,understanding:88,application:58,retention:64,exam:55}};
-  var p=loadProfile(),k=COUNTRY+"-"+SUBJECT;return p.results&&p.results[k]?p.results[k]:null;
+  var p=loadProfile(),k=COUNTRY+"-"+SUBJECT;
+  return p.results&&p.results[k]?p.results[k]:null;
 }
-function defaultCourse(){return {session:1,started:true,completed:[],evidence:[],errors:DEMO?[{skill:"apply",label:"يخلط بين وجود الاتفاق وصحة المحل",count:2},{skill:"spot",label:"لا يلتقط الواقعة الحاسمة بسرعة",count:1}]:[],history:[],lastAssessment:null,weekResults:{},repairRequired:false,repairWeek:null,adminOverrideWeeks:{},achievements:[],completedProgram:false,completedAt:null};}
+function defaultCourse(){return {session:1,started:true,completed:[],evidence:[],errors:[],history:[],lastAssessment:null,weekResults:{},repairRequired:false,repairWeek:null,adminOverrideWeeks:{},achievements:[],completedProgram:false,completedAt:null};}
 function passedWeekResult(r){
   return !!(r&&(r.status==="mastered"||r.status==="completed"||r.status==="completed_with_support"));
 }
@@ -779,7 +779,7 @@ function shortStudentTip(metrics){
 function home(){
   if(state.course.completedProgram){state.view="completion";return completion();}
   var m=sessionMeta(state.course.session),d=state.diag;
-  if(!d&&!DEMO){
+  if(!d){
     chrome('<section class="simpleStudentHero"><div><span class="kicker">جاهز نبدأ؟</span><h1>ابدأ بتقييم قصير</h1><p>بضع أسئلة فقط، وبعدها يظهر لك تدريب مناسب لمستواك.</p></div><a class="primary bigStudentCta" href="showcase.html?country='+COUNTRY+'&subject='+SUBJECT+'">ابدأ التقييم</a></section>'+
       '<section class="simpleSteps"><div><span>1</span><b>اختبر</b><small>أسئلة قصيرة</small></div><div><span>2</span><b>تدرّب</b><small>على ما تحتاجه</small></div><div><span>3</span><b>تقدّم</b><small>خطوة بعد خطوة</small></div></section>');
     return;
@@ -1312,7 +1312,7 @@ async function boot(){
       state.diag=diagnostic();
     }catch(e){}
   }
-  if(DEMO&&AUTO_START){if(state.course.completedProgram){state.view="completion";}else{var autoMeta=sessionMeta(state.course.session);state.answers=[];state.assessmentAnswers=[];state.task=0;state.queue=buildTrainingQueue();state.view=autoMeta.kind==="assessment"?"assessment":"train";}}
+  if(DEMO&&AUTO_START&&state.diag){if(state.course.completedProgram){state.view="completion";}else{var autoMeta=sessionMeta(state.course.session);state.answers=[];state.assessmentAnswers=[];state.task=0;state.queue=buildTrainingQueue();state.view=autoMeta.kind==="assessment"?"assessment":"train";}}
   render();
 }
 boot();
