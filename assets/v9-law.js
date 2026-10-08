@@ -404,6 +404,9 @@ function renderArchive(){
   document.getElementById("backHub").onclick=function(){state.view="hub";render();};
 }
 async function boot(){
+  if(BOOT_COUNTRY==="qa"&&BOOT_SUBJECT==="rights"){
+    state.countryId="qa";state.subjectId=null;state.view="subjects";render();return;
+  }
   if(BOOT_COUNTRY&&BOOT_SUBJECT){
     state.countryId=BOOT_COUNTRY;state.subjectId=BOOT_SUBJECT;
     if(window.LEX_CLOUD&&LEX_CLOUD.isConfigured&&LEX_CLOUD.isConfigured()&&STUDENT_SESSION&&STUDENT_SESSION.cloud){
