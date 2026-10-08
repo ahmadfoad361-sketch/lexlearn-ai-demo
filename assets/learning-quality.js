@@ -66,7 +66,7 @@ function variedChoice(t,lang,applied,level,variant){
  var x=choice(t,lang,applied),ar=lang==="ar",variantTopic=t;
  if(applied&&factVariants[t.session]&&variant>0){var f=factVariants[t.session][variant-1];variantTopic=Object.assign({},t);variantTopic["scenario_"+lang]=f[ar?0:1];x.q=variantTopic["scenario_"+lang];x.opts=f[ar?2:3];}
  var base=x.opts.slice();x.difficulty=level;x.variant=variant;x.topicSession=t.session;
- if(level===1){x.text=t["rule_"+lang];x.showText=true;}
+ if(level===1){x.text=t["rule_"+lang];x.articleText=x.text;x.showText=true;}
  if(variant===1){
   x.q=(applied?variantTopic["scenario_"+lang]+" ":"")+(ar?"زميل انتهى إلى: «":"A peer concludes: “")+base[1]+(ar?"». أي تقييم لهذا الاستنتاج دقيق؟":"”. Which evaluation is accurate?");
   x.opts=ar?["الاستنتاج غير دقيق؛ البديل الصحيح: "+base[0],"الاستنتاج صحيح كما ورد: "+base[1],"الاستنتاج غير دقيق؛ البديل الصحيح: "+base[2]]:["The conclusion is inaccurate; the correct alternative is: "+base[0],"The conclusion is correct as stated: "+base[1],"The conclusion is inaccurate; the correct alternative is: "+base[2]];

@@ -797,7 +797,7 @@ function home(){
       '<button class="primary bigStudentCta" id="startSession">'+(m.kind==="assessment"?"ابدأ تقييم الأسبوع":"ابدأ الجلسة")+'</button></section>'+
     '<div class="simpleSectionTitle"><div><h2>مستواك بسرعة</h2><p>خمس مهارات؛ يظهر تقدير فقط لما اختبرته. النسب مؤشرات أداء أولية تتغير مع المحاولات.</p></div></div>'+
     studentSnapshot(metrics)+
-    '<section class="studentTip"><span>✨</span><div><b>لماذا هذا التدريب؟</b><p>نبدأ من الأداء الذي ظهر في محاولاتك؛ ترتيب المهام يتغير مع المهارة التي تحتاج اهتمامًا. '+esc(shortStudentTip(metrics))+'</p></div></section>'+
+    '<section class="studentTip"><span>✨</span><div><b>لماذا هذا التدريب؟</b><p>نبدأ من الأداء الذي ظهر في محاولاتك؛ نختار الصعوبة حسب أدائك، وننوّع بين التطبيق ونقد الاستنتاج والمقارنة، ونراجع موضوعًا سبق أن أخطأت فيه. '+esc(shortStudentTip(metrics))+'</p></div></section>'+
     weekBar(m.week)
   );
   document.getElementById("startSession").onclick=function(){
@@ -912,7 +912,7 @@ function essayAnalysis(answer,t){return LEX_QUALITY.grade(answer,t,"ar");}
 function essayMini(profile){return LEX_QUALITY.feedback(profile,"ar",esc);}
 
 function taskStatusBox(correct,label,provisional){
-  return '<div class="answerStatus '+(correct?"correct":"wrong")+'"><span class="answerStatusIcon">'+ico(correct?"check":"repeat")+'</span><div><b>'+(provisional?(correct?"ظهرت مؤشرات جيدة":"عناصر تحتاج مراجعة"):(correct?"إجابتك صحيحة":"إجابتك تحتاج تعديل"))+'</b><small>'+esc(label||"راجع السبب ثم انتقل للمهمة التالية.")+'</small></div></div>';
+  return '<div class="answerStatus '+(correct?"correct":"wrong")+'"><span class="answerStatusIcon">'+ico(correct?"check":"repeat")+'</span><div><b>'+(provisional?"الدرجة القانونية معلّقة":(correct?"إجابتك صحيحة":"إجابتك تحتاج تعديل"))+'</b><small>'+esc(label||"راجع السبب ثم انتقل للمهمة التالية.")+'</small></div></div>';
 }
 function orderedOptions(t,salt){return LEX_QUALITY.shuffleOptions(t);}
 

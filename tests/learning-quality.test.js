@@ -76,7 +76,7 @@ console.log('learning-quality tests: PASS (30 bilingual session boundaries, fair
   const outage=await Q.gradeAsync(wrong,task,lang,{gradeAnswer:async()=>{throw Error('offline');}},'course');assert.equal(outage.overall,null);
  }
  const low={seed:12,metrics:{application:30},evidence:[],attempt:0},high={seed:13,metrics:{application:95},evidence:[],attempt:0};
- const a=Q.queue(8,'ar','application',null,low),b=Q.queue(8,'ar','application',null,high);assert.equal(a.length,6);assert.ok(a.some(x=>x.difficulty===1));assert.ok(b.every(x=>x.difficulty===4));assert.notDeepEqual(a.map(x=>x.q),b.map(x=>x.q));
+ const a=Q.queue(8,'ar','application',null,low),b=Q.queue(8,'ar','application',null,high);assert.equal(a.length,6);for(const t of a.filter(x=>x.showText))assert.equal(t.articleText,t.text);assert.ok(a.some(x=>x.difficulty===1));assert.ok(b.every(x=>x.difficulty===4));assert.notDeepEqual(a.map(x=>x.q),b.map(x=>x.q));
  const retry=Q.queue(8,'ar','application',null,{...low,attempt:1});assert.notDeepEqual(a.filter(x=>x.mode==='mcq').map(x=>x.q),retry.filter(x=>x.mode==='mcq').map(x=>x.q));
  const error=Q.queue(18,'ar','application',null,{...low,evidence:[{dimension:'application',score:0,topicSession:2}]});assert.equal(error[2].topicSession,2);
  const bilingual=Q.queue(8,'en','application',null,high);assert.deepEqual(b.map(x=>x.variantId),bilingual.map(x=>x.variantId));
