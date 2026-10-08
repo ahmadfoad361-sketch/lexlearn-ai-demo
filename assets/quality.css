@@ -35,3 +35,5 @@ body{font-size:1rem}button,a,input,textarea,summary{touch-action:manipulation}bu
 .qualityExample p{font-size:1rem;line-height:1.85;color:#495365;margin-block:0 16px}
 .qualityExample small{display:block;line-height:1.8}
 .en-main .course-card h2,.en-main .qualityMethod h2{font-family:inherit;font-weight:600;font-size:clamp(1.5rem,2.3vw,2rem);line-height:1.45}
+
+.qualityHero .qualityHeroTitle{width:fit-content;max-width:100%;text-align:center}
