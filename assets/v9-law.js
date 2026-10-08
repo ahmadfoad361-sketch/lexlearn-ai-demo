@@ -96,7 +96,7 @@ function renderCountry(){
       '<button class="entry-option country-muted" disabled aria-disabled="true"><span class="entry-flag">🇸🇦</span><span class="entry-copy"><b>السعودية</b><small>قريبًا</small></span><span class="entry-arrow">قيد التجهيز</span></button>'+
       '<button class="entry-option country-muted" disabled aria-disabled="true"><span class="entry-flag">🇦🇪</span><span class="entry-copy"><b>الإمارات</b><small>قريبًا</small></span><span class="entry-arrow">قيد التجهيز</span></button>'+
     '</div>'+
-    '<div class="entry-note">قطر أولًا — المواد 39 إلى 63 من القانون المدني القطري ضمن مسار نظرية الحق.</div>'+
+    '<div class="entry-note">قطر أولًا — المواد 39 إلى 63 من القانون المدني القطري ضمن برنامج نظرية الحق.</div>'+
     '<div class="entry-account-links"><a href="student-login.html">دخول الطالب</a><a href="admin-login.html">دخول المدير / المشرف</a></div>'+
   '</section>';
   chrome(html);
@@ -360,7 +360,7 @@ function planSteps(res){
   else if(res.profileType==="recall-led"){out.push(["استخدم النص كبداية","استرجع المادة أو التعريف ثم اشرحها بكلماتك."]);out.push(["غيّر واقعة واحدة","اختبر هل الحكم يتغير لما تتغير واقعة حاسمة."]);}
   else{out.push(["استرجاع سريع","اقرأ ثم أغلق النص واكتب فكرته الأساسية."]);out.push(["تطبيق مباشر","بعد كل قاعدة حل واقعة قصيرة."]);}
   if(m.retention<65)out.push(["راجع على مسافات","مراجعة قصيرة بعد يوم، ثم بعد عدة أيام، بدل جلسة طويلة واحدة."]);else out.push(["حافظ على التثبيت","مراجعات أقصر لأن الاحتفاظ الحالي جيد نسبيًا."]);
-  if(m.application<70)out.push(["زد الوقائع","الأولوية لأسئلة التطبيق وChange One Fact."]);else out.push(["حوّلها لإجابة","ابدأ تدريب البناء الامتحاني والخلاصة."]);
+  if(m.application<70)out.push(["زد الوقائع","الأولوية لأسئلة التطبيق وغيّر واقعة واحدة."]);else out.push(["حوّلها لإجابة","ابدأ تدريب البناء الامتحاني والخلاصة."]);
   return out.slice(0,4);
 }
 function renderPlan(){
@@ -381,7 +381,7 @@ function renderLearn(){
 }
 function renderTrain(){
   var a=subject().diagnostic.anchor;
-  chrome('<div class="section-title"><div><h1>أتدرب</h1><p>التطبيق يبدأ بتغيير واقعة واحدة بدل إعادة سؤال الحفظ بصياغة أخرى.</p></div><button class="btn ghost" id="backHub">رجوع</button></div><section class="focus-panel"><span class="eyebrow">Change One Fact</span><h2>'+esc(a.applyQuestion)+'</h2><div class="choices">'+a.applyOptions.map(function(o,i){return '<button class="choice" data-train="'+i+'">'+esc(o.t)+'</button>';}).join("")+'</div><div id="trainFeed"></div></section>');
+  chrome('<div class="section-title"><div><h1>أتدرب</h1><p>التطبيق يبدأ بتغيير واقعة واحدة بدل إعادة سؤال الحفظ بصياغة أخرى.</p></div><button class="btn ghost" id="backHub">رجوع</button></div><section class="focus-panel"><span class="eyebrow">غيّر واقعة واحدة</span><h2>'+esc(a.applyQuestion)+'</h2><div class="choices">'+a.applyOptions.map(function(o,i){return '<button class="choice" data-train="'+i+'">'+esc(o.t)+'</button>';}).join("")+'</div><div id="trainFeed"></div></section>');
   document.getElementById("backHub").onclick=function(){state.view="hub";render();};
   document.querySelectorAll("[data-train]").forEach(function(b){b.onclick=function(){var o=a.applyOptions[Number(b.dataset.train)];document.querySelectorAll("[data-train]").forEach(function(x){x.disabled=true;});b.classList.add(o.s?"good":"bad");document.getElementById("trainFeed").innerHTML='<div class="archive-note">'+(o.s?"التكييف أقرب للصواب. الآن اشرح لنفسك: ما الواقعة التي غيرت البرنامج؟":"ارجع للواقعة الحاسمة في السؤال، مش للكلمات العامة.")+'</div>';};});
 }
