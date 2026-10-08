@@ -82,7 +82,7 @@ if(!student){
 }
 
 var country=student.country||session.country||null;
-var COUNTRY_SETUP_KEY="lexlearn_country_setup_v1_"+student.id;
+var COUNTRY_SETUP_KEY="lexlearn_country_setup_v2_rights_"+student.id;
 var countrySetupDone=read(COUNTRY_SETUP_KEY,false)===true;
 var PROFILE_KEY="lexlearn_v9_profile_"+student.id;
 var COURSE_KEY=country?"lexlearn_course_v2_"+country+"_"+(country==="qa"?"rights":"sources")+"_"+student.id:null;
@@ -284,19 +284,15 @@ function consentGateView(){
   };
 }
 function render(){
-  if(session.cloud&&!consentOk){consentGateView();return;}
   if(student.mustChangePassword){
     changePasswordView(true);
     return;
   }
-  if(!countrySetupDone){
+  if(!countrySetupDone||!student.country){
     countryGateView();
     return;
   }
-  if(!student.country){
-    countryGateView();
-    return;
-  }
+  if(session.cloud&&!consentOk){consentGateView();return;}
   country=student.country;
   var w=currentWeek();
   var demoPrefix=session.cloud?"":"demo=1&";
@@ -364,8 +360,6 @@ function render(){
       "<section class='achievementStrip'>"+achievements+"</section>"+
     "</main>";
 
-  var cs=document.getElementById("countrySwitch");
-  if(cs)cs.onchange=function(){saveStudentPatch({country:cs.value});location.reload();};
   var cp=document.getElementById("changePass");
   if(cp)cp.onclick=function(){changePasswordView(false);};
   var logout=document.getElementById("logout");
