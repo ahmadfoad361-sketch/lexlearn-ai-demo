@@ -154,16 +154,54 @@ function result(){
   document.getElementById("again").onclick=function(){state.view="hero";render();};
 }
 function metric(name,v){return '<div class="metric"><span>'+name+'</span><b>'+qualitative(v)+'</b></div>';}
+function analyzeExamAnswer(answer){
+  var n=String(answer||"").toLowerCase().replace(/[^a-z0-9 ]/g," ").replace(/\s+/g," ").trim(),words=n?n.split(" "):[];
+  var keyGroups=COUNTRY==="qa"?[
+    ["legal personality","personality"],["born alive","live birth"],["unborn child","unborn"],["rights"],["condition","provided"]
+  ]:[["contract"],["intention"],["acceptance"],["rule"],["conclusion"]];
+  var hit=keyGroups.filter(function(g){return g.some(function(k){return n.indexOf(k)>=0;});}).length;
+  var causal=["because","therefore","thus","so that","which means","if","since"].filter(function(k){return n.indexOf(k)>=0;}).length;
+  var precision=COUNTRY==="qa"?["legal personality","unborn child","born alive","acquire rights","legal capacity"].filter(function(k){return n.indexOf(k)>=0;}).length:["contract formation","matching intentions","acceptance","offer"].filter(function(k){return n.indexOf(k)>=0;}).length;
+  var structure=["issue","rule","application","conclusion","first","second","therefore"].filter(function(k){return n.indexOf(k)>=0;}).length;
+  var recall=Math.min(100,25+hit*15+Math.min(20,words.length));
+  var understanding=Math.min(100,20+causal*16+Math.min(35,hit*7));
+  var legal=Math.min(100,25+precision*18+Math.min(20,hit*4));
+  var exam=Math.min(100,20+structure*15+Math.min(35,Math.floor(words.length/4)));
+  var all={recall:recall,understanding:understanding,legal:legal,exam:exam};
+  var weakest=Object.keys(all).sort(function(a,b){return all[a]-all[b];})[0];
+  var advice={
+    recall:"Retrieve the key elements of the rule before reopening the text.",
+    understanding:"Explain more clearly why the legal position differs between the two situations.",
+    legal:"Use more precise legal terminology and identify the decisive statutory condition.",
+    exam:"Structure the answer as issue → rule → explanation/application → conclusion."
+  }[weakest];
+  return {scores:all,advice:advice};
+}
 function exam(){
   stage(100,'<div class="stageCard">'+
     '<span class="demoEyebrow">Exam-style question</span>'+
     '<h2>'+(COUNTRY==="qa"?"Explain the difference between acquiring legal personality and the unborn child's ability to acquire certain rights.":"Explain the rule of contract formation.")+'</h2>'+
-    '<textarea class="freeInput" id="examText" dir="rtl" placeholder="Write your answer here..."></textarea>'+
-    '<div class="demoActions"><button class="btn primary" id="showStructure">Review answer elements</button></div>'+
+    '<textarea class="freeInput" id="examText" dir="ltr" placeholder="Write your answer here..."></textarea>'+
+    '<div class="demoActions"><button class="btn primary" id="showStructure">Analyse my answer</button></div>'+
     '<div id="examStructure"></div>'+
   '</div>');
   document.getElementById("showStructure").onclick=function(){
-    document.getElementById("examStructure").innerHTML='<div class="feedback"><b>Answer elements:</b><br>'+(COUNTRY==="qa"?"Legal personality begins on live birth → status of the unborn child → type of rights → live-birth condition → conclusion.":"Rule → intention → legal restrictions → conclusion.")+'</div>';
+    var answer=document.getElementById("examText").value.trim();
+    if(answer.split(/\s+/).filter(Boolean).length<12){
+      document.getElementById("examStructure").innerHTML='<div class="feedback"><b>Please write a little more.</b><br>We need several sentences to analyse your reasoning rather than only the conclusion.</div>';
+      return;
+    }
+    var a=analyzeExamAnswer(answer),s=a.scores;
+    document.getElementById("examStructure").innerHTML=
+      '<div class="feedback"><b>Experimental analysis of your answer</b><br>This reads the content and structure of your response to provide an initial learning profile.</div>'+
+      '<div class="metrics" style="margin-top:12px">'+
+        '<div class="metric"><span>Recall</span><b>'+s.recall+'%</b></div>'+
+        '<div class="metric"><span>Understanding</span><b>'+s.understanding+'%</b></div>'+
+        '<div class="metric"><span>Legal precision</span><b>'+s.legal+'%</b></div>'+
+        '<div class="metric"><span>Answer structure</span><b>'+s.exam+'%</b></div>'+
+      '</div>'+
+      '<div class="planCard" style="margin-top:12px"><h3>Your main improvement point</h3><p>'+esc(a.advice)+'</p></div>'+
+      '<div class="feedback"><b>Reference elements:</b><br>'+(COUNTRY==="qa"?"Legal personality begins on live birth → status of the unborn child → type of rights → live-birth condition → conclusion.":"Rule → intention → legal restrictions → conclusion.")+'</div>';
   };
 }
 render();
