@@ -159,7 +159,7 @@ function studentInsight(){
   var sorted=items.slice().sort(function(a,b){return a.value-b.value;});
   var focus=sorted[0],best=sorted[sorted.length-1];
   var tips={
-    recall:"استرجع الفكرة من ذاكرتك قبل أن ترجع للنص.",
+    recall:"حاول تذكّر الفكرة من ذاكرتك قبل أن ترجع للنص.",
     understanding:"اسأل نفسك: لماذا هذه القاعدة تعمل بهذه الطريقة؟",
     application:"جرّب القاعدة على واقعة قصيرة وحدد العنصر الحاسم أولًا."
   };
@@ -355,7 +355,7 @@ function render(){
       "<section class='actionGrid singleAction'>"+actionPrimary+"</section>"+
       "<div class='sectionHead'><div><h2>رحلتك</h2><p>كلما أنهيت مرحلة، تفتح التالية تلقائيًا.</p></div><span class='progressTag'>"+course.completed.length+" / 30</span></div>"+
       "<section class='weekGrid'>"+weeks+"</section>"+
-      "<div class='sectionHead'><div><h2>مستواك ببساطة</h2><p>3 مؤشرات فقط تساعدك تعرف أين أنت الآن.</p></div></div>"+
+      "<div class='sectionHead'><div><h2>مستواك ببساطة</h2><p>الحفظ: تذكّر القاعدة دون النص • الفهم: معرفة لماذا تعمل • التطبيق على الوقائع: استخدام القاعدة في واقعة قانونية جديدة.</p></div></div>"+
       learningProfile+
       "<div class='sectionHead'><div><h2>إنجازاتك</h2><p>كل مرحلة تنهيها تضيف إنجازًا جديدًا.</p></div></div>"+
       "<section class='achievementStrip'>"+achievements+"</section>"+
