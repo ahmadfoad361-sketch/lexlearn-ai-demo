@@ -205,7 +205,7 @@ function keyTermsFromCorrect(){
 }
 function renderFreeRecall(){
   var d=state.diagnostic;
-  setStageBody('<section class="focus-panel" style="margin-top:18px"><span class="eyebrow">استرجاع حر</span><h2>اكتب أهم الكلمات أو العبارات القانونية التي تتذكرها من النص.</h2><textarea id="freeRecall" dir="rtl" style="width:100%;min-height:130px;border:1px solid var(--line);border-radius:16px;padding:14px;font:inherit;text-align:right"></textarea><div class="timer-row"><button class="btn primary" id="freeNext">سجل وكمل</button><button class="btn ghost" id="dontRemember">مش فاكر</button></div></section>');
+  setStageBody('<section class="focus-panel" style="margin-top:18px"><span class="eyebrow">اختبار الحفظ</span><h2>اكتب من ذاكرتك أهم الكلمات أو العبارات القانونية التي تتذكرها من النص.</h2><textarea id="freeRecall" dir="rtl" style="width:100%;min-height:130px;border:1px solid var(--line);border-radius:16px;padding:14px;font:inherit;text-align:right"></textarea><div class="timer-row"><button class="btn primary" id="freeNext">سجل وكمل</button><button class="btn ghost" id="dontRemember">مش فاكر</button></div></section>');
   document.getElementById("freeNext").onclick=function(){d.recallFree=document.getElementById("freeRecall").value.trim();d.stage="understand";renderDiagnostic();};
   document.getElementById("dontRemember").onclick=function(){d.recallFree="";d.stage="understand";renderDiagnostic();};
 }
@@ -299,10 +299,10 @@ function profileType(m){
 function profileSentence(res){
   var m=res.metrics;
   if(res.adaptiveModel&&res.adaptiveModel.bridge)return res.adaptiveModel.bridge.label;
-  if(res.profileType==="understanding-led")return "كان الفهم أقوى من الاسترجاع اللفظي. ابدأ بخريطة منطقية للنص، ثم ثبّت الكلمات القانونية الأساسية باسترجاع متباعد.";
-  if(res.profileType==="recall-led")return "كان الاسترجاع اللفظي أقوى من التطبيق. ابدأ من النص الذي تتذكره، ثم فككه وغيّر الوقائع حتى تتحول القاعدة إلى فهم قابل للاستخدام.";
-  if(m.retention+20<m.recall)return "كان الأداء الفوري أقوى من الاحتفاظ. ابدأ بمراجعات قصيرة متباعدة واختبارات استرجاع.";
-  return "أداؤك متقارب بين الاسترجاع والفهم. انتقل إلى تطبيق القاعدة على الوقائع ثم بناء إجابة امتحانية منظمة.";
+  if(res.profileType==="understanding-led")return "كان الفهم أقوى من الحفظ. ابدأ بخريطة منطقية للنص، ثم ثبّت الكلمات القانونية الأساسية باختبارات تذكّر متباعدة.";
+  if(res.profileType==="recall-led")return "كان الحفظ أقوى من التطبيق على الوقائع. ابدأ من النص الذي تتذكره، ثم فككه وغيّر الوقائع حتى تتحول القاعدة إلى فهم قابل للاستخدام.";
+  if(m.retention+20<m.recall)return "كان الأداء الفوري أقوى من الاحتفاظ. ابدأ بمراجعات قصيرة متباعدة واختبارات تذكّر من الذاكرة.";
+  return "أداؤك متقارب بين الحفظ والفهم. انتقل إلى تطبيق القاعدة على الوقائع ثم بناء إجابة امتحانية منظمة.";
 }
 function resultStatus(v){
   if(v==null)return {label:"لم يُقَس بعد",cls:"unknown"};
@@ -347,7 +347,7 @@ function renderResults(){
     resultSkillCard("retention",m.retention)+
     resultSkillCard("exam",m.exam)+
   '</div>'+
-  '<section class="student-next"><div><span class="section-overline">إيه اللي يحصل بعد كده؟</span><h2>ابدأ التدريب بدل ما تقرأ خطة فقط</h2><p>البرنامج مدته 6 أسابيع / 30 جلسة. كل جلسة فيها استرجاع، مهمة من موضوع الأسبوع، تدريب على نقطة ضعفك، تطبيق على واقعة جديدة، وتغذية راجعة.</p></div><div class="student-next-actions"><a class="btn primary" style="text-decoration:none" href="program.html?country='+encodeURIComponent(state.countryId)+'&subject='+encodeURIComponent(state.subjectId)+'">ابدأ أول جلسة تدريب</a><button class="btn secondary" id="openPlan">شوف خطة الـ6 أسابيع</button></div></section>'+
+  '<section class="student-next"><div><span class="section-overline">إيه اللي يحصل بعد كده؟</span><h2>ابدأ التدريب بدل ما تقرأ خطة فقط</h2><p>البرنامج مدته 6 أسابيع / 30 جلسة. كل جلسة فيها اختبار للحفظ، مهمة من موضوع الأسبوع، تدريب على نقطة ضعفك، تطبيق على واقعة قانونية جديدة، وتغذية راجعة.</p></div><div class="student-next-actions"><a class="btn primary" style="text-decoration:none" href="program.html?country='+encodeURIComponent(state.countryId)+'&subject='+encodeURIComponent(state.subjectId)+'">ابدأ أول جلسة تدريب</a><button class="btn secondary" id="openPlan">شوف خطة الـ6 أسابيع</button></div></section>'+
   '<div class="result-note-simple"><b>مهم:</b> لو أعدت التقييم أو أكملت تقييم التثبيت، البرنامج يتغير تلقائيًا حسب أدائك الجديد.</div>';
   chrome(html);
   document.getElementById("backHub").onclick=function(){state.view="hub";render();};
@@ -358,7 +358,7 @@ function planSteps(res){
   var m=res.metrics,out=[];
   if(res.profileType==="understanding-led"){out.push(["ابدأ بالخريطة","حوّل كل موضوع إلى: قاعدة → شروط → أثر → استثناء."]);out.push(["ثبّت الألفاظ","اختبر نفسك في الكلمات القانونية بدل إعادة قراءة الصفحة."]);}
   else if(res.profileType==="recall-led"){out.push(["استخدم النص كبداية","استرجع المادة أو التعريف ثم اشرحها بكلماتك."]);out.push(["غيّر واقعة واحدة","اختبر هل الحكم يتغير لما تتغير واقعة حاسمة."]);}
-  else{out.push(["استرجاع سريع","اقرأ ثم أغلق النص واكتب فكرته الأساسية."]);out.push(["تطبيق مباشر","بعد كل قاعدة حل واقعة قصيرة."]);}
+  else{out.push(["اختبار حفظ سريع","اقرأ ثم أغلق النص واكتب فكرته الأساسية من ذاكرتك."]);out.push(["تطبيق مباشر","بعد كل قاعدة حل واقعة قصيرة."]);}
   if(m.retention<65)out.push(["راجع على مسافات","مراجعة قصيرة بعد يوم، ثم بعد عدة أيام، بدل جلسة طويلة واحدة."]);else out.push(["حافظ على التثبيت","مراجعات أقصر لأن الاحتفاظ الحالي جيد نسبيًا."]);
   if(m.application<70)out.push(["زد الوقائع","الأولوية لأسئلة التطبيق وغيّر واقعة واحدة."]);else out.push(["حوّلها لإجابة","ابدأ تدريب البناء الامتحاني والخلاصة."]);
   return out.slice(0,4);
@@ -376,7 +376,7 @@ function noResultView(title){
 }
 function renderLearn(){
   var set=subject().diagnostic.memorySet;
-  chrome('<div class="section-title"><div><h1>أتعلم</h1><p>النصوص هنا لا تُعرض كصفحة للحفظ. كل وحدة صغيرة تنتهي بسؤال استرجاع أو شرح بكلماتك.</p></div><button class="btn ghost" id="backHub">رجوع</button></div><section class="focus-panel">'+set.map(function(x,i){return '<div class="exam-question"><small>'+esc(x.source||"تعريف تدريبي")+'</small><h3 style="color:var(--navy)">'+(i+1)+'. '+esc(x.label)+'</h3><p>'+esc(x.text)+'</p><span class="memory-chip">الكلمة المفتاحية: '+esc(x.key)+'</span></div>';}).join("")+'</section>');
+  chrome('<div class="section-title"><div><h1>أتعلم</h1><p>النصوص هنا لا تُعرض كصفحة للحفظ. كل وحدة صغيرة تنتهي باختبار للحفظ أو شرح بكلماتك.</p></div><button class="btn ghost" id="backHub">رجوع</button></div><section class="focus-panel">'+set.map(function(x,i){return '<div class="exam-question"><small>'+esc(x.source||"تعريف تدريبي")+'</small><h3 style="color:var(--navy)">'+(i+1)+'. '+esc(x.label)+'</h3><p>'+esc(x.text)+'</p><span class="memory-chip">الكلمة المفتاحية: '+esc(x.key)+'</span></div>';}).join("")+'</section>');
   document.getElementById("backHub").onclick=function(){state.view="hub";render();};
 }
 function renderTrain(){
