@@ -37,3 +37,18 @@ body{font-size:1rem}button,a,input,textarea,summary{touch-action:manipulation}bu
 .en-main .course-card h2,.en-main .qualityMethod h2{font-family:inherit;font-weight:600;font-size:clamp(1.5rem,2.3vw,2rem);line-height:1.45}
 
 .qualityHero .qualityHeroTitle{width:fit-content;max-width:100%;text-align:center}
+
+.qualityCarousel{min-width:0;--slide-entry:110%;--slide-exit:-110%}
+.qualityCarousel[data-direction="right"]{--slide-entry:-110%;--slide-exit:110%}
+.qualityCarouselViewport{display:grid;overflow:hidden}
+.qualitySlide{grid-area:1/1;min-width:0;visibility:hidden;opacity:0;transform:translateX(var(--slide-entry));pointer-events:none;transition:transform .55s cubic-bezier(.22,.61,.36,1),opacity .4s ease,visibility 0s .55s}
+.qualitySlide.isActive{visibility:visible;opacity:1;transform:translateX(0);pointer-events:auto;transition-delay:0s}
+.qualitySlide.isLeaving{visibility:visible;opacity:0;transform:translateX(var(--slide-exit));transition-delay:0s}
+.qualityCarouselControls{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:20px;border-top:1px solid #eee8e1;padding-top:14px}
+.qualityCarouselDots{display:flex;gap:8px}
+.qualityCarouselControls button{font:inherit;font-size:.875rem;line-height:1.5;min-height:44px;border:1px solid #ded8d0;border-radius:12px;color:#495365;background:#fff;cursor:pointer;padding:8px 12px}
+.qualityCarouselDots button{min-width:44px}
+.qualityCarouselDots button[aria-pressed="true"]{background:#7b1734;border-color:#7b1734;color:#fff}
+.qualityCarousel .carouselStatus{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}
+.en-main .qualityCarousel h2{font-size:1.375rem;line-height:1.5;font-family:inherit}
+@media(prefers-reduced-motion:reduce){.qualitySlide{transform:none!important}}
