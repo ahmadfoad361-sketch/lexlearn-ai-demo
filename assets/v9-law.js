@@ -57,7 +57,7 @@ function chrome(inner){
   var metrics=res?res.metrics:{recall:null,understanding:null,application:null,retention:null,exam:null};
   var labels=[["recall","حفظ"],["understanding","فهم"],["application","تطبيق على الوقائع"],["legal_precision","دقة قانونية"],["retention","احتفاظ"],["exam","أداء امتحاني"]];
   APP.innerHTML='<div class="v9-shell"><header class="v9-top"><div class="v9-topin">'+
-    '<div class="v9-brand"><div class="v9-mark"><img src="assets/lexlearn-logo.svg" alt="LexLearn"></div><div><b>LexLearn</b><small>نفهم طريقة تفكيرك، ونبني طريقك.</small></div></div>'+
+    '<div class="v9-brand"><div class="v9-mark"><img src="assets/lexlearn-logo.svg" alt="LexLearn"></div><div><b>Lex<span class="brandLearn">Learn</span></b><small>نفهم طريقة تفكيرك، ونبني طريقك.</small></div></div>'+
     '<div class="v9-topactions">'+
       (state.countryId?'<button class="v9-topbtn" id="changeCountry">🌍 <span>'+esc(country().short)+'</span></button>':'')+
       (state.subjectId?'<button class="v9-topbtn" id="changeSubject">§ <span>'+esc(subject().title)+'</span></button>':'')+
@@ -86,26 +86,13 @@ function render(){clearTimer();
   if(state.view==="archive")return renderArchive();
 }
 function renderCountry(){
-  var html='<section class="entry-screen entry-country-first">'+
-    '<div class="entry-intro"><div class="entry-seal"><img src="assets/lexlearn-logo.svg" alt="LexLearn"></div><span class="section-overline">LEXLEARN</span>'+
-    '<h1>اختر الدولة</h1>'+
-    '<p>يتم ضبط المحتوى القانوني والتدريب بحسب النظام القانوني المختار. برنامج قطر هو النسخة العاملة حاليًا.</p></div>'+
-    '<div class="entry-options country-launch-grid">'+
-      '<button class="entry-option country-live" data-country="qa"><span class="entry-flag">🇶🇦</span><span class="entry-copy"><b>قطر</b><small>البرنامج المتاح الآن • نظرية الحق</small></span><span class="entry-arrow">ابدأ ←</span></button>'+
-      '<button class="entry-option country-muted" disabled aria-disabled="true"><span class="entry-flag">🇪🇬</span><span class="entry-copy"><b>مصر</b><small>قريبًا</small></span><span class="entry-arrow">قيد التجهيز</span></button>'+
-      '<button class="entry-option country-muted" disabled aria-disabled="true"><span class="entry-flag">🇸🇦</span><span class="entry-copy"><b>السعودية</b><small>قريبًا</small></span><span class="entry-arrow">قيد التجهيز</span></button>'+
-      '<button class="entry-option country-muted" disabled aria-disabled="true"><span class="entry-flag">🇦🇪</span><span class="entry-copy"><b>الإمارات</b><small>قريبًا</small></span><span class="entry-arrow">قيد التجهيز</span></button>'+
-    '</div>'+
-    '<div class="entry-note">قطر أولًا — المواد 39 إلى 63 من القانون المدني القطري ضمن برنامج نظرية الحق.</div>'+
-    '<div class="entry-account-links"><a href="student-login.html">دخول الطالب</a><a href="admin-login.html">دخول المدير / المشرف</a></div>'+
-  '</section>';
-  chrome(html);
-  var qa=document.querySelector('[data-country="qa"]');
-  if(qa)qa.onclick=function(){state.countryId="qa";state.view="subjects";render();};
+  chrome('<section class="qualityHero"><div><span class="section-overline">LEXLEARN · برنامج قطر الأولي</span><h1>تعلّم القانون انطلاقًا من قوتك.</h1><p class="qualityLead">نبدأ بأدائك: ماذا تحفظ، وماذا تفهم، وكيف تطبق القاعدة؟ ثم نستخدم المهارة الأقوى لبناء المهارة التي تحتاج إلى تحسين.</p><div class="qualityActions"><a class="btn primary" href="showcase.html?country=qa&subject=rights">جرّب التقييم</a><a class="btn soft-outline" href="student-login.html?country=qa">دخول الطالب</a></div><p class="qualityCaption">نفهم طريقة تعلمك تدريجيًا من محاولاتك؛ التقييم الأولي بداية قابلة للتحديث.</p></div><div class="qualityExample"><span class="section-overline">كيف يتغير التدريب؟</span><h2>فهم قوي · حفظ يحتاج دعمًا</h2><ol><li><b>نفهم الدليل</b><span>تفسر القاعدة جيدًا لكن يصعب تذكر عناصرها.</span></li><li><b>نبني من القوة</b><span>تحوّل المعنى إلى مفاتيح وتعيد بناء القاعدة بنفسك.</span></li><li><b>نقيس من جديد</b><span>تجيب دون النص ثم تطبق على واقعة مختلفة.</span></li></ol><small>مثال توضيحي لطريقة التدريب، وليس نتيجة طالب حقيقية.</small></div></section><section class="qualityJurisdictions"><div><h2>اختر النظام القانوني</h2><p>نظرية الحق في قطر هي البرنامج المتاح. الدول الأخرى قيد التجهيز.</p></div><div class="entry-options country-launch-grid"><button class="entry-option country-live" data-country="qa"><span class="entry-flag">🇶🇦</span><span class="entry-copy"><b>قطر</b><small>نظرية الحق · 6 أسابيع · 30 جلسة</small></span><span class="entry-arrow">عرض البرنامج</span></button><button class="entry-option country-muted" disabled>🇪🇬 مصر · قريبًا</button><button class="entry-option country-muted" disabled>🇸🇦 السعودية · قريبًا</button><button class="entry-option country-muted" disabled>🇦🇪 الإمارات · قريبًا</button></div></section><section class="qualityMethod"><h2>الطالب يؤدي، والتدريب يتكيف، والمشرف يتابع.</h2><p>الحفظ · الفهم · التطبيق على الوقائع · الدقة القانونية · بناء الإجابة الامتحانية. كل محور يحتاج مهمة مناسبة؛ ما لم نختبره لا نعطيه درجة.</p><p>نموذج أولي قابل للتجربة الأكاديمية. إثبات التحسن يحتاج قياسًا قبل التدريب وبعده على أسئلة جديدة ومراجعة أستاذ المادة.</p><a class="btn soft-outline" href="admin-login.html">دخول المشرف</a></section>');
+  document.querySelector('[data-country="qa"]').onclick=function(){state.countryId="qa";state.view="subjects";render();};
 }
+
 function renderSubjects(){
   state.countryId="qa";
-  var html='<section class="subject-hero pilot-subject-hero"><div><span class="section-overline">🇶🇦 قطر • البرنامج الحالي</span><h1>نظرية الحق</h1><p>برنامج قانوني تكيفي لمدة 6 أسابيع و30 جلسة، مبني على المواد 39–63 من القانون المدني القطري وموجه لقياس الحفظ والفهم والتطبيق على الوقائع والدقة القانونية.</p></div><button class="btn soft-outline" id="backCountry">تغيير الدولة</button></section>'+
+  var html='<section class="subject-hero pilot-subject-hero"><div><span class="section-overline">🇶🇦 قطر • البرنامج الحالي</span><h1>نظرية الحق</h1><p>برنامج قانوني تكيفي لمدة 6 أسابيع و30 جلسة، مبني على المواد 39–63 من القانون المدني القطري وموجه لتدريب الحفظ والفهم والتطبيق على الوقائع والدقة القانونية وبناء الإجابة الامتحانية.</p></div><button class="btn soft-outline" id="backCountry">تغيير الدولة</button></section>'+
   '<section class="pilot-course-card">'+
     '<div class="pilot-course-icon">'+icon("rights")+'</div>'+
     '<div class="pilot-course-copy"><span class="section-overline">LAWC 101 • THEORY OF RIGHT</span><h2>ابدأ من التقييم ثم يتحول البرنامج حسب طريقة تعلمك</h2><p>التقييم التشخيصي يحدد نقطة القوة والأولوية، ثم يفتح برنامج الأسابيع الستة. في المستويات الأصعب تدخل الأسئلة المقالية وتحليل أسلوب الإجابة.</p>'+

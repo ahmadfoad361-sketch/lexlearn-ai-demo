@@ -13,7 +13,7 @@ const pages=[
 const assets=[
   "lexlearn-logo.svg",
   "v9-law.css","v9-law-content.js","v9-law.js",
-  "adaptive-engine.js",
+  "adaptive-engine.js","learning-quality.js","quality.css",
   "showcase.css","showcase.js","showcase-en.js",
   "program.css","program.js","program-en.js",
   "portal.css","student-login.js","student-login-en.js","admin-login-v2.js",

@@ -176,6 +176,8 @@ var assessmentEssays={
 6:{mode:"essay",title:"Final Integrated Legal Answer",q:"In 8–10 sentences, analyse a problem involving a person with limited capacity, a legal person, public property, and an exercise of a right that may be abusive. Separate each issue, state the relevant rule, apply it to the decisive fact, and reach a conclusion.",dimension:"exam",keys:["limited capacity","legal person","public property","exercise of a right","rule","application","conclusion"],why:"The final answer measures integrated legal reasoning and answer structure."}
 };
 function assessmentQueue(week){
+ return LEX_QUALITY.assessment(week,"en");
+ /* Legacy pool retained for compatibility. */
  var q=assessmentQueue(week);
  if(assessmentEssays[week])q.push(assessmentEssays[week]);
  return q;
@@ -225,7 +227,7 @@ function save(){
  var model=engineModel();state.course.adaptiveModel=model;state.course.teachingPlan=teachingPlan();
  localStorage.setItem(COURSE_KEY,JSON.stringify(state.course));
  if(window.LEX_CLOUD&&LEX_CLOUD.isConfigured&&LEX_CLOUD.isConfigured()&&STUDENT_SESSION&&STUDENT_SESSION.cloud){
-  LEX_CLOUD.saveSnapshot({courseId:SNAPSHOT_COURSE,snapshotType:"course",state:state.course}).catch(function(){});
+  LEX_CLOUD.saveSnapshot({courseId:SNAPSHOT_COURSE,snapshotType:"course",state:state.course}).then(function(){syncNote(false);}).catch(function(){syncNote(true);});
   LEX_CLOUD.saveLearningPlan({course_id:COURSE_DB_ID,weakest_dimension:model.weakest,strongest_dimension:model.strongest,bridge_mode:model.bridge&&model.bridge.mode||"evidence_bridge",goals_json:[{dimension:model.weakest,teaching_plan:state.course.teachingPlan}],model_json:model}).catch(function(){});
  }
 }
@@ -237,51 +239,28 @@ function bridgeTask(meta){
  return generic.application;
 }
 function buildQueue(){
+ return LEX_QUALITY.queue(state.course.session,"en",weakestDimension());
+ /* Legacy pool retained for compatibility. */
  var meta=sessionMeta(state.course.session),pool=weekTasks[meta.week]||weekTasks[1],lead=pool[Math.min(pool.length-1,meta.day-1)]||pool[0],weak=weakestDimension();
  var adaptive=weak==="recall"?generic.memory:weak==="understanding"?generic.understanding:weak==="application"?generic.application:weak==="exam"?generic.exam:generic.spot;
  var q=[lead,bridgeTask(meta),adaptive,generic.review];
  if(meta.week>=3&&!q.some(function(t){return t.mode==="essay";}))q.push(pool.find(function(t){return t.mode==="essay";})||lead);
  return q.filter(function(t,i,a){return t&&a.indexOf(t)===i;}).slice(0,5);
 }
-function balanceOptions(opts,correct){
- opts=(opts||[]).slice();if(opts.length<2)return opts;
- var lengths=opts.map(function(x){return norm(x).length;}),cl=lengths[correct]||0,other=Math.max.apply(null,lengths.filter(function(_,i){return i!==correct;}));
- if(cl-other<8||cl/Math.max(1,other)<1.25)return opts;
- var tails=[" in this case"," under the stated facts"," for this legal issue"," on these facts"," under the proposed classification"],target=Math.round(cl*.82);
- return opts.map(function(x,i){if(i===correct)return x;var out=x,g=0;while(norm(out).length<target&&g<tails.length){out+=tails[g++];}return out;});
-}
-function ordered(t){
- var opts=balanceOptions(t.opts||[],t.a),ids=opts.map(function(_,i){return i;}),target=(state.course.session+state.task)%ids.length,correct=t.a,rest=ids.filter(function(i){return i!==correct;});rest.splice(target,0,correct);
- return rest.map(function(i){return {orig:i,text:opts[i]};});
-}
-function essayAnalysis(answer,t){
- var n=norm(answer),words=n?n.split(" ").filter(Boolean):[],raw=String(answer||""),sent=raw.split(/[.!?\n]+/).filter(function(x){return x.trim();});
- var keys=t.keys||[],hits=keys.filter(function(k){return n.indexOf(norm(k))>=0;}).length;
- var recall=pct(30+(keys.length?hits/keys.length*60:Math.min(60,words.length*2)));
- var why=["because","therefore","so that","which means","as a result","since"].filter(function(k){return n.indexOf(k)>=0;}).length;
- var understanding=pct(25+why*15+Math.min(35,recall*.35));
- var app=["on these facts","in this case","applies","therefore","accordingly","the decisive fact"].filter(function(k){return n.indexOf(k)>=0;}).length;
- var application=pct(20+app*16+Math.min(25,words.length));
- var legal=["legal personality","capacity","domicile","legal person","patrimony","public property","immovable","fungible","exercise of a right","unlawful"].filter(function(k){return n.indexOf(k)>=0;}).length;
- var precision=pct(25+legal*8);
- var structure=["issue","rule","application","conclusion"].filter(function(k){return n.indexOf(k)>=0;}).length;
- var exam=pct(25+structure*15+Math.min(20,Math.max(0,sent.length-2)*5));
- var axes={recall:recall,understanding:understanding,application:application,legal_precision:precision,exam:exam};
- var overall=Math.round(recall*.18+understanding*.24+application*.28+precision*.12+exam*.18);
- var weakest=Object.keys(axes).sort(function(a,b){return axes[a]-axes[b];})[0];
- var notes={recall:"Retrieval is incomplete. Rebuild the topic rule from short cues before applying it.",understanding:"The response identifies elements but needs a clearer explanation of why they affect the outcome.",application:"The rule is present, but the link to the decisive facts should be more explicit.",legal_precision:"Use more precise legal terminology and identify the element that changes the classification.",exam:"Organise the answer more clearly around issue, rule, application and conclusion."};
- return {overall:overall,axes:axes,weakest:weakest,note:notes[weakest],style:exam>=65?"The answer is reasonably structured.":"The answer needs a clearer legal structure."};
-}
-function addEvidence(dim,score,method){
+function ordered(t){return LEX_QUALITY.shuffleOptions(t);}
+function essayAnalysis(answer,t){return LEX_QUALITY.grade(answer,t,"en");}
+
+function addEvidence(dim,score,method,answer){
  state.course.evidence=state.course.evidence||[];
  state.course.evidence.push({itemId:null,dimension:dim,score:score,difficulty:3,confidence:null,latency_ms:Math.max(0,Date.now()-(state.taskStartedAt||Date.now())),grading_method:method||"english_adaptive",ts:Date.now(),session:state.course.session,week:sessionMeta(state.course.session).week});
  if(state.course.evidence.length>240)state.course.evidence=state.course.evidence.slice(-240);
  if(window.LEX_CLOUD&&LEX_CLOUD.isConfigured&&LEX_CLOUD.isConfigured()&&STUDENT_SESSION&&STUDENT_SESSION.cloud){
-  LEX_CLOUD.recordAttempt({course_id:COURSE_DB_ID,item_id:null,dimension:dim,answer_text:null,score:score,confidence:null,latency_ms:Math.max(0,Date.now()-(state.taskStartedAt||Date.now())),difficulty:3,grading_method:method||"english_adaptive",error_type:score>=.6?null:"skill_gap"}).catch(function(){});
+  LEX_CLOUD.recordAttempt({course_id:COURSE_DB_ID,item_id:null,dimension:dim,answer_text:answer||null,score:score,confidence:null,latency_ms:Math.max(0,Date.now()-(state.taskStartedAt||Date.now())),difficulty:3,grading_method:method||"english_adaptive",error_type:score>=.6?null:"skill_gap"}).catch(function(){});
  }
 }
+function syncNote(error){var el=document.getElementById("qualitySync");if(el)el.textContent=error?"Progress is saved locally; central saving could not be confirmed. Retry when connected.":"Central saving for the instructor is confirmed.";}
 function chrome(inner){
- APP.innerHTML='<div class="courseShell"><header class="courseTop"><div class="courseTopIn"><div class="brand"><div class="mark"><img src="assets/lexlearn-logo.svg" alt="LexLearn"></div><div><b>LexLearn</b><small>Qatar • Theory of Rights • We understand your mind and build your path.</small></div></div><div class="topActions"><a class="topBtn" href="student-en.html">Student Portal</a><a class="topBtn" href="program.html?country=qa&subject=rights">العربية</a></div></div></header><main class="courseWrap">'+inner+'</main></div>';
+ APP.innerHTML='<div class="courseShell"><header class="courseTop"><div class="courseTopIn"><div class="brand"><div class="mark"><img src="assets/lexlearn-logo.svg" alt="LexLearn"></div><div><b>Lex<span class="brandLearn">Learn</span></b><small>Qatar • Theory of Rights • We understand your mind and build your path.</small></div></div><div class="topActions"><a class="topBtn" href="student-en.html">Student Portal</a><a class="topBtn" href="program.html?country=qa&subject=rights'+(DEMO?'&demo=1':'')+'">العربية</a></div></div></header><main class="courseWrap">'+inner+(STUDENT_SESSION&&STUDENT_SESSION.cloud?'<p id="qualitySync" role="status">Local progress is saved; central saving is confirmed after sync.</p>':'')+'</main></div>';
 }
 function metricCard(label,v){var n=v==null?"—":Math.round(v)+"%",word=v==null?"Not measured":v>=80?"Strong":v>=60?"Developing well":v>=40?"Needs focus":"Priority";return '<div class="snapshotCard"><div class="snapshotRing" style="--p:'+(v==null?0:v)+'"><b>'+n+'</b></div><strong>'+label+'</strong><small>'+word+'</small></div>';}
 function roadmap(current){
@@ -297,7 +276,7 @@ function home(){
  }
  var meta=sessionMeta(state.course.session),m=currentMetrics();
  chrome('<section class="simpleStudentHero"><div><span class="kicker">Today’s session</span><h1>'+esc(meta.title)+'</h1><p>'+esc(meta.detail)+'</p><div class="simpleMeta"><span>Week '+meta.week+' of 6</span><span>Session '+state.course.session+' of 30</span><span>≈ 20 minutes</span></div></div><button class="primary bigStudentCta" id="startSession">'+(meta.kind==="assessment"?"Start weekly assessment":"Start session")+'</button></section>'+
- '<div class="simpleSectionTitle"><div><h2>Your level at a glance</h2><p>Three signals are enough for now.</p></div></div><section class="studentSnapshot">'+metricCard("Recall",m.recall)+metricCard("Understanding",m.understanding)+metricCard("Application",m.application)+'</section>'+
+ '<div class="simpleSectionTitle"><div><h2>Your level at a glance</h2><p>Five skills; untested skills stay unscored. These provisional indicators update with new attempts.</p></div></div><section class="studentSnapshot">'+metricCard("Recall",m.recall)+metricCard("Understanding",m.understanding)+metricCard("Application",m.application)+metricCard("Legal precision",m.legal_precision)+metricCard("Exam answer structure",m.exam)+'</section>'+
  '<section class="studentTip"><div><b>Adaptive teaching plan</b><p>'+esc(teachingPlan().method)+'</p></div></section>'+roadmap(meta.week));
  document.getElementById("startSession").onclick=function(){state.task=0;state.answers=[];state.assessmentAnswers=[];state.queue=meta.kind==="assessment"?assessmentQueue(meta.week):buildQueue();state.view=meta.kind==="assessment"?"assessment":"train";render();};
  document.querySelectorAll("[data-week]").forEach(function(b){b.onclick=function(){var w=Number(b.dataset.week);if(w>meta.week){state.course.session=(w-1)*5+1;save();}state.task=0;state.queue=buildQueue();state.view="train";render();};});
@@ -306,7 +285,7 @@ function renderTask(t,assessment){
  state.taskStartedAt=Date.now();
  if(t.mode==="essay"){
   chrome('<section class="stage"><div class="taskCard"><span class="kicker">'+(assessment?"Assessment":"Adaptive task")+'</span><h2>'+esc(t.title)+'</h2><p>'+esc(t.q)+'</p><textarea class="textarea essayAssessmentInput" id="essayAnswer" placeholder="Write your answer in your own words..."></textarea><div class="choiceRow"><button class="primary" id="submitEssay">Analyse my answer</button></div><div id="feed"></div></div></section>');
-  document.getElementById("submitEssay").onclick=function(){var a=document.getElementById("essayAnswer").value.trim();if(a.split(/\s+/).filter(Boolean).length<15){document.getElementById("feed").innerHTML='<div class="notice">Write a little more so LexLearn can analyse your reasoning, not just the conclusion.</div>';return;}var p=essayAnalysis(a,t),score=p.overall/100;addEvidence(t.dimension||"exam",score,"english_essay_profile");state.answers.push({dimension:t.dimension,score:score,correct:p.overall>=60});document.getElementById("feed").innerHTML='<div class="essayAnalysis"><div><span>Recall</span><b>'+p.axes.recall+'%</b></div><div><span>Understanding</span><b>'+p.axes.understanding+'%</b></div><div><span>Application</span><b>'+p.axes.application+'%</b></div><div><span>Structure</span><b>'+p.axes.exam+'%</b></div><p>'+esc(p.style)+' '+esc(p.note)+'</p></div><div class="choiceRow"><button class="primary" id="nextEssay">'+(state.task<state.queue.length-1?"Next":"Finish session")+'</button></div>';document.getElementById("essayAnswer").disabled=true;document.getElementById("submitEssay").disabled=true;document.getElementById("nextEssay").onclick=nextTask;};return;
+  document.getElementById("submitEssay").onclick=function(){var a=document.getElementById("essayAnswer").value.trim();if(!a){document.getElementById("feed").innerHTML='<div class="notice">Write a little more so LexLearn can analyse your reasoning, not just the conclusion.</div>';return;}var p=essayAnalysis(a,t),score=p.overall/100;Object.keys(p.axes).filter(function(k){return p.axes[k]!=null;}).forEach(function(k){addEvidence(k,p.axes[k]/100,"prompt_rubric_v2",a);});state.course.lastEssayProfile={session:state.course.session,week:sessionMeta(state.course.session).week,overall:p.overall,axes:p.axes,style:p.style,note:p.note,checks:p.checks,answer:a,provisional:true,ts:Date.now()};state.answers.push({dimension:t.dimension,score:score,correct:p.overall>=60});document.getElementById("feed").innerHTML=LEX_QUALITY.feedback(p,"en",esc)+'<div class="choiceRow"><button class="primary" id="nextEssay">'+(state.task<state.queue.length-1?"Next":"Finish session")+'</button></div>';document.getElementById("essayAnswer").disabled=true;document.getElementById("submitEssay").disabled=true;document.getElementById("nextEssay").onclick=nextTask;};return;
  }
  var ord=ordered(t);
  chrome('<section class="stage"><div class="progress"><i style="width:'+((state.task+1)/state.queue.length*100)+'%"></i></div><div class="taskCard"><span class="kicker">'+(assessment?"Assessment":"Session "+state.course.session)+'</span><h2>'+esc(t.title||"Legal question")+'</h2>'+(t.text?'<div class="legalBox"><small>Legal text — educational English rendering</small><div>'+esc(t.text)+'</div></div>':'')+'<p>'+esc(t.q)+'</p><div class="options">'+ord.map(function(o){return '<button class="option" data-o="'+o.orig+'">'+esc(o.text)+'</button>';}).join("")+'</div><div id="feed"></div></div></section>');
@@ -354,7 +333,7 @@ async function boot(){
    state.diag=diagnostic();
   }catch(e){}
  }
- if(AUTO_START&&state.diag&&!state.course.completedProgram){var meta=sessionMeta(state.course.session);state.task=0;state.answers=[];state.queue=meta.kind==="assessment"?(assessmentBanks[meta.week]||[]).slice():buildQueue();state.view=meta.kind==="assessment"?"assessment":"train";}
+ if(AUTO_START&&state.diag&&!state.course.completedProgram){var meta=sessionMeta(state.course.session);state.task=0;state.answers=[];state.queue=meta.kind==="assessment"?assessmentQueue(meta.week):buildQueue();state.view=meta.kind==="assessment"?"assessment":"train";}
  render();
 }
 boot();

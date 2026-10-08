@@ -39,7 +39,10 @@ jobs:
           test -f supabase/migrations/20261006_002_hardening_and_qatar_curriculum.sql
           test -f supabase/functions/grade-answer/index.ts
       - name: Adaptive engine tests
-        run: node tests/adaptive-engine.test.js
+        run: |
+          node tests/adaptive-engine.test.js
+          node tests/learning-quality.test.js
+          node tests/program-flow.test.js
       - name: Production boundary tests
         run: node tests/production-boundaries.test.js
 

@@ -1,31 +1,15 @@
-# LexLearn AI Demo
+# LexLearn
 
-**LexLearn AI** is a founder-led prototype for adaptive legal education.
+Working bilingual prototype for adaptive legal learning in Qatar's Theory of Rights (Civil Code Articles 39–63).
 
-This public demo shows one core learning loop:
+The student completes an initial diagnostic, performs topic-specific tasks, and receives a changing training order based on measured evidence. The program has 24 teaching sessions and six weekly assessments, with sequential unlocking and a final completion screen. Authenticated student attempts, snapshots and learning plans use the existing central Supabase backend and faculty access policies.
 
-1. A law student answers a short legal fact pattern.
-2. The system evaluates the answer across issue spotting, rule identification, application and conclusion.
-3. It identifies the weakest skill.
-4. It assigns a different next exercise targeted to that weakness.
-5. A lightweight dashboard visualizes the learner profile.
+The five displayed skills are recall, understanding, application to facts, legal precision and exam answer structure. Untested skills remain unscored. Essay element checks are provisional, prompt-specific lexical checks with visible evidence, not certified semantic judgments. Structured essay checks measure organisation separately from legal correctness. Instructor review and a controlled baseline/follow-up study are required to validate learning impact.
 
-## Current status
+The approved logo is preserved unchanged. Content and rubrics for the active program share one bilingual source in `assets/learning-quality.js`.
 
-- Stage: working front-end prototype / pre-MVP
-- Language: Arabic
-- Demo module: Civil Law / tort-style legal reasoning
-- AI connection: **not connected yet**. The current evaluation engine is a local simulation used to validate UX and product logic before integrating a secure server-side LLM.
+Validation: `node tests/adaptive-engine.test.js`, `node tests/production-boundaries.test.js`, `node tests/learning-quality.test.js`, `node tests/program-flow.test.js`, `node scripts/build-public.js`.
 
-## Product direction
+Founder: Dr. Ahmed Feky.
 
-The production version is intended to use a secure backend with an LLM-based reasoning engine, institution-approved legal sources, explainable feedback, faculty oversight and privacy controls.
-
-## Founder
-
-**Dr Ahmad Foad El-Feky**  
-PhD in Law / Civil Law. Participant in local and international legal events concerning law and artificial intelligence.
-
-## Live demo
-
-https://ahmadfoad361-sketch.github.io/lexlearn-ai-demo/
+Live: https://ahmadfoad361-sketch.github.io/lexlearn-ai-demo/

@@ -70,8 +70,9 @@ function adminAdvice(v){
  if(topErr)watch+="، وهل يقل تكرار خطأ «"+topErr.label+"»";
  watch+=". إذا لم يظهر تحسن، استخدم «جلسة تثبيت» قبل فتح مستوى أصعب.";
  var systemAdvice=livePlan&&livePlan.method?livePlan.method:(adviceMap[weak]||modelText(v));
- if(essay&&essay.note)summary+=" آخر إجابة مقالية: "+essay.note;
+ if(essay&&essay.note)summary+=" آخر فحص مقالي أولي (راجع الإجابة قبل اعتماد النتيجة): "+essay.note;
  if(livePlan&&livePlan.tasks&&livePlan.tasks.length)watch+=" المهام التي سيطبقها النظام تلقائيًا: "+livePlan.tasks.join("، ")+".";
+ if(essay&&essay.checks)systemAdvice+=" العناصر التي تحتاج مراجعة: "+essay.checks.filter(function(c){return !c.matched;}).map(function(c){return c.label;}).join("، ")+". النتائج اللفظية مؤشرات أولية وليست تصحيحًا دلاليًا معتمدًا.";
  return {summary:summary,advice:systemAdvice,watch:watch,plan:livePlan,essay:essay};
 }
 function shell(body){
@@ -101,6 +102,7 @@ function detail(v){
  '<div class="recommend" style="margin-top:10px"><b>ما الذي نراقبه بعد ذلك؟</b><span>'+esc(advice.watch)+'</span></div>'+
  (advice.plan?'<div class="recommend appliedPlan" style="margin-top:10px"><b>ما يطبقه LexLearn فعليًا في الجلسات التالية</b><span>'+esc(advice.plan.method)+'<br><small>'+esc((advice.plan.tasks||[]).join(" • "))+'</small></span></div>':'')+
  (advice.essay?'<div class="recommend" style="margin-top:10px"><b>تحليل آخر إجابة مقالية</b><span>'+esc(advice.essay.style||"—")+' — '+esc(advice.essay.note||"")+'</span></div>':'')+
+ (advice.essay&&advice.essay.answer?'<details class="recommend"><summary>إجابة الطالب وأدلة المعيار</summary><p style="white-space:pre-wrap">'+esc(advice.essay.answer)+'</p><ul>'+(advice.essay.checks||[]).map(function(c){return '<li>'+esc(c.label)+' — '+(c.matched?'ظهر مؤشر: '+esc(c.evidence):'يحتاج مراجعة')+'</li>';}).join('')+'</ul><small>فحص أولي؛ اعتماد صحة الإجابة للمشرف.</small></details>':'')+
  '</section>'+
  '<section class="twoCols"><div class="panel"><h3>التقدم</h3><div class="progressWrap"><div class="progressLine"><i style="width:'+Math.round(v.completed/30*100)+'%"></i></div><b>'+v.completed+'/30</b></div><p>الجلسة الحالية: '+v.session+' • '+(v.course.completedProgram?"البرنامج مكتمل":"البرنامج مستمر")+'</p><div class="recommend"><b>التدخل المقترح</b><span>'+esc(modelText(v))+'</span></div></div>'+
  '<div class="panel"><h3>إجراءات الإدارة</h3><div class="adminActions"><button data-reset="'+s.id+'">'+ico("key")+' كلمة مرور مؤقتة</button><button data-toggle="'+s.id+'" data-active="'+(s.active!==false)+'">'+ico("users")+' '+(s.active===false?"تفعيل":"تعطيل")+'</button><button data-unlock="'+s.id+'">فتح الأسبوع التالي</button><button data-repair="'+s.id+'">جلسة تثبيت</button></div></div></section>'+

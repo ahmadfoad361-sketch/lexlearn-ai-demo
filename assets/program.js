@@ -470,6 +470,7 @@ var qatarAssessmentBanks={
 };
 
 function assessmentBankForWeek(week){
+  if(COUNTRY==="qa"&&window.LEX_QUALITY)return LEX_QUALITY.assessment(week,"ar");
   var base=COUNTRY==="qa"?(qatarAssessmentBanks[week]||qatarAssessmentBanks[6]):assessmentBank;
   var essay=COUNTRY==="qa"?assessmentEssayBank[week]:null;
   return essay?base.concat([essay]):base.slice();
@@ -565,7 +566,7 @@ function save(){
     }
   }
   if(window.LEX_CLOUD&&LEX_CLOUD.isConfigured&&LEX_CLOUD.isConfigured()&&STUDENT_SESSION&&STUDENT_SESSION.cloud){
-    LEX_CLOUD.saveSnapshot({courseId:COUNTRY+"-"+SUBJECT,snapshotType:"course",state:state.course}).catch(function(){});
+    LEX_CLOUD.saveSnapshot({courseId:COUNTRY+"-"+SUBJECT,snapshotType:"course",state:state.course}).then(function(){syncNote(false);}).catch(function(){syncNote(true);});
   }
 }
 function sessionMeta(n){var idx=Math.max(1,Math.min(30,n))-1;var w=Math.floor(idx/5),d=idx%5;var x=curriculum[w].sessions[d];return {week:w+1,day:d+1,title:x[0],detail:x[1],kind:x[2],weekTitle:curriculum[w].title};}
@@ -662,6 +663,7 @@ function contextualizeTask(t,meta){
   return t;
 }
 function buildTrainingQueue(){
+  if(COUNTRY==="qa"&&window.LEX_QUALITY)return LEX_QUALITY.queue(state.course.session,"ar",weakestDimension());
   var dim=weakestDimension(),err=strongestErrorSkill(),bridge=learningBridge(),meta=sessionMeta(state.course.session);
   var model=recomputeAdaptiveModel()||state.course.adaptiveModel||{},teaching=adaptiveTeachingPlan(model);
   state.course.teachingPlan=teaching;
@@ -732,11 +734,12 @@ function buildTrainingQueue(){
   finalQ=finalQ.map(function(t){return contextualizeTask(t,meta);});
   return finalQ;
 }
+function syncNote(error){var el=document.getElementById("qualitySync");if(el)el.textContent=error?"التقدم محفوظ محليًا؛ تعذر تأكيد الحفظ المركزي. أعد المحاولة عند الاتصال.":"تم تأكيد الحفظ المركزي للمشرف.";}
 function chrome(inner){
   APP.innerHTML='<div class="courseShell"><header class="courseTop"><div class="courseTopIn">'+
-    '<div class="brand"><div class="mark"><img src="assets/lexlearn-logo.svg" alt="LexLearn"></div><div><b>LexLearn</b><small>'+countryLabel()+' • نظرية الحق • نفهم طريقة تفكيرك، ونبني طريقك.</small></div></div>'+
-    '<div class="topActions"><a class="topBtn" href="program-en.html">English</a><a class="topBtn" href="showcase.html?country='+COUNTRY+'">الديمو التشخيصي</a><a class="topBtn" href="index.html">الرئيسية</a></div>'+
-  '</div></header><main class="courseWrap">'+inner+'</main></div>';
+    '<div class="brand"><div class="mark"><img src="assets/lexlearn-logo.svg" alt="LexLearn"></div><div><b>Lex<span class="brandLearn">Learn</span></b><small>'+countryLabel()+' • نظرية الحق • نفهم طريقة تفكيرك، ونبني طريقك.</small></div></div>'+
+    '<div class="topActions"><a class="topBtn" href="program-en.html?country=qa&subject=rights'+(DEMO?'&demo=1':'')+'">English</a><a class="topBtn" href="showcase.html?country='+COUNTRY+'">الديمو التشخيصي</a><a class="topBtn" href="index.html">الرئيسية</a></div>'+
+  '</div></header><main class="courseWrap">'+inner+(STUDENT_SESSION&&STUDENT_SESSION.cloud?'<p id="qualitySync" role="status">التقدم المحلي محفوظ؛ الحفظ المركزي يُؤكد بعد إتمام المزامنة.</p>':'')+'</main></div>';
 }
 function render(){
   if(state.view==="home")return home();
@@ -763,7 +766,9 @@ function studentSnapshot(metrics){
   var items=[
     ["brain","الحفظ",metrics.recall],
     ["bulb","الفهم",metrics.understanding],
-    ["scale","التطبيق على الوقائع",metrics.application]
+    ["scale","التطبيق على الوقائع",metrics.application],
+    ["scale","الدقة القانونية",metrics.legal_precision],
+    ["bulb","بناء الإجابة الامتحانية",metrics.exam]
   ];
   return '<section class="studentSnapshot">'+items.map(function(x){
     var v=x[2],known=v!=null,num=known?Math.round(v):0;
@@ -790,9 +795,9 @@ function home(){
       '<h1>'+esc(m.title)+'</h1><p>'+esc(m.detail)+'</p>'+
       '<div class="simpleMeta"><span>الأسبوع '+m.week+' من 6</span><span>الجلسة '+state.course.session+' من 30</span><span>≈ 20 دقيقة</span></div></div>'+
       '<button class="primary bigStudentCta" id="startSession">'+(m.kind==="assessment"?"ابدأ تقييم الأسبوع":"ابدأ الجلسة")+'</button></section>'+
-    '<div class="simpleSectionTitle"><div><h2>مستواك بسرعة</h2><p>ثلاث إشارات فقط تكفيك الآن.</p></div></div>'+
+    '<div class="simpleSectionTitle"><div><h2>مستواك بسرعة</h2><p>خمس مهارات؛ يظهر تقدير فقط لما اختبرته. النسب مؤشرات أداء أولية تتغير مع المحاولات.</p></div></div>'+
     studentSnapshot(metrics)+
-    '<section class="studentTip"><span>✨</span><div><b>نصيحة اليوم</b><p>'+esc(shortStudentTip(metrics))+'</p></div></section>'+
+    '<section class="studentTip"><span>✨</span><div><b>لماذا هذا التدريب؟</b><p>نبدأ من الأداء الذي ظهر في محاولاتك؛ ترتيب المهام يتغير مع المهارة التي تحتاج اهتمامًا. '+esc(shortStudentTip(metrics))+'</p></div></section>'+
     weekBar(m.week)
   );
   document.getElementById("startSession").onclick=function(){
@@ -902,93 +907,15 @@ function groupCoverage(n,groups){
   var hits=groups.filter(function(g){return (g||[]).some(function(k){return n.indexOf(normText(k))>=0;});}).length;
   return Math.round(hits/groups.length*100);
 }
-function essayAnalysis(answer,t){
-  var n=normText(answer),words=n?n.split(" ").filter(Boolean):[],raw=String(answer||"");
-  var sentences=raw.split(/[.!؟?\n]+/).map(function(x){return x.trim();}).filter(Boolean);
-  var keys=t.essayKeys||{},recallGroups=keys.recall||[];
-  var precisionGroups=keys.legal_precision||[];
-  var recall=groupCoverage(n,recallGroups);
-  if(recall==null)recall=Math.min(100,35+words.length*2);
-  var why=["لان","لأن","بسبب","حيث","ذلك ان","ذلك أن","لذلك","ومن ثم","مما يعني","ولهذا"];
-  var whyHits=why.filter(function(k){return n.indexOf(normText(k))>=0;}).length;
-  var understanding=pct(25+Math.min(45,whyHits*18)+Math.min(30,groupCoverage(n,recallGroups)||0)*.3);
-  var appMarkers=["بما ان","بما أن","في الواقعه","في الواقعة","على الواقعه","على الواقعة","وبتطبيق","تطبيقا","ينطبق","يترتب"];
-  var appHits=appMarkers.filter(function(k){return n.indexOf(normText(k))>=0;}).length;
-  var factTerms=["محظور","ضرر","اخلال","إخلال","وعد","جائزه","جائزة","اثرى","أثرى","دفع","حراسه","حراسة"];
-  var factHits=factTerms.filter(function(k){return n.indexOf(normText(k))>=0;}).length;
-  var application=pct(20+Math.min(45,appHits*18)+Math.min(35,factHits*9));
-  var legalPrecision=groupCoverage(n,precisionGroups);
-  if(legalPrecision==null){
-    var legalTerms=["عقد","التزام","مصدر","قاعد","شرط","عنصر","تكييف","مسؤوليه","مسؤولية","محل","سبب"];
-    var legalHits=legalTerms.filter(function(k){return n.indexOf(normText(k))>=0;}).length;
-    legalPrecision=pct(25+legalHits*9);
-  }
-  var structure=["المساله","المسألة","القاعده","القاعدة","التطبيق","النتيجه","النتيجة"];
-  var structureHits=structure.filter(function(k){return n.indexOf(normText(k))>=0;}).length;
-  var organization=pct(20+Math.min(45,structureHits*14)+Math.min(35,Math.max(0,sentences.length-2)*7));
-  var avgSentence=sentences.length?words.length/sentences.length:words.length;
-  var clarity=pct(avgSentence<=28?75+(words.length>=25?15:0):Math.max(35,85-(avgSentence-28)*2));
-  var exam=pct(organization*.7+clarity*.3);
-  var axes={recall:pct(recall),understanding:understanding,application:application,legal_precision:pct(legalPrecision),exam:exam};
-  var weights={recall:.18,understanding:.24,application:.28,legal_precision:.12,exam:.18};
-  if(t.dimension&&weights[t.dimension]!=null)weights[t.dimension]+=.12;
-  var totalWeight=Object.keys(weights).reduce(function(s,k){return s+weights[k];},0);
-  var overall=Math.round(Object.keys(weights).reduce(function(s,k){return s+axes[k]*weights[k];},0)/totalWeight);
-  var weakest=Object.keys(axes).sort(function(a,b){return axes[a]-axes[b];})[0];
-  var style=organization<55?"الإجابة تحتاج ترتيبًا أوضح بين المسألة والقاعدة والتطبيق والنتيجة":clarity<55?"الجمل طويلة أو غير مفصولة بما يكفي":"أسلوب الإجابة منظم وواضح نسبيًا";
-  var noteMap={
-    recall:"الحفظ القانوني غير ثابت بما يكفي؛ أعد بناء القاعدة الخاصة بموضوع الجلسة من مفاتيح قصيرة قبل التطبيق على الوقائع.",
-    understanding:"الإجابة تذكر عناصر أكثر مما تشرح لماذا تؤثر في الحكم.",
-    application:"القاعدة موجودة لكن الربط بالواقعة يحتاج أن يكون أوضح.",
-    legal_precision:"استخدم مصطلحات قانونية أدق وحدد العنصر الذي يغيّر التكييف.",
-    exam:"رتّب الإجابة في خطوات واضحة بدل الوصول السريع إلى النتيجة."
-  };
-  return {overall:overall,axes:axes,weakest:weakest,style:style,note:noteMap[weakest],words:words.length,sentences:sentences.length,organization:organization,clarity:clarity};
-}
-function essayMini(profile){
-  if(!profile||!profile.axes)return "";
-  var a=profile.axes;
-  return '<div class="essayAnalysis"><div><span>الحفظ</span><b>'+a.recall+'%</b></div><div><span>الفهم</span><b>'+a.understanding+'%</b></div><div><span>التطبيق على الوقائع</span><b>'+a.application+'%</b></div><div><span>تنظيم الإجابة</span><b>'+a.exam+'%</b></div><p>'+esc(profile.style)+' — '+esc(profile.note)+'</p></div>';
-}
+function essayAnalysis(answer,t){return LEX_QUALITY.grade(answer,t,"ar");}
+
+function essayMini(profile){return LEX_QUALITY.feedback(profile,"ar",esc);}
+
 function taskStatusBox(correct,label){
   return '<div class="answerStatus '+(correct?"correct":"wrong")+'"><span class="answerStatusIcon">'+ico(correct?"check":"repeat")+'</span><div><b>'+(correct?"إجابتك صحيحة":"إجابتك تحتاج تعديل")+'</b><small>'+esc(label||"راجع السبب ثم انتقل للمهمة التالية.")+'</small></div></div>';
 }
-function balanceOptionTexts(opts,correct){
-  opts=(opts||[]).map(function(x){return String(x);});
-  if(opts.length<2||correct==null)return opts;
-  var lens=opts.map(function(x){return normText(x).length;});
-  var correctLen=lens[correct]||0;
-  var otherMax=Math.max.apply(null,lens.filter(function(_,i){return i!==correct;}));
-  if(correctLen-otherMax<8||correctLen/Math.max(1,otherMax)<1.25)return opts;
-  var target=Math.round(correctLen*.82);
-  var fillers=["، قانونًا","، وفق السؤال","، في الحالة","، بحسب الوقائع","، في هذه المسألة","، في الواقعة المعروضة","، في التكييف المطروح","، وفق التكييف القانوني للحالة","، مع مراعاة الوقائع المذكورة"];
-  return opts.map(function(x,i){
-    if(i===correct)return x;
-    var out=x,used={},guard=0;
-    while(normText(out).length<target&&guard<8){
-      var gap=target-normText(out).length,best=-1,bestScore=9999;
-      fillers.forEach(function(s,j){
-        if(used[j])return;
-        var len=normText(s).length;
-        var score=Math.abs(gap-len)+(len>gap+2?3:0);
-        if(score<bestScore){bestScore=score;best=j;}
-      });
-      if(best<0)break;
-      out+=fillers[best];used[best]=true;guard++;
-    }
-    return out;
-  });
-}
-function orderedOptions(t,salt){
-  var opts=balanceOptionTexts(t.opts||[],t.a),n=opts.length;
-  if(!n)return [];
-  var correct=t.a;
-  var target=(Number(state.course.session||1)+Number(state.task||0)+Number(salt||0))%n;
-  var order=[];
-  for(var i=0;i<n;i++){if(i!==correct)order.push(i);}
-  order.splice(target,0,correct);
-  return order.map(function(orig){return {orig:orig,text:opts[orig]};});
-}
+function orderedOptions(t,salt){return LEX_QUALITY.shuffleOptions(t);}
+
 function train(){
   var q=state.queue.length?state.queue:buildTrainingQueue(),t=q[state.task%q.length],meta=sessionMeta(state.course.session);
   state.taskStartedAt=Date.now();
@@ -1007,19 +934,19 @@ function train(){
       var essay=t.essayProfile?essayAnalysis(answer,t):null;
       var r=essay?{score:essay.overall,pass:essay.overall>=60}:freeRubric(answer,t),semantic=null,merged=null,itemId=taskItemId(t);
       document.getElementById("freeAnswer").disabled=true;document.getElementById("checkFree").disabled=true;
-      document.getElementById("feed").innerHTML='<div class="notice">يتم تحليل الإجابة وفق عناصر المعيار'+(t.essayProfile?"، مع فصل الحفظ والفهم والتطبيق على الوقائع وتنظيم الكتابة":"")+(itemId&&window.LEX_CLOUD&&LEX_CLOUD.isConfigured&&LEX_CLOUD.isConfigured()?" والمصدر القانوني المعتمد…":"…")+'</div>';
+      document.getElementById("feed").innerHTML='<div class="notice">يتم تحليل الإجابة وفق عناصر المعيار'+(t.essayProfile?" الخاصة بالسؤال؛ المحاور الأخرى لا تُخصم":"")+(itemId&&window.LEX_CLOUD&&LEX_CLOUD.isConfigured&&LEX_CLOUD.isConfigured()?" والمصدر القانوني المعتمد…":"…")+'</div>';
       if(itemId&&window.LEX_CLOUD&&LEX_CLOUD.isConfigured&&LEX_CLOUD.isConfigured()&&STUDENT_SESSION&&STUDENT_SESSION.cloud){
         try{semantic=await LEX_CLOUD.gradeAnswer({course_id:COURSE_DB_ID,item_id:itemId,answer:answer,language:"ar"});}catch(e){semantic=null;}
       }
       if(window.LEX_ENGINE&&semantic)merged=LEX_ENGINE.mergeSemanticGrade({score:r.score/100,matchedConcepts:[]},semantic);
       var finalScore=merged&&merged.score!=null?Math.round(merged.score*100):r.score;
       var pass=finalScore>=60;
-      var method=merged&&!merged.needsHumanReview?"grounded_semantic":(t.essayProfile?"essay_profile_v1":"concept_rubric_v2");
+      var method=merged&&!merged.needsHumanReview?"grounded_semantic":(t.essayProfile?"prompt_rubric_v2":"concept_rubric_v2");
       var semanticNote=merged&&!merged.needsHumanReview?
         '<div class="goodbox"><b>تحليل دلالي موثّق</b><div>'+esc(merged.feedback||"تم تقييم المعنى باستخدام المعيار والمصادر المعتمدة فقط.")+'</div><small>الثقة: '+Math.round((merged.confidence||0)*100)+'%</small></div>':
         (itemId&&semantic&&semantic.needs_human_review?'<div class="notice">التحليل الدلالي لم يصل لثقة كافية؛ استخدم النظام التحليل البنائي ولم يخمّن.</div>':'');
       document.getElementById("feed").innerHTML=
-        taskStatusBox(pass,pass?"حققّت العناصر المطلوبة في هذه المحاولة.":"هناك عنصر أو أكثر يحتاج إلى استكمال.")+
+        taskStatusBox(pass,pass?"ظهرت مؤشرات العناصر المطلوبة في هذه المحاولة.":"راجع العناصر التي لم نتحقق منها أدناه.")+
         (essay?essayMini(essay):'<div class="rubricMini"><b>التحليل البنائي</b><span>'+finalScore+'%</span><small>'+(method==="grounded_semantic"?"تقييم دلالي مقيّد بالمصادر المعتمدة.":"Rubric بنائي احتياطي حتى تتوافر مراجعة دلالية موثوقة.")+'</small></div>')+
         semanticNote+
         (t.model?'<div class="modelAnswer"><b>نموذج للمقارنة</b><p>'+esc(t.model)+'</p></div>':'')+
@@ -1043,6 +970,7 @@ function train(){
   }
 }
 function taskItemId(t){
+  if(t.qualityRubric||t.topicSession)return null;
   if(!t||COUNTRY!=="qa")return null;
   return t.itemId||null;
 }
@@ -1070,9 +998,9 @@ function completeTask(t,correct,q,extra){
   state.answers.push({skill:t.skill,dimension:dim,score:score,correct:correct,bridge:(state.course.adaptiveModel&&state.course.adaptiveModel.bridge&&state.course.adaptiveModel.bridge.mode)||learningBridge().type,extra:extra});
   state.course.evidence=state.course.evidence||[];
   if(extra.essayProfile&&extra.essayProfile.axes){
-    state.course.lastEssayProfile={session:state.course.session,week:sessionMeta(state.course.session).week,overall:extra.essayProfile.overall,axes:extra.essayProfile.axes,style:extra.essayProfile.style,note:extra.essayProfile.note,ts:Date.now()};
-    Object.keys(extra.essayProfile.axes).forEach(function(k){
-      state.course.evidence.push({itemId:taskItemId(t),dimension:k,score:Number(extra.essayProfile.axes[k])/100,difficulty:taskDifficulty(t),confidence:null,latency_ms:Math.max(0,Date.now()-(state.taskStartedAt||Date.now())),grading_method:"essay_profile_v1",ts:Date.now(),session:state.course.session,week:sessionMeta(state.course.session).week});
+    state.course.lastEssayProfile={session:state.course.session,week:sessionMeta(state.course.session).week,overall:extra.essayProfile.overall,axes:extra.essayProfile.axes,style:extra.essayProfile.style,note:extra.essayProfile.note,checks:extra.essayProfile.checks,answer:extra.answer,provisional:true,ts:Date.now()};
+    Object.keys(extra.essayProfile.axes).filter(function(k){return extra.essayProfile.axes[k]!=null;}).forEach(function(k){
+      state.course.evidence.push({itemId:taskItemId(t),dimension:k,score:Number(extra.essayProfile.axes[k])/100,difficulty:taskDifficulty(t),confidence:null,latency_ms:Math.max(0,Date.now()-(state.taskStartedAt||Date.now())),grading_method:"prompt_rubric_v2",ts:Date.now(),session:state.course.session,week:sessionMeta(state.course.session).week});
     });
   }else{
     state.course.evidence.push({itemId:taskItemId(t),dimension:dim,score:score,difficulty:taskDifficulty(t),confidence:extra.confidence||null,latency_ms:Math.max(0,Date.now()-(state.taskStartedAt||Date.now())),grading_method:extra.gradingMethod||"adaptive_local",ts:Date.now(),session:state.course.session,week:sessionMeta(state.course.session).week});
@@ -1094,6 +1022,7 @@ function addError(skill,label){
 }
 function pushUnique(arr,val){if(arr.indexOf(val)===-1)arr.push(val);}
 function buildRepairQueue(){
+  if(COUNTRY==="qa"&&window.LEX_QUALITY)return LEX_QUALITY.queue(state.course.session,"ar",weakestDimension());
   var meta=sessionMeta(state.course.session),w=state.course.repairWeek||meta.week,pool=(weekTasks[w]||weekTasks[1]).slice(),weak=weakestDimension();
   var targeted=weak==="application"?taskBank.apply:weak==="understanding"?taskBank.understanding:weak==="recall"?taskBank.recall:weak==="retention"?taskBank.retention:taskBank.exam;
   return [targeted,pool[0],pool[1],learningBridge().primary,pool[2]].filter(Boolean).map(function(t){return contextualizeTask(t,meta);});
@@ -1112,7 +1041,7 @@ function sessionResult(){
   var next=sessionMeta(state.course.session),nextLabel=next.kind==="assessment"?"ابدأ تقييم نهاية المرحلة":"ابدأ الجلسة التالية";
   chrome('<section class="stage"><div class="taskCard"><span class="kicker">جلسة مكتملة</span><h2>خلصت جلسة اليوم</h2>'+
     '<div class="resultGrid"><div class="metric"><span>أداء الجلسة</span><b>'+sessionDesc+'</b><small>'+p+'% من مهام الجلسة</small></div><div class="metric"><span>عدد المهام</span><b>'+total+'</b></div><div class="metric"><span>الجلسة القادمة</span><b>'+state.course.session+'</b></div></div>'+
-    '<div class="notice">تم حفظ تقدمك. لن تفتح المرحلة التالية قبل اجتياز تقييم نهاية المرحلة الحالية.</div>'+
+    '<div class="notice">حُفظ التقدم على هذا الجهاز؛ حالة الحفظ المركزي تظهر أسفل الصفحة. لن تفتح المرحلة التالية قبل اجتياز تقييم نهاية المرحلة الحالية.</div>'+
     '<div class="choiceRow"><button class="primary" id="nextSession">'+nextLabel+'</button><button class="secondary" id="backHome">العودة للبرنامج</button></div></div></section>');
   document.getElementById("nextSession").onclick=function(){
     state.answers=[];state.assessmentAnswers=[];state.task=0;state.queue=buildTrainingQueue();
@@ -1142,13 +1071,13 @@ function assessment(){
       '<div class="choiceRow"><button class="primary" id="submitAssessmentEssay">تسليم الإجابة</button></div></div></section>');
     document.getElementById("submitAssessmentEssay").onclick=function(){
       var answer=(document.getElementById("assessmentEssay").value||"").trim();
-      if(answer.split(/\s+/).filter(Boolean).length<18){
-        var old=document.querySelector(".assessmentNote");if(old)old.textContent="اكتب إجابة أوسع قليلًا حتى يمكن تحليل طريقة التفكير، وليس النتيجة فقط.";
+      if(!answer){
+        var old=document.querySelector(".assessmentNote");if(old)old.textContent="اكتب إجابتك أولًا؛ يُراجع السؤال وفق عناصره المطلوبة.";
         return;
       }
       var essay=essayAnalysis(answer,q),primary=q.dimension||"exam",score=(essay.axes&&essay.axes[primary]!=null?essay.axes[primary]:essay.overall)/100;
       state.course.evidence=Array.isArray(state.course.evidence)?state.course.evidence:[];
-      Object.keys(essay.axes||{}).forEach(function(k){
+      Object.keys(essay.axes||{}).filter(function(k){return essay.axes[k]!=null;}).forEach(function(k){
         state.course.evidence.push({itemId:null,dimension:k,score:Number(essay.axes[k])/100,difficulty:q.difficulty||4,confidence:null,latency_ms:Math.max(0,Date.now()-(state.taskStartedAt||Date.now())),grading_method:"assessment_essay_profile_v1",ts:Date.now(),session:state.course.session,week:week});
       });
       state.course.lastEssayProfile={session:state.course.session,week:week,overall:essay.overall,axes:essay.axes,style:essay.style,note:essay.note,ts:Date.now()};
