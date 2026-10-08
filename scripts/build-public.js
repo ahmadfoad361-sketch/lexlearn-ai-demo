@@ -5,17 +5,20 @@ fs.mkdirSync(path.join(out,"assets"),{recursive:true});
 
 const pages=[
   "index.html","showcase.html","program.html",
-  "student-login.html","student.html","admin-login.html","admin.html",
+  "index-en.html","showcase-en.html","program-en.html",
+  "student-login.html","student.html","student-login-en.html","student-en.html",
+  "admin-login.html","admin.html",
   "privacy.html","terms.html","reset-password.html",".nojekyll"
 ];
 const assets=[
   "lexlearn-logo.svg",
   "v9-law.css","v9-law-content.js","v9-law.js",
   "adaptive-engine.js",
-  "showcase.css","showcase.js",
-  "program.css","program.js",
-  "portal.css","student-login.js","admin-login-v2.js",
-  "student.css","student.js",
+  "showcase.css","showcase.js","showcase-en.js",
+  "program.css","program.js","program-en.js",
+  "portal.css","student-login.js","student-login-en.js","admin-login-v2.js",
+  "student.css","student.js","student-en.js",
+  "english.css",
   "admin.css","admin-entry.js","admin-cloud.js","admin.js",
   "lexlearn-config.js","cloud-data.js","reset-password.js",
   "legal-pages.css"
