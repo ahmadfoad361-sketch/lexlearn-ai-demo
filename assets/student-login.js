@@ -1,6 +1,7 @@
 (function(){
 "use strict";
 var KEY="lexlearn_students_v2",SESSION="lexlearn_student_session";
+var params=new URLSearchParams(location.search),ENTRY_COUNTRY=(params.get("country")||"").toLowerCase();
 function seed(){
   var a=[];try{a=JSON.parse(localStorage.getItem(KEY)||"[]");}catch(e){}
   var demo1={id:"stu-demo-001",name:"طالب تجريبي 01",username:"student01",password:"Learn2027!",cohort:"Pilot A",university:"Qatar University",year:"السنة الأولى",subject:"sources",country:null,active:true,createdAt:Date.now()};
@@ -17,10 +18,12 @@ async function login(u,p){
   if(window.LEX_CLOUD&&LEX_CLOUD.isConfigured&&LEX_CLOUD.isConfigured()){
     try{
       var cloud=await LEX_CLOUD.signInStudent(u,p),pr=cloud.profile;
+      var chosen=ENTRY_COUNTRY==="qa"?"qa":(pr.country_code||null);
       localStorage.setItem(SESSION,JSON.stringify({
         studentId:pr.id,name:pr.display_name,username:pr.username,
-        country:pr.country_code||null,cloud:true,at:Date.now()
+        country:chosen,cloud:true,at:Date.now()
       }));
+      if(ENTRY_COUNTRY==="qa")localStorage.setItem("lexlearn_country_setup_v2_rights_"+pr.id,"true");
       location.href="student.html";return;
     }catch(e){
       err.textContent="تعذر تسجيل الدخول. تحقق من اسم المستخدم وكلمة المرور أو حالة الحساب.";
@@ -29,7 +32,9 @@ async function login(u,p){
   }
   var st=students.find(function(x){return x.active!==false&&x.username.toLowerCase()===String(u).toLowerCase()&&x.password===p;});
   if(!st){err.textContent="اسم المستخدم أو كلمة المرور غير صحيحة، أو الحساب غير نشط.";err.style.display="block";return;}
-  localStorage.setItem(SESSION,JSON.stringify({studentId:st.id,name:st.name,username:st.username,country:st.country||null,cloud:false,at:Date.now()}));
+  var chosen=ENTRY_COUNTRY==="qa"?"qa":(st.country||null);
+  localStorage.setItem(SESSION,JSON.stringify({studentId:st.id,name:st.name,username:st.username,country:chosen,cloud:false,at:Date.now()}));
+  if(ENTRY_COUNTRY==="qa")localStorage.setItem("lexlearn_country_setup_v2_rights_"+st.id,"true");
   location.href="student.html";
 }
 document.getElementById("studentLogin").addEventListener("submit",function(e){
