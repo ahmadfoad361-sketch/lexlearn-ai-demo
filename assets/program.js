@@ -911,8 +911,8 @@ function essayAnalysis(answer,t){return LEX_QUALITY.grade(answer,t,"ar");}
 
 function essayMini(profile){return LEX_QUALITY.feedback(profile,"ar",esc);}
 
-function taskStatusBox(correct,label){
-  return '<div class="answerStatus '+(correct?"correct":"wrong")+'"><span class="answerStatusIcon">'+ico(correct?"check":"repeat")+'</span><div><b>'+(correct?"إجابتك صحيحة":"إجابتك تحتاج تعديل")+'</b><small>'+esc(label||"راجع السبب ثم انتقل للمهمة التالية.")+'</small></div></div>';
+function taskStatusBox(correct,label,provisional){
+  return '<div class="answerStatus '+(correct?"correct":"wrong")+'"><span class="answerStatusIcon">'+ico(correct?"check":"repeat")+'</span><div><b>'+(provisional?(correct?"ظهرت مؤشرات جيدة":"عناصر تحتاج مراجعة"):(correct?"إجابتك صحيحة":"إجابتك تحتاج تعديل"))+'</b><small>'+esc(label||"راجع السبب ثم انتقل للمهمة التالية.")+'</small></div></div>';
 }
 function orderedOptions(t,salt){return LEX_QUALITY.shuffleOptions(t);}
 
@@ -946,7 +946,7 @@ function train(){
         '<div class="goodbox"><b>تحليل دلالي موثّق</b><div>'+esc(merged.feedback||"تم تقييم المعنى باستخدام المعيار والمصادر المعتمدة فقط.")+'</div><small>الثقة: '+Math.round((merged.confidence||0)*100)+'%</small></div>':
         (itemId&&semantic&&semantic.needs_human_review?'<div class="notice">التحليل الدلالي لم يصل لثقة كافية؛ استخدم النظام التحليل البنائي ولم يخمّن.</div>':'');
       document.getElementById("feed").innerHTML=
-        taskStatusBox(pass,pass?"ظهرت مؤشرات العناصر المطلوبة في هذه المحاولة.":"راجع العناصر التي لم نتحقق منها أدناه.")+
+        taskStatusBox(pass,pass?"ظهرت مؤشرات العناصر المطلوبة في هذه المحاولة.":"راجع العناصر التي لم نتحقق منها أدناه.",!!essay)+
         (essay?essayMini(essay):'<div class="rubricMini"><b>التحليل البنائي</b><span>'+finalScore+'%</span><small>'+(method==="grounded_semantic"?"تقييم دلالي مقيّد بالمصادر المعتمدة.":"Rubric بنائي احتياطي حتى تتوافر مراجعة دلالية موثوقة.")+'</small></div>')+
         semanticNote+
         (t.model?'<div class="modelAnswer"><b>نموذج للمقارنة</b><p>'+esc(t.model)+'</p></div>':'')+
