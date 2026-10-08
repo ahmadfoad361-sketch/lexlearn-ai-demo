@@ -146,14 +146,14 @@ function profileTitle(){
   if(model&&model.bridge&&model.bridge.label)return model.bridge.label;
   if(!result)return "ابدأ بالتقييم التشخيصي";
   if(result.profileType==="recall-led")return "ذاكرتك أقوى من الفهم — هنحوّل الحفظ إلى استخدام";
-  if(result.profileType==="understanding-led")return "فهمك أقوى من الاسترجاع — هنحوّل المعنى إلى ذاكرة سريعة";
+  if(result.profileType==="understanding-led")return "فهمك أقوى من الحفظ — هنحوّل المعنى إلى تذكّر أسرع";
   return "أداء متوازن — هنركز على أقل مهارة حاليًا";
 }
 function studentInsight(){
   var items=[
-    {key:"recall",label:"الاسترجاع",icon:"🧠",value:adaptiveValue("recall")},
+    {key:"recall",label:"الحفظ",icon:"🧠",value:adaptiveValue("recall")},
     {key:"understanding",label:"الفهم",icon:"💡",value:adaptiveValue("understanding")},
-    {key:"application",label:"التطبيق",icon:"⚖️",value:adaptiveValue("application")}
+    {key:"application",label:"التطبيق على الوقائع",icon:"⚖️",value:adaptiveValue("application")}
   ].filter(function(x){return x.value!=null;});
   if(!items.length)return {best:null,focus:null,tip:"ابدأ التقييم القصير وسنبني لك تدريبك."};
   var sorted=items.slice().sort(function(a,b){return a.value-b.value;});
@@ -322,9 +322,9 @@ function render(){
     ? "<section class='simpleProfile'>"+
         "<div class='simpleIntro'><div><span class='eyebrow'>مستواك الآن</span><h3>"+esc(profileTitle())+"</h3></div></div>"+
         "<div class='simpleSkillGrid'>"+
-          simpleSkillCard({key:"recall",label:"الاسترجاع",icon:"brain"})+
+          simpleSkillCard({key:"recall",label:"الحفظ",icon:"brain"})+
           simpleSkillCard({key:"understanding",label:"الفهم",icon:"bulb"})+
-          simpleSkillCard({key:"application",label:"التطبيق",icon:"scale"})+
+          simpleSkillCard({key:"application",label:"التطبيق على الوقائع",icon:"scale"})+
         "</div>"+
         "<div class='studentTipGrid'>"+
           "<div class='tipCard good'><span>"+icon("chart")+"</span><div><small>أقوى نقطة</small><b>"+esc(insight.best?insight.best.label:"—")+"</b></div></div>"+
@@ -332,7 +332,7 @@ function render(){
           "<div class='tipCard today'><span>"+icon("book")+"</span><div><small>نصيحة اليوم</small><b>"+esc(insight.tip)+"</b></div></div>"+
         "</div>"+
       "</section>"
-    : "<div class='empty studentEmpty'>ابدأ التقييم القصير، وبعده سترى 3 مؤشرات بسيطة: الاسترجاع، الفهم، والتطبيق.</div>";
+    : "<div class='empty studentEmpty'>ابدأ التقييم القصير، وبعده سترى 3 مؤشرات بسيطة: الحفظ، الفهم، والتطبيق على الوقائع.</div>";
 
   var achievements=course.achievements.length
     ? course.achievements.map(function(a){
