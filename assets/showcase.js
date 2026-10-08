@@ -130,17 +130,15 @@ function result(){
   var arr=[["الاسترجاع",recall,"recall"],["الفهم",understanding,"understanding"],["التطبيق",application,"application"]];
   var weakest=arr.slice().sort(function(a,b){return a[1]-b[1];})[0];
   var rec=weakest[2]==="application"?"ابدأ بوقائع قصيرة يتغير فيها عنصر واحد.":weakest[2]==="understanding"?"ابدأ بتفكيك القاعدة إلى عناصرها ومعناها.":"ابدأ باسترجاع قصير من غير إعادة قراءة النص.";
-  if(studentSession&&studentSession.studentId){
-    var pk="lexlearn_v9_profile_"+studentSession.studentId,p={results:{}};
-    try{p=JSON.parse(localStorage.getItem(pk)||"{\"results\":{}}")||{results:{}};}catch(e){}
-    p.results=p.results||{};
-    var gap=recall-understanding,profileType=gap>=12?"recall-led":gap<=-12?"understanding-led":"balanced";
-    p.results[COURSE_KEY]={metrics:{recall:recall,understanding:understanding,application:application,legal_precision:null,retention:null,exam:null},profileType:profileType,updatedAt:Date.now()};
-    localStorage.setItem(pk,JSON.stringify(p));
-    if(studentSession.cloud&&window.LEX_CLOUD&&LEX_CLOUD.isConfigured&&LEX_CLOUD.isConfigured()){
-      LEX_CLOUD.saveSnapshot({courseId:COURSE_KEY,snapshotType:"profile",state:p}).catch(function(){});
-      LEX_CLOUD.logEvent("DIAGNOSTIC_COMPLETED",{course_id:COURSE_KEY,recall:recall,understanding:understanding,application:application,profile_type:profileType}).catch(function(){});
-    }
+  var pk=studentSession&&studentSession.studentId?("lexlearn_v9_profile_"+studentSession.studentId):"lexlearn_v9_profile",p={results:{}};
+  try{p=JSON.parse(localStorage.getItem(pk)||"{\"results\":{}}")||{results:{}};}catch(e){}
+  p.results=p.results||{};
+  var gap=recall-understanding,profileType=gap>=12?"recall-led":gap<=-12?"understanding-led":"balanced";
+  p.results[COURSE_KEY]={metrics:{recall:recall,understanding:understanding,application:application,legal_precision:null,retention:null,exam:null},profileType:profileType,updatedAt:Date.now()};
+  localStorage.setItem(pk,JSON.stringify(p));
+  if(studentSession&&studentSession.cloud&&window.LEX_CLOUD&&LEX_CLOUD.isConfigured&&LEX_CLOUD.isConfigured()){
+    LEX_CLOUD.saveSnapshot({courseId:COURSE_KEY,snapshotType:"profile",state:p}).catch(function(){});
+    LEX_CLOUD.logEvent("DIAGNOSTIC_COMPLETED",{course_id:COURSE_KEY,recall:recall,understanding:understanding,application:application,profile_type:profileType}).catch(function(){});
   }
   var trainingQuery=(studentSession&&studentSession.cloud?"":"demo=1&")+"country="+COUNTRY+"&subject="+SUBJECT+"&start=1";
   stage(97,'<div class="stageCard">'+
