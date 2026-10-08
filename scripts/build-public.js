@@ -11,7 +11,7 @@ const pages=[
   "privacy.html","terms.html","reset-password.html",".nojekyll"
 ];
 const assets=[
-  "lexlearn-logo.svg",
+  "lexlearn-logo.svg","brand-intro.js",
   "v9-law.css","v9-law-content.js","v9-law.js",
   "adaptive-engine.js","learning-quality.js","quality.css",
   "showcase.css","showcase.js","showcase-en.js",

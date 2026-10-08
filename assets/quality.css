@@ -20,3 +20,18 @@ body{font-size:1rem}button,a,input,textarea,summary{touch-action:manipulation}bu
 .en-hero .qualityHeroTitle{font-family:Inter,"Segoe UI",Arial,sans-serif;line-height:1.25;letter-spacing:-.025em}
 .en-hero .qualityHeroSubtitle{line-height:1.6}
 @media(max-width:760px){.qualityHero .qualityHeroTitle,.en-hero .qualityHeroTitle{font-size:clamp(1.5rem,5.8vw,2.125rem)}.qualityHeroSubtitle{margin-bottom:16px}.qualityHero .qualityLead,.en-hero .lead{font-size:1rem}.qualityHero,.en-hero{gap:28px}.qualityHeroTitle span{overflow-wrap:normal}}
+
+/* Short brand welcome; CSS also releases the page if script cleanup fails. */
+.lexIntro{display:none;position:fixed;inset:0;z-index:1000;background:#111d31;align-items:center;justify-content:center;flex-direction:column;gap:20px;min-height:100svh}
+.lexIntroActive .lexIntro{display:flex;animation:lexIntroOut .3s ease 1.15s forwards}
+.lexIntroMark{width:clamp(140px,20vw,184px);aspect-ratio:1;border-radius:30px;background:#fffaf4;display:grid;place-items:center;box-shadow:0 18px 60px #0003;animation:lexIntroIn .3s ease-out both}
+.lexIntroMark img{width:78%;height:auto;display:block}
+.lexIntroName{font-family:Inter,"Segoe UI",Arial,sans-serif;font-size:1.5rem;font-weight:600;letter-spacing:.02em;color:#fffaf4;animation:lexIntroIn .3s ease-out .08s both}
+@keyframes lexIntroIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes lexIntroOut{to{opacity:0;visibility:hidden;pointer-events:none}}
+@media(prefers-reduced-motion:reduce){.lexIntro{display:none!important}}
+.homeLanguage{position:fixed;top:14px;left:14px;z-index:70;padding:8px 13px;border:1px solid #ddd2c3;border-radius:999px;background:#fff;color:#111d31;text-decoration:none;font-family:inherit;font-weight:600;font-size:.875rem;line-height:1.5}
+.qualityExample h2{font-weight:600;line-height:1.65;letter-spacing:normal;margin-block:16px}
+.qualityExample p{font-size:1rem;line-height:1.85;color:#495365;margin-block:0 16px}
+.qualityExample small{display:block;line-height:1.8}
+.en-main .course-card h2,.en-main .qualityMethod h2{font-family:inherit;font-weight:600;font-size:clamp(1.5rem,2.3vw,2rem);line-height:1.45}
