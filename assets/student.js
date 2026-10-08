@@ -122,6 +122,7 @@ function passedWeek(n){
 }
 function weekStatus(n){
   var r=course.weekResults[n];
+  if(!result)return ["locked",n===1?"يتاح بعد التقييم التشخيصي":"مغلق حتى اجتياز المرحلة السابقة","lock"];
   if(r&&r.status==="repair")return ["need","يحتاج تثبيت","repeat"];
   if(r)return ["done",r.status==="mastered"?"مكتمل بإتقان":"مكتمل","check"];
   if(course.adminOverrideWeeks[n])return ["current","مفتوح بواسطة المشرف","play"];
@@ -244,16 +245,16 @@ function changePasswordView(force){
 function countryGateView(){
   APP.innerHTML=
     "<main class='countryGate'><section class='countryGateCard'>"+
-      "<div class='countryBrand'><div class='mark'><img src='assets/lexlearn-logo.svg' alt='LexLearn'></div><div><span class='eyebrow'>ابدأ من هنا</span><h1>اختر دولتك</h1><p>سنضبط المحتوى القانوني والتدريب على المسار المناسب.</p></div></div>"+
+      "<div class='countryBrand'><div class='mark'><img src='assets/lexlearn-logo.svg' alt='LexLearn'></div><div><span class='eyebrow'>ابدأ من هنا</span><h1>اختر دولتك</h1><p>سنضبط المحتوى القانوني والتدريب على البرنامج المناسب.</p></div></div>"+
       "<div class='countryCards' role='list' aria-label='اختيار الدولة'>"+
-        "<button class='countryCard live selected' type='button' data-country-choice='qa'><span class='countryFlag'>🇶🇦</span><b>قطر</b><small>المسار المتاح الآن</small><em>ابدأ</em></button>"+
+        "<button class='countryCard live selected' type='button' data-country-choice='qa'><span class='countryFlag'>🇶🇦</span><b>قطر</b><small>البرنامج المتاح الآن</small><em>ابدأ</em></button>"+
         "<button class='countryCard muted' type='button' disabled aria-disabled='true'><span class='countryFlag'>🇪🇬</span><b>مصر</b><small>قريبًا</small><em>قيد التجهيز</em></button>"+
         "<button class='countryCard muted' type='button' disabled aria-disabled='true'><span class='countryFlag'>🇸🇦</span><b>السعودية</b><small>قريبًا</small><em>قيد التجهيز</em></button>"+
         "<button class='countryCard muted' type='button' disabled aria-disabled='true'><span class='countryFlag'>🇦🇪</span><b>الإمارات</b><small>قريبًا</small><em>قيد التجهيز</em></button>"+
       "</div>"+
-      "<div class='countryMessage'><span>"+icon("compass")+"</span><p><b>قطر أولًا</b><br>نسخة LexLearn الحالية مهيأة لمسار قطر، وباقي الدول ستُفتح تباعًا.</p></div>"+
+      "<div class='countryMessage'><span>"+icon("compass")+"</span><p><b>قطر أولًا</b><br>نسخة LexLearn الحالية مهيأة لبرنامج قطر، وباقي الدول ستُفتح تباعًا.</p></div>"+
       "<div id='passError'></div>"+
-      "<button class='btn primary countryStart' id='saveCountry'>ابدأ مسار قطر</button>"+
+      "<button class='btn primary countryStart' id='saveCountry'>ابدأ برنامج قطر</button>"+
     "</section></main>";
   document.getElementById("saveCountry").onclick=async function(){
     var code="qa";
@@ -271,7 +272,7 @@ function consentGateView(){
   APP.innerHTML="<main class='passwordGate'><section>"+
     "<div class='mark'><img src='assets/lexlearn-logo.svg' alt='LexLearn'></div>"+
     "<span class='eyebrow'>الخصوصية واستخدام بيانات التعلم</span>"+
-    "<h1>قبل بدء المسار</h1>"+
+    "<h1>قبل بدء البرنامج</h1>"+
     "<p>يستخدم LexLearn إجاباتك ونتائجك ووقت الاستجابة ومستوى الثقة لبناء تدريب شخصي وقياس التقدم. هذه المؤشرات للتعلم والتدريب وليست درجة جامعية رسمية.</p>"+
     "<p><a href='privacy.html' target='_blank'>سياسة الخصوصية</a> • <a href='terms.html' target='_blank'>شروط الاستخدام</a></p>"+
     "<div id='consentError'></div>"+
@@ -284,12 +285,12 @@ function consentGateView(){
   };
 }
 function render(){
-  if(student.mustChangePassword){
-    changePasswordView(true);
-    return;
-  }
   if(!countrySetupDone||!student.country){
     countryGateView();
+    return;
+  }
+  if(student.mustChangePassword){
+    changePasswordView(true);
     return;
   }
   if(session.cloud&&!consentOk){consentGateView();return;}
