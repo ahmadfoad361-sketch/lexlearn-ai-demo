@@ -761,9 +761,9 @@ function currentStudentMetrics(){
 }
 function studentSnapshot(metrics){
   var items=[
-    ["brain","الاسترجاع",metrics.recall],
+    ["brain","الحفظ",metrics.recall],
     ["bulb","الفهم",metrics.understanding],
-    ["scale","التطبيق",metrics.application]
+    ["scale","التطبيق على الوقائع",metrics.application]
   ];
   return '<section class="studentSnapshot">'+items.map(function(x){
     var v=x[2],known=v!=null,num=known?Math.round(v):0;
@@ -803,12 +803,12 @@ function home(){
 }
 function kindLabel(k){return k==="assessment"?"تقييم مستقل":k==="review"?"مراجعة متباعدة":k==="adaptive"?"تدريب متكيف":"تدريب أساسي";}
 function priorityText(m){
-  var list=[["الاسترجاع",m.recall],["الفهم",m.understanding],["التطبيق",m.application],["الدقة القانونية",m.legal_precision],["الاحتفاظ",m.retention],["الأداء الامتحاني",m.exam]].filter(function(x){return x[1]!=null;}).sort(function(a,b){return a[1]-b[1];});
+  var list=[["الحفظ",m.recall],["الفهم",m.understanding],["التطبيق على الوقائع",m.application],["الدقة القانونية",m.legal_precision],["الاحتفاظ",m.retention],["الأداء الامتحاني",m.exam]].filter(function(x){return x[1]!=null;}).sort(function(a,b){return a[1]-b[1];});
   return "الأولوية الحالية: "+list[0][0]+". الجلسات القادمة ستزيد تدريب هذا الجانب بدون إعادة ما أتقنته بالكامل.";
 }
 function bridgeCard(m){
   var b=learningBridge();
-  return '<section class="bridgePanel"><div class="bridgeHead"><div><span class="kicker">جسر التعلم</span><h2>'+esc(b.title)+'</h2><p>'+esc(b.lead)+'</p></div><div class="bridgeScore"><span>الاسترجاع</span><b>'+Math.round(m.recall||0)+'</b><span>الفهم</span><b>'+Math.round(m.understanding||0)+'</b></div></div><div class="bridgeSteps"><div><b>1</b><span>استرجع</span><small>من الذاكرة قبل فتح النص</small></div><div><b>2</b><span>فسّر</span><small>قل لماذا تعمل القاعدة هكذا</small></div><div><b>3</b><span>طبّق</span><small>غيّر واقعة واحدة واختبر النتيجة</small></div><div><b>4</b><span>ثبّت</span><small>مفتاح ذاكرة مرتبط بالمعنى</small></div></div></section>';
+  return '<section class="bridgePanel"><div class="bridgeHead"><div><span class="kicker">جسر التعلم</span><h2>'+esc(b.title)+'</h2><p>'+esc(b.lead)+'</p></div><div class="bridgeScore"><span>الحفظ</span><b>'+Math.round(m.recall||0)+'</b><span>الفهم</span><b>'+Math.round(m.understanding||0)+'</b></div></div><div class="bridgeSteps"><div><b>1</b><span>استرجع</span><small>من الذاكرة قبل فتح النص</small></div><div><b>2</b><span>فسّر</span><small>قل لماذا تعمل القاعدة هكذا</small></div><div><b>3</b><span>طبّق</span><small>غيّر واقعة واحدة واختبر النتيجة</small></div><div><b>4</b><span>ثبّت</span><small>مفتاح ذاكرة مرتبط بالمعنى</small></div></div></section>';
 }
 function weekResult(w){return (state.course.weekResults||{})[w]||null;}
 function weekUnlocked(w,current){
@@ -878,7 +878,7 @@ function errorCard(){
   return '<h3>سجل ملاحظات الأداء</h3><p>تظهر هنا الأخطاء التي تكررت في محاولاتك السابقة.</p>'+(es.length?es.map(function(e){return '<div class="errorItem"><b>'+esc(e.label)+'</b><span>تكرر '+e.count+' مرة</span></div>';}).join(""):'<div class="notice">لا توجد أخطاء متكررة مسجلة بعد.</div>');
 }
 function assessmentCard(m){
-  return '<h3>التقييم المستقل</h3><p>كل خامس جلسة يوجد تقييم من 8 مهام، ثم تقييم نهائي في الجلسة 30.</p><div class="resultGrid">'+metric("استرجاع",m.recall)+metric("فهم",m.understanding)+metric("تطبيق",m.application)+'</div>';
+  return '<h3>التقييم المستقل</h3><p>كل خامس جلسة يوجد تقييم من 8 مهام، ثم تقييم نهائي في الجلسة 30.</p><div class="resultGrid">'+metric("حفظ",m.recall)+metric("فهم",m.understanding)+metric("تطبيق على الوقائع",m.application)+'</div>';
 }
 function qualitative(v){if(v==null)return "لم يُقَس";if(v>=80)return "إجابات صحيحة في أغلب المهام";if(v>=45)return "نتائج متباينة";return "صعوبة متكررة";}
 function metric(n,v){return '<div class="metric"><span>'+n+'</span><b>'+qualitative(v)+'</b><small>من محاولاتك الحالية</small></div>';}
@@ -948,7 +948,7 @@ function essayAnalysis(answer,t){
 function essayMini(profile){
   if(!profile||!profile.axes)return "";
   var a=profile.axes;
-  return '<div class="essayAnalysis"><div><span>الاسترجاع</span><b>'+a.recall+'%</b></div><div><span>الفهم</span><b>'+a.understanding+'%</b></div><div><span>التطبيق</span><b>'+a.application+'%</b></div><div><span>تنظيم الإجابة</span><b>'+a.exam+'%</b></div><p>'+esc(profile.style)+' — '+esc(profile.note)+'</p></div>';
+  return '<div class="essayAnalysis"><div><span>الحفظ</span><b>'+a.recall+'%</b></div><div><span>الفهم</span><b>'+a.understanding+'%</b></div><div><span>التطبيق على الوقائع</span><b>'+a.application+'%</b></div><div><span>تنظيم الإجابة</span><b>'+a.exam+'%</b></div><p>'+esc(profile.style)+' — '+esc(profile.note)+'</p></div>';
 }
 function taskStatusBox(correct,label){
   return '<div class="answerStatus '+(correct?"correct":"wrong")+'"><span class="answerStatusIcon">'+ico(correct?"check":"repeat")+'</span><div><b>'+(correct?"إجابتك صحيحة":"إجابتك تحتاج تعديل")+'</b><small>'+esc(label||"راجع السبب ثم انتقل للمهمة التالية.")+'</small></div></div>';
@@ -1007,7 +1007,7 @@ function train(){
       var essay=t.essayProfile?essayAnalysis(answer,t):null;
       var r=essay?{score:essay.overall,pass:essay.overall>=60}:freeRubric(answer,t),semantic=null,merged=null,itemId=taskItemId(t);
       document.getElementById("freeAnswer").disabled=true;document.getElementById("checkFree").disabled=true;
-      document.getElementById("feed").innerHTML='<div class="notice">يتم تحليل الإجابة وفق عناصر المعيار'+(t.essayProfile?"، مع فصل الاسترجاع والفهم والتطبيق وتنظيم الكتابة":"")+(itemId&&window.LEX_CLOUD&&LEX_CLOUD.isConfigured&&LEX_CLOUD.isConfigured()?" والمصدر القانوني المعتمد…":"…")+'</div>';
+      document.getElementById("feed").innerHTML='<div class="notice">يتم تحليل الإجابة وفق عناصر المعيار'+(t.essayProfile?"، مع فصل الحفظ والفهم والتطبيق على الوقائع وتنظيم الكتابة":"")+(itemId&&window.LEX_CLOUD&&LEX_CLOUD.isConfigured&&LEX_CLOUD.isConfigured()?" والمصدر القانوني المعتمد…":"…")+'</div>';
       if(itemId&&window.LEX_CLOUD&&LEX_CLOUD.isConfigured&&LEX_CLOUD.isConfigured()&&STUDENT_SESSION&&STUDENT_SESSION.cloud){
         try{semantic=await LEX_CLOUD.gradeAnswer({course_id:COURSE_DB_ID,item_id:itemId,answer:answer,language:"ar"});}catch(e){semantic=null;}
       }
@@ -1138,7 +1138,7 @@ function assessment(){
     chrome('<section class="stage"><div class="progress"><i style="width:'+((state.task+1)/bank.length*100)+'%"></i></div><div class="taskCard">'+
       '<span class="kicker">تقييم تحليلي • الأسبوع '+week+' • '+(state.task+1)+' / '+bank.length+'</span><h2>'+esc(q.title||"سؤال مقالي")+'</h2><p>'+esc(q.q)+'</p>'+
       '<textarea class="textarea essayAssessmentInput" id="assessmentEssay" placeholder="اكتب إجابتك كاملة بطريقتك..."></textarea>'+
-      '<div class="assessmentNote">هذا السؤال يقيس الاسترجاع والفهم والتطبيق وأسلوب بناء الإجابة. لن يظهر نموذج الإجابة أثناء القياس.</div>'+
+      '<div class="assessmentNote">هذا السؤال يقيس الحفظ والفهم والتطبيق على الوقائع وأسلوب بناء الإجابة. لن يظهر نموذج الإجابة أثناء القياس.</div>'+
       '<div class="choiceRow"><button class="primary" id="submitAssessmentEssay">تسليم الإجابة</button></div></div></section>');
     document.getElementById("submitAssessmentEssay").onclick=function(){
       var answer=(document.getElementById("assessmentEssay").value||"").trim();
