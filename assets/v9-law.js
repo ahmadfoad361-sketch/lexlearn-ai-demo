@@ -86,29 +86,34 @@ function render(){clearTimer();
   if(state.view==="archive")return renderArchive();
 }
 function renderCountry(){
-  var html='<section class="entry-screen">'+
+  var html='<section class="entry-screen entry-country-first">'+
     '<div class="entry-intro"><div class="entry-seal"><img src="assets/lexlearn-logo.svg" alt="LexLearn"></div><span class="section-overline">LEXLEARN</span>'+
-    '<h1>اختر النظام القانوني</h1>'+
-    '<p>اختر الدولة التي تدرس قانونها.</p></div>'+
-    '<div class="quick-live-demo"><div class="quick-live-copy"><span class="section-overline">تجربة مباشرة</span><h2>مش مجرد خطة — جرّب LexLearn بنفسك الآن</h2><p>ابدأ بتقييم تشخيصي قصير، أو ادخل مباشرة في جلسة تدريب متكيفة وترى كيف يتغير التدريب حسب طريقة تفكير الطالب.</p></div><div class="quick-live-actions"><a class="quick-live-btn primary-live" href="showcase.html">جرّب التقييم التشخيصي</a><a class="quick-live-btn training-live" href="program.html?demo=1&start=1">جرّب جلسة تدريب فعلية</a><a class="quick-live-btn student-live" href="student-login.html">دخول الطالب</a><a class="quick-live-btn admin-live" href="admin-login.html">دخول المدير / المشرف</a></div></div>'+
-    '<div class="entry-divider"><span>أو ابدأ مسارك الكامل</span></div>'+
-    '<div class="entry-options">'+D.countries.map(function(c,i){return '<button class="entry-option" data-country="'+c.id+'">'+
-      '<span class="entry-flag">'+c.flag+'</span>'+
-      '<span class="entry-copy"><b>'+esc(c.name)+'</b><small>'+esc(c.subtitle)+'</small></span>'+
-      '<span class="entry-arrow">←</span>'+
-    '</button>';}).join("")+'</div>'+
-    '<div class="entry-note">اختيار واحد فقط الآن — وبعده تظهر المواد المتاحة.</div>'+
-    '</section>';
+    '<h1>اختر الدولة</h1>'+
+    '<p>يتم ضبط المحتوى القانوني والتدريب بحسب النظام القانوني المختار. مسار قطر هو النسخة العاملة حاليًا.</p></div>'+
+    '<div class="entry-options country-launch-grid">'+
+      '<button class="entry-option country-live" data-country="qa"><span class="entry-flag">🇶🇦</span><span class="entry-copy"><b>قطر</b><small>المسار المتاح الآن • نظرية الحق</small></span><span class="entry-arrow">ابدأ ←</span></button>'+
+      '<button class="entry-option country-muted" disabled aria-disabled="true"><span class="entry-flag">🇪🇬</span><span class="entry-copy"><b>مصر</b><small>قريبًا</small></span><span class="entry-arrow">قيد التجهيز</span></button>'+
+      '<button class="entry-option country-muted" disabled aria-disabled="true"><span class="entry-flag">🇸🇦</span><span class="entry-copy"><b>السعودية</b><small>قريبًا</small></span><span class="entry-arrow">قيد التجهيز</span></button>'+
+      '<button class="entry-option country-muted" disabled aria-disabled="true"><span class="entry-flag">🇦🇪</span><span class="entry-copy"><b>الإمارات</b><small>قريبًا</small></span><span class="entry-arrow">قيد التجهيز</span></button>'+
+    '</div>'+
+    '<div class="entry-note">قطر أولًا — المواد 39 إلى 63 من القانون المدني القطري ضمن مسار نظرية الحق.</div>'+
+    '<div class="entry-account-links"><a href="student-login.html">دخول الطالب</a><a href="admin-login.html">دخول المدير / المشرف</a></div>'+
+  '</section>';
   chrome(html);
-  document.querySelectorAll("[data-country]").forEach(function(btn){btn.onclick=function(){state.countryId=btn.dataset.country;state.view="subjects";render();};});
+  var qa=document.querySelector('[data-country="qa"]');
+  if(qa)qa.onclick=function(){state.countryId="qa";state.view="subjects";render();};
 }
 function renderSubjects(){
-  var c=country();
-  var html='<section class="subject-hero"><div><span class="section-overline">'+c.flag+' '+esc(c.name)+'</span><h1>اختر المادة التي تريد أن تبدأ بها.</h1><p>'+esc(c.sourceNote)+'</p></div><button class="btn soft-outline" id="backCountry">تغيير الدولة</button></section>'+
-  '<div class="subject-gallery">'+c.subjects.map(function(s,i){return '<button class="subject-card" data-subject="'+s.id+'"><span class="subject-number">0'+(i+1)+'</span><span class="subject-medallion">'+icon(s.icon)+'</span><span class="subject-copy"><b>'+esc(s.title)+'</b><small>'+esc(s.subtitle)+'</small></span><span class="subject-open">ابدأ ←</span></button>';}).join("")+'</div>';
+  state.countryId="qa";
+  var html='<section class="subject-hero pilot-subject-hero"><div><span class="section-overline">🇶🇦 قطر • المسار الحالي</span><h1>نظرية الحق</h1><p>برنامج قانوني تكيفي لمدة 6 أسابيع و30 جلسة، مبني على المواد 39–63 من القانون المدني القطري وموجه لقياس الاسترجاع والفهم والتطبيق والدقة القانونية.</p></div><button class="btn soft-outline" id="backCountry">تغيير الدولة</button></section>'+
+  '<section class="pilot-course-card">'+
+    '<div class="pilot-course-icon">'+icon("rights")+'</div>'+
+    '<div class="pilot-course-copy"><span class="section-overline">LAWC 101 • THEORY OF RIGHT</span><h2>ابدأ من التقييم ثم يتحول المسار حسب طريقة تعلمك</h2><p>التقييم التشخيصي يحدد نقطة القوة والأولوية، ثم يفتح برنامج الأسابيع الستة. في المستويات الأصعب تدخل الأسئلة المقالية وتحليل أسلوب الإجابة.</p>'+
+    '<div class="pilot-course-weeks"><span>1 الشخصية والموطن</span><span>2 القرابة والأهلية</span><span>3 الشخص المعنوي</span><span>4 الأموال</span><span>5 استعمال الحق</span><span>6 التكامل</span></div></div>'+
+    '<div class="pilot-course-actions"><a class="quick-live-btn primary-live" href="showcase.html?country=qa&subject=rights">جرّب التقييم</a><a class="quick-live-btn training-live" href="student-login.html?country=qa">دخول الطالب</a><a class="quick-live-btn admin-live" href="admin-login.html">دخول المشرف</a></div>'+
+  '</section>';
   chrome(html);
   document.getElementById("backCountry").onclick=function(){state.view="country";state.countryId=null;render();};
-  document.querySelectorAll("[data-subject]").forEach(function(btn){btn.onclick=function(){state.subjectId=btn.dataset.subject;state.view="hub";render();};});
 }
 function dueRetention(){
   var q=state.profile.retention[resultKey()];return q&&q.dueAt&&Date.now()>=q.dueAt&&!q.completed?q:null;
