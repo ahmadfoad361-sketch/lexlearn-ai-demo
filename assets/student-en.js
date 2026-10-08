@@ -343,7 +343,7 @@ function render(){
 
   APP.innerHTML=
     "<header class='top'><div class='topin'>"+
-      "<div class='brand'><div class='mark'><img src='assets/lexlearn-logo.svg' alt='LexLearn'></div><div><b>LexLearn</b><small>Student Portal</small></div></div>"+
+      "<div class='brand'><div class='mark'><img src='assets/lexlearn-logo.svg' alt='LexLearn'></div><div><b>LexLearn</b><small>Student Portal • We understand your mind and build your path.</small></div></div>"+
       "<div class='topactions'><span class='topbtn countryTop staticCountry'>🇶🇦 Qatar</span><a class='topbtn' href='student.html'>العربية</a><button class='topbtn' id='changePass'>Change password</button><a class='topbtn' href='index-en.html'>Website</a><button class='topbtn' id='logout'>Sign out</button></div>"+
     "</div></header>"+
     "<main class='wrap'>"+
