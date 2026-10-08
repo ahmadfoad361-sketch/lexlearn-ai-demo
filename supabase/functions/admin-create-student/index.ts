@@ -40,7 +40,7 @@ Deno.serve(async(req)=>{
     const uid=created.data.user.id;
     const upd=await admin.from("profiles").update({cohort_id:cohortId,university:body.university||null,year_label:body.year||body.year_label||"السنة الأولى",country_code:body.country_code||"qa"}).eq("id",uid);
     if(upd.error)throw upd.error;
-    const courseId=String(body.course_id||"qa-qu-lawc213");
+    const courseId=String(body.course_id||"qa-qu-lawc101-rights");
     await admin.from("enrollments").upsert({user_id:uid,course_id:courseId,status:"active"},{onConflict:"user_id,course_id"});
     await admin.from("admin_audit").insert({actor_user_id:user.id,target_user_id:uid,action:"CREATE_STUDENT",details:{username,course_id:courseId,cohort_id:cohortId}});
     return json({ok:true,user_id:uid,username,temporary_password:password,course_id:courseId});
