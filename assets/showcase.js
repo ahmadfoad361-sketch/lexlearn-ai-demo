@@ -127,7 +127,7 @@ function result(){
   var recall=Math.round((pct("recall")+freeScore())/2);
   var understanding=pct("understanding");
   var application=pct("application");
-  var arr=[["الاسترجاع",recall,"recall"],["الفهم",understanding,"understanding"],["التطبيق",application,"application"]];
+  var arr=[["الحفظ",recall,"recall"],["الفهم",understanding,"understanding"],["التطبيق على الوقائع",application,"application"]];
   var weakest=arr.slice().sort(function(a,b){return a[1]-b[1];})[0];
   var rec=weakest[2]==="application"?"ابدأ بوقائع قصيرة يتغير فيها عنصر واحد.":weakest[2]==="understanding"?"ابدأ بتفكيك القاعدة إلى عناصرها ومعناها.":"ابدأ باسترجاع قصير من غير إعادة قراءة النص.";
   var pk=studentSession&&studentSession.studentId?("lexlearn_v9_profile_"+studentSession.studentId):"lexlearn_v9_profile",p={results:{}};
@@ -145,7 +145,7 @@ function result(){
     '<span class="demoEyebrow">النتيجة</span>'+
     '<h2>نتيجتك في هذه المحاولة</h2>'+
     '<div class="metrics three">'+
-      metric("الاسترجاع",recall)+metric("الفهم",understanding)+metric("التطبيق",application)+
+      metric("الحفظ",recall)+metric("الفهم",understanding)+metric("التطبيق على الوقائع",application)+
     '</div>'+
     '<div class="planCard nextStep"><h3>الخطوة التالية</h3><p>'+esc(rec)+'</p></div>'+
     '<div class="demoActions"><a class="btn primary" style="text-decoration:none" href="program.html?'+trainingQuery+'">ابدأ التدريب المقترح فعليًا</a><button class="btn secondary" id="toExam">سؤال امتحاني</button><button class="btn secondary" id="again">إعادة الاختبار</button></div>'+
@@ -170,7 +170,7 @@ function analyzeExamAnswer(answer){
   var all={recall:recall,understanding:understanding,legal:legal,exam:exam};
   var weakest=Object.keys(all).sort(function(a,b){return all[a]-all[b];})[0];
   var advice={
-    recall:"أعد استرجاع العناصر الأساسية للقاعدة قبل الرجوع للنص.",
+    recall:"اختبر حفظك للقاعدة من غير الرجوع للنص، ثم راجع العنصر الذي سقط منك.",
     understanding:"أضف سببًا واضحًا يشرح لماذا يختلف المركز القانوني بين الحالتين.",
     legal:"استخدم المصطلحات القانونية بدقة أكبر وحدد الشرط أو العنصر الحاسم.",
     exam:"رتّب الإجابة: المسألة ← القاعدة ← التفسير/التطبيق ← النتيجة."
@@ -195,7 +195,7 @@ function exam(){
     document.getElementById("examStructure").innerHTML=
       '<div class="feedback"><b>تحليل تجريبي لإجابتك</b><br>هذا التحليل يقرأ عناصر الإجابة وبنيتها ليعطيك صورة أولية عن طريقة أدائك.</div>'+
       '<div class="metrics" style="margin-top:12px">'+
-        '<div class="metric"><span>الاسترجاع</span><b>'+s.recall+'%</b></div>'+
+        '<div class="metric"><span>الحفظ</span><b>'+s.recall+'%</b></div>'+
         '<div class="metric"><span>الفهم</span><b>'+s.understanding+'%</b></div>'+
         '<div class="metric"><span>الدقة القانونية</span><b>'+s.legal+'%</b></div>'+
         '<div class="metric"><span>بناء الإجابة</span><b>'+s.exam+'%</b></div>'+
