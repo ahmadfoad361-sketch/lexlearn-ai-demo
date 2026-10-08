@@ -102,11 +102,17 @@ function detail(v){
  '<div class="recommend" style="margin-top:10px"><b>ما الذي نراقبه بعد ذلك؟</b><span>'+esc(advice.watch)+'</span></div>'+
  (advice.plan?'<div class="recommend appliedPlan" style="margin-top:10px"><b>ما يطبقه LexLearn فعليًا في الجلسات التالية</b><span>'+esc(advice.plan.method)+'<br><small>'+esc((advice.plan.tasks||[]).join(" • "))+'</small></span></div>':'')+
  (advice.essay?'<div class="recommend" style="margin-top:10px"><b>تحليل آخر إجابة مقالية</b><span>'+esc(advice.essay.style||"—")+' — '+esc(advice.essay.note||"")+'</span></div>':'')+
- (advice.essay&&advice.essay.answer?'<details class="recommend"><summary>إجابة الطالب وأدلة المعيار</summary><p style="white-space:pre-wrap">'+esc(advice.essay.answer)+'</p><ul>'+(advice.essay.checks||[]).map(function(c){return '<li>'+esc(c.label)+' — '+(c.matched?'ظهر مؤشر: '+esc(c.evidence):'يحتاج مراجعة')+'</li>';}).join('')+'</ul><small>فحص أولي؛ اعتماد صحة الإجابة للمشرف.</small></details>':'')+
+ (advice.essay&&advice.essay.answer?'<details class="recommend"><summary>إجابة الطالب وأدلة المعيار</summary><p style="white-space:pre-wrap">'+esc(advice.essay.answer)+'</p><ul>'+(advice.essay.checks||[]).map(function(c){return '<li>'+esc(c.label)+' — '+(c.matched?'ظهر مؤشر: '+esc(c.evidence):'يحتاج مراجعة')+'</li>';}).join('')+'</ul><small>فحص أولي؛ اعتماد صحة الإجابة للمشرف. راجع النفي والاستثناء وصحة ربط القاعدة بالوقائع، حتى لو ظهرت جميع الكلمات المطلوبة.</small></details>':'')+
+ essayAttempts(v)+
  '</section>'+
  '<section class="twoCols"><div class="panel"><h3>التقدم</h3><div class="progressWrap"><div class="progressLine"><i style="width:'+Math.round(v.completed/30*100)+'%"></i></div><b>'+v.completed+'/30</b></div><p>الجلسة الحالية: '+v.session+' • '+(v.course.completedProgram?"البرنامج مكتمل":"البرنامج مستمر")+'</p><div class="recommend"><b>التدخل المقترح</b><span>'+esc(modelText(v))+'</span></div></div>'+
  '<div class="panel"><h3>إجراءات الإدارة</h3><div class="adminActions"><button data-reset="'+s.id+'">'+ico("key")+' كلمة مرور مؤقتة</button><button data-toggle="'+s.id+'" data-active="'+(s.active!==false)+'">'+ico("users")+' '+(s.active===false?"تفعيل":"تعطيل")+'</button><button data-unlock="'+s.id+'">فتح الأسبوع التالي</button><button data-repair="'+s.id+'">جلسة تثبيت</button></div></div></section>'+
  '<section class="panel evidence"><h3>لماذا اتخذ النظام هذا القرار؟</h3><div class="evidenceGrid">'+["recall","understanding","application","legal_precision","retention","exam"].map(function(k){var a=axes[k];return '<div><b>'+label(k)+'</b><span>'+(a?("تقدير "+a.value+"% • عدم يقين ±"+a.uncertainty+" • اتجاه "+(a.trend>0?"+":"")+a.trend):"لا توجد أدلة كافية بعد")+'</span></div>';}).join("")+'</div></section>';
+}
+function essayAttempts(v){
+ var rows=state.attempts.filter(function(a){return a.user_id===v.s.id&&a.answer_text&&a.course_id==='qa-qu-lawc101-rights';}).slice(0,20);
+ if(!rows.length)return '';
+ return '<details class="panel"><summary>الإجابات المقالية السابقة · '+rows.length+' من أحدث المحاولات المتاحة</summary><p>اقرأ الإجابة نفسها قبل اعتماد التقدير الآلي. درجة التنظيم لا تثبت صحة الحكم القانوني.</p>'+rows.map(function(a){return '<article class="recommend"><b>'+esc(label(a.dimension))+' · '+esc(new Date(a.created_at).toLocaleString('ar-EG'))+'</b><p style="white-space:pre-wrap">'+esc(a.answer_text)+'</p><small>المؤشر الأولي: '+(a.score==null?'لم يُقَس':Math.round(Number(a.score)*100)+'%')+' · '+esc(a.grading_method||'فحص أولي')+'</small></article>';}).join('')+'</details>';
 }
 function dashboard(){
  var list=studentList(),selected=state.students.find(function(s){return s.id===state.selected;})||list[0],v=selected?view(selected):null;if(selected)state.selected=selected.id;
@@ -143,7 +149,7 @@ async function load(){
   var c=LEX_CLOUD.db(),results=await Promise.all([
     LEX_CLOUD.listStudents(),LEX_CLOUD.listCohorts(),LEX_CLOUD.listAudit(),LEX_CLOUD.listContentItems("qa-qu-lawc213"),
     c.from("learner_snapshots").select("user_id,course_id,snapshot_type,state,updated_at"),
-    c.from("attempts").select("user_id,course_id,dimension,score,confidence,error_type,created_at").order("created_at",{ascending:false}).limit(1000)
+    c.from("attempts").select("user_id,course_id,dimension,answer_text,grading_method,score,confidence,error_type,created_at").order("created_at",{ascending:false}).limit(1000)
   ]);
   state.students=results[0];state.cohorts=results[1];state.audit=results[2];state.content=results[3];state.snapshots=results[4].data||[];state.attempts=results[5].data||[];
   if(!state.selected&&state.students[0])state.selected=state.students[0].id;

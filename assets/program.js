@@ -941,7 +941,7 @@ function train(){
       if(window.LEX_ENGINE&&semantic)merged=LEX_ENGINE.mergeSemanticGrade({score:r.score/100,matchedConcepts:[]},semantic);
       var finalScore=merged&&merged.score!=null?Math.round(merged.score*100):r.score;
       var pass=finalScore>=60;
-      var method=merged&&!merged.needsHumanReview?"grounded_semantic":(t.essayProfile?"prompt_rubric_v2":"concept_rubric_v2");
+      var method=merged&&!merged.needsHumanReview?"grounded_semantic":(t.essayProfile?"prompt_rubric_v3":"concept_rubric_v2");
       var semanticNote=merged&&!merged.needsHumanReview?
         '<div class="goodbox"><b>تحليل دلالي موثّق</b><div>'+esc(merged.feedback||"تم تقييم المعنى باستخدام المعيار والمصادر المعتمدة فقط.")+'</div><small>الثقة: '+Math.round((merged.confidence||0)*100)+'%</small></div>':
         (itemId&&semantic&&semantic.needs_human_review?'<div class="notice">التحليل الدلالي لم يصل لثقة كافية؛ استخدم النظام التحليل البنائي ولم يخمّن.</div>':'');
@@ -953,7 +953,7 @@ function train(){
         (t.why?'<div class="feedback">'+esc(t.why)+'</div>':'')+
         (t.memory?'<div class="memoryAnchor"><b>مرساة الذاكرة</b><span>'+esc(t.memory)+'</span></div>':'')+
         '<div class="choiceRow"><button class="primary" id="nextFree">'+(state.task<q.length-1?"التالي":"إنهاء الجلسة")+'</button></div>';
-      document.getElementById("nextFree").onclick=function(){completeTask(t,pass,q,{rubricScore:r.score,semanticScore:merged&&merged.score!=null?merged.score:null,gradingMethod:method,answer:answer,essayProfile:essay,needsHumanReview:!!(merged&&merged.needsHumanReview)});};
+      document.getElementById("nextFree").onclick=function(){completeTask(t,pass,q,{rubricScore:r.score,semanticScore:merged&&merged.score!=null?merged.score:null,gradingMethod:method,answer:answer,essayProfile:essay,needsHumanReview:!!((essay&&essay.needsHumanReview)||(merged&&merged.needsHumanReview))});};
     };
   }else{
     document.querySelectorAll("[data-orig]").forEach(function(b){b.onclick=function(){
@@ -998,9 +998,9 @@ function completeTask(t,correct,q,extra){
   state.answers.push({skill:t.skill,dimension:dim,score:score,correct:correct,bridge:(state.course.adaptiveModel&&state.course.adaptiveModel.bridge&&state.course.adaptiveModel.bridge.mode)||learningBridge().type,extra:extra});
   state.course.evidence=state.course.evidence||[];
   if(extra.essayProfile&&extra.essayProfile.axes){
-    state.course.lastEssayProfile={session:state.course.session,week:sessionMeta(state.course.session).week,overall:extra.essayProfile.overall,axes:extra.essayProfile.axes,style:extra.essayProfile.style,note:extra.essayProfile.note,checks:extra.essayProfile.checks,answer:extra.answer,provisional:true,ts:Date.now()};
+    state.course.lastEssayProfile={session:state.course.session,week:sessionMeta(state.course.session).week,overall:extra.essayProfile.overall,axes:extra.essayProfile.axes,style:extra.essayProfile.style,note:extra.essayProfile.note,checks:extra.essayProfile.checks,answer:extra.answer,conflicts:extra.essayProfile.conflicts,needsHumanReview:true,gradingMethod:"prompt_rubric_v3",provisional:true,ts:Date.now()};
     Object.keys(extra.essayProfile.axes).filter(function(k){return extra.essayProfile.axes[k]!=null;}).forEach(function(k){
-      state.course.evidence.push({itemId:taskItemId(t),dimension:k,score:Number(extra.essayProfile.axes[k])/100,difficulty:taskDifficulty(t),confidence:null,latency_ms:Math.max(0,Date.now()-(state.taskStartedAt||Date.now())),grading_method:"prompt_rubric_v2",ts:Date.now(),session:state.course.session,week:sessionMeta(state.course.session).week});
+      state.course.evidence.push({itemId:taskItemId(t),dimension:k,score:Number(extra.essayProfile.axes[k])/100,difficulty:taskDifficulty(t),confidence:null,latency_ms:Math.max(0,Date.now()-(state.taskStartedAt||Date.now())),grading_method:"prompt_rubric_v3",ts:Date.now(),session:state.course.session,week:sessionMeta(state.course.session).week});
     });
   }else{
     state.course.evidence.push({itemId:taskItemId(t),dimension:dim,score:score,difficulty:taskDifficulty(t),confidence:extra.confidence||null,latency_ms:Math.max(0,Date.now()-(state.taskStartedAt||Date.now())),grading_method:extra.gradingMethod||"adaptive_local",ts:Date.now(),session:state.course.session,week:sessionMeta(state.course.session).week});
@@ -1080,12 +1080,12 @@ function assessment(){
       Object.keys(essay.axes||{}).filter(function(k){return essay.axes[k]!=null;}).forEach(function(k){
         state.course.evidence.push({itemId:null,dimension:k,score:Number(essay.axes[k])/100,difficulty:q.difficulty||4,confidence:null,latency_ms:Math.max(0,Date.now()-(state.taskStartedAt||Date.now())),grading_method:"assessment_essay_profile_v1",ts:Date.now(),session:state.course.session,week:week});
       });
-      state.course.lastEssayProfile={session:state.course.session,week:week,overall:essay.overall,axes:essay.axes,style:essay.style,note:essay.note,ts:Date.now()};
+      state.course.lastEssayProfile={session:state.course.session,week:week,overall:essay.overall,axes:essay.axes,style:essay.style,note:essay.note,checks:essay.checks,answer:answer,conflicts:essay.conflicts,needsHumanReview:true,gradingMethod:essay.gradingMethod,provisional:true,ts:Date.now()};
       recomputeAdaptiveModel();
       if(window.LEX_CLOUD&&LEX_CLOUD.isConfigured&&LEX_CLOUD.isConfigured()&&STUDENT_SESSION&&STUDENT_SESSION.cloud){
         LEX_CLOUD.recordAttempt({course_id:COURSE_DB_ID,item_id:null,dimension:primary,answer_text:answer,score:score,confidence:null,latency_ms:Math.max(0,Date.now()-(state.taskStartedAt||Date.now())),difficulty:q.difficulty||4,grading_method:"assessment_essay_profile_v1",error_type:essay.overall>=60?null:"constructed_response_gap"}).catch(function(){});
       }
-      state.assessmentAnswers.push({skill:q.skill,dimension:primary,correct:essay.overall>=60,score:score,essayProfile:essay});
+      state.assessmentAnswers.push({skill:q.skill,dimension:primary,correct:essay.overall>=60,score:score,answer:answer,essayProfile:essay});
       state.taskStartedAt=null;
       if(state.task<bank.length-1){state.task++;render();}else finishAssessment();
     };

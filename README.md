@@ -10,6 +10,8 @@ The approved logo is preserved unchanged. Content and rubrics for the active pro
 
 Validation: `node tests/adaptive-engine.test.js`, `node tests/production-boundaries.test.js`, `node tests/learning-quality.test.js`, `node tests/program-flow.test.js`, `node scripts/build-public.js`.
 
+All 24 reference rules meet their own bilingual recall rubrics. Exam structure checks require separately populated sections rather than a list of headings. The instructor can inspect submitted essay history. These are software checks, not evidence of learning impact; see [the academic pilot protocol](docs/academic-pilot.md).
+
 Founder: Dr. Ahmed Feky.
 
 Live: https://ahmadfoad361-sketch.github.io/lexlearn-ai-demo/

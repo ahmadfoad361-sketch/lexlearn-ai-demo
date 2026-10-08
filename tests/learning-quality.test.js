@@ -36,4 +36,29 @@ for(let w=1;w<=6;w++){
  const a=Q.assessment(w,'ar'),e=Q.assessment(w,'en');assert.equal(a.length,9);assert.equal(e.length,9);
  assert.deepEqual(a.map(x=>x.dimension),e.map(x=>x.dimension));
 }
+// A student must never lose marks for reproducing the very reference we teach.
+for(const t of Object.values(Q.topics))for(const lang of ['ar','en']){
+ const task=Q.makeEssay(t,lang,'recall'),reference=t['rule_'+lang];
+ const g=Q.grade(reference,task,lang);
+ assert.equal(g.overall,100,`reference consistency: session ${t.session}, ${lang}`);
+ assert.equal(g.referenceRule,reference);
+ assert.ok(g.needsHumanReview,'lexical coverage never certifies substantive correctness');
+ assert.ok(g.checks.every(c=>reference.includes(c.evidence)),'evidence preserves the student\'s original words');
+}
+for(const [lang,headings,answer] of [
+ ['ar','المسألة القاعدة التطبيق النتيجة','المسألة: ثبوت الحق للحمل المستكن.\nالقاعدة: حق دون قبول بشرط الولادة حيا.\nالتطبيق: ولد الحمل حيا في الواقعة.\nالنتيجة: تحقق شرط ثبوت الحق.'],
+ ['en','Issue Rule Application Conclusion','Issue: whether the prenatal right vests.\nRule: rights without acceptance depend on live birth.\nApplication: the child was born alive on these facts.\nConclusion: the vesting condition is met.']
+]){
+ const task=Q.examTask(1,lang);
+ assert.equal(Q.grade(headings,task,lang).overall,0,'a list of headings is not an exam answer');
+ assert.equal(Q.grade(answer,task,lang).overall,100,'separate populated sections meet the structural rubric');
+ const empty=lang==='ar'?'المسألة: لا أعرف الإجابة.\nالقاعدة: لا أعرف الإجابة.\nالتطبيق: لا أعرف الإجابة.\nالنتيجة: لا أعرف الإجابة.':'Issue: I do not know.\nRule: I do not know.\nApplication: I do not know.\nConclusion: I do not know.';
+ assert.equal(Q.grade(empty,task,lang).overall,0,'repeating refusals does not populate a section');
+ assert.ok(Q.grade(answer+'\n'+(lang==='ar'?'القاعدة: نص آخر عن الحقوق.':'Rule: another provision about rights.'),task,lang).overall<100,'ambiguous duplicate headings need review');
+}
+for(const [lang,claim] of [['ar','من الخطأ أن الشخصية تبدأ بالموت.'],['en','It is incorrect that personality begins at death.']]){
+ assert.equal(Q.grade(claim,Q.makeEssay(Q.topic(1),lang,'recall'),lang).conflicts.length,0,'a rejected false proposition is not a student contradiction');
+}
+assert.ok(Q.grade('الولادة حية لا تبدأ الشخصية القانونية. الموت لا ينهي الشخصية.',Q.makeEssay(Q.topic(1),'ar','recall'),'ar').overall<100,'negating required legal relations cannot receive full credit');
+assert.ok(Q.grade('Live birth does not begin legal personality. Death does not end personality.',Q.makeEssay(Q.topic(1),'en','recall'),'en').overall<100);
 console.log('learning-quality tests: PASS (30 bilingual session boundaries, fair rubric, missing evidence, contradiction, adaptive order)');

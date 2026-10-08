@@ -10,13 +10,34 @@ topics[26].rule_ar="افصل ثبوت الشخصية بالولادة حية ع�
 topics[26].rule_en="Distinguish live-birth personality, full capacity at eighteen subject to legal qualifications, and domicile based on habitual residence.";
 topics[29].rule_ar="للشركة شخصية مستقلة؛ إدارة النشاط المحلية في الدوحة تحدد موطنه، وانفراد قصد الإضرار يقتضي تطبيق معيار المادة 63.";
 topics[29].rule_en="The entity has separate personality; local management in Doha identifies activity domicile, and sole harmful intent engages Article 63.";
+// Keep every teaching reference complete enough to answer its own prompt.
+topics[6].concepts_en[2][1]="common|shared|shares";
+topics[7].concepts_ar[0][1]="درج|فرع|فروع";
+topics[8].rule_ar="الرشد ثماني عشرة سنة كاملة، ومن لم يكمل السابعة عديم التمييز. كمال الأهلية يفترض غياب سبب قانوني لاستمرار الولاية أو الوصاية أو الحجر.";
+topics[8].rule_en="Majority is eighteen full years; persons under seven lack discernment. Full capacity presumes no legal ground for continued guardianship, tutorship or interdiction.";
+topics[8].concepts_ar[1][0]="سبع|سابع|7";
+topics[9].concepts_ar[2][2]="خاص|قانون|قوانين";
+topics[9].concepts_en[0][0]="discernment|discerning";
+topics[12].rule_ar="للشخص المعنوي ذمة مستقلة وأهلية وحق التقاضي وموطن وجنسية، وممثل يعبر عن إرادته، مع استبعاد الحقوق الملازمة للطبيعي.";
+topics[13].rule_ar="للشخص المعنوي موطن مستقل وممثل يعبر عن إرادته. الإدارة المحلية في قطر موطن النشاط القطري للشخص ذي المركز الأجنبي.";
+topics[13].rule_en="A legal person has independent domicile and a representative expressing its will. Local management in Qatar is the domicile for Qatari activity of an entity headquartered abroad.";
+topics[14].rule_ar="الطبيعي تبدأ شخصيته بالولادة حية. المعنوي يستند للاعتراف القانوني وله ذمة مستقلة وممثل، ولا يملك حقوقًا ملازمة للطبيعي.";
+topics[14].concepts_en[1][0]="legal person|entity|entities";
+topics[18].rule_ar="العقار ثابت لا ينقل دون تلف أو تغيير، وما عداه منقول. والعقار بالتخصيص منقول يضعه مالكه في عقار يملكه لخدمته أو استغلاله.";
+topics[18].rule_en="An immovable is fixed and cannot be moved without damage or alteration; other things are movable. An immovable by destination is a movable placed by its owner in an immovable the owner also owns, to serve or exploit it.";
+topics[22].rule_ar="عدم مشروعية المصلحة وقصد الإضرار وحده سببان مستقلان لعدم مشروعية استعمال الحق. حدوث ضرر وحده لا يثبت انفراد قصد الإضرار.";
+topics[22].rule_en="An unlawful interest and a sole intent to harm are independent grounds of unlawful exercise. Damage alone does not establish a sole harmful purpose.";
+topics[28].rule_ar=topics[22].rule_ar;topics[28].rule_en=topics[22].rule_en;
+topics[24].rule_ar="تغير قصد الاستعمال أو مصلحته أو مقدار ضرره قد يغير المشروعية. وجود الحق لا يغني عن فحص مشروعية استعماله بمعايير المادة 63.";
+topics[24].rule_en="Changing purpose, interest or harm may change lawfulness. Existence of a right does not settle lawfulness: test its exercise against Article 63.";
+topics[29].concepts_ar[2][2]="وحد|منفرد|انفراد|سوي";
 function criterion(groups,label){return {groups:groups,label:label};}
-function rubric(t,lang,dim){return {dimension:dim,criteria:t["concepts_"+lang].map(function(g,i){return criterion(g,t["labels_"+lang][i]);})};}
+function rubric(t,lang,dim){return {dimension:dim,topicSession:t.session,criteria:t["concepts_"+lang].map(function(g,i){return criterion(g,t["labels_"+lang][i]);})};}
 function makeEssay(t,lang,dim){
  var ar=lang==="ar",q=ar?"من ذاكرتك، اكتب ثلاثة مفاتيح لإعادة بناء قاعدة «"+t.ar+"» ("+t.ref+")، واشرح وظيفة كل مفتاح. لا يلزم مثال أو واقعة في هذا السؤال.":"From memory, write three cues for reconstructing the rule on “"+t.en+"” (Articles "+t.ref+") and explain each cue’s function. No example or fact pattern is required.";
  if(dim==="understanding")q=ar?"اشرح قاعدة «"+t.ar+"» ("+t.ref+") بكلماتك، ووضح كيف تعمل عناصرها. لا يلزم تطبيق على واقعة.":"Explain the rule on “"+t.en+"” (Articles "+t.ref+") in your own words and describe how its elements operate. Application to facts is not required.";
  var criteria=rubric(t,lang,dim);
- return {mode:ar?"free":"essay",essayProfile:true,kind:"adaptive",skill:"person",dimension:dim,title:t[lang],q:q,difficulty:3,qualityRubric:criteria,why:ar?"نراجع العناصر المطلوبة في هذا السؤال فقط، دون خصم على مهارة لم يختبرها.":"Only the elements required by this prompt are checked; untested skills are not penalised.",memory:t[lang]+" · "+t.ref};
+ return {mode:ar?"free":"essay",essayProfile:true,kind:"adaptive",skill:"person",dimension:dim,title:t[lang],q:q,difficulty:3,qualityRubric:criteria,referenceRule:t["rule_"+lang],why:ar?"نراجع العناصر المطلوبة في هذا السؤال فقط، دون خصم على مهارة لم يختبرها.":"Only the elements required by this prompt are checked; untested skills are not penalised.",memory:t[lang]+" · "+t.ref};
 }
 function examTask(n,lang){
  var t=topic(n),ar=lang==="ar",groups=ar?[["المساله|السؤال"],["القاعده|النص"],["التطبيق|بما ان"],["النتيجه|لذلك"]]:[["issue|question"],["rule|provision"],["application|on these facts"],["conclusion|therefore"]];
@@ -34,23 +55,43 @@ function assessment(week,lang){
  var q=[];for(var d=1;d<=4;d++){var t=topic((week-1)*5+d);q.push(choice(t,lang,true),choice(t,lang,false));}
  q.push(examTask((week-1)*5+4,lang));return q;
 }
+function examChecks(answer,criteria,lang){
+ var ar=lang==="ar",names=ar?["المسألة","القاعدة","التطبيق","النتيجة"]:["Issue","Rule","Application","Conclusion"];
+ // A heading must introduce its own body. Mentioning all four words is not an answer.
+ var re=ar?/(?:^|[\n.!؟؛;])\s*(المسألة|المساله|القاعدة|القاعده|التطبيق|النتيجة|النتيجه)\s*[:：–-]\s*/g:/(?:^|[\n.!?;])\s*(Issue|Rule|Application|Conclusion)\s*[:：–-]\s*/gi;
+ var entries=[],m;while((m=re.exec(answer))){entries.push({name:norm(m[1]),start:re.lastIndex,end:m.index});}
+ return criteria.map(function(c,i){
+  var found=entries.filter(function(x){return x.name===norm(names[i]);}),body="";
+  if(found.length===1){var at=entries.indexOf(found[0]);body=answer.slice(found[0].start,at+1<entries.length?entries[at+1].end:answer.length).trim();}
+  var tokens=norm(body).split(" ").filter(Boolean),refusal=/لا اعرف|لا اتذكر|لا ادري|لا يمكنني|dont know|do not know|cannot answer|cannot remember|no idea/.test(norm(body));
+  var matched=tokens.length>=3&&new Set(tokens).size>=3&&!refusal;
+  return {label:c.label,matched:matched,evidence:matched?body:"",reason:found.length>1?"duplicate_section":!body?"missing_section":refusal?"no_response":!matched?"empty_section":null};
+ });
+}
 function grade(answer,task,lang){
  var r=task.qualityRubric,ar=lang==="ar",axes={recall:null,understanding:null,application:null,legal_precision:null,exam:null};
  if(!r)return {overall:null,axes:axes,needsHumanReview:true,style:ar?"تحتاج هذه الإجابة إلى مراجعة المشرف.":"This response needs instructor review.",note:ar?"لا يتوفر معيار خاص بهذا السؤال؛ لن ننسب لك درجة تخمينية.":"No prompt-specific rubric is available; no speculative score is assigned.",checks:[]};
- var parts=String(answer||"").split(/[.!?؟؛;\n]+/).map(norm).filter(Boolean);
- var checks=r.criteria.map(function(c){
-  var matched=parts.find(function(p){return p.split(" ").length>=3 && c.groups.every(function(g){return g.split("|").some(function(k){return p.indexOf(norm(k))>=0;});});});
-  return {label:c.label,matched:!!matched,evidence:matched||""};
+ var parts=String(answer||"").split(/[.!?؟؛;\n]+/).map(function(p){return {text:p.trim(),normal:norm(p)};}).filter(function(p){return p.normal;});
+ var checks=r.dimension==="exam"?examChecks(String(answer||""),r.criteria,lang):r.criteria.map(function(c,i){
+  var matched=parts.find(function(p){
+   var denied=r.topicSession===1&&i<2&&/(?:لا|ليس)\s*(?:تبدا|يبدا|تبدأ|تنتهي|ينهي|تحدد)|(?:does|do) not (?:begin|start|end)|never (?:begin|start|end)/.test(p.normal);
+   return !denied&&p.normal.split(" ").length>=3 && c.groups.every(function(g){return g.split("|").some(function(k){return p.normal.indexOf(norm(k))>=0;});});
+  });
+  return {label:c.label,matched:!!matched,evidence:matched?matched.text:""};
  });
- var contradictory=["الموت يبدا الشخصيه","الشخصيه تبدا بالموت","الحمل كامل اهليه الاداء","حقوق الحمل تثبت دون شرط","personality begins at death","unborn child has full capacity","prenatal rights vest unconditionally"].some(function(x){return norm(answer).indexOf(norm(x))>=0;});
+ // Known contradiction checks are scoped to this topic and to affirmative claims.
+ // Negated or quoted examples are not silently treated as the student's legal conclusion.
+ var contradictionPatterns=[/الشخصيه (?:القانونيه )?(?:تبدا|تبدأ) (?:بالموت|عند الموت|بالحمل)/,/الموت (?:يبدا|يبدأ) الشخصيه/,/الولاده (?:حيه )?(?:تنهي|نهايه) الشخصيه/,/الحمل (?:له |ذو )?كامل اهليه الاداء/,/حقوق الحمل (?:تثبت|ثابته) (?:دون شرط|بلا شرط)/,/personality (?:begins|starts) (?:at death|with death|at conception)/,/birth ends (?:legal )?personality/,/unborn child has full capacity/,/prenatal rights vest unconditionally/];
+ var conflicts=(r.topicSession===1||task.topicSession===1)?parts.filter(function(p){return contradictionPatterns.some(function(re){var m=re.exec(p.normal);if(!m)return false;var before=p.normal.slice(0,m.index);return !/(?:لا|ليس|خطا|خاطئ|غير صحيح|not|incorrect|wrong|false)\s*(?:ان|that|to say|true that)?\s*$/.test(before)&&!/[«“"].*[»”"]/.test(p.text);});}):[];
+ var contradictory=conflicts.length>0;
  var hit=checks.filter(function(c){return c.matched;}).length,overall=Math.round(hit/checks.length*100);
  // Lexical evidence is provisional. It never claims to certify semantic correctness.
  if(contradictory){overall=0;}axes[r.dimension]=overall;
- return {overall:overall,axes:axes,checks:checks,needsHumanReview:false,provisional:true,gradingMethod:"prompt_rubric_v2",style:ar?"فحص أولي لعناصر الإجابة، قابل لمراجعة المشرف.":"Provisional element check, subject to instructor review.",note:contradictory?(ar?"ظهرت عبارة تناقض القاعدة؛ راجع بداية الشخصية وقيود حقوق الحمل. الدليل اللفظي وحده لا يكفي.":"A statement contradicts the rule. Review the beginning of personality and the prenatal-rights conditions. Keywords alone are insufficient."):hit===checks.length?(ar?"ظهرت مؤشرات العناصر المطلوبة. راجع الصياغة القانونية في النموذج المرجعي.":"Evidence of the required elements was found. Compare the wording with the reference rule."):(ar?"لم نتحقق من: ":"Not yet verified: ")+checks.filter(function(c){return !c.matched;}).map(function(c){return c.label;}).join("؛ "),weakest:r.dimension};
+ return {overall:overall,axes:axes,checks:checks,referenceRule:task.referenceRule||task.articleText||task.text||"",conflicts:conflicts.map(function(p){return p.text;}),needsHumanReview:true,provisional:true,gradingMethod:"prompt_rubric_v3",style:ar?"فحص أولي لعناصر الإجابة؛ صحة المعنى تحتاج مراجعة المشرف.":"Provisional element check; substantive correctness needs instructor review.",note:contradictory?(ar?"ظهرت عبارة تناقض القاعدة؛ راجع بداية الشخصية وقيود حقوق الحمل. الدليل اللفظي وحده لا يكفي.":"A statement contradicts the rule. Review the beginning of personality and the prenatal-rights conditions. Keywords alone are insufficient."):hit===checks.length?(ar?"ظهرت مؤشرات العناصر المطلوبة. راجع الصياغة القانونية في النموذج المرجعي.":"Evidence of the required elements was found. Compare the wording with the reference rule."):(ar?"لم نتحقق من: ":"Not yet verified: ")+checks.filter(function(c){return !c.matched;}).map(function(c){return c.label;}).join("؛ "),weakest:r.dimension};
 }
 function feedback(p,lang,escape){
  var ar=lang==="ar",e=escape||function(v){return String(v);};
- return '<div class="essayAnalysis" role="status"><p>'+e(p.style)+'</p>'+Object.keys(labels[lang]).map(function(k){return '<div><span>'+labels[lang][k]+'</span><b>'+(p.axes[k]==null?(ar?'لم يُقَس':'Not assessed'):p.axes[k]+'%')+'</b></div>';}).join('')+'<p>'+e(p.note)+'</p></div><ul class="rubricEvidence">'+(p.checks||[]).map(function(c){return '<li><b>'+e(c.label)+'</b>: '+(c.matched?(ar?'ظهر مؤشر: ':'Evidence: ')+e(c.evidence):(ar?'لم يظهر دليل كافٍ؛ أكمل هذا العنصر.':'Insufficient evidence; add this element.'))+'</li>';}).join('')+'</ul>';
+ return '<div class="essayAnalysis" role="status"><p>'+e(p.style)+'</p>'+Object.keys(labels[lang]).map(function(k){return '<div><span>'+labels[lang][k]+'</span><b>'+(p.axes[k]==null?(ar?'لم يُقَس':'Not assessed'):p.axes[k]+'%')+'</b></div>';}).join('')+'<p>'+e(p.note)+'</p></div>'+(p.referenceRule?'<div class="modelAnswer"><b>'+(ar?'قاعدة مرجعية للمقارنة':'Reference rule for comparison')+'</b><p>'+e(p.referenceRule)+'</p><a href="https://www.almeezan.qa/LawView.aspx?LawID=2559&language=ar" target="_blank" rel="noopener noreferrer">'+(ar?'المصدر: القانون المدني القطري · بوابة الميزان':'Source: Qatar Civil Code · Al Meezan')+'</a></div>':'')+(p.conflicts&&p.conflicts.length?'<div class="notice"><b>'+(ar?'العبارة التي تحتاج مراجعة:':'Statement requiring review:')+'</b><p>'+e(p.conflicts.join(' · '))+'</p></div>':'')+'<ul class="rubricEvidence">'+(p.checks||[]).map(function(c){return '<li><b>'+e(c.label)+'</b>: '+(c.matched?(ar?'ظهر مؤشر: ':'Evidence: ')+e(c.evidence):(ar?'لم يظهر دليل كافٍ؛ أكمل هذا العنصر.':'Insufficient evidence; add this element.'))+'</li>';}).join('')+'</ul>';
 }
 function shuffleOptions(t){var a=t.opts.map(function(x,i){return {orig:i,text:x};});for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),v=a[i];a[i]=a[j];a[j]=v;}return a;}
 var api={topics:topics,topic:topic,queue:queue,examTask:examTask,assessment:assessment,grade:grade,feedback:feedback,labels:labels,makeEssay:makeEssay,choice:choice,shuffleOptions:shuffleOptions,norm:norm};root.LEX_QUALITY=api;if(typeof module!=="undefined")module.exports=api;
