@@ -41,7 +41,7 @@ function prepareQuestions(){
 }
 function chrome(inner){
   APP.innerHTML='<div class="demoShell"><header class="demoTop"><div class="demoTopIn">'+
-    '<div class="demoBrand"><div class="demoLogo" dir="ltr"><img src="assets/lexlearn-logo.svg" alt="LexLearn"></div><div><b dir="ltr">LexLearn</b><small>تعلم قانوني متكيف</small></div></div>'+
+    '<div class="demoBrand"><div class="demoLogo" dir="ltr"><img src="assets/lexlearn-logo.svg" alt="LexLearn"></div><div><b dir="ltr">LexLearn</b><small>نفهم طريقة تفكيرك، ونبني طريقك.</small></div></div>'+
     '<div class="demoMeta"><span class="demoPill">'+countryLabel()+' • '+(COUNTRY==="qa"?"نظرية الحق":"مصادر الالتزام")+'</span><a class="demoGhost" href="showcase-en.html?country=qa&subject=rights">English</a><a class="demoGhost" href="index.html">الرئيسية</a></div>'+
     '</div></header><main class="demoWrap">'+inner+'</main><footer class="demoFooter">LexLearn</footer></div>';
 }
