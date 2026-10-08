@@ -1224,7 +1224,7 @@ function achievementBoard(){
   var last=state.course.lastAssessment||{},week=last.week||state.course.repairWeek||sessionMeta(state.course.session).week,r=state.course.weekResults[week]||last,status=r.status||"repair",scores=r.skillScores||{};
   var need=status==="repair",knowledge=averageScores([scores.contract,scores.sources]),analysis=averageScores([scores.apply,scores.spot]),exam=scores.exam;
   var title=need?"تحتاج تقوية بسيطة قبل الانتقال":"أحسنت، المرحلة مكتملة";
-  var intro=need?"جلسة تثبيت قصيرة ثم إعادة قياس. الهدف تحسين أضعف نقطة قبل فتح المرحلة التالية.":"تم اجتياز المرحلة وفتح المسار التالي.";
+  var intro=need?"جلسة تثبيت قصيرة ثم إعادة قياس. الهدف تحسين أضعف نقطة قبل فتح المرحلة التالية.":"تم اجتياز المرحلة وفتح المرحلة التالية.";
   chrome('<section class="stage"><div class="achievementCard '+(need?"needsRepair":"success")+'">'+
     '<span class="achievementIcon">'+ico(need?"repeat":"check")+'</span>'+
     '<span class="kicker">نتيجة الأسبوع '+week+'</span><h2>'+title+'</h2><p>'+intro+'</p>'+
@@ -1235,7 +1235,7 @@ function achievementBoard(){
     '</div>'+
     '<div class="stageTip"><span>'+ico("bulb")+'</span><div><small>نصيحة الآن</small><b>'+esc(stageAdvice(knowledge,analysis,exam))+'</b></div></div>'+
     '<div class="achievementState '+(need?"need":"ok")+'">'+achievementLabel(status)+(r.score==null?"":" • "+r.score+"%")+'</div>'+
-    '<div class="choiceRow">'+(need?'<button class="primary" id="startRepair">ابدأ جلسة التثبيت</button><button class="secondary" id="backHome">ارجع للمسار</button>':'<button class="primary" id="backHome">افتح المرحلة التالية</button>')+'</div>'+
+    '<div class="choiceRow">'+(need?'<button class="primary" id="startRepair">ابدأ جلسة التثبيت</button><button class="secondary" id="backHome">ارجع للبرنامج</button>':'<button class="primary" id="backHome">افتح المرحلة التالية</button>')+'</div>'+
   '</div></section>');
   var sr=document.getElementById("startRepair");if(sr)sr.onclick=function(){state.answers=[];state.task=0;state.queue=buildRepairQueue();state.repairMode=true;state.view="train";render();};
   var bh=document.getElementById("backHome");if(bh)bh.onclick=function(){state.view="home";render();};
