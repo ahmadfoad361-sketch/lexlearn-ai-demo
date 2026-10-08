@@ -926,7 +926,7 @@ function train(){
   chrome('<section class="stage"><div class="progress"><i style="width:'+((state.task+1)/q.length*100)+'%"></i></div><div class="taskCard">'+
     '<span class="kicker">'+(state.repairMode?"جلسة تثبيت • ":"")+'الجلسة '+state.course.session+' • '+esc(meta.title)+' • '+(state.task+1)+' / '+q.length+'</span><h2>'+esc(t.title)+'</h2>'+
     (t.showText?'<div class="legalBox"><small>النص القانوني</small><div>'+esc(t.articleText||TEXT64)+'</div></div>':'')+
-    '<p>'+esc(t.q)+'</p>'+input+'<div id="feed"></div></div></section>');
+    LEX_QUALITY.promptHtml(t,esc)+input+'<div id="feed"></div></div></section>');
   if(t.mode==="free"){
     document.getElementById("checkFree").onclick=async function(){
       var answer=(document.getElementById("freeAnswer").value||"").trim();
@@ -1066,9 +1066,9 @@ function assessment(){
   state.taskStartedAt=Date.now();
   if(q.mode==="free"){
     chrome('<section class="stage"><div class="progress"><i style="width:'+((state.task+1)/bank.length*100)+'%"></i></div><div class="taskCard">'+
-      '<span class="kicker">تقييم تحليلي • الأسبوع '+week+' • '+(state.task+1)+' / '+bank.length+'</span><h2>'+esc(q.title||"سؤال مقالي")+'</h2><p>'+esc(q.q)+'</p>'+
+      '<span class="kicker">تقييم تحليلي • الأسبوع '+week+' • '+(state.task+1)+' / '+bank.length+'</span><h2>'+esc(q.title||"سؤال مقالي")+'</h2>'+LEX_QUALITY.promptHtml(q,esc)+
       '<textarea class="textarea essayAssessmentInput" id="assessmentEssay" placeholder="اكتب إجابتك كاملة بطريقتك..."></textarea>'+
-      '<div class="assessmentNote">هذا السؤال يقيس الحفظ والفهم والتطبيق على الوقائع وأسلوب بناء الإجابة. لن يظهر نموذج الإجابة أثناء القياس.</div>'+
+      '<div class="assessmentNote">اكتب الإجابة وفق الأجزاء المطلوبة أعلاه. لن يظهر نموذج الإجابة أثناء التقييم.</div>'+
       '<div class="choiceRow"><button class="primary" id="submitAssessmentEssay">تسليم الإجابة</button></div></div></section>');
     document.getElementById("submitAssessmentEssay").onclick=async function(){
       var answer=(document.getElementById("assessmentEssay").value||"").trim();
