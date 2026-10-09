@@ -2,10 +2,10 @@
 const fs=require('fs'),vm=require('vm'),assert=require('assert');
 const source=fs.readFileSync('supabase/functions/grade-answer/index.ts','utf8').replace(/^import .*;\n/,'').replace(/:any\b/g,'').replace(/let result:any/g,'let result');
 async function run(options={}){
- let handler,sent,saved;const approved={id:'test-item',course_id:'course',prompt_ar:'State the legal outcome.',rubric_json:{lex_task_key:'rights-v1-s1-exam',criteria:[{id:'c1',weight:1}]},source_ids:['source'],status:'approved',dimension:'exam'};
+ let handler,sent,saved;const approved={id:'test-item',course_id:'course',prompt_ar:'State the legal outcome.',rubric_json:options.rubric||{lex_task_key:'rights-v1-s1-exam',criteria:[{id:'c1',weight:1}]},source_ids:['source'],status:'approved',dimension:'exam'};
  const admin={from(table){let b={select(){return b;},eq(){return b;},gte(){return b;},contains(){return b;},in(){return b;},single:async()=>({data:options.item===false?null:approved}),insert:async value=>{saved=value;return {error:null};},then(resolve){resolve(table==='content_sources'?{data:options.sources===false?[]:[{id:'source',status:'approved',excerpt:'Personality begins at live birth, not death.'}]}:{count:0});}};return b;}};
  const context={Response,Date,JSON,Number,String,Error,console,corsHeaders:{},json:(body,status=200)=>({body,status}),requireUser:async()=>({user:{id:'synthetic-user'},profile:{role:'owner'},admin}),Deno:{env:{get:name=>options.key===false?undefined:name==='OPENAI_MODEL'?'test-model':'test-key'},serve:h=>handler=h},fetch:async(url,init)=>{sent=JSON.parse(init.body);return {ok:options.provider!==false,status:502,json:async()=>({output_text:options.invalid?'invalid':JSON.stringify(options.result||{score:0,model_confidence:.9,needs_human_review:false,contradictions:['Wrong legal conclusion'],achieved_criteria:[],missing_criteria:['c1'],feedback_ar:'Wrong outcome'})})};}};
- vm.runInNewContext(source,context);const result=await handler({method:'POST',json:async()=>({task_key:'rights-v1-s1-exam',course_id:'course',answer:'Issue: a claim. Rule: personality begins at death. Application: death occurs. Conclusion: personality begins.',language:'en'})});return {result,sent,saved};
+ vm.runInNewContext(source,context);const result=await handler({method:'POST',json:async()=>({task_key:'rights-v1-s1-exam',course_id:'course',answer:options.answer||'Issue: a claim. Rule: personality begins at death. Application: death occurs. Conclusion: personality begins.',language:'en'})});return {result,sent,saved};
 }
 (async()=>{
  assert.equal((await run({item:false})).result.status,422);
@@ -18,6 +18,9 @@ async function run(options={}){
  }
  const valid={score:1,model_confidence:.9,needs_human_review:false,contradictions:[],achieved_criteria:[{id:'c1',label:'criterion',evidence:'Issue: a claim.'}],missing_criteria:[],feedback_ar:'reviewed'};
  assert.equal((await run({result:valid})).result.body.score,1);
+ const weighted=await run({answer:'Element one. Element two. Element three.',rubric:{criteria:[2,2,2,1,1].map((weight,i)=>({id:'c'+(i+1),weight}))},result:{...valid,score:.75,achieved_criteria:['one','two','three'].map((x,i)=>({id:'c'+(i+1),label:'element',evidence:'Element '+x+'.'})),missing_criteria:['c4','c5']}});
+ assert.equal(weighted.result.body.score,.75,'missing cues reduce only their own proposed weights, without inventing a legal contradiction');
+ assert.equal(weighted.result.body.contradictions.length,0);
  for(const result of [
  {...valid,achieved_criteria:[{id:'invented',label:'criterion',evidence:'Issue: a claim.'}]},
  {...valid,achieved_criteria:[{id:'c1',label:'criterion',evidence:'Invented quotation'}]},

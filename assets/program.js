@@ -6,9 +6,9 @@ var AUTO_START=qs.get("start")==="1";
 var STUDENT_SESSION=(function(){try{return JSON.parse(localStorage.getItem("lexlearn_student_session"))||null;}catch(e){return null;}})();
 // A signed-in cloud student must always use the real tracked path, even if an old demo=1 link is opened.
 var DEMO=qs.get("demo")==="1"&&!(STUDENT_SESSION&&STUDENT_SESSION.cloud&&STUDENT_SESSION.studentId);
-var COUNTRY=String(qs.get("country")||(STUDENT_SESSION&&STUDENT_SESSION.country)||"qa").toLowerCase();
-var SUBJECT=qs.get("subject")||(COUNTRY==="qa"?"rights":"sources");
-var COURSE_DB_ID=COUNTRY==="qa"?"qa-qu-lawc101-rights":"eg-civil-sources";
+// The first release is restricted to Qatar law, including old country query links.
+var COUNTRY="qa",SUBJECT="rights";
+var COURSE_DB_ID="qa-qu-lawc101-rights";
 var COUNTRY_LABELS={qa:"قطر",eg:"مصر",sa:"السعودية",ae:"الإمارات",other:"دولة أخرى"};
 function countryLabel(){return COUNTRY_LABELS[COUNTRY]||"الدولة المختارة";}
 var STUDENT_SCOPE=STUDENT_SESSION&&STUDENT_SESSION.studentId?("_"+STUDENT_SESSION.studentId):"";
@@ -233,13 +233,13 @@ var curriculum=[
         "review"
       ],
       [
-        "ما محل الحق؟",
-        "شخص معنوي + مال + تصنيف",
+        "المال العام: صفته وحمايته",
+        "المادتان 57–58",
         "adaptive"
       ],
       [
-        "كيف يُستعمل الحق؟",
-        "دمج المواد 39–63 في واقعة واحدة",
+        "المصلحة وقصد الإضرار: مراجعة",
+        "المادة 63: الحالتان الأولى والثانية",
         "adaptive"
       ],
       [

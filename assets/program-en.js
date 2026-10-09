@@ -75,8 +75,8 @@ var curriculum=[
 ["Progress Assessment 5","Borderline cases + structured legal answer","assessment"]]},
 {week:6,title:"Integrated Theory of Rights",sessions:[
 ["Who Holds the Right?","Personality + capacity + domicile","core"],
-["What Is the Object?","Legal person + property + classification","core"],
-["How Is the Right Exercised?","Integrating Articles 39–63","adaptive"],
+["Public Property: Status and Protection","Articles 57–58","core"],
+["Interest and Intent to Harm: Review","Article 63: the first two grounds","adaptive"],
 ["Legal Simulation","Multi-issue constructed response","adaptive"],
 ["Final Assessment","Cumulative assessment + personal learning plan","assessment"]]}
 ];
