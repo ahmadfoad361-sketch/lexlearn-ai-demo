@@ -10,7 +10,7 @@
 
 القاعدة: تبدأ شخصية الإنسان بتمام ولادته حيًا، وتنتهي بموته. وللحمل حقوق لا يحتاج سببها إلى قبول، بشرط تمام ولادته حيًا.
 
-المثال: نشأ للحمل حق لا يحتاج سببه إلى قبول، ثم تمت ولادته حيًا. هل تحقق شرط ثبوت هذا الحق؟
+المثال: وجد سبب حق للحمل لا يحتاج إلى قبول، ثم تمت ولادته حيًا. هل تحقق شرط ثبوت هذا الحق؟
 
 1. هل تحقق شرط ثبوت الحق للحمل؟ — نحدد الحق المطلوب فحصه.
 2. يشترط لهذا الحق تمام الولادة حيًا. — نختار الشرط الذي يحسم السؤال.
@@ -50,7 +50,7 @@
 
 القاعدة: Personality begins at complete live birth and ends at death. An unborn child has rights whose cause requires no acceptance, conditional on complete live birth.
 
-المثال: A right whose cause requires no acceptance arose for an unborn child, who was subsequently born alive. Was the condition for this right met?
+المثال: The cause of a prenatal right requiring no acceptance existed, and the child was subsequently born alive. Was the condition for this right met?
 
 1. Was the condition for the prenatal right met? — Identify the right being examined.
 2. This right depends on complete live birth. — Choose the condition that answers the question.

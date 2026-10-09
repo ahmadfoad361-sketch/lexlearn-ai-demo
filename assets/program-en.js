@@ -295,7 +295,7 @@ function renderTask(t,assessment){
 }
 function nextTask(){if(state.task<state.queue.length-1){state.task++;render();}else{if(state.view==="assessment")finishAssessment();else finishTraining();}}
 function train(){
-  if(window.LEX_PILOT&&LEX_PILOT.isReleased(state.course.session)){LEX_PILOT.mount(APP,state.course.session,'en',{course:state.course,onSave:save,onExit:function(){state.view='home';render();}});return;}var t=state.queue[state.task]||buildQueue()[0];renderTask(t,false);}
+  if(window.LEX_PILOT&&LEX_PILOT.isReleased(state.course.session)){LEX_PILOT.mount(APP,state.course.session,'en',{course:state.course,onSave:save,onComplete:function(pilot){state.answers=[1,2,3,4,5].map(function(step){var a=pilot.attempts.filter(function(x){return x.step===step;}).slice(-1)[0];return {dimension:step===4?'recall':'application',score:a&&a.score,correct:!!(a&&a.score===1)};});finishTraining();},onExit:function(){state.view='home';render();}});return;}var t=state.queue[state.task]||buildQueue()[0];renderTask(t,false);}
 function finishTraining(){
   if(window.LEX_PILOT&&!state.repairMode)LEX_PILOT.schedule(state.course,state.course.session);
  state.course.history.push({session:state.course.session,type:state.repairMode?"repair":"training",answers:state.answers,ts:Date.now()});

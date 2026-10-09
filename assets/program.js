@@ -918,7 +918,7 @@ function taskStatusBox(correct,label,provisional){
 function orderedOptions(t,salt){return LEX_QUALITY.shuffleOptions(t);}
 
 function train(){
-  if(window.LEX_PILOT&&LEX_PILOT.isReleased(state.course.session)){LEX_PILOT.mount(APP,state.course.session,'ar',{course:state.course,onSave:save,onExit:function(){state.view='home';render();}});return;}
+  if(window.LEX_PILOT&&LEX_PILOT.isReleased(state.course.session)){LEX_PILOT.mount(APP,state.course.session,'ar',{course:state.course,onSave:save,onComplete:function(pilot){state.answers=[1,2,3,4,5].map(function(step){var a=pilot.attempts.filter(function(x){return x.step===step;}).slice(-1)[0];return {dimension:step===4?'recall':'application',score:a&&a.score,correct:!!(a&&a.score===1)};});finishTraining();},onExit:function(){state.view='home';render();}});return;}
   var q=state.queue.length?state.queue:buildTrainingQueue(),t=q[state.task%q.length],meta=sessionMeta(state.course.session);
   state.taskStartedAt=Date.now();
   var ordered=t.mode==="free"?[]:orderedOptions(t,0);

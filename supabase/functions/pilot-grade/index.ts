@@ -3,7 +3,7 @@ import {corsHeaders,json,requireUser} from "../_shared/auth.ts";
 const COURSE="qa-qu-lawc101-rights";
 const VERSION="20261009.3";
 const sourceMap:Record<number,string[]>={1:["qa-civil-2004-art39","qa-civil-2004-art40"],22:["qa-civil-2004-art63"]};
-const sourceLinks:Record<number,string[]>={1:["https://www.almeezan.qa/LawArticles.aspx?LawTreeSectionID=8882&lawId=2559&language=ar","https://www.almeezan.qa/LawArticles.aspx?LawTreeSectionID=8882&lawId=2559&language=ar"],22:["https://www.almeezan.qa/LawArticles.aspx?LawArticleID=36507&LawID=2559&language=ar"]};
+const sourceLinks:Record<number,string[]>={1:["https://www.almeezan.qa/LawArticles.aspx?LawArticleID=36483&LawID=2559&language=ar","https://www.almeezan.qa/LawArticles.aspx?LawArticleID=36484&LawID=2559&language=ar"],22:["https://www.almeezan.qa/LawArticles.aspx?LawArticleID=36507&LawID=2559&language=ar"]};
 type Criterion={id:string;label:string;weight:number};
 function task(topic:number,stage:string,lang:string){
  const ar=lang!=="en",s1=topic===1,criteria:Criterion[]=[];

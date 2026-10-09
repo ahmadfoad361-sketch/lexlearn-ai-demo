@@ -1,5 +1,5 @@
 const fs=require('fs'),vm=require('vm'),assert=require('assert');
-function environment(file,lang,seed,confirmed=true){
+function environment(file,lang,seed,confirmed=true,pilotReleased=false){
  const storage=new Map();
  if(seed)storage.set('lexlearn_v9_profile',JSON.stringify({results:{'qa-rights':{metrics:{recall:50,understanding:90,application:70,legal_precision:60,exam:null}}}}));
  let nodes=[];
@@ -12,7 +12,8 @@ function environment(file,lang,seed,confirmed=true){
  Element.prototype.querySelector=function(s){return query(s)[0]||null;};
  Element.prototype.appendChild=function(el){nodes.push(el);};
  const c={document,location:{search:'?demo=1&country=qa&subject=rights',replace(){}},URLSearchParams,Date,Math,JSON,Promise,console,setTimeout,clearTimeout,localStorage:{getItem(k){return storage.get(k)||null;},setItem(k,v){storage.set(k,v);}},scrollTo(){}};c.window=c;c.globalThis=c;vm.createContext(c);
- for(const name of ['assets/adaptive-engine.js','assets/learning-quality.js','assets/pilot-learning.js'])vm.runInContext(fs.readFileSync(name,'utf8'),c);
+ for(const name of ['assets/adaptive-engine.js','assets/learning-quality.js','assets/pilot-learning.js']){let script=fs.readFileSync(name,'utf8');if(pilotReleased&&name.endsWith('pilot-learning.js'))script=script.replace('var release={1:false,22:false}','var release={1:true,22:true}');vm.runInContext(script,c);}
+ if(pilotReleased){let seq=0;c.LEX_CLOUD={isConfigured:()=>true,recordAttempt:async()=>({id:'test-attempt-'+(++seq)}),gradePilot:async()=>({status:'scored',passed:true}),db:()=>({from:table=>({select:()=>({eq:()=>({maybeSingle:async()=>({data:table==='pilot_ai_grades'?{status:'scored',passed:true,score:1,feedback:'صحيح؛ القاعدة والتطبيق والنتيجة متسقة مع الواقعة.'}:null})})})})})};}
  // A confirmed-review fixture tests the gates, not model accuracy.
  if(confirmed)c.LEX_QUALITY.gradeAsync=async function(answer,task,language){const p=c.LEX_QUALITY.grade(answer,task,language);p.pending=false;p.overall=/لا أتذكر|cannot remember/.test(answer)?0:100;p.axes[task.dimension]=p.overall;p.needsHumanReview=false;p.gradingMethod='grounded_semantic';return p;};
  let src=fs.readFileSync(file,'utf8');
@@ -61,5 +62,11 @@ function environment(file,lang,seed,confirmed=true){
  // New entrants cannot start training before diagnosis.
   const blank=environment('assets/program'+(lang==='en'?'-en':'')+'.js',lang,false);blank.c.__test.home();assert.equal(blank.document.getElementById('startSession'),null);
   const gated=environment('assets/program'+(lang==='en'?'-en':'')+'.js',lang,true);gated.c.__test.state.course.session=4;gated.c.__test.home();assert.ok(!gated.document.querySelector('[data-week="2"]'));
+ // Releasing a pilot session must complete it and unlock the next session.
+ const pilot=environment('assets/program'+(lang==='en'?'-en':'')+'.js',lang,true,true,true),p=pilot.c.__test,doc=pilot.document;
+ p.home();doc.getElementById('startSession').onclick();doc.getElementById('readExample').onclick();
+ for(const step of [1,2]){doc.querySelector('[data-pilot-option="0"]').onclick();doc.getElementById('pilotNext').onclick();}
+ for(const step of [3,4,5]){doc.getElementById('pilotAnswer').value='الموت ينهي الشخصية، والحق له شرط. The death ends personality.';await doc.getElementById('pilotSubmit').onclick();await new Promise(resolve=>setTimeout(resolve,0));assert(doc.getElementById('pilotNext'),'pilot should show the next button after automatic grading');doc.getElementById('pilotNext').onclick();}
+ assert.equal(p.state.course.session,2);assert(p.state.course.completed.includes(1));assert.equal(p.state.view,'sessionResult');
  }
 })().catch(e=>{console.error(e);process.exit(1);});

@@ -65,7 +65,7 @@ Personality begins at conception; birth confirms full capacity to act
 
 ## rights-v1-s1-exam — بداية الشخصية
 
-الواقعة: نشأ للحمل حق لا يحتاج إلى قبول، ثم تمت ولادته حيًا. ما أثر الولادة على الحق المقصود؟
+الواقعة: وجد سبب حق للحمل لا يحتاج إلى قبول، ثم تمت ولادته حيًا. ما أثر الولادة على الحق المقصود؟
 المسألة: اكتب السؤال القانوني المطلوب حسمه في الواقعة، بجملة واحدة.
 القاعدة: اذكر القاعدة أو الشرط القانوني الذي ستعتمد عليه؛ لا يلزم رقم المادة إلا إذا طُلب.
 التطبيق: اربط الوقائع بالقاعدة، ووضّح لماذا تتحقق شروطها أو لا تتحقق.
@@ -85,7 +85,7 @@ Personality begins at conception; birth confirms full capacity to act
 
 ### الصياغة الإنجليزية
 
-Facts: A right not requiring acceptance arose for an unborn child, who was later born alive. What follows?
+Facts: The cause of a prenatal right requiring no acceptance existed, and the child was later born alive. What follows?
 Issue: state the legal question raised by the facts in one sentence.
 Rule: identify the relevant legal rule or condition; an article number is not required unless requested.
 Application: connect the facts to the rule and explain which conditions are or are not met.

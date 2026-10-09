@@ -54,6 +54,14 @@ for(const lang of ['ar','en']){
  }
  assert.equal(st.step,6);assert.equal(c.delayedReviews.length,2);
 }
+for(const lang of ['ar','en']){
+ const host=fixture(),course={};let completed=0,finished;
+ P.mount(host,22,lang,{course,reviewMode:true,onComplete:s=>{completed++;finished=s;}});
+ host.querySelector('#readExample').onclick();
+ for(const step of [1,2]){host.querySelector('[data-pilot-option="0"]').onclick();host.querySelector('#pilotNext').onclick();}
+ for(const step of [3,4,5]){host.querySelector('#pilotAnswer').value='A reasoned answer';host.querySelector('#pilotSubmit').onclick();host.querySelector('#reviewPass').onclick();}
+ assert.equal(completed,1);assert.equal(finished.step,6);assert.equal(course.delayedReviews,undefined,'the course completion callback owns scheduling');
+}
 // Reviewer UI never opens draft questions for unauthenticated/inactive/student profiles.
 (async()=>{
  const saved=[];

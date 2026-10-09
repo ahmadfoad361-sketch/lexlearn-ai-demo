@@ -6,7 +6,7 @@ var release={1:false,22:false};
 var content={
  1:{source:"https://www.almeezan.qa/LawArticles.aspx?LawArticleID=36483&LawID=2559&language=ar",ar:{
   title:"بداية الشخصية",rule:"تبدأ شخصية الإنسان بتمام ولادته حيًا، وتنتهي بموته. وللحمل حقوق لا يحتاج سببها إلى قبول، بشرط تمام ولادته حيًا.",
-  facts:"نشأ للحمل حق لا يحتاج سببه إلى قبول، ثم تمت ولادته حيًا. هل تحقق شرط ثبوت هذا الحق؟",
+  facts:"وجد سبب حق للحمل لا يحتاج إلى قبول، ثم تمت ولادته حيًا. هل تحقق شرط ثبوت هذا الحق؟",
   solution:["هل تحقق شرط ثبوت الحق للحمل؟","يشترط لهذا الحق تمام الولادة حيًا.","سبب الحق لا يحتاج إلى قبول، وتمت الولادة حيًا؛ لذلك تحقق الشرط.","نعم، تحقق شرط ثبوت هذا الحق."],
   reasons:["نحدد الحق المطلوب فحصه.","نختار الشرط الذي يحسم السؤال.","نربط الشرط بواقعة مذكورة، دون إضافة وقائع.","نجيب عن شرط الحق المحدد، دون تعميم على كل الحقوق."],
   completion:["تحقق شرط ثبوت هذا الحق","لم يتحقق شرط ثبوت الحق","تبدأ الشخصية بمجرد وجود الحمل"],
@@ -14,7 +14,7 @@ var content={
   compare:["تبدأ الشخصية بتمام الولادة حيًا.","تبدأ الشخصية بمجرد الحمل."],
   transfer:"في واقعة جديدة، ثبتت وفاة شخص. قال زميل: «لا تنتهي شخصيته إلا بعد إغلاق حسابه البنكي». ما الحدث الذي ينهي الشخصية؟ اكتب المسألة والقاعدة والتطبيق والنتيجة.",
   keys:["تمام الولادة حيًا وبداية الشخصية","الموت ونهاية الشخصية","حقوق الحمل وشرط الولادة حيًا"]},en:{
-  title:"Beginning of legal personality",rule:"Personality begins at complete live birth and ends at death. An unborn child has rights whose cause requires no acceptance, conditional on complete live birth.",facts:"A right whose cause requires no acceptance arose for an unborn child, who was subsequently born alive. Was the condition for this right met?",
+  title:"Beginning of legal personality",rule:"Personality begins at complete live birth and ends at death. An unborn child has rights whose cause requires no acceptance, conditional on complete live birth.",facts:"The cause of a prenatal right requiring no acceptance existed, and the child was subsequently born alive. Was the condition for this right met?",
   solution:["Was the condition for the prenatal right met?","This right depends on complete live birth.","The cause required no acceptance and live birth occurred, so the condition was met.","Yes, the condition was met."],reasons:["Identify the right being examined.","Choose the condition that answers the question.","Connect the condition to a stated fact.","Answer about the specified right without generalising to all rights."],
   completion:["The condition for this right was met","The condition for this right was not met","Personality began at conception alone"],change:"Change one condition: live birth did not occur. Was the condition for the stated right met?",changeOptions:["No; the live-birth condition was not met","Yes; the cause alone is sufficient","Yes; this right vests without conditions"],changeWhy:"The stated right depends on live birth; changing that condition changes the conclusion.",compare:["Personality begins at complete live birth.","Personality begins at conception alone."],transfer:"In a new case, a person’s death is established. A peer says: ‘Personality ends only when the bank account is closed.’ Which event ends personality? Write Issue, Rule, Application and Conclusion.",keys:["Complete live birth and the beginning of personality","Death and the end of personality","Prenatal rights and the live-birth condition"]}},
  22:{source:"https://www.almeezan.qa/LawArticles.aspx?LawArticleID=36507&LawID=2559&language=ar",ar:{
@@ -82,7 +82,7 @@ function mount(host,n,lang,options){
  course.pilotLessons=course.pilotLessons||{};var s=course.pilotLessons[key]||(course.pilotLessons[key]={step:0,failures:0,pending:false,attempts:[]});
  var names=ar?["مثال محلول","أكمل النتيجة","غيّر شرطًا","اشرح الفرق","مفاتيح الحفظ","واقعة جديدة"]:["Worked example","Complete the conclusion","Change a condition","Explain the difference","Retrieval cues","New case"];
  function save(){if(options.onSave)options.onSave();}
- function finish(result){var action=advance(s,result);save();if(action==="pending")return;render();}
+ function finish(result){var action=advance(s,result);save();if(action==="pending")return;if(s.step>=6&&options.onComplete){options.onComplete(s);return;}render();}
  function model(){return '<p>'+esc(c.facts)+'</p>'+c.solution.map(function(x,i){return '<div class="legalBox"><b>'+esc((ar?["المسألة","القاعدة","التطبيق","النتيجة"]:["Issue","Rule","Application","Conclusion"])[i])+'</b><p>'+esc(x)+'</p><small>'+esc(c.reasons[i])+'</small></div>';}).join("");}
  function render(){
   if(s.step>=6){schedule(course,n);save();host.innerHTML='<section class="taskCard"><h2>'+(ar?"انتهت خطوات التدريب":"Practice steps completed")+'</h2><p>'+(ar?"الخطوة التالية مراجعة بعد يوم، ثم بعد أسبوع.":"Next: review after one day and one week.")+'</p><button class="secondary" id="pilotExit">'+(ar?"العودة":"Back")+'</button></section>';host.querySelector("#pilotExit").onclick=options.onExit||function(){};return;}

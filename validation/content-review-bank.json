@@ -208,7 +208,7 @@
       "dimension": "exam_execution",
       "difficulty": 4,
       "item_type": "essay",
-      "prompt_ar": "الواقعة: نشأ للحمل حق لا يحتاج إلى قبول، ثم تمت ولادته حيًا. ما أثر الولادة على الحق المقصود؟\nالمسألة: اكتب السؤال القانوني المطلوب حسمه في الواقعة، بجملة واحدة.\nالقاعدة: اذكر القاعدة أو الشرط القانوني الذي ستعتمد عليه؛ لا يلزم رقم المادة إلا إذا طُلب.\nالتطبيق: اربط الوقائع بالقاعدة، ووضّح لماذا تتحقق شروطها أو لا تتحقق.\nالنتيجة: أجب عن سؤال الواقعة بوضوح، مع سبب مختصر. اكتب كل جزء تحت عنوانه.",
+      "prompt_ar": "الواقعة: وجد سبب حق للحمل لا يحتاج إلى قبول، ثم تمت ولادته حيًا. ما أثر الولادة على الحق المقصود؟\nالمسألة: اكتب السؤال القانوني المطلوب حسمه في الواقعة، بجملة واحدة.\nالقاعدة: اذكر القاعدة أو الشرط القانوني الذي ستعتمد عليه؛ لا يلزم رقم المادة إلا إذا طُلب.\nالتطبيق: اربط الوقائع بالقاعدة، ووضّح لماذا تتحقق شروطها أو لا تتحقق.\nالنتيجة: أجب عن سؤال الواقعة بوضوح، مع سبب مختصر. اكتب كل جزء تحت عنوانه.",
       "rubric_json": {
         "lex_task_key": "rights-v1-s1-exam",
         "version": "review-v2",
@@ -237,7 +237,7 @@
             "weight": 1
           }
         ],
-        "prompt_en": "Facts: A right not requiring acceptance arose for an unborn child, who was later born alive. What follows?\nIssue: state the legal question raised by the facts in one sentence.\nRule: identify the relevant legal rule or condition; an article number is not required unless requested.\nApplication: connect the facts to the rule and explain which conditions are or are not met.\nConclusion: answer the question clearly with a brief reason. Use a heading for each section.",
+        "prompt_en": "Facts: The cause of a prenatal right requiring no acceptance existed, and the child was later born alive. What follows?\nIssue: state the legal question raised by the facts in one sentence.\nRule: identify the relevant legal rule or condition; an article number is not required unless requested.\nApplication: connect the facts to the rule and explain which conditions are or are not met.\nConclusion: answer the question clearly with a brief reason. Use a heading for each section.",
         "reference_rule_ar": "الولادة حية تبدأ الشخصية، والموت ينهيها، وتثبت للحمل حقوق لا يحتاج سببها إلى قبول بشرط ولادته حيًا.",
         "reference_rule_en": "Live birth begins legal personality; death ends it. An unborn child may acquire rights not requiring acceptance, conditional on live birth.",
         "reference_outcome_ar": "يتحقق شرط ثبوت هذا الحق دون أن يعني كمال أهلية الأداء",
