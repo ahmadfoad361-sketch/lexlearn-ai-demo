@@ -46,6 +46,7 @@ jobs:
           node tests/semantic-service.test.js
           node tests/review-bank.test.js
           node tests/pilot-learning.test.js
+          node tests/pilot-grade-service.test.js
           node tests/program-flow.test.js
       - name: Production boundary tests
         run: node tests/production-boundaries.test.js
