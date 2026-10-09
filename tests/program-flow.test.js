@@ -6,11 +6,13 @@ function environment(file,lang,seed,confirmed=true){
  function Element(attrs={}){this.attrs=attrs;this.dataset={};for(const [k,v]of Object.entries(attrs))if(k.startsWith('data-'))this.dataset[k.slice(5).replace(/-([a-z])/g,(_,c)=>c.toUpperCase())]=v;this.classList={add(){}};this.value='';}
  Object.defineProperty(Element.prototype,'innerHTML',{set(html){this.html=html;if(this.attrs.id==='programApp')nodes=[this];const re=/<[a-z][^>]*>/gi;for(const tag of html.match(re)||[]){const attrs={};for(const m of tag.matchAll(/([a-z-]+)="([^"]*)"/gi))attrs[m[1]]=m[2];nodes.push(new Element(attrs));}},get(){return this.html||'';}});
  const app=new Element({id:'programApp'});nodes=[app];
- function query(selector){const data=selector.match(/^\[([^=\]]+)(?:="([^"]*)")?\]$/);if(data)return nodes.filter(n=>n.attrs[data[1]]!==undefined&&(data[2]===undefined||n.attrs[data[1]]===data[2]));if(selector[0]==='.')return nodes.filter(n=>(n.attrs.class||'').split(' ').includes(selector.slice(1)));return [];}
- const document={documentElement:{lang},getElementById(id){return nodes.slice().reverse().find(n=>n.attrs.id===id)||null;},querySelectorAll:query,querySelector(s){return query(s)[0]||null;}};
+ function query(selector){const data=selector.match(/^\[([^=\]]+)(?:="([^"]*)")?\]$/);if(data)return nodes.filter(n=>n.attrs[data[1]]!==undefined&&(data[2]===undefined||n.attrs[data[1]]===data[2]));if(selector[0]==='.')return nodes.filter(n=>(n.attrs.class||'').split(' ').includes(selector.slice(1)));if(selector[0]==='#')return nodes.filter(n=>n.attrs.id===selector.slice(1));return [];}
+ const document={documentElement:{lang},createElement(){return new Element();},getElementById(id){return nodes.slice().reverse().find(n=>n.attrs.id===id)||null;},querySelectorAll:query,querySelector(s){return query(s)[0]||null;}};
  Element.prototype.querySelectorAll=query;
+ Element.prototype.querySelector=function(s){return query(s)[0]||null;};
+ Element.prototype.appendChild=function(el){nodes.push(el);};
  const c={document,location:{search:'?demo=1&country=qa&subject=rights',replace(){}},URLSearchParams,Date,Math,JSON,Promise,console,setTimeout,clearTimeout,localStorage:{getItem(k){return storage.get(k)||null;},setItem(k,v){storage.set(k,v);}},scrollTo(){}};c.window=c;c.globalThis=c;vm.createContext(c);
- for(const name of ['assets/adaptive-engine.js','assets/learning-quality.js'])vm.runInContext(fs.readFileSync(name,'utf8'),c);
+ for(const name of ['assets/adaptive-engine.js','assets/learning-quality.js','assets/pilot-learning.js'])vm.runInContext(fs.readFileSync(name,'utf8'),c);
  // A confirmed-review fixture tests the gates, not model accuracy.
  if(confirmed)c.LEX_QUALITY.gradeAsync=async function(answer,task,language){const p=c.LEX_QUALITY.grade(answer,task,language);p.pending=false;p.overall=/لا أتذكر|cannot remember/.test(answer)?0:100;p.axes[task.dimension]=p.overall;p.needsHumanReview=false;p.gradingMethod='grounded_semantic';return p;};
  let src=fs.readFileSync(file,'utf8');
