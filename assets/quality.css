@@ -65,3 +65,5 @@ body{font-size:1rem}button,a,input,textarea,summary{touch-action:manipulation}bu
 @media(max-width:760px){.qualityDemoAction{flex:1}}
 
 .essayInstructions{padding:16px 20px;background:#f5f2ed;border-radius:14px;line-height:1.85;margin-block:16px}.essayInstructions ol{margin:8px 0 0;padding-inline-start:24px}.essayInstructions li{margin-block:8px}.taskCard>.assessmentNote{display:block;line-height:1.8;margin-block:12px;color:#57606c}
+
+.delayedReviewCard{margin:1rem 0}.reviewRow{display:flex;flex-wrap:wrap;align-items:center;gap:.75rem;padding:1rem 0;border-bottom:1px solid #d9dde5}.reviewRow span{font-size:1rem}.delayedReviewCard button{margin-top:1rem}#pilotSurface .legalBox p{margin:.5rem 0}#pilotSurface small{font-size:1rem}

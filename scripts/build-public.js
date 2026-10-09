@@ -7,13 +7,13 @@ const pages=[
   "index.html","showcase.html","program.html",
   "index-en.html","showcase-en.html","program-en.html",
   "student-login.html","student.html","student-login-en.html","student-en.html",
-  "admin-login.html","admin.html",
+  "admin-login.html","admin.html","pilot-review.html",
   "privacy.html","terms.html","reset-password.html",".nojekyll"
 ];
 const assets=[
   "lexlearn-logo.svg","brand-intro.js","training-carousel.js",
   "v9-law.css","v9-law-content.js","v9-law.js",
-  "adaptive-engine.js","learning-quality.js","quality.css",
+  "adaptive-engine.js","learning-quality.js","pilot-learning.js","pilot-review.js","quality.css",
   "showcase.css","showcase.js","showcase-en.js",
   "program.css","program.js","program-en.js",
   "portal.css","student-login.js","student-login-en.js","admin-login-v2.js",

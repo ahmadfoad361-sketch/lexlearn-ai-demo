@@ -740,6 +740,7 @@ function chrome(inner){
     '<div class="brand"><div class="mark"><img src="assets/lexlearn-logo.svg" alt="LexLearn"></div><div><b>Lex<span class="brandLearn">Learn</span></b><small>'+countryLabel()+' • نظرية الحق • نفهم طريقة تفكيرك، ونبني طريقك.</small></div></div>'+
     '<div class="topActions"><a class="topBtn" href="program-en.html?country=qa&subject=rights'+(DEMO?'&demo=1':'')+'">English</a><a class="topBtn" href="showcase.html?country='+COUNTRY+'">الديمو التشخيصي</a><a class="topBtn" href="index.html">الرئيسية</a></div>'+
   '</div></header><main class="courseWrap">'+inner+(STUDENT_SESSION&&STUDENT_SESSION.cloud?'<p id="qualitySync" role="status">التقدم المحلي محفوظ؛ الحفظ المركزي يُؤكد بعد إتمام المزامنة.</p>':'')+'</main></div>';
+  if(window.LEX_PILOT&&['home','sessionResult','completion'].indexOf(state.view)>=0)LEX_PILOT.dashboard(document.querySelector('.courseWrap'),state.course,'ar',save,function(){state.view='home';render();});
 }
 function render(){
   if(state.view==="home")return home();
@@ -917,6 +918,7 @@ function taskStatusBox(correct,label,provisional){
 function orderedOptions(t,salt){return LEX_QUALITY.shuffleOptions(t);}
 
 function train(){
+  if(window.LEX_PILOT&&LEX_PILOT.isReleased(state.course.session)){LEX_PILOT.mount(APP,state.course.session,'ar',{course:state.course,onSave:save,onExit:function(){state.view='home';render();}});return;}
   var q=state.queue.length?state.queue:buildTrainingQueue(),t=q[state.task%q.length],meta=sessionMeta(state.course.session);
   state.taskStartedAt=Date.now();
   var ordered=t.mode==="free"?[]:orderedOptions(t,0);
@@ -1029,6 +1031,7 @@ function buildRepairQueue(){
   return [targeted,pool[0],pool[1],learningBridge().primary,pool[2]].filter(Boolean).map(function(t){return contextualizeTask(t,meta);});
 }
 function finishTraining(){
+  if(window.LEX_PILOT&&!state.repairMode)LEX_PILOT.schedule(state.course,state.course.session);
   var model=recomputeAdaptiveModel();
   state.course.history.push({session:state.course.session,type:state.repairMode?"repair":"training_summary",answers:state.answers,adaptiveModel:model,ts:Date.now()});
   if(state.repairMode){

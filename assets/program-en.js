@@ -262,6 +262,7 @@ function addEvidence(dim,score,method,answer,task){
 function syncNote(error){var el=document.getElementById("qualitySync");if(el)el.textContent=error?"Progress is saved locally; central saving could not be confirmed. Retry when connected.":"Central saving for the instructor is confirmed.";}
 function chrome(inner){
  APP.innerHTML='<div class="courseShell"><header class="courseTop"><div class="courseTopIn"><div class="brand"><div class="mark"><img src="assets/lexlearn-logo.svg" alt="LexLearn"></div><div><b>Lex<span class="brandLearn">Learn</span></b><small>Qatar • Theory of Rights • We understand your mind and build your path.</small></div></div><div class="topActions"><a class="topBtn" href="student-en.html">Student Portal</a><a class="topBtn" href="program.html?country=qa&subject=rights'+(DEMO?'&demo=1':'')+'">العربية</a></div></div></header><main class="courseWrap">'+inner+(STUDENT_SESSION&&STUDENT_SESSION.cloud?'<p id="qualitySync" role="status">Local progress is saved; central saving is confirmed after sync.</p>':'')+'</main></div>';
+  if(window.LEX_PILOT&&['home','sessionResult','completion'].indexOf(state.view)>=0)LEX_PILOT.dashboard(document.querySelector('.courseWrap'),state.course,'en',save,function(){state.view='home';render();});
 }
 function metricCard(label,v){var n=v==null?"—":Math.round(v)+"%",word=v==null?"Not measured":v>=80?"Strong":v>=60?"Developing well":v>=40?"Needs focus":"Priority";return '<div class="snapshotCard"><div class="snapshotRing" style="--p:'+(v==null?0:v)+'"><b>'+n+'</b></div><strong>'+label+'</strong><small>'+word+'</small></div>';}
 function roadmap(current){
@@ -293,8 +294,10 @@ function renderTask(t,assessment){
  document.querySelectorAll("[data-o]").forEach(function(b){b.onclick=function(){var i=Number(b.dataset.o),ok=i===t.a;document.querySelectorAll("[data-o]").forEach(function(x){x.disabled=true;});b.classList.add(ok?"good":"bad");if(!ok){var right=document.querySelector('[data-o="'+t.a+'"]');if(right)right.classList.add("good");}addEvidence(t.dimension||"understanding",ok?1:0,assessment?"english_stage_assessment":"english_adaptive",null,t);state.answers.push({dimension:t.dimension,score:ok?1:0,correct:ok});document.getElementById("feed").innerHTML='<div class="answerStatus '+(ok?"correct":"wrong")+'"><div><b>'+(ok?"Correct":"Review this point")+'</b><small>'+esc(ok?t.why:("Correct answer: "+t.opts[t.a]+". "+t.why))+'</small></div></div><div class="choiceRow"><button class="primary" id="nextChoice">'+(state.task<state.queue.length-1?"Next":"Finish session")+'</button></div>';document.getElementById("nextChoice").onclick=nextTask;};});
 }
 function nextTask(){if(state.task<state.queue.length-1){state.task++;render();}else{if(state.view==="assessment")finishAssessment();else finishTraining();}}
-function train(){var t=state.queue[state.task]||buildQueue()[0];renderTask(t,false);}
+function train(){
+  if(window.LEX_PILOT&&LEX_PILOT.isReleased(state.course.session)){LEX_PILOT.mount(APP,state.course.session,'en',{course:state.course,onSave:save,onExit:function(){state.view='home';render();}});return;}var t=state.queue[state.task]||buildQueue()[0];renderTask(t,false);}
 function finishTraining(){
+  if(window.LEX_PILOT&&!state.repairMode)LEX_PILOT.schedule(state.course,state.course.session);
  state.course.history.push({session:state.course.session,type:state.repairMode?"repair":"training",answers:state.answers,ts:Date.now()});
  if(state.repairMode){state.repairMode=false;state.view="assessment";state.task=0;state.answers=[];state.queue=assessmentQueue(state.repairWeek||sessionMeta(state.course.session).week);render();return;}
  if(state.course.completed.indexOf(state.course.session)===-1)state.course.completed.push(state.course.session);
