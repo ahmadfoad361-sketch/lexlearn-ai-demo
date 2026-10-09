@@ -41,6 +41,7 @@ jobs:
           node tests/adaptive-engine.test.js
           node tests/learning-quality.test.js
           node tests/semantic-service.test.js
+          node tests/review-bank.test.js
           node tests/program-flow.test.js
       - name: Production boundary tests
         run: node tests/production-boundaries.test.js
