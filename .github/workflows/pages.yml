@@ -38,6 +38,7 @@ jobs:
           test -f supabase/migrations/20261006_001_production_core.sql
           test -f supabase/migrations/20261006_002_hardening_and_qatar_curriculum.sql
           test -f supabase/functions/grade-answer/index.ts
+          test -f supabase/functions/pilot-grade/index.ts
       - name: Adaptive engine tests
         run: |
           node tests/adaptive-engine.test.js

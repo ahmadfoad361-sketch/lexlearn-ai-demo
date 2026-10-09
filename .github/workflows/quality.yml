@@ -35,6 +35,7 @@ jobs:
           node --check assets/student.js
           node --check assets/admin-entry.js
           node --check assets/admin-cloud.js
+          node --check assets/pilot-learning.js
           node --check assets/pilot0.js
       - name: Adaptive engine tests
         run: |
@@ -43,6 +44,7 @@ jobs:
           node tests/semantic-service.test.js
           node tests/review-bank.test.js
           node tests/pilot-learning.test.js
+          node tests/pilot-grade-service.test.js
           node tests/program-flow.test.js
       - name: Production boundary tests
         run: node tests/production-boundaries.test.js
