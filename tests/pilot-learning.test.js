@@ -56,6 +56,13 @@ for(const lang of ['ar','en']){
 }
 // Reviewer UI never opens draft questions for unauthenticated/inactive/student profiles.
 (async()=>{
+ const saved=[];
+ global.LEX_CLOUD={isConfigured:()=>true,recordAttempt:async row=>{saved.push(row);return {id:'attempt-1'};},db:()=>({from:table=>{assert.equal(table,'pilot_human_grades');return {select:()=>({eq:()=>({maybeSingle:async()=>({data:{passed:false,feedback:'راجِع شرط الولادة الحية قبل تقرير النتيجة.'}})})})};}})};
+ assert.equal(await P.persistAttempt(1,'step4','قاعدة صحيحة ومفاتيح مستقلة','recall'),'attempt-1');
+ assert.equal(saved[0].score,null);assert.equal(saved[0].grading_method,'pilot_human_pending');
+ assert.equal(saved[0].selected_option,'pilot:s1:step4:'+P.version);
+ assert.equal((await P.loadGrade('attempt-1')).passed,false);
+ delete global.LEX_CLOUD;
  for(const profile of [null,{role:'student',active:true},{role:'owner',active:false},{role:'instructor',active:true}]){
   let mounted=false;const controls={innerHTML:'',querySelectorAll:()=>[]},host={innerHTML:''},languageButton={};
   const context={document:{getElementById:id=>id==='pilotControls'?controls:id==='pilotSurface'?host:languageButton,documentElement:{}},LEX_CLOUD:{isConfigured:()=>true,profile:async()=>profile},LEX_PILOT:{mount:()=>{mounted=true;}}};context.window=context;
