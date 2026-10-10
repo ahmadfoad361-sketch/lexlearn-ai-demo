@@ -41,6 +41,8 @@ jobs:
         run: |
           node tests/adaptive-engine.test.js
           node tests/learning-quality.test.js
+          node tests/diagnostic-evidence.test.js
+          node tests/public-showcase.test.js
           node tests/semantic-service.test.js
           node tests/review-bank.test.js
           node tests/pilot-learning.test.js
