@@ -2,7 +2,7 @@
 "use strict";
 var DAY=86400000,VERSION="20261009.3";
 // New fact patterns remain unavailable in the student course until joint legal review.
-var release={1:false,22:false};
+var release={1:true,22:true};
 var content={
  1:{source:"https://www.almeezan.qa/LawArticles.aspx?LawArticleID=36483&LawID=2559&language=ar",ar:{
   title:"بداية الشخصية",rule:"تبدأ شخصية الإنسان بتمام ولادته حيًا، وتنتهي بموته. وللحمل حقوق لا يحتاج سببها إلى قبول، بشرط تمام ولادته حيًا.",
