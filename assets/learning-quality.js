@@ -192,9 +192,12 @@ function diagnosticSummary(answers,recallGrade){
  var indicators={recall:pct("recall"),understanding:pct("understanding"),application:pct("application"),legal_precision:pct("legal_precision")};
  var confirmed=recallGrade&&!recallGrade.pending&&recallGrade.gradingMethod==="grounded_semantic";
  var metrics={recall:confirmed?recallGrade.axes.recall:null,understanding:indicators.understanding,application:indicators.application,legal_precision:null,exam:null,retention:null};
- var ranked=Object.keys(indicators).filter(function(k){return indicators[k]!=null;}).sort(function(a,b){return indicators[a]-indicators[b];});
- var gap=ranked.length?indicators[ranked[ranked.length-1]]-indicators[ranked[0]]:0;
- return {metrics:metrics,choiceIndicators:indicators,weak:gap>=15?ranked[0]:null,profileType:confirmed&&metrics.understanding!=null?(metrics.recall-metrics.understanding>=12?"recall-led":metrics.understanding-metrics.recall>=12?"understanding-led":"balanced"):"insufficient_evidence",pendingRecall:!confirmed};
+ // The multiple-choice recall indicator is NOT an assessed memory score.
+ // No bridge from "strong recall" may be selected without reviewed free recall.
+ var evaluated=confirmed?["recall","understanding","application"].filter(function(k){return metrics[k]!=null;}):[];
+ var ranked=evaluated.sort(function(a,b){return metrics[a]-metrics[b];});
+ var gap=ranked.length>1?metrics[ranked[ranked.length-1]]-metrics[ranked[0]]:0;
+ return {metrics:metrics,choiceIndicators:indicators,weak:confirmed&&gap>=15?ranked[0]:null,profileType:confirmed&&metrics.understanding!=null?(metrics.recall-metrics.understanding>=12?"recall-led":metrics.understanding-metrics.recall>=12?"understanding-led":"balanced"):"insufficient_evidence",pendingRecall:!confirmed};
 }
 function shuffleOptions(t){var a=t.opts.map(function(x,i){return {orig:i,text:x};});for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),v=a[i];a[i]=a[j];a[j]=v;}return a;}
 var api={courseScope:courseScope,articleRef:articleRef,promptHtml:promptHtml,diagnosticSummary:diagnosticSummary,topics:topics,topic:topic,queue:queue,examTask:examTask,assessment:assessment,grade:grade,gradeAsync:gradeAsync,personalPlan:personalPlan,learnerContext:learnerContext,feedback:feedback,labels:labels,makeEssay:makeEssay,choice:choice,shuffleOptions:shuffleOptions,norm:norm};root.LEX_QUALITY=api;if(typeof module!=="undefined")module.exports=api;
