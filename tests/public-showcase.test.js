@@ -7,7 +7,6 @@ for(const page of ["showcase","showcase-en"]){
  assert(js.includes('analysisPage()'),'AI analysis stage must appear before results');
  assert(js.includes('receiptScreen()')||js.includes('receiptScreen'),'A branded completion screen is required');
  assert(js.includes('assets/lexlearn-logo.svg'),'Must use the approved logo');
- assert(js.includes('demo_result')===false||true);
  assert(js.includes('showcase-grade'),'Public demo has its own grade function');
  assert(!js.includes('LEX_CLOUD.saveSnapshot'),'Demo cannot modify real student mastery snapshots');
  assert(!js.includes('LEX_CLOUD.recordAttempt'),'Demo cannot write student attempts');
@@ -23,7 +22,7 @@ assert.equal(s.pendingRecall,true);
 assert.equal(s.weak,null,'Do not infer adaptive weak skill from choices while free recall is pending');
 assert.equal(s.choiceIndicators.recall,100,'Preserve recall choices as separate indicators');
 const server=fs.readFileSync("supabase/functions/showcase-grade/index.ts","utf8");
-assert(server.includes("verify"),"basic service sanity");
+assert(server.includes("getUser()"),"The backend must validate the JWT user");
 assert(server.includes("x.selected===0"),"Server must calculate correctness from indices");
 assert(server.includes("claim_demo_quota"),"Server must cap provider calls");
 const build=fs.readFileSync("scripts/build-public.js","utf8");
