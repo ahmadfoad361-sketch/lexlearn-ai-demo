@@ -42,7 +42,7 @@ async function sendDemo(){
   var guest=await db.auth.signInAnonymously();
   if(guest.error||!guest.data.user)throw new Error("guest_auth_disabled");
  }
- var r=await db.functions.invoke("showcase-grade",{body:{topic:1,language:lang,answer:free,choices:answers.map(function(a){return{type:a.type,correct:a.correct};})}});
+ var r=await db.functions.invoke("showcase-grade",{body:{topic:1,language:lang,answer:free,choices:answers.map(function(a){return{type:a.type,selected:a.selected};})}});
  if(r.error||!r.data||r.data.received!==true||!r.data.submission_id)throw new Error("send_not_confirmed");
  return r.data;
 }
