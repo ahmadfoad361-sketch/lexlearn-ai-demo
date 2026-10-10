@@ -129,10 +129,10 @@ function cohortsTab(){
 function contentStatusLabel(s){return ({draft:"مسودة",legal_review:"مراجعة قانونية",learning_review:"مراجعة تعليمية",approved:"معتمد",retired:"متقاعد"})[s]||s;}
 function contentTab(){
  var items=state.content||[],pending=items.filter(function(x){return x.status!=="approved"&&x.status!=="retired";});
- return '<section class="pageTitle"><div><span class="overline">Content Governance</span><h1>اعتماد المحتوى القانوني</h1><p>لا يستخدم التصحيح الدلالي سؤالًا قبل إكمال المراجعة القانونية ثم التعليمية.</p></div><span class="risk '+(pending.length?"mid":"low")+'">'+pending.length+' قيد المراجعة</span></section>'+
+ return '<section class="pageTitle"><div><span class="overline">Content Governance</span><h1>اعتماد المحتوى القانوني</h1><p>يمكن للمشرف الواحد مراجعة أسئلة s1 وs22 واعتمادها؛ تبقى بقية الأسئلة وفق إجراءاتها.</p></div><span class="risk '+(pending.length?"mid":"low")+'">'+pending.length+' قيد المراجعة</span></section>'+
  '<section class="panel"><div class="studentTable"><div class="tr head"><span>السؤال</span><span>البعد</span><span>المصادر</span><span>الحالة</span><span>الإجراء</span></div>'+
  items.map(function(x){var next=x.status==="draft"?"إرسال للمراجعة القانونية":x.status==="legal_review"&&/^rights-v1-s(?:1|22)-(?:recall|understanding|exam)$/.test(x.id)?"اعتماد المشرف":x.status==="legal_review"?"اعتماد قانوني":x.status==="learning_review"?"اعتماد تعليمي ونشر":x.status==="approved"?"معتمد":"—";return '<div class="tr"><span><b>'+esc(x.prompt_ar)+'</b><small>'+esc(x.id)+'</small></span><span>'+esc(label(x.dimension))+' • مستوى '+x.difficulty+'</span><span>'+esc((x.source_ids||[]).join("، ")||"—")+'</span><span class="risk '+(x.status==="approved"?"low":"mid")+'">'+contentStatusLabel(x.status)+'</span><span>'+(x.status!=="approved"&&x.status!=="retired"?'<button class="btn secondary" data-review="'+x.id+'">'+next+'</button>':'✓')+'</span></div>';}).join("")+
- '</div><div class="warn" style="margin-top:14px">المراجعة القانونية تؤكد صحة القاعدة والمصدر. المراجعة التعليمية تؤكد وضوح السؤال وقياسه للمهارة المقصودة. لا ندمج المرحلتين تلقائيًا.</div></section>';
+ '</div><div class="warn" style="margin-top:14px">أسئلة s1 وs22 الستة: اعتماد واحد من المشرف المخول بعد فحص القاعدة والسؤال والمصدر. بقية بنك الأسئلة يحتفظ بمسار المراجعة الأصلي.</div></section>';
 }
 function auditTab(){
  return '<section class="pageTitle"><div><span class="overline">Audit Log</span><h1>السجل المركزي</h1><p>أثر تدقيقي لتدخلات الإدارة.</p></div></section><section class="panel"><div class="auditList">'+(state.audit.length?state.audit.map(function(x){return '<div class="auditRow"><span class="auditIcon">'+ico("audit")+'</span><div><b>'+esc(x.action)+'</b><small>'+esc(JSON.stringify(x.details||{}))+'</small></div><time>'+new Date(x.created_at).toLocaleString("ar-EG")+'</time></div>';}).join(""):'<div class="empty">لا توجد إجراءات بعد.</div>')+'</div></section>';
@@ -161,7 +161,7 @@ async function load(){
  state.busy=true;renderLoading();
  try{
   var c=LEX_CLOUD.db(),results=await Promise.all([
-    LEX_CLOUD.listStudents(),LEX_CLOUD.listCohorts(),LEX_CLOUD.listAudit(),LEX_CLOUD.listContentItems("qa-qu-lawc213"),
+    LEX_CLOUD.listStudents(),LEX_CLOUD.listCohorts(),LEX_CLOUD.listAudit(),Promise.all([LEX_CLOUD.listContentItems("qa-qu-lawc213"),LEX_CLOUD.listContentItems("qa-qu-lawc101-rights")]).then(function(groups){return groups[0].concat(groups[1].filter(function(x){return /^rights-v1-s(?:1|22)-(?:recall|understanding|exam)$/.test(x.id);}));}),
     c.from("learner_snapshots").select("user_id,course_id,snapshot_type,state,updated_at"),
     c.from("attempts").select("user_id,course_id,dimension,answer_text,grading_method,score,confidence,error_type,created_at").order("created_at",{ascending:false}).limit(1000),
     c.from("attempts").select("id,user_id,answer_text,selected_option,created_at").eq("course_id","qa-qu-lawc101-rights").eq("grading_method","pilot_human_pending").order("created_at",{ascending:false}).limit(500),
