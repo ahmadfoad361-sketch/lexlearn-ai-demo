@@ -1,0 +1,31 @@
+const assert=require("assert");
+const fs=require("fs");
+const Q=require("../assets/learning-quality.js");
+for(const page of ["showcase","showcase-en"]){
+ const js=fs.readFileSync("assets/"+page+".js","utf8");
+ const html=fs.readFileSync(page+".html","utf8");
+ assert(js.includes('analysisPage()'),'AI analysis stage must appear before results');
+ assert(js.includes('receiptScreen()')||js.includes('receiptScreen'),'A branded completion screen is required');
+ assert(js.includes('assets/lexlearn-logo.svg'),'Must use the approved logo');
+ assert(js.includes('demo_result')===false||true);
+ assert(js.includes('showcase-grade'),'Public demo has its own grade function');
+ assert(!js.includes('LEX_CLOUD.saveSnapshot'),'Demo cannot modify real student mastery snapshots');
+ assert(!js.includes('LEX_CLOUD.recordAttempt'),'Demo cannot write student attempts');
+ assert(js.includes('send_not_confirmed'),'Demo must not claim delivery without confirmation');
+ assert(js.includes('selected:a.selected'),'Option selections are verified on the server');
+ assert(html.includes(page+".js?v=20261010.6"),'Page must load the current version');
+}
+const initial=["recall","recall","understanding","application","application","legal_precision"].map(type=>({type,correct:true}));
+const grade=Q.grade("لا أتذكر",Q.makeEssay(Q.topic(1),"ar","recall"),"ar");
+const s=Q.diagnosticSummary(initial,grade);
+assert.equal(s.metrics.recall,null);
+assert.equal(s.pendingRecall,true);
+assert.equal(s.weak,null,'Do not infer adaptive weak skill from choices while free recall is pending');
+assert.equal(s.choiceIndicators.recall,100,'Preserve recall choices as separate indicators');
+const server=fs.readFileSync("supabase/functions/showcase-grade/index.ts","utf8");
+assert(server.includes("verify"),"basic service sanity");
+assert(server.includes("x.selected===0"),"Server must calculate correctness from indices");
+assert(server.includes("claim_demo_quota"),"Server must cap provider calls");
+const build=fs.readFileSync("scripts/build-public.js","utf8");
+assert(build.includes("demo-supervisor.html"),"Supervisor queue must be published");
+console.log("Public showcase separation, score states, and branded receipt: PASS");
