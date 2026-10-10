@@ -81,7 +81,8 @@ Deno.serve(async(req)=>{
   let result:any;try{result=JSON.parse(outputText(await ai.json()));}catch{return json({error:"invalid_provider_output",score:null},502);}
   const reason=validate(result,t.criteria,answer);
   if(reason){result={score:null,needs_review:true,confidence:0,achieved:[],missing:t.criteria.map(c=>c.id),contradictions:[],feedback:b.language==="en"?"Automatic assessment needs instructor review before a result can be confirmed.":"تعذر تأكيد التقييم الآلي لهذه الإجابة؛ سيتابع المشرف الإجابة.",reason};}
-  const critical=stage==="step3"?["correct","explain"]:stage==="step4"||stage==="day1"?topic===1?["birth","prenatal","cues"]:["unlawful_interest","sole_harm","cues"]:["rule","application","conclusion"];
+  // Essential elements are mandatory even when the weighted score is above the threshold.
+  const critical=stage==="step3"?["correct","reject","explain"]:stage==="step4"||stage==="day1"?topic===1?["birth","prenatal","cues"]:["unlawful_interest","sole_harm","distinction","cues"]:["rule","application","conclusion"];
   const scored=!result.needs_review,passed=scored&&result.score>=.7&&!result.contradictions.length&&critical.every(id=>result.achieved.some((x:any)=>x.id===id));
   const grade={attempt_id:attemptId,user_id:user.id,status:scored?"scored":"review_required",score:scored?result.score:null,passed:scored?passed:null,feedback:result.feedback,model_confidence:result.confidence,criteria:{achieved:result.achieved,missing:result.missing,contradictions:result.contradictions,reason:result.reason||null,stage,topic},source_ids:t.sources,model};
   if(preview)return json({...publicGrade(grade),preview:true});
