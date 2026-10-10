@@ -1,86 +1,64 @@
-# LexLearn Qatar pilot — staging readiness audit (2026-10-10)
+# LexLearn — Qatar supervised pilot release (10 October 2026)
 
-**Status: NOT RELEASED.** GitHub Actions quality tests and static site build succeeded on staging; there is still no real model or student validation. This report is an audit of live project metadata and prepared staging code, **not** a successful live AI benchmark or a published release.
+## Decision and authorized scope
 
-## Scope and legal sources
+Per project owner's instruction, a **single real authorized supervisor** can review the legal and instructional fitness of questions, inspect student answers, confirm automatic grading, and correct grades. The former two-different-reviewers requirement is waived. No reviewer identity is fabricated.
 
-Pilot course: `qa-qu-lawc101-rights`. Only s1 (civil code Articles 39–40) and s22 (Article 63).
+Only these two lessons are released in `assets/pilot-learning.js`: `release={1:true,22:true}`:
 
-- s1: Personality starts at complete live birth, ends at death; prenatal rights whose cause needs no acceptance are conditional on live birth. Official law: [39](https://www.almeezan.qa/LawArticles.aspx?LawArticleID=36483&LawID=2559&language=ar), [40](https://www.almeezan.qa/LawArticles.aspx?LawArticleID=36484&LawID=2559&language=ar).
-- s22: An unlawful intended interest and sole intent to cause harm are **independent** unlawful-exercise grounds. Damage alone is not proof that harm was the sole intent, nor does failure to prove that intent resolve the other Article 63 grounds. Official law: [63](https://www.almeezan.qa/LawArticles.aspx?LawArticleID=36507&LawID=2559&language=ar).
+- `s1`: beginning and ending of legal personality; prenatal rights requiring no acceptance are conditional on complete live birth — Qatari Civil Code Articles [39](https://www.almeezan.qa/LawArticles.aspx?LawArticleID=36483&LawID=2559&language=ar) and [40](https://www.almeezan.qa/LawArticles.aspx?LawArticleID=36484&LawID=2559&language=ar).
+- `s22`: unlawful intended interest and sole intention to harm as **independent** grounds; damage alone does not establish sole intent; the other Article 63 grounds remain examinable — [Article 63](https://www.almeezan.qa/LawArticles.aspx?LawArticleID=36507&LawID=2559&language=ar).
 
-The three linked source rows exist in Production with `approved` status and nonempty excerpts. Some excerpts are summaries, not complete statutory provisions. Do not claim they reproduce the full legislation.
+Other question-bank topics remain closed; no broad approval or migration of 72 questions was made.
 
-## Production state observed
+## Student and supervisor paths
 
-Project: `LexLearn Production` (`emxiuwcuxyljfynnzpnh`), `ACTIVE_HEALTHY`; existing deployed `pilot-grade` version **4**, JWT enforcement on.
+- Student login: https://ahmadfoad361-sketch.github.io/lexlearn-ai-demo/student-login.html
+- Arabic training: https://ahmadfoad361-sketch.github.io/lexlearn-ai-demo/program.html
+- English training: https://ahmadfoad361-sketch.github.io/lexlearn-ai-demo/program-en.html
+- Supervisor login: https://ahmadfoad361-sketch.github.io/lexlearn-ai-demo/admin-login.html
+- Supervisor dashboard: https://ahmadfoad361-sketch.github.io/lexlearn-ai-demo/admin.html
+- Instructor-only question preview: https://ahmadfoad361-sketch.github.io/lexlearn-ai-demo/pilot-review.html
 
-| Content item | Stage | Before | After |
+A student must sign in and complete the diagnosis and sequential training requirements before reaching a lesson. The student is **not** given supervisor preview access.
+
+The student submits `step3`, `step4`, `step5`, one-day and seven-day reviews. Each submission is saved in `attempts` with a specific `pilot:s1` or `pilot:s22` stage ID. The `pilot-grade` function checks the authenticated student, attempt ownership and source references. It scores only if a configured, validated model returns a defensible outcome. Invalid or unavailable model outcomes are stored in `pilot_ai_grades` as `review_required`, `score=null`, `passed=null` to wait for the supervisor. This never automatically advances a student.
+
+The supervisor opens **الإدارة → متابعة التصحيح** and sees the question, law, full student answer, grading criteria, AI result, and source identifiers. If AI has a valid score, **راجعت التصحيح ولا توجد ملاحظة** confirms without additional commentary. Otherwise the supervisor manually records whether the answer passes, along with explanatory feedback; the student receives this verdict as higher priority than AI. Student access to other students' attempts remains restricted by RLS.
+
+The supervisor opens **الإدارة → مراجعة المحتوى**, reviews the six questions and sources, then can press **اعتماد المشرف** once on each; no second reviewer is needed. Only real authenticated actions are logged with the acting user ID.
+
+## Exact six content-review items
+
+| Item | Topic | Status at initial rollout | Review actor |
 |---|---|---|---|
-| `rights-v1-s1-recall` | s1 · الحفظ | `legal_review` | `legal_review` |
-| `rights-v1-s1-understanding` | s1 · الفهم | `legal_review` | `legal_review` |
-| `rights-v1-s1-exam` | s1 · بناء الإجابة | `legal_review` | `legal_review` |
-| `rights-v1-s22-recall` | s22 · الحفظ | `legal_review` | `legal_review` |
-| `rights-v1-s22-understanding` | s22 · الفهم | `legal_review` | `legal_review` |
-| `rights-v1-s22-exam` | s22 · بناء الإجابة | `legal_review` | `legal_review` |
+| `rights-v1-s1-recall` | s1 · حفظ | `legal_review` | Actual supervisor after review |
+| `rights-v1-s1-understanding` | s1 · فهم | `legal_review` | Actual supervisor after review |
+| `rights-v1-s1-exam` | s1 · بناء الإجابة | `legal_review` | Actual supervisor after review |
+| `rights-v1-s22-recall` | s22 · حفظ | `legal_review` | Actual supervisor after review |
+| `rights-v1-s22-understanding` | s22 · فهم | `legal_review` | Actual supervisor after review |
+| `rights-v1-s22-exam` | s22 · بناء الإجابة | `legal_review` | Actual supervisor after review |
 
-No legal or learning reviewer is recorded on any of the six items. Only one active owner and one active student profile were present when queried. The existing `content-review` function enforces a distinct second reviewer. Do not forge a second identity, insert status via SQL, or approve on behalf of a person who has not reviewed the material.
+The learning content and student lessons can be visible **while supervisor confirmation is pending** by explicit owner request. Visibility does not imply prior formal sign-off or scientifically established AI accuracy.
 
-`assets/pilot-learning.js`: `release={1:false,22:false}` on main **and** staging branch. The rest of the question bank is unchanged.
+## Verification and limitations
 
-`pilot_ai_grades` and `pilot_human_grades`: **0 rows** at the time of inspection. No real pilot AI/student/supervisor outcome was verified. The previous 2026-10-09 audit found the provider secret configuration incomplete; production Secrets were not readable or writable with the connector available in this review. Do not infer readiness.
+- Existing Supabase project `emxiuwcuxyljfynnzpnh`, role-guarded `pilot-grade` and `content-review` functions.
+- Preview and student grading remain separated; JWT verification on all deployed Edge Functions.
+- Dedicated `validation/pilot-semantic-benchmark.json` contains 160 bilingual test cases; it is **not** a successful live model evaluation.
+- Automated/static CI exercises student flow, release flags, grader success/failure, legal distinctions, authorization guards, and public site build. It does **not** substitute for a student-supervisor session.
+- AI credentials `OPENAI_API_KEY` and `OPENAI_MODEL` must be configured by an authorized Supabase owner in private Edge Function Secrets. Until then, **manual supervisor grading is the operating fallback**; do not claim AI live accuracy.
+- Supervisor override is pass/fail with feedback rather than a separately stored numeric manual score.
+- GitHub cannot inspect uncommitted changes on an external developer PC; do not overwrite local files without comparison.
+- Preserve RLS, avoid service-role secrets in the browser, and retain no numeric grade for unverified AI output.
 
-## Changes staged (separate branch only, not production)
+## Acceptance checks after deployment
 
-- A dedicated `scripts/validate-pilot-grading.js` calls **pilot-grade** in authenticated supervisor **preview**, not `grade-answer`.
-- `validation/pilot-semantic-benchmark.json`: **160 preliminary cases**, covering 2 topics × 5 stages (`step3`, `step4`, `step5`, `day1`, `day7`) × 2 languages × 8 variants: faithful, paraphrased, incorrect, incomplete, ambiguous, verbose without substance, corrected quotation of a false claim, and instruction injection. Cases remain `pending_human_review`.
-- The staged `pilot-grade` refuses success if an essential comparison or harm-intent distinction is missing even when the weighted total passes. It adds a server-side topic release gate and a specific authenticated student QA allowlist; unexpected exceptions no longer return raw internal error text.
-- Staged `pilot-access` authenticates a QA student, checks approved content, and returns only the eligible topic IDs. The staged `pilot-qa.html` student experience calls the actual grading function, persists real attempts, and uses a separate QA learning snapshot (does not overwrite the main course). The one-week held-out review now uses its intended scenario.
-- Staged student code does not misrepresent an AI percentage as a supervisor-revised grade. **Known gap:** human override has a pass/fail decision and feedback, but no independent stored numeric human score; add and verify this before calling numerical supervisor correction fully complete.
+1. Open the public Arabic and English student pages, confirm topics s1/s22 appear and other pilots remain closed.
+2. With an actual student login, complete s1; check an essay attempt exists and appears in **متابعة التصحيح** for the supervisor.
+3. Verify model-unavailable submissions show **بانتظار مراجعة المشرف**, not success; approve manually and confirm the student can proceed.
+4. Reject two consecutive answers and confirm a one-step return; verify daily and weekly reviews.
+5. Confirm a second student's session cannot query another student's answers, human grades, or staff-only preview.
+6. Press **اعتماد المشرف** once for each reviewed content item only if the question and sources are suitable; verify the acting identity in audit logs.
 
-## Model and production secret setup
-
-A documented compatible **candidate** is `gpt-4.1-mini`, which supports the Responses API and Structured Outputs. No claim is made that the current account has access until a successful actual request. Production owner/admin must set these securely in [Supabase Edge Function Secrets](https://supabase.com/dashboard/project/emxiuwcuxyljfynnzpnh/settings/functions):
-
-- `OPENAI_API_KEY`: a valid scoped OpenAI API credential, entered only in the secure dashboard.
-- `OPENAI_MODEL`: start with `gpt-4.1-mini`; confirm via actual `pilot-grade` request and check its returned schema before retaining.
-- `PILOT_QA_STUDENT_IDS`: authorized QA student UUIDs, private server-side allowlist.
-- `PILOT_RELEASE_TOPICS`: **unset/empty** until launch acceptance, then `1,22` only. A server-side flag is independent of the frontend `release` flag.
-
-**Never** place keys or session tokens in GitHub files, chat, reports, logs, or browser code. The live runner reads the staff session token and public Supabase key from secure environment variables and writes a local report; do not commit a report containing student answers.
-
-## Execution and human verification
-
-1. Compare the developer's **uncommitted local worktree** with `main` and this branch before merging. A GitHub connector cannot see uncommitted files on a developer's machine; no reconciliation has yet been possible.
-2. Use the existing authorized review function: first an actual legal reviewer advances the six items `legal_review → learning_review`; then a different actual reviewer evaluates learning outcomes and advances `learning_review → approved`. Check `admin_audit` and reviewer IDs.
-3. Confirm secrets and authorized preview function deployment with JWT verification on. Leave both release flags closed. Run `node tests/pilot-readiness.test.js` and `node scripts/validate-pilot-grading.js` for structural checks. This is **not** proof of AI accuracy.
-4. Provide secure environment variables `LEX_VALIDATION_TOKEN` (staff session), `LEX_SUPABASE_ANON_KEY` (publishable/anon key), `LEX_SUPABASE_URL=https://emxiuwcuxyljfynnzpnh.supabase.co`. Then run `node scripts/validate-pilot-grading.js --live --output ./pilot-live-report.local.json`. Short trial: add `--limit 20`. Review disagreements manually; revise model, criteria or content and rerun the **live** suite.
-5. Deploy the staging `pilot-access` function with JWT enabled. Using a real authenticated, allowlisted student, open the gated `pilot-qa.html` QA route, complete the six training steps for each topic, submit real `step3/4/5` essays and both delayed reviews. Confirm `attempts → pilot_ai_grades` linkage and that the supervisor sees the student's original text, AI result, criteria and source references in `admin.html`.
-6. In supervisor view, confirm one valid AI grade without comment; correct another through the manual form. Verify student gets the supervisor verdict first, no other user's attempts are accessible, and student preview is forbidden. Test two failures cause a one-step return; low confidence, ambiguous answers, missing sources, provider unavailability, and authorization failure must **not** auto-pass.
-7. Only after all tests, a complete two-reviewer approval, fixes and clean CI/build: reconcile the local worktree; merge reviewed changes; set client `release={1:true,22:true}` and server `PILOT_RELEASE_TOPICS=1,22`; publish and test the actual Arabic/English student pages. **If any gate fails, stop; flags remain false.**
-
-Existing entrypoints:
-- Student: https://ahmadfoad361-sketch.github.io/lexlearn-ai-demo/student-login.html
-- Supervisor: https://ahmadfoad361-sketch.github.io/lexlearn-ai-demo/admin-login.html
-- Staff-only preview: https://ahmadfoad361-sketch.github.io/lexlearn-ai-demo/pilot-review.html
-- Closed QA page: `pilot-qa.html` **only on staging code, not yet deployed**.
-
-## Results and unresolved acceptance gates
-
-| Gate | Result |
-|---|---|
-| Production project and deployed v4 presence | Verified |
-| Legal articles 39/40/63 and source row existence | Verified |
-| Dedicated benchmark completeness | Prepared, not model-verified |
-| Model credential set and actual structured response | Not verified |
-| Two distinct human approvals | Not met |
-| Live staff preview calls | Not run |
-| Real authenticated student attempt and feedback | Not run |
-| Human confirmation / correction E2E | Not run |
-| RLS isolation and denial testing with real sessions | Policies inspected; live test not run |
-| Worktree-versus-GitHub reconciliation | Not possible from connector |
-| Code CI and public artifact build | **PASS** — GitHub Actions quality run [#634](https://github.com/ahmadfoad361-sketch/lexlearn-ai-demo/actions/runs/38013667753), only static/mocked tests |
-| Production deployment and live published revision | Not deployed; live site unchanged |
-| Pilot public release | **Blocked — remains false for both** |
-
-**Acceptance verdict: NO-GO.** It would be inaccurate to present this staging preparation as a successfully launched or validated pilot.
+**Release is supervised, not auto-certified.** The owner has waived a separate second reviewer; genuine identity and student-safety checks remain.
