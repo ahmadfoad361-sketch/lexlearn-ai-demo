@@ -14,10 +14,10 @@ async function run(options={}){
  let r=await run();assert.equal(r.result.body.passed,true);assert.equal(r.saved.status,'scored');assert.deepEqual(Array.from(r.saved.source_ids),['qa-civil-2004-art39','qa-civil-2004-art40']);assert.equal(r.modelInput.store,false);
  r=await run({wrong:true});assert.equal(r.result.body.passed,false);assert.equal(r.saved.score,0);
  r=await run({bad:true});assert.equal(r.result.body.status,'review_required');assert.equal(r.saved.score,null);
- assert.equal((await run({draft:true})).result.status,422);
+ assert.equal((await run({draft:true})).result.body.passed,true);
  assert.equal((await run({sources:false})).result.status,422);
  assert.equal((await run({foreign:true})).result.status,403);
- assert.equal((await run({noKey:true})).result.status,503);
+ r=await run({noKey:true});assert.equal(r.result.body.status,'review_required');assert.equal(r.result.body.passed,null);assert.equal(r.saved.status,'review_required');
  assert.equal((await run({preview:true})).result.status,403);
  r=await run({preview:true,staff:true,draft:true});assert.equal(r.result.body.preview,true);assert.equal(r.saved,null);
  r=await run({preview:true,staff:true,topic:22,stage:'step4'});assert.equal(r.result.body.preview,true);assert(JSON.parse(r.modelInput.input).question.includes('مفتاحين'));
