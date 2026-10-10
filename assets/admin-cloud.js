@@ -200,7 +200,7 @@ function bind(){
     else if(r&&r.passed==null){flag="بانتظار المشرف";uncertain++;}
     else flag="اختلاف يستلزم التحقيق";
     pct=r&&r.score!=null?Math.round(r.score*100)+"%":"—";
-    note=r&&r.feedback||"لا توجد تغذية راجعة.";
+    note=r&&r.feedback||"لا توجد تغذية راجعة.";if(r&&r.criteria&&r.criteria.reason)note+=" (سبب الإحالة: "+r.criteria.reason+")";
    }catch(e){flag="التحليل غير متاح";uncertain++;note="تحقق من إعداد النموذج أو جلسة المشرف.";}
    rows.push("<p><b>"+esc(t.label)+"</b> · "+esc(flag)+" · "+esc(pct)+"</p><p>"+esc(note)+"</p>");
    out.innerHTML="<p>"+(i+1)+" / "+cases.length+"</p>"+rows.join("");
