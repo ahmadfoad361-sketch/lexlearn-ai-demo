@@ -40,6 +40,6 @@ export async function requireContentReviewer(req:Request){
   if(error||!user)throw new Error("UNAUTHORIZED");
   const admin=adminClient();
   const {data:profile,error:pe}=await admin.from("profiles").select("id,role,active,display_name").eq("id",user.id).single();
-  if(pe||!profile||profile.active===false||!["owner","admin","content_reviewer"].includes(profile.role))throw new Error("FORBIDDEN");
+  if(pe||!profile||profile.active===false||!["owner","admin","instructor","content_reviewer"].includes(profile.role))throw new Error("FORBIDDEN");
   return {user,profile,admin};
 }

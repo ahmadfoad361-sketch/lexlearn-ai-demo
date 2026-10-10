@@ -1,6 +1,6 @@
 const assert=require('assert'),fs=require('fs'),vm=require('vm');
 const P=require('../assets/pilot-learning'),Q=require('../assets/learning-quality');
-assert.equal(P.isReleased(1),false);assert.equal(P.isReleased(22),false);assert.equal(P.isReleased(2),false);
+assert.equal(P.isReleased(1),true);assert.equal(P.isReleased(22),true);assert.equal(P.isReleased(2),false);
 const s={step:2,failures:0};
 assert.equal(P.advance(s,false),'retry');assert.equal(s.step,2);
 assert.equal(P.advance(s,false),'support');assert.equal(s.step,1);
@@ -39,7 +39,7 @@ function fixture(){
 }
 global.LEX_QUALITY=Q;
 for(const lang of ['ar','en']){
- const host=fixture(),c={};assert.equal(P.mount(host,1,lang,{course:c}),false);assert.equal(host.innerHTML,'');
+ const host=fixture(),c={};assert.equal(P.mount(host,2,lang,{course:c}),false);assert.equal(host.innerHTML,'');
  P.mount(host,1,lang,{course:c,reviewMode:true});
  host.querySelector('#readExample').onclick();
  for(let i=0;i<2;i++){host.querySelector('[data-pilot-option="1"]').onclick();host.querySelector('#pilotNext').onclick();}

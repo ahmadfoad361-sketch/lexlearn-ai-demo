@@ -1,5 +1,6 @@
 import { corsHeaders,json,requireContentReviewer } from "../_shared/auth.ts";
 
+const singleSupervisorPilot=new Set(["rights-v1-s1-recall","rights-v1-s1-understanding","rights-v1-s1-exam","rights-v1-s22-recall","rights-v1-s22-understanding","rights-v1-s22-exam"]);
 const nextStatus:Record<string,string>={
   draft:"legal_review",
   legal_review:"learning_review",
@@ -16,12 +17,11 @@ Deno.serve(async(req)=>{
     if(current.error||!current.data)return json({error:"item_not_found"},404);
     let target=current.data.status;
     if(action==="advance"){
-      target=nextStatus[current.data.status];
+      target=singleSupervisorPilot.has(itemId)&&current.data.status==="legal_review"?"approved":nextStatus[current.data.status];
       if(!target)return json({error:"no_valid_next_status"},409);
       if(current.data.status==="legal_review"&&b.review_type==="learning")
         return json({error:"legal_review_must_precede_learning_review"},409);
-      if(current.data.status==="learning_review"&&current.data.legal_reviewer===user.id)
-        return json({error:"second_reviewer_required"},409);
+      // The same real supervisor may approve the pilot; no second reviewer is required.
     }else if(action==="retire"){
       target="retired";
     }else if(action==="return_to_legal_review"){
@@ -30,7 +30,10 @@ Deno.serve(async(req)=>{
 
     const patch:any={status:target,reviewed_at:new Date().toISOString()};
     if(target==="learning_review")patch.legal_reviewer=user.id;
-    if(target==="approved")patch.learning_reviewer=user.id;
+    if(target==="approved"){
+      if(singleSupervisorPilot.has(itemId)&&current.data.status==="legal_review")patch.legal_reviewer=user.id;
+      else patch.learning_reviewer=user.id;
+    }
     const r=await admin.from("content_items").update(patch).eq("id",itemId).select("id,status,course_id,reviewed_at").single();
     if(r.error)throw r.error;
     await admin.from("admin_audit").insert({
