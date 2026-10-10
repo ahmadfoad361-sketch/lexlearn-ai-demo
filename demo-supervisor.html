@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LexLearn — نتائج الديمو للمشرف</title><link rel="icon" href="assets/lexlearn-logo.svg">
+<style>
+:root{--navy:#101c38;--maroon:#8a1f39;--gold:#c7a66a}*{box-sizing:border-box}body{background:#f5f2ee;color:#152136;font-family:Tahoma,Arial,sans-serif;margin:0;line-height:1.75}.top{background:#101c38;color:white;padding:16px 24px;display:flex;align-items:center;gap:15px;flex-wrap:wrap}.top img{width:54px;height:54px;object-fit:contain;background:white;border-radius:8px}.top a{color:white;margin-inline-start:auto}main{max-width:1050px;margin:25px auto;padding:0 18px}h1{margin:0 0 5px;font-size:29px}p{margin:0 0 15px}.banner{padding:18px;border-radius:16px;background:#ece5dc;color:#574c43;margin-bottom:16px}.card{background:#fff;border:1px solid #ddd6cd;border-radius:18px;padding:20px;margin:16px 0;box-shadow:0 4px 20px #00000009}.meta{display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;color:#6a6f7a;font-size:12px}.state{display:inline-block;border-radius:16px;padding:2px 10px;background:#e8ebf2;color:#101c38}.answer{white-space:pre-wrap;background:#f8f6f4;border-radius:12px;padding:15px;margin-top:8px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin:15px 0}.metric{background:#101c38;color:#fff;padding:10px;border-radius:12px}.metric small{color:#cad1dd}.controls{display:grid;grid-template-columns:170px 160px 1fr auto;gap:10px;align-items:end;margin-top:12px}label{display:grid;gap:5px;font-size:12px}input,select{border:1px solid #cac7c6;border-radius:9px;padding:9px;font:inherit;min-width:0}button{background:#8a1f39;color:white;border:0;padding:11px 18px;border-radius:10px;cursor:pointer;font:inherit}button:disabled{opacity:.5}.notice{margin:12px 0;color:#8a1f39}.empty{padding:22px;text-align:center}@media(max-width:740px){.controls{grid-template-columns:1fr 1fr}.controls label:nth-child(3){grid-column:1/-1}.controls button{grid-column:1/-1}}
+</style><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/lexlearn-config.js?v=1.3"></script><script src="assets/cloud-data.js?v=1.2"></script>
+</head><body>
+<header class="top"><img src="assets/lexlearn-logo.svg" alt="LexLearn"><div><b>LexLearn</b><div>نتائج التجربة المستقلة — لوحة المشرف</div></div><a href="admin.html">لوحة الإدارة</a></header>
+<main><h1>متابعة إجابات الديمو</h1><p>هذه النتائج منفصلة تمامًا عن سجلات تقدم الطلاب. التصحيح الآلي قد يكون أوليًا أو معلقًا، ويحق للمشرف تأكيده أو تصحيحه.</p>
+<div class="banner">يعرض هذا السجل الإجابات المقدمة من زوار الديمو دون اسم الطالب. لا تدخل نتائجه في أي درجة أو خطة تعليمية رسمية.</div>
+<div id="notice" role="status">جارٍ التحقق من صلاحية المشرف...</div><div id="list"></div></main>
+<script>
+(async function(){
+"use strict";
+var note=document.getElementById("notice"),root=document.getElementById("list");
+function el(tag,cl,content){var x=document.createElement(tag);if(cl)x.className=cl;if(content!=null)x.textContent=String(content);return x;}
+function field(name,node){var l=el("label",null,name);l.appendChild(node);return l;}
+var db=window.LEX_CLOUD&&LEX_CLOUD.db();
+if(!db){note.textContent="خدمة التسجيل المركزي غير متاحة.";return;}
+var user,profile;
+try{
+ profile=await LEX_CLOUD.profile();
+ if(!profile||!["owner","admin","instructor"].includes(profile.role)||profile.active===false)throw new Error("staff_required");
+ user=profile.id;
+}catch(e){note.innerHTML='يلزم تسجيل الدخول بحساب مشرف مصرح له. <a href="admin-login.html">دخول المشرف</a>';return;}
+async function load(){
+ root.textContent="";note.textContent="جارٍ تحميل الإجابات...";
+ var res=await db.from("demo_submissions").select("id,created_at,language,answer_text,choice_indicators,grade_status,recall_score,grade_feedback,grade_evidence,proposed_training,review_status,supervisor_score,review_note,reviewed_by,reviewed_at").order("created_at",{ascending:false}).limit(100);
+ if(res.error){note.textContent="تعذر قراءة سجل الديمو. تحقق من صلاحيات الحساب.";return;}
+ var rows=res.data||[];
+ note.textContent=rows.length?("آخر "+rows.length+" نتيجة تجريبية"):"لم تصل بعد أي نتائج إلى سجل المشرف.";
+ for(const r of rows){
+  var card=el("section","card");
+  var meta=el("div","meta");
+  meta.appendChild(el("span",null,new Date(r.created_at).toLocaleString("ar-EG")+" • "+(r.language==="ar"?"عربي":"English")+" • s1 بداية الشخصية"));
+  meta.appendChild(el("span","state",r.grade_status==="graded"?"تصحيح آلي أولي":"في انتظار التصحيح"));
+  card.appendChild(meta);
+  card.appendChild(el("h2",null,"إجابة الطالب المجهول"));
+  card.appendChild(el("div","answer",r.answer_text));
+  var row=el("div","grid");
+  var keys={recall:"اختيارات مرتبطة بالحفظ",understanding:"الفهم",application:"التطبيق",legal_precision:"الدقة (مؤشر اختيار)"};
+  for(const key of Object.keys(keys)){var x=el("div","metric");x.appendChild(el("small",null,keys[key]));x.appendChild(el("div",null,r.choice_indicators&&r.choice_indicators[key]!=null?r.choice_indicators[key]+"%":"لم يُختبر"));row.appendChild(x);}
+  var x=el("div","metric");x.appendChild(el("small",null,"الحفظ — الإجابة الحرة"));x.appendChild(el("div",null,r.recall_score===null?"الدرجة معلقة":r.recall_score+"%"));row.appendChild(x);
+  card.appendChild(row);
+  card.appendChild(el("p",null,"ملاحظات التصحيح: "+(r.grade_feedback||"بانتظار مراجعة المشرف")));
+  var evidence=r.grade_evidence||{};
+  if(evidence.reason)card.appendChild(el("p",null,"سبب التعليق: "+evidence.reason));
+  if(evidence.contradictions&&evidence.contradictions.length)card.appendChild(el("p",null,"تعارضات قانونية: "+evidence.contradictions.join(" — ")));
+  var controls=el("div","controls");
+  var state=el("select");for(const [v,t] of [["unreviewed","لم أراجع بعد"],["confirmed","تأكيد التقييم"],["corrected","تصحيح التقييم"]]){var o=el("option",null,t);o.value=v;if(r.review_status===v)o.selected=true;state.appendChild(o);}
+  controls.appendChild(field("قرار المشرف",state));
+  var score=el("input");score.type="number";score.min="0";score.max="100";score.placeholder="بدون درجة";score.value=r.supervisor_score==null?(r.recall_score==null?"":r.recall_score):r.supervisor_score;
+  controls.appendChild(field("درجة الحفظ بعد المراجعة",score));
+  var comment=el("input");comment.maxLength=500;comment.placeholder="سبب التأكيد أو التعديل";comment.value=r.review_note||"";
+  controls.appendChild(field("ملاحظة المشرف",comment));
+  var btn=el("button",null,"حفظ المراجعة");
+  btn.onclick=async function(){
+   if(state.value==="unreviewed"){note.textContent="اختر تأكيدًا أو تصحيحًا لحفظ المراجعة.";return;}
+   var number=score.value.trim()===""?null:Number(score.value);
+   if(number!==null&&(!Number.isInteger(number)||number<0||number>100)){note.textContent="الدرجة يجب أن تكون من 0 إلى 100.";return;}
+   if(state.value==="corrected"&&!comment.value.trim()){note.textContent="اكتب سبب تصحيح تقييم الذكاء الاصطناعي.";return;}
+   btn.disabled=true;var update=await db.from("demo_submissions").update({review_status:state.value,supervisor_score:number,review_note:comment.value.trim(),reviewed_at:new Date().toISOString(),reviewed_by:user}).eq("id",r.id).select("id").single();
+   btn.disabled=false;
+   if(update.error){note.textContent="تعذر حفظ المراجعة؛ تأكد من صلاحيات حساب المشرف.";return;}
+   note.textContent="تم حفظ مراجعة المشرف.";await load();
+  };
+  controls.appendChild(btn);card.appendChild(controls);
+  if(r.reviewed_at)card.appendChild(el("small",null,"آخر مراجعة: "+new Date(r.reviewed_at).toLocaleString("ar-EG")));
+  root.appendChild(card);
+ }
+}
+await load();
+})();
+</script></body></html>
