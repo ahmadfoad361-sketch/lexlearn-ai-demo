@@ -50,7 +50,8 @@ async function loadGrade(attemptId){
  if(human.error)throw human.error;
  var ai=await db.from("pilot_ai_grades").select("status,passed,score,feedback,model_confidence,source_ids,criteria").eq("attempt_id",attemptId).maybeSingle();
  if(ai.error)throw ai.error;
- if(human.data)return {passed:human.data.passed,feedback:human.data.feedback,reviewed_at:human.data.reviewed_at,source:"instructor",score:ai.data&&ai.data.score};
+ // A human correction replaces the AI decision; never display an old AI percentage as the supervisor grade.
+  if(human.data)return {passed:human.data.passed,feedback:human.data.feedback,reviewed_at:human.data.reviewed_at,source:"instructor",score:null};
  return ai.data?Object.assign({source:"automatic"},ai.data):null;
 }
 async function gradeAttempt(attemptId,lang){if(!root.LEX_CLOUD||!root.LEX_CLOUD.isConfigured())throw new Error("cloud_required");return root.LEX_CLOUD.gradePilot({attempt_id:attemptId,language:lang});}
