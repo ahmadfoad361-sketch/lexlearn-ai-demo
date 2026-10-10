@@ -1,0 +1,18 @@
+const fs=require('node:fs'),assert=require('node:assert/strict');
+const admin=fs.readFileSync('assets/admin-cloud.js','utf8');
+const grader=fs.readFileSync('supabase/functions/pilot-grade/index.ts','utf8');
+const pilot=fs.readFileSync('assets/pilot-learning.js','utf8');
+assert.ok(admin.includes('LEX_CLOUD.listContentItems("qa-qu-lawc101-rights")'),'Supervisor must fetch the actual six Qatar pilot questions');
+assert.ok(admin.includes('LEX_CLOUD.listContentItems("qa-qu-lawc213")'),'Legacy content remains visible');
+assert.match(admin,/rights-v1-s\(\?:1\|22\)/,'Only s1/s22 pilot approval should be included');
+assert.ok(admin.includes('id="pilotLiveCheck"'),'Supervisor needs manual live model testing');
+assert.ok(admin.includes('preview:true'),'Live evaluation must not save synthetic student attempts');
+assert.ok(admin.includes('expected:false')&&admin.includes('expected:true'),'Include both incorrect and correct answers');
+assert.ok(admin.includes('pilotSourceLinks(g.source_ids)'),'Grade cites the article source');
+assert.ok(admin.includes('pilotSourceLinks(x.source_ids)'),'Content view cites the article source');
+assert.ok(pilot.includes('release={1:true,22:true}'),'Only the two authorized topics may be public');
+assert.ok(grader.includes('review_required'),'If scoring fails the supervisor must decide');
+assert.ok(grader.includes('score:null,passed:null'),'Unverified output must not be counted as success');
+assert.ok(grader.includes('store:false'),'Provider must not retain student answers');
+assert.ok(grader.includes('t.criteria'),'Criteria must be passed through to evaluator');
+console.log('Pilot supervisor and grading audit guards: PASS (static, not a live AI accuracy measurement)');
