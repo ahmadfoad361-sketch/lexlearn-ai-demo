@@ -140,7 +140,7 @@ function auditTab(){
 function gradingTab(){
  var manual=new Map(state.pilotGrades.map(function(x){return [x.attempt_id,x];})),ai=new Map(state.pilotAi.map(function(x){return [x.attempt_id,x];}));
  var rows=state.pilotAttempts.slice().sort(function(a,b){var aa=ai.get(a.id),bb=ai.get(b.id),priority=function(x){return !x||x.status==="review_required"?0:1;};return priority(aa)-priority(bb)||new Date(b.created_at)-new Date(a.created_at);});
- return '<section class="pageTitle"><div><span class="overline">AI + supervisor</span><h1>متابعة التصحيح</h1><p>النظام يصحح وفق نص المادة ومعايير السؤال، والمشرف يراجع الحكم ويضيف ملاحظته أو يصححه.</p></div><button class="btn secondary" id="refresh">تحديث</button></section>'+
+ return '<section class="pageTitle"><div><span class="overline">AI + supervisor</span><h1>متابعة التصحيح</h1><p>النظام يصحح وفق نص المادة ومعايير السؤال، والمشرف يراجع الحكم ويضيف ملاحظته أو يصححه.</p></div><button class="btn secondary" id="pilotLiveCheck">اختبار تصحيح حي (4 إجابات)</button><button class="btn secondary" id="refresh">تحديث</button></section><div class="panel" id="pilotLiveResults" role="status"><p>الاختبار يحتاج حساب مشرف ونموذج AI مجهز، ولا يمثل شهادة دقة شاملة.</p></div>'+
  (rows.length?rows.map(function(a){
   var student=state.students.find(function(s){return s.id===a.user_id;}),bits=String(a.selected_option||"").split(":"),topic=Number((bits[1]||"").replace("s","")),step=bits[2]||"",context=window.LEX_PILOT&&LEX_PILOT.content[topic]&&LEX_PILOT.content[topic].ar,keys=step==="step4"||step==="day1";
   var prompt=context?(step==="step3"?"قارن العبارتين وصحح غير الدقيقة: "+context.compare.join(" / "):keys?"اكتب القاعدة و"+(step==="step4"&&topic===22?"مفتاحين":"ثلاثة مفاتيح")+" للحفظ، واربط كل مفتاح بعنصر محدد.":step==="step5"?context.transfer:step==="day7"&&LEX_PILOT.isReleased(topic)?LEX_PILOT.heldOut[topic].ar:"استرجع القاعدة من ذاكرتك بعد "+(step==="day7"?"أسبوع":"يوم")):"سؤال التدريب";
@@ -177,6 +177,33 @@ async function load(){
 function renderLoading(){APP.innerHTML='<main class="wrap"><section class="panel"><h2>تحميل البيانات المركزية…</h2><p>يتم التحقق من الحسابات والتقدم والسجل.</p></section></main>';}
 function render(){if(state.error){APP.innerHTML='<main class="wrap"><section class="panel"><h2>تعذر تحميل لوحة الإدارة</h2><p>'+esc(state.error)+'</p><button class="btn primary" id="retry">إعادة المحاولة</button></section></main>';var r=document.getElementById("retry");if(r)r.onclick=load;return;}shell(state.tab==="dashboard"?dashboard():state.tab==="students"?studentsTab():state.tab==="cohorts"?cohortsTab():state.tab==="grading"?gradingTab():state.tab==="content"?contentTab():auditTab());}
 function bind(){
+ var live=document.getElementById("pilotLiveCheck");
+ if(live)live.onclick=async function(){
+  var out=document.getElementById("pilotLiveResults");
+  var cases=[
+   {topic:1,stage:"step5",language:"ar",expected:true,label:"s1 صحيح بالعربية",answer:"المسألة: هل يُؤخر الحساب المفتوح انتهاء الشخصية؟ القاعدة: الشخصية تنتهي بالموت. التطبيق: توفي الشخص بالفعل ولا أثر لإغلاق الحساب في انتهاء شخصيته. النتيجة: انتهت شخصيته بالوفاة."},
+   {topic:1,stage:"step3",language:"en",expected:false,label:"s1 خطأ بالإنجليزية",answer:"The first statement is wrong. Legal personality begins at conception alone without any need for live birth. Prenatal rights are the same as legal personality."},
+   {topic:22,stage:"step4",language:"en",expected:true,label:"s22 صحيح بالإنجليزية",answer:"An unlawful intended interest and the exclusive purpose of harming another are separate grounds for unlawful exercise. Damage by itself cannot prove a sole harmful purpose. Cue one: forbidden objective points to the independently unlawful intended interest. Cue two: harm only points to exclusive harmful intent."},
+   {topic:22,stage:"day7",language:"ar",expected:false,label:"s22 خطأ بالعربية",answer:"مجرد وقوع ضرر للجار يثبت أن الإضرار كان الهدف الوحيد للمالك، ولا ضرورة لبحث أي حالة أخرى من المادة 63."}
+  ];
+  var rows=[],correct=0,uncertain=0;
+  live.disabled=true;out.textContent="جارٍ اختبار النموذج الحقيقي، ولا تُحفظ إجابات تجريبية ضمن محاولات الطلاب.";
+  for(var i=0;i<cases.length;i++){
+   var t=cases[i],flag="يحتاج تدقيقًا",note="",pct="—";
+   try{
+    var r=await LEX_CLOUD.gradePilot({preview:true,topic:t.topic,stage:t.stage,answer:t.answer,language:t.language});
+    if(r&&r.status==="scored"&&r.passed===t.expected){flag="مطابق للتوقع";correct++;}
+    else if(r&&r.passed==null){flag="بانتظار المشرف";uncertain++;}
+    else flag="اختلاف يستلزم التحقيق";
+    pct=r&&r.score!=null?Math.round(r.score*100)+"%":"—";
+    note=r&&r.feedback||"لا توجد تغذية راجعة.";
+   }catch(e){flag="التحليل غير متاح";uncertain++;note="تحقق من إعداد النموذج أو جلسة المشرف.";}
+   rows.push("<p><b>"+esc(t.label)+"</b> · "+esc(flag)+" · "+esc(pct)+"</p><p>"+esc(note)+"</p>");
+   out.innerHTML="<p>"+(i+1)+" / "+cases.length+"</p>"+rows.join("");
+  }
+  out.innerHTML="<p><b>فحص مبدئي حي:</b> "+correct+" مطابق، "+uncertain+" معلّق، "+(cases.length-correct-uncertain)+" اختلاف. لا يُثبت هذا الاختبار دقة التصحيح عمومًا.</p>"+rows.join("");
+  live.disabled=false;
+ };
  document.querySelectorAll(".pilotGradeForm").forEach(function(form){form.onsubmit=async function(e){e.preventDefault();var pass=form.elements.decision.value==="pass",rule=form.elements.rule.checked,application=form.elements.application.checked,cues=form.elements.cues?form.elements.cues.checked:null,status=form.querySelector(".gradeStatus"),feedback=form.elements.feedback.value.trim();if(feedback.length<12||pass&&(!rule||!application||cues===false)){status.textContent="لإقرار الإجابة الصحيحة يلزم تحقق جميع المعايير وكتابة ملاحظة محددة.";return;}var button=form.querySelector('[type="submit"]');button.disabled=true;try{var r=await LEX_CLOUD.db().from("pilot_human_grades").insert({attempt_id:form.dataset.grade,passed:pass,feedback:feedback,criteria:{action:"corrected",rule:rule,application:application,cues:cues}}).select("attempt_id").single();if(r.error)throw r.error;await load();state.tab="grading";render();}catch(err){status.textContent="تعذر حفظ التصحيح: "+(err.message||err);button.disabled=false;}};});
  document.querySelectorAll("[data-confirm]").forEach(function(button){button.onclick=async function(){var g=state.pilotAi.find(function(x){return x.attempt_id===button.dataset.confirm;}),form=button.closest(".pilotGradeForm"),status=form.querySelector(".gradeStatus");if(!g||g.status!=="scored")return;button.disabled=true;try{var r=await LEX_CLOUD.db().from("pilot_human_grades").insert({attempt_id:button.dataset.confirm,passed:g.passed,feedback:g.feedback,criteria:{action:"confirmed",ai_score:g.score}}).select("attempt_id").single();if(r.error)throw r.error;await load();state.tab="grading";render();}catch(e){button.disabled=false;status.textContent="تعذر توثيق المراجعة: "+(e.message||e);}};});
  document.querySelectorAll("[data-student]").forEach(function(b){b.onclick=function(){state.selected=b.dataset.student;render();};});
