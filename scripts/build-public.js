@@ -7,7 +7,7 @@ const pages=[
   "index.html","showcase.html","program.html",
   "index-en.html","showcase-en.html","program-en.html",
   "student-login.html","student.html","student-login-en.html","student-en.html",
-  "admin-login.html","admin.html","pilot-review.html","pilot-qa.html",
+  "admin-login.html","admin.html","demo-supervisor.html","pilot-review.html","pilot-qa.html",
   "privacy.html","terms.html","reset-password.html",".nojekyll"
 ];
 const assets=[
