@@ -38,7 +38,7 @@ Deno.serve(async req=>{
   const lang=b.language==="en"?"en":"ar";
   const answer=String(b.answer||"").trim();
   if(!answer||answer.length>1800||b.topic!==1||!Array.isArray(b.choices)||b.choices.length!==6||
-    b.choices.some((x:any)=>!x||!["recall","understanding","application","legal_precision"].includes(x.type)||typeof x.correct!=="boolean"))
+    b.choices.some((x:any,i:number)=>!x||x.type!==["recall","recall","understanding","application","application","legal_precision"][i]||!Number.isInteger(x.selected)||x.selected<0||x.selected>2))
     return json({error:"invalid_demo_payload"},400);
   const db=createClient(url,serviceKey,{auth:{persistSession:false}});
   const quota=await db.rpc("claim_demo_quota",{p_user:user.id});
@@ -47,9 +47,10 @@ Deno.serve(async req=>{
   const sources=await db.from("content_sources").select("id,excerpt,status").in("id",["qa-civil-2004-art39","qa-civil-2004-art40"]);
   if(sources.error||!sources.data||sources.data.length!==2||sources.data.some((s:any)=>s.status!=="approved"||!s.excerpt))
     return json({error:"legal_sources_not_ready"},503);
+  const cleanChoices=b.choices.map((x:any)=>({type:x.type,correct:x.selected===0}));
   const indicators:Record<string,number|null>={recall:null,understanding:null,application:null,legal_precision:null};
   for(const key of Object.keys(indicators)){
-    const subset=b.choices.filter((x:any)=>x.type===key);
+    const subset=cleanChoices.filter((x:any)=>x.type===key);
     if(subset.length)indicators[key]=Math.round(100*subset.filter((x:any)=>x.correct).length/subset.length);
   }
   let status="pending_review",score:number|null=null,feedback=lang==="ar"?"إجابتك وصلت للمشرف، لكن تأكيد درجة الحفظ ينتظر مراجعة المعنى القانوني.":"Your answer was received; its legal meaning still needs review.",detail:any={reason:"semantic_service_unavailable"};
@@ -75,7 +76,6 @@ Deno.serve(async req=>{
   // A failed AI call never invents a recall score; the independent supervisor queue keeps the answer.
   const proposed=status==="graded"&&indicators.understanding!==null&&score!==null?
      (indicators.understanding-score>=15?"understanding_to_recall":score-indicators.understanding>=15?"recall_to_understanding":"exploratory"):"exploratory";
-  const cleanChoices=b.choices.map((x:any)=>({type:x.type,correct:x.correct}));
   const inserted=await db.from("demo_submissions").insert({visitor_user_id:user.id,language:lang,topic_id:1,answer_text:answer,choices:cleanChoices,choice_indicators:indicators,grade_status:status,recall_score:score,grade_feedback:feedback,grade_evidence:detail,proposed_training:proposed,diagnostic_version:"showcase-v2"}).select("id").single();
   if(inserted.error||!inserted.data)return json({error:"demo_result_save_failed"},503);
   return json({received:true,submission_id:inserted.data.id,grade_status:status,recall_score:score,feedback,details:detail,choice_indicators:indicators,proposed_training:proposed});
