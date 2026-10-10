@@ -46,6 +46,7 @@ jobs:
           node tests/pilot-learning.test.js
           node tests/pilot-grade-service.test.js
           node tests/pilot-readiness.test.js
+          node tests/pilot-supervisor-audit.test.js
           node scripts/validate-pilot-grading.js
           node tests/program-flow.test.js
       - name: Production boundary tests
