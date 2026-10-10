@@ -65,6 +65,13 @@ Deno.serve(async(req)=>{
   }
   if(!sourceMap[topic]||!answer||answer.length>12000||!(["ar","en"].includes(b.language)))return json({error:"invalid_input"},400);
   const t=task(topic,stage,b.language);if(!t)return json({error:"unknown_stage"},422);
+  // Defense in depth: approving a content item is not the same as releasing a topic.
+  // QA student allowlisting permits real E2E checks while the public launch remains closed.
+  if(!preview&&profile.role==="student"){
+    const launched=new Set((Deno.env.get("PILOT_RELEASE_TOPICS")||"").split(",").map(x=>x.trim()).filter(Boolean));
+    const testers=new Set((Deno.env.get("PILOT_QA_STUDENT_IDS")||"").split(",").map(x=>x.trim()).filter(Boolean));
+    if(!launched.has(String(topic))&&!testers.has(user.id))return json({error:"pilot_not_released",score:null},403);
+  }
   if(!preview){
    const ids=["recall","understanding","exam"].map(x=>"rights-v1-s"+topic+"-"+x);
    const items=await admin.from("content_items").select("id,status").in("id",ids);
@@ -89,5 +96,5 @@ Deno.serve(async(req)=>{
   const saved=await admin.from("pilot_ai_grades").insert(grade).select("*").single();
   if(saved.error){const existing=await admin.from("pilot_ai_grades").select("*").eq("attempt_id",attemptId).maybeSingle();if(existing.data)return json(publicGrade(existing.data));return json({error:"grade_save_failed",score:null},500);}
   return json(publicGrade(saved.data));
- }catch(e){const m=e instanceof Error?e.message:String(e);return json({error:m,score:null},m==="UNAUTHORIZED"?401:m==="FORBIDDEN"?403:500);}
+ }catch(e){const m=e instanceof Error?e.message:String(e);return json({error:m==="UNAUTHORIZED"||m==="FORBIDDEN"?m:"internal_error",score:null},m==="UNAUTHORIZED"?401:m==="FORBIDDEN"?403:500);}
 });
