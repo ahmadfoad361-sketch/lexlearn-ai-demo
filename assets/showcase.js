@@ -1,8 +1,6 @@
 (function(){
 "use strict";
-var ar=document.documentElement.lang==="ar",lang=ar?"ar":"en",Q=window.LEX_QUALITY,APP=document.getElementById("showcaseApp"),ss=null;
-try{ss=JSON.parse(localStorage.getItem("lexlearn_student_session")||"null");}catch(e){}
-var profileKey="lexlearn_v9_profile"+(ss&&ss.studentId?"_"+ss.studentId:""),questions=[],answers=[],step=0,timer=null,free="",started=0;
+var ar=document.documentElement.lang==="ar",lang=ar?"ar":"en",Q=window.LEX_QUALITY,APP=document.getElementById("showcaseApp"),questions=[],answers=[],step=0,timer=null,free="",started=0;
 function tr(a,b){return ar?a:b;}
 function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
 function chrome(s){APP.innerHTML='<div class="demoShell"><header class="demoTop"><div class="demoTopIn"><div class="demoBrand"><div class="demoLogo"><img src="assets/lexlearn-logo.svg" alt="LexLearn"></div><div><b>Lex<span class="brandLearn">Learn</span></b><small>'+tr('نفهم طريقة تفكيرك، ونبني طريقك.','We understand your mind and build your path.')+'</small></div></div><div class="demoMeta"><a class="demoGhost" href="'+(ar?'showcase-en.html':'showcase.html')+'?country=qa&subject=rights">'+tr('English','العربية')+'</a><a class="demoGhost" href="'+(ar?'index.html':'index-en.html')+'">'+tr('الرئيسية','Home')+'</a></div></div></header><main class="demoWrap">'+s+'</main><footer class="demoFooter">LexLearn</footer></div>';}
