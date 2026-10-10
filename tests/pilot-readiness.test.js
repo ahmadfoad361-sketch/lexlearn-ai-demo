@@ -1,0 +1,31 @@
+"use strict";
+const fs=require("node:fs"),assert=require("node:assert/strict");
+const read=p=>fs.readFileSync(p,"utf8");
+const front=read("assets/pilot-learning.js");
+const grader=read("supabase/functions/pilot-grade/index.ts");
+const review=read("supabase/functions/content-review/index.ts");
+const admin=read("assets/admin-cloud.js");
+const runner=read("scripts/validate-pilot-grading.js");
+const data=JSON.parse(read("validation/pilot-semantic-benchmark.json"));
+assert.match(front,/var release=\{1:false,22:false\}/,"Public release must remain closed");
+assert.match(grader,/PILOT_RELEASE_TOPICS/,"Must enforce release at the server");
+assert.match(grader,/PILOT_QA_STUDENT_IDS/,"Allowlisted student QA path required before launch");
+assert.match(grader,/\["correct","reject","explain"\]/,"Comparison needs all essential criteria");
+assert.match(grader,/\["unlawful_interest","sole_harm","distinction","cues"\]/,"Intent vs. harm is mandatory");
+assert.match(grader,/needs_review/);
+assert.match(grader,/store:false/,"Do not retain provider request payloads");
+assert.match(grader,/OPENAI_API_KEY/);
+assert.match(grader,/OPENAI_MODEL/);
+assert.match(review,/second_reviewer_required/);
+assert.match(admin,/data-confirm/);
+assert.match(admin,/pilot_human_grades/);
+assert.match(front,/if\(human\.data\)return/,"Instructor must take priority over AI");
+assert.match(runner,/functions\/v1\/pilot-grade/,"Must call the actual pilot-grade function");
+assert.doesNotMatch(runner,/functions\/v1\/grade-answer/);
+assert.equal(data.cases.length,160);
+for(const topic of [1,22])for(const stage of ["step3","step4","step5","day1","day7"])for(const lang of ["ar","en"]){
+ const slice=data.cases.filter(c=>c.topic===topic&&c.stage===stage&&c.language===lang);
+ assert.equal(slice.length,8,"Missing variants for "+topic+"/"+stage+"/"+lang);
+ for(const v of ["correct","rephrased","incorrect","incomplete","ambiguous","verbose_no_substance","quoted_error_corrected","prompt_injection"])assert.ok(slice.some(c=>c.variation===v));
+}
+console.log("pilot-readiness static gates: PASS (not a live grading or student test)");
