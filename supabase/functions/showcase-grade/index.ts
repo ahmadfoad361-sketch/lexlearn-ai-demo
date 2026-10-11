@@ -19,6 +19,39 @@ function validate(g:any,answer:string){
  const expected=g.contradictions.length?0:criteria.filter(c=>g.achieved.some((a:any)=>a.id===c.id)).reduce((s,c)=>s+c.weight,0)/7;
  return typeof g.score==="number"&&Number.isFinite(g.score)&&g.score>=0&&g.score<=1&&Math.abs(g.score-expected)<.011;
 }
+// Conservative no-API pilot fallback: patterns are intentionally narrow and do not
+// claim to understand every paraphrase. Uncertain answers stay pending supervisor review.
+function fallbackAssessment(answer:string,lang:string){
+ const t=answer.toLowerCase().replace(/[أإآ]/g,"ا").replace(/ى/g,"ي").replace(/ة/g,"ه").replace(/[^\\p{L}\\p{N}]+/gu," ").replace(/\\s+/g," ").trim();
+ const ar=lang==="ar";
+ const patterns=[
+  /(?:تبد[اأ]|يثبت|تبدا|تثبت|يكتسب|يصبح|تنش[اأ])[^.،؛]{0,95}(?:الشخصي[هة]|شخصا|صفه الشخص)[^.،؛]{0,80}(?:ولاد|مولود|يولد)[^.،؛]{0,35}(?:حي|حيا)|(?:ولاد|مولود|يولد)[^.،؛]{0,35}(?:حي|حيا)[^.،؛]{0,75}(?:الشخصي[هة]|شخصا)/,
+  /(?:تنتهي|تنقضي|تنعدم|تزول)[^.،؛]{0,60}(?:الشخصي[هة]|صفه الشخص)[^.،؛]{0,35}(?:وفات|موت)|(?:الشخصي[هة])[^.،؛]{0,35}(?:تنتهي|تنقضي)[^.،؛]{0,25}(?:وفات|موت)/,
+  /(?:الحمل|الجنين|المستكن)[^.،؛]{0,105}(?:حقوق|الحقوق|حق)[^.،؛]{0,90}(?:لا تحتاج|لا يتطلب|دون قبول|لا يتوقف|لا يستلزم)|(?:حقوق|الحقوق)[^.،؛]{0,90}(?:الحمل|الجنين|المستكن)[^.،؛]{0,90}(?:لا تحتاج|لا يتطلب|دون قبول|لا يتوقف|لا يستلزم)/,
+  /(?:الحمل|الجنين|المستكن|حقوق)[^.،؛]{0,125}(?:بشرط|شرط|اذا|ان)[^.،؛]{0,55}(?:يولد|ولاد)[^.،؛]{0,25}(?:حي|حيا)/
+ ];
+ const enPatterns=[
+  /(?:legal personality|personhood)[^.!?]{0,95}(?:begins|starts|acquired)[^.!?]{0,55}(?:live birth|born alive)|(?:born alive|live birth)[^.!?]{0,95}(?:legal personality|personhood)/,
+  /(?:legal personality|personhood)[^.!?]{0,55}(?:ends|ceases|terminates)[^.!?]{0,45}(?:death|dies)|(?:ends|ceases)[^.!?]{0,45}(?:death|dies)/,
+  /(?:fetus|foetus|unborn|conceived)[^.!?]{0,100}(?:rights)[^.!?]{0,110}(?:without acceptance|do not require acceptance|not require acceptance)|(?:rights)[^.!?]{0,70}(?:without acceptance)[^.!?]{0,70}(?:fetus|foetus|unborn)/,
+  /(?:fetus|foetus|unborn|prenatal rights)[^.!?]{0,120}(?:if|provided|condition|subject to)[^.!?]{0,55}(?:born alive|live birth)/
+ ];
+ // Contradictory conclusions, negations around governing propositions, and ambiguity
+ // are never assigned an automatic score by this conservative fallback.
+ const unsafe=ar?/(?:مجرد الحمل|منذ الحمل|لحظه الحمل|قبل الولاده تبدا الشخصيه|سن الرشد|بلوغ الرشد|سواء ولد حيا ام لا|دون شرط|بلا شرط|لا يشترط|لا تنتهي بالموت|لا تبدا بالولاده|جميع الحقوق)/:
+ /(?:at conception|from conception|at majority|age of majority|regardless of live birth|whether born alive or not|without any condition|all rights|does not begin at birth|does not end at death)/;
+ if(unsafe.test(t))return null;
+ const rs=(ar?patterns:enPatterns).map(p=>p.exec(t));
+ const hits=rs.map((r,i)=>r?{id:criteria[i].id,evidence:r[0].slice(0,150)}:null).filter(Boolean);
+ // Distinguish untested/unclear wording from an incorrect statement: only complete,
+ // explicit criteria can be safely credited; omitted criteria receive no credit.
+ if(!hits.length)return null;
+ const missing=criteria.filter(c=>!hits.some((h:any)=>h.id===c.id)).map(c=>c.id);
+ const score=Math.round(100*criteria.filter(c=>hits.some((h:any)=>h.id===c.id)).reduce((sum,c)=>sum+c.weight,0)/7);
+ return {score,achieved:hits,missing,confidence:"limited_rules",feedback:ar?
+  "تقييم مبدئي محدود: رُصدت عناصر قانونية صريحة من إجابتك. اختلاف الصياغة أو العناصر التي لم يتعرف عليها المحرك تحتاج مراجعة المشرف. هذه ليست نتيجة تصحيح دلالي شامل.":
+  "Limited provisional check: explicitly identifiable legal elements were found. Unrecognized paraphrases require supervisor review; this is not full semantic AI grading."};
+}
 Deno.serve(async req=>{
  if(req.method==="OPTIONS")return new Response("ok",{headers:cors});
  if(req.method!=="POST")return json({error:"method_not_allowed"},405);
@@ -96,6 +129,11 @@ Deno.serve(async req=>{
         else detail={reason:"semantic_grade_requires_review"};
       }else {let code="provider_http_error";try {const providerError=await ai.json();code=String(providerError?.error?.code||providerError?.error?.type||code).slice(0,80);}catch{} detail={reason:"ai_provider_unavailable",http_status:ai.status,provider_code:code};}
     }catch{detail={reason:"ai_request_failed"};}
+  }
+  if(status!=="graded"){
+    const preliminary=fallbackAssessment(answer,lang);
+    if(preliminary){status="rule_assessed";score=preliminary.score;feedback=preliminary.feedback;
+      detail={provider:"local_legal_rules",provisional:true,achieved:preliminary.achieved,missing:preliminary.missing,confidence:preliminary.confidence,previous_reason:detail.reason||null};}
   }
   // Demo submissions stay separate from students' attempts, plans and mastery evidence.
   // A failed AI call never invents a recall score; the independent supervisor queue keeps the answer.
