@@ -83,10 +83,10 @@ async function result(){
  var receipt;
  try{receipt=await sendDemo();}catch(e){receipt={received:false,error:String(e&&e.message||'not_sent')};}
  var grade=Q.grade(free,Q.makeEssay(Q.topic(1),lang,'recall'),lang);
- if(receipt.received&&receipt.grade_status==='graded'&&typeof receipt.recall_score==='number'){
-  grade.pending=false;grade.needsHumanReview=false;grade.provisional=true;grade.gradingMethod='grounded_semantic';
+ if(receipt.received&&(receipt.grade_status==='graded'||receipt.grade_status==='rule_assessed')&&typeof receipt.recall_score==='number'){
+  grade.pending=false;grade.needsHumanReview=receipt.grade_status==='rule_assessed';grade.provisional=true;grade.gradingMethod=receipt.grade_status==='rule_assessed'?'limited_rule_screen':'grounded_semantic';
   grade.overall=receipt.recall_score;grade.axes.recall=receipt.recall_score;
-  grade.style=tr('تقييم معنى أولي بحسب المصادر القانونية المعتمدة.','Preliminary semantic evaluation using approved legal sources.');
+  grade.style=receipt.grade_status==='rule_assessed'?tr('فحص قانوني آلي محدود — نتيجة مبدئية قابلة للمراجعة، وليست تصحيحًا دلاليًا شاملًا.','Limited automated legal check — provisional and subject to review, not full semantic AI grading.'):tr('تقييم معنى أولي بحسب المصادر القانونية المعتمدة.','Preliminary semantic evaluation using approved legal sources.');
   grade.note=receipt.feedback||'';
   grade.checks=(receipt.details&&receipt.details.achieved||[]).map(function(x){return{label:x.id,matched:true,evidence:x.evidence};});
   grade.studyChecks=[];grade.conflicts=receipt.details&&receipt.details.contradictions||[];
