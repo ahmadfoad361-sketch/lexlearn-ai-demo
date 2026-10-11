@@ -70,7 +70,7 @@ Deno.serve(async req=>{
       });
       if(ai.ok){
         const payload=await ai.json();
-        const raw=String(payload?.result?.response||"").trim().replace(/^\`\`\`(?:json)?\\s*/i,"").replace(/\\s*\`\`\`$/,"");
+        const raw=String(payload?.result?.response||"").trim().replace(/^```(?:json)?\s*/i,"").replace(/\s*```$/,"");
         let grade:any;
         try{grade=JSON.parse(raw);}catch{grade=null;}
         if(validate(grade,answer)){status="graded";score=Math.round(grade.score*100);feedback=grade.feedback;detail={achieved:grade.achieved,missing:grade.missing,contradictions:grade.contradictions,confidence:grade.confidence,model:cfModel,provider:"cloudflare"};}
