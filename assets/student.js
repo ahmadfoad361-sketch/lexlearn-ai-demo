@@ -280,8 +280,18 @@ function consentGateView(){
   "</section></main>";
   document.getElementById("acceptConsent").onclick=async function(){
     var e=document.getElementById("consentError");
-    try{await LEX_CLOUD.recordConsent(CONSENT_VERSION,"learning_data",true);consentOk=true;render();}
-    catch(err){e.textContent="تعذر حفظ الموافقة الآن. حاول مرة أخرى.";e.style.color="var(--red)";}
+    try{
+      var btn=document.getElementById("acceptConsent");btn.disabled=true;
+      await LEX_CLOUD.recordConsent(CONSENT_VERSION,"learning_data",true);
+      var saved=await LEX_CLOUD.getConsent(CONSENT_VERSION,"learning_data");
+      if(!saved)throw new Error("consent_not_confirmed");
+      consentOk=true;render();
+    }catch(err){
+      var detail=String(err&&err.message||"unknown_error");
+      e.textContent=detail==="not_authenticated"?"انتهت جلسة تسجيل الدخول. سجّل خروجًا ثم ادخل مجددًا.":detail==="consent_not_confirmed"?"لم نستطع التأكد من تسجيل الموافقة. حاول مرة أخرى.":"تعذر حفظ الموافقة: "+detail;
+      e.style.color="var(--red)";
+      var button=document.getElementById("acceptConsent");if(button)button.disabled=false;
+    }
   };
 }
 function render(){
