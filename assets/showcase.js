@@ -43,7 +43,11 @@ async function sendDemo(){
   if(guest.error||!guest.data.user)throw new Error("guest_auth_disabled");
  }
  var r=await db.functions.invoke("showcase-grade",{body:{topic:1,language:lang,answer:free,choices:answers.map(function(a){return{type:a.type,selected:a.selected};})}});
- if(r.error||!r.data||r.data.received!==true||!r.data.submission_id){var e=new Error("send_not_confirmed");e.detail=r.error&&r.error.message||r.data&&r.data.error||"no_confirmation";throw e;}
+ if(r.error||!r.data||r.data.received!==true||!r.data.submission_id){
+  var info=r.data&&r.data.error||"";
+  if(r.error&&r.error.context&&typeof r.error.context.json==="function"){try{var errBody=await r.error.context.json();info=errBody&&errBody.error||info;}catch(_){}}
+  var e=new Error(info||"send_not_confirmed");e.detail=info||r.error&&r.error.message||"no_confirmation";throw e;
+ }
  return r.data;
 }
 function metricV2(k,v,pending){
@@ -79,8 +83,8 @@ function resultScreen(){
    var state=document.querySelector(".deliveryState");
    if(state){
      var why=document.createElement("small");why.style.display="block";why.style.marginTop="8px";
-     var labels={guest_auth_disabled:tr("تعذر بدء جلسة زائر؛ يرجى التأكد من تفعيل الدخول المجهول.","Guest sign-in is unavailable."),cloud_unavailable:tr("خدمة الاتصال غير متاحة.","Cloud connection unavailable."),send_not_confirmed:tr("لم يرسل الخادم تأكيد الحفظ.","The server did not confirm saving.")};
-     why.textContent=labels[r.error]||tr("تحقق من الاتصال وجرب من جديد.","Check your connection and try again.");
+     var labels={daily_demo_limit:tr("وصلت للحد اليومي لعدد تجارب الديمو. جرّب غدًا أو بحساب آخر للاختبار.","Daily demo limit reached. Please try tomorrow."),authentication_required:tr("انتهت جلسة الدخول؛ أعد فتح التجربة.","Session expired; reopen the demo."),invalid_demo_payload:tr("تعذر مطابقة إجابات الاختبار مع الطلب؛ أعد المحاولة.","Answer data was not accepted; retry."),guest_auth_disabled:tr("تعذر بدء جلسة زائر؛ يرجى التأكد من تفعيل الدخول المجهول.","Guest sign-in is unavailable."),cloud_unavailable:tr("خدمة الاتصال غير متاحة.","Cloud connection unavailable."),send_not_confirmed:tr("لم يرسل الخادم تأكيد الحفظ.","The server did not confirm saving.")};
+     why.textContent=labels[r.error]||labels[r.detail]||tr("تحقق من الاتصال وجرب من جديد.","Check your connection and try again.");
      state.appendChild(why);
    }
  }
