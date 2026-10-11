@@ -74,7 +74,7 @@ Deno.serve(async req=>{
   const lang=b.language==="en"?"en":"ar";
   const answer=String(b.answer||"").trim();
   if(!answer||answer.length>1800||b.topic!==1||!Array.isArray(b.choices)||b.choices.length!==6||
-    b.choices.some((x:any,i:number)=>!x||x.type!==["recall","recall","understanding","application","application","legal_precision"][i]||!Number.isInteger(x.selected)||x.selected<0||x.selected>2))
+    b.choices.some((x:any,i:number)=>!x||x.type!==["recall","recall","understanding","understanding","understanding","understanding"][i]||!Number.isInteger(x.selected)||x.selected<0||x.selected>2))
     return json({error:"invalid_demo_payload"},400);
   const db=createClient(url,serviceKey,{auth:{persistSession:false}});
   const quota=await db.rpc("claim_demo_quota",{p_user:user.id});
