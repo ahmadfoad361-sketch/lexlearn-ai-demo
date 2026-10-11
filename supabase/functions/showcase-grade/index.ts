@@ -69,7 +69,7 @@ Deno.serve(async req=>{
         const g=JSON.parse(outputText(await ai.json()));
         if(validate(g,answer)){status="graded";score=Math.round(g.score*100);feedback=g.feedback;detail={achieved:g.achieved,missing:g.missing,contradictions:g.contradictions,confidence:g.confidence,model};}
         else detail={reason:"semantic_grade_requires_review"};
-      }else detail={reason:"ai_provider_unavailable"};
+      }else {let code="provider_http_error";try {const providerError=await ai.json();code=String(providerError?.error?.code||providerError?.error?.type||code).slice(0,80);}catch{} detail={reason:"ai_provider_unavailable",http_status:ai.status,provider_code:code};}
     }catch{detail={reason:"ai_request_failed"};}
   }
   // Demo submissions stay separate from students' attempts, plans and mastery evidence.
