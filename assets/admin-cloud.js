@@ -6,6 +6,11 @@ var ss=null;try{ss=JSON.parse(localStorage.getItem(SKEY)||"null");}catch(e){}
 if(!ss||!ss.cloud||!window.LEX_CLOUD||!LEX_CLOUD.isConfigured()){location.replace("admin-login.html");return;}
 var state={tab:"dashboard",students:[],cohorts:[],audit:[],content:[],snapshots:[],attempts:[],pilotAttempts:[],pilotGrades:[],pilotAi:[],selected:null,q:"",busy:false,error:"",creds:null};
 
+function nextStudentUsername(){
+ var used=new Set(state.students.map(function(s){return String(s.username||"").toLowerCase();}));
+ var n=1;while(used.has("student"+String(n).padStart(2,"0")))n++;
+ return "student"+String(n).padStart(2,"0");
+}
 async function adminReadableError(error){
  var message=String(error&&error.message||"تعذر الاتصال بخدمة إنشاء الحساب");
  try{
@@ -173,7 +178,7 @@ function gradingTab(){
 }
 function modal(){
  if(!state.modal)return "";
- if(state.modal==="add")return '<div class="modalBack"><div class="modal"><button class="close" data-close>×</button><span class="overline">حساب مركزي</span><h2>إضافة طالب</h2><form id="addForm" class="formGrid"><label>الاسم<input id="n" required></label><label>اسم المستخدم (بالإنجليزية فقط)<input id="usr" pattern="[A-Za-z0-9._-]{3,32}" value="student02" title="استخدم حروفًا إنجليزية وأرقامًا فقط؛ مثال: student02" placeholder="student02" required></label><label>الجامعة<input id="uni" value="Qatar University"></label><label>السنة<select id="yr"><option>السنة الأولى</option><option>السنة الثانية</option></select></label><label>الدولة<select id="country"><option value="qa">قطر</option><option value="eg">مصر</option></select></label><label>المجموعة<select id="coh"><option value="">بدون مجموعة</option>'+state.cohorts.map(function(c){return '<option value="'+c.id+'">'+esc(c.name)+'</option>';}).join("")+'</select></label><div class="modalActions"><button class="btn primary" type="submit">إنشاء الحساب</button></div></form></div></div>';
+ if(state.modal==="add")return '<div class="modalBack"><div class="modal"><button class="close" data-close>×</button><span class="overline">حساب مركزي</span><h2>إضافة طالب</h2><form id="addForm" class="formGrid"><label>الاسم<input id="n" required></label><label>اسم المستخدم (بالإنجليزية فقط)<input id="usr" pattern="[A-Za-z0-9._-]{3,32}" value="'+nextStudentUsername()+'" title="استخدم حروفًا إنجليزية وأرقامًا فقط؛ مثال: student02" placeholder="student02" required></label><label>الجامعة<input id="uni" value="Qatar University"></label><label>السنة<select id="yr"><option>السنة الأولى</option><option>السنة الثانية</option></select></label><label>الدولة<select id="country"><option value="qa">قطر</option><option value="eg">مصر</option></select></label><label>المجموعة<select id="coh"><option value="">بدون مجموعة</option>'+state.cohorts.map(function(c){return '<option value="'+c.id+'">'+esc(c.name)+'</option>';}).join("")+'</select></label><div class="modalActions"><button class="btn primary" type="submit">إنشاء الحساب</button></div></form></div></div>';
  if(state.modal==="creds")return '<div class="modalBack"><div class="modal"><button class="close" data-close>×</button><span class="overline">بيانات مؤقتة</span><h2>سلمها للطالب مرة واحدة</h2><div class="credentials"><span>اسم المستخدم</span><b>'+esc(state.creds.username)+'</b><span>كلمة المرور المؤقتة</span><b>'+esc(state.creds.password)+'</b></div><button class="btn primary" id="copyCreds">نسخ البيانات</button><div class="warn">سيُطلب من الطالب تغيير كلمة المرور. لا نخزن كلمة المرور في لوحة الإدارة.</div></div></div>';
  return "";
 }
