@@ -43,6 +43,11 @@ function fallbackAssessment(answer:string,lang:string){
  const negation=ar?/(?:لا|لم|لن|ليس|غير|بدون|دون)\s+(?:تبدا|تثبت|تنتهي|تنقضي|يولد|يشترط|يستحق|يكتسب)/:/(?:not|never|does not|do not)\s+(?:begin|start|end|cease|require|born|acquire)/;
  if(negation.test(t))return null;
  const hits=rules.map((p,i)=>{const m=p.exec(t);return m?{id:criteria[i].id,evidence:m[0].slice(0,150)}:null;}).filter(Boolean);
+ // Additional high-precision, short independent propositions. Never credit an
+ // isolated "live birth" fragment as a complete statement of when personhood starts.
+ const shortStart=ar?/(?:الشخصيه|شخصيه الانسان|الشخصيه الطبيعيه|الشخصيه القانونيه)[\\s\\S]{0,45}(?:تبدا|تنشا|تثبت|تقوم|تكتسب)[\\s\\S]{0,45}(?:بالولاده|ولادته|مولده)[\\s\\S]{0,14}(?:حيا|حي)|(?:تبدا|تنشا|تثبت|تقوم)[\\s\\S]{0,30}(?:الشخصيه|شخصيه الانسان)[\\s\\S]{0,38}(?:بالولاده|ولادته|مولده)[\\s\\S]{0,14}(?:حيا|حي)/:/(?:legal personality|personhood)[\\s\\S]{0,35}(?:begins|starts)[\\s\\S]{0,30}(?:born alive|live birth)/;
+ const shortDeath=ar?/(?:الشخصيه|شخصيه الانسان)[\\s\\S]{0,35}(?:تنتهي|تنقضي|تزول)[\\s\\S]{0,24}(?:بالوفاه|بالموت|بوفاته|بموته)|(?:تنتهي|تنقضي)[\\s\\S]{0,25}(?:الشخصيه)[\\s\\S]{0,24}(?:بالوفاه|بالموت|بوفاته|بموته)/:/(?:legal personality|personhood)[\\s\\S]{0,35}(?:ends|ceases)[\\s\\S]{0,25}(?:at death|with death)/;
+ for(const [index,p] of [[0,shortStart],[1,shortDeath]] as const){if(!hits.some((h:any)=>h.id===criteria[index].id)){const m=p.exec(t);if(m)hits.push({id:criteria[index].id,evidence:m[0].slice(0,150)});}}
  if(!hits.length)return null;
  const missing=criteria.filter(c=>!hits.some((h:any)=>h.id===c.id)).map(c=>c.id);
  const score=Math.round(100*criteria.filter(c=>hits.some((h:any)=>h.id===c.id)).reduce((sum,c)=>sum+c.weight,0)/7);
@@ -132,6 +137,11 @@ Deno.serve(async req=>{
     const preliminary=fallbackAssessment(answer,lang);
     if(preliminary){status="rule_assessed";score=preliminary.score;feedback=preliminary.feedback;
       detail={provider:"local_legal_rules",provisional:true,achieved:preliminary.achieved,missing:preliminary.missing,confidence:preliminary.confidence,previous_reason:detail.reason||null};}
+  }
+  if(status==="pending_review" && !/^(?:\\s*)$/.test(answer) && answer.length<35 && !(detail.reason==="semantic_grade_requires_review")){
+    status="insufficient_evidence";
+    feedback=lang==="ar"?"الإجابة قصيرة ولا تتضمن حكمًا قانونيًا مكتملًا يمكن توزيع درجته بثقة. اذكر متى تبدأ الشخصية ومتى تنتهي وحقوق الحمل وشرطها.":"The response is too short to establish a complete legal proposition. State the start and end of personality, prenatal rights and their condition.";
+    detail={...detail,reason:"insufficient_legal_proposition",provisional:true};
   }
   // Demo submissions stay separate from students' attempts, plans and mastery evidence.
   // A failed AI call never invents a recall score; the independent supervisor queue keeps the answer.
