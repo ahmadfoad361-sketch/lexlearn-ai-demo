@@ -22,35 +22,33 @@ function validate(g:any,answer:string){
 // Conservative no-API pilot fallback: patterns are intentionally narrow and do not
 // claim to understand every paraphrase. Uncertain answers stay pending supervisor review.
 function fallbackAssessment(answer:string,lang:string){
- const t=answer.toLowerCase().replace(/[أإآ]/g,"ا").replace(/ى/g,"ي").replace(/ة/g,"ه").replace(/[^\\p{L}\\p{N}]+/gu," ").replace(/\\s+/g," ").trim();
  const ar=lang==="ar";
- const patterns=[
-  /(?:تبد[اأ]|يثبت|تبدا|تثبت|يكتسب|يصبح|تنش[اأ])[^.،؛]{0,95}(?:الشخصي[هة]|شخصا|صفه الشخص)[^.،؛]{0,80}(?:ولاد|مولود|يولد)[^.،؛]{0,35}(?:حي|حيا)|(?:ولاد|مولود|يولد)[^.،؛]{0,35}(?:حي|حيا)[^.،؛]{0,75}(?:الشخصي[هة]|شخصا)/,
-  /(?:تنتهي|تنقضي|تنعدم|تزول)[^.،؛]{0,60}(?:الشخصي[هة]|صفه الشخص)[^.،؛]{0,35}(?:وفات|موت)|(?:الشخصي[هة])[^.،؛]{0,35}(?:تنتهي|تنقضي)[^.،؛]{0,25}(?:وفات|موت)/,
-  /(?:الحمل|الجنين|المستكن)[^.،؛]{0,105}(?:حقوق|الحقوق|حق)[^.،؛]{0,90}(?:لا تحتاج|لا يتطلب|دون قبول|لا يتوقف|لا يستلزم)|(?:حقوق|الحقوق)[^.،؛]{0,90}(?:الحمل|الجنين|المستكن)[^.،؛]{0,90}(?:لا تحتاج|لا يتطلب|دون قبول|لا يتوقف|لا يستلزم)/,
-  /(?:الحمل|الجنين|المستكن|حقوق)[^.،؛]{0,125}(?:بشرط|شرط|اذا|ان)[^.،؛]{0,55}(?:يولد|ولاد)[^.،؛]{0,25}(?:حي|حيا)/
+ const t=answer.toLowerCase().normalize("NFKC").replace(/[\u064b-\u065f\u0670]/g,"").replace(/[أإآٱ]/g,"ا").replace(/ى/g,"ي").replace(/ة/g,"ه").replace(/ؤ/g,"و").replace(/ئ/g,"ي").replace(/[^\p{L}\p{N}]+/gu," ").replace(/\s+/g," ").trim();
+ // Evidence must correspond to a complete legal proposition, not a keyword hit.
+ const rules=ar?[
+  /(?:الشخصيه(?: القانونيه)?|وصف الشخص|صفه الشخص|شخصا(?: قانونيا)?|اهليه الوجوب)[\s\S]{0,85}(?:تبدا|تثبت|تنشا|تكتسب|تقرر|يحصل عليها|يكتسبها|يصبح|تكون)[\s\S]{0,75}(?:ولادته|الولاده|يولد|مولده|المولود)[\s\S]{0,25}(?:حيا|حي)|(?:تبدا|تثبت|تنشا|تكتسب|تقرر|يكتسب)[\s\S]{0,70}(?:الشخصيه|صفه الشخص)[\s\S]{0,70}(?:الولاده|يولد|مولده|مولود)[\s\S]{0,22}(?:حيا|حي)|(?:بمجرد|عند|منذ|حين|وقت|لحظه)[\s\S]{0,24}(?:الولاده|ولادته|يولد|مولده)[\s\S]{0,20}(?:حيا|حي)[\s\S]{0,60}(?:شخصا|شخصيه|وصف الشخص)|(?:يولد|ولد|مولود)[\s\S]{0,14}(?:حيا|حي)[\s\S]{0,55}(?:يكتسب|تثبت له|تصبح له|تقوم|تبدا|تنشا)[\s\S]{0,30}(?:الشخصيه|صفه الشخص)/,
+  /(?:الشخصيه|صفه الشخص|وصف الشخص)[\s\S]{0,70}(?:تنتهي|تنقضي|تزول|تنعدم|تنقضي|تنقطع|تسقط)[\s\S]{0,45}(?:وفاته|الوفاه|موته|الموت)|(?:تنتهي|تنقضي|تزول)[\s\S]{0,45}(?:الشخصيه|صفه الشخص)[\s\S]{0,40}(?:وفاته|الوفاه|موته|الموت)|(?:بموته|بوفاته|عند وفاته|عند موته)[\s\S]{0,65}(?:تنتهي|تنقضي|تزول|تنعدم)[\s\S]{0,20}(?:الشخصيه|صفه الشخص)/,
+  /(?:الحمل|الجنين|المستكن|قبل مولده)[\s\S]{0,100}(?:حقوق|الحقوق|حق)[\s\S]{0,100}(?:لا تحتاج|لا يتطلب|لا يتوقف|لا يستلزم|دون قبول|بغير قبول|لا تحتاج اسبابها|لا تحتاج لقبول|لا يحتاج سببها)|(?:حقوق|الحقوق|حق)[\s\S]{0,85}(?:لا تحتاج|لا يتطلب|لا يتوقف|لا يستلزم|دون قبول|بغير قبول)[\s\S]{0,90}(?:الحمل|الجنين|المستكن)|(?:للحمل|للجنين)[\s\S]{0,75}(?:ما لا يحتاج|التي لا تحتاج|ما لا يتوقف)[\s\S]{0,50}(?:قبول)/,
+  /(?:الحمل|الجنين|المستكن|حقوق|الحقوق|حق)[\s\S]{0,120}(?:بشرط|شرط|شريطه|اذا|ان|متي|متوقفه علي|تتوقف علي|رهن|مرهونه ب|علي ان|معلق)[\s\S]{0,65}(?:يولد|ولادته|ولاده|المولود)[\s\S]{0,28}(?:حيا|حي)|(?:ولادته|الولاده)[\s\S]{0,20}(?:حيا|حي)[\s\S]{0,70}(?:شرط|مشروط|مرهون|تتوقف|معلق|يثبت|تثبت)/
+ ]:[
+  /(?:legal personality|personhood)[\s\S]{0,80}(?:begins|starts|arises|acquired|attaches)[\s\S]{0,60}(?:born alive|live birth)|(?:born alive|live birth)[\s\S]{0,70}(?:legal personality|personhood)/,
+  /(?:legal personality|personhood)[\s\S]{0,60}(?:ends|ceases|terminates)[\s\S]{0,45}(?:death|dies)|(?:death|dies)[\s\S]{0,60}(?:legal personality|personhood)[\s\S]{0,35}(?:ends|ceases)/,
+  /(?:fetus|foetus|unborn|conceived)[\s\S]{0,100}(?:rights)[\s\S]{0,100}(?:without acceptance|do not require acceptance|not require acceptance)|(?:rights)[\s\S]{0,80}(?:without acceptance)[\s\S]{0,80}(?:fetus|foetus|unborn)/,
+  /(?:fetus|foetus|unborn|prenatal rights)[\s\S]{0,120}(?:if|provided|condition|subject to)[\s\S]{0,60}(?:born alive|live birth)/
  ];
- const enPatterns=[
-  /(?:legal personality|personhood)[^.!?]{0,95}(?:begins|starts|acquired)[^.!?]{0,55}(?:live birth|born alive)|(?:born alive|live birth)[^.!?]{0,95}(?:legal personality|personhood)/,
-  /(?:legal personality|personhood)[^.!?]{0,55}(?:ends|ceases|terminates)[^.!?]{0,45}(?:death|dies)|(?:ends|ceases)[^.!?]{0,45}(?:death|dies)/,
-  /(?:fetus|foetus|unborn|conceived)[^.!?]{0,100}(?:rights)[^.!?]{0,110}(?:without acceptance|do not require acceptance|not require acceptance)|(?:rights)[^.!?]{0,70}(?:without acceptance)[^.!?]{0,70}(?:fetus|foetus|unborn)/,
-  /(?:fetus|foetus|unborn|prenatal rights)[^.!?]{0,120}(?:if|provided|condition|subject to)[^.!?]{0,55}(?:born alive|live birth)/
- ];
- // Contradictory conclusions, negations around governing propositions, and ambiguity
- // are never assigned an automatic score by this conservative fallback.
- const unsafe=ar?/(?:مجرد الحمل|منذ الحمل|لحظه الحمل|قبل الولاده تبدا الشخصيه|سن الرشد|بلوغ الرشد|سواء ولد حيا ام لا|دون شرط|بلا شرط|لا يشترط|لا تنتهي بالموت|لا تبدا بالولاده|جميع الحقوق)/:
- /(?:at conception|from conception|at majority|age of majority|regardless of live birth|whether born alive or not|without any condition|all rights|does not begin at birth|does not end at death)/;
+ const unsafe=ar?/(?:مجرد الحمل|منذ الحمل|لحظه الحمل|قبل الولاده تبدا|بلوغ الرشد|سن الرشد|سواء ولد حيا ام لا|سواء ولد ميتا|دون شرط|بلا شرط|بدون شروط|لا يشترط|لا تنتهي بالموت|لا تنتهي بالوفاه|لا تبدا بالولاده|جميع الحقوق|كافه الحقوق|ولد ميتا|يولد ميتا|لا يلزم ان يولد حيا|الولاده ميتا)/:
+ /(?:at conception|from conception|at majority|age of majority|regardless of live birth|whether born alive or not|without any condition|all rights|does not begin at birth|does not end at death|stillborn)/;
  if(unsafe.test(t))return null;
- const rs=(ar?patterns:enPatterns).map(p=>p.exec(t));
- const hits=rs.map((r,i)=>r?{id:criteria[i].id,evidence:r[0].slice(0,150)}:null).filter(Boolean);
- // Distinguish untested/unclear wording from an incorrect statement: only complete,
- // explicit criteria can be safely credited; omitted criteria receive no credit.
+ // Explicit negations are not credited by nearby positive words.
+ const negation=ar?/(?:لا|لم|لن|ليس|غير|بدون|دون)\s+(?:تبدا|تثبت|تنتهي|تنقضي|يولد|يشترط|يستحق|يكتسب)/:/(?:not|never|does not|do not)\s+(?:begin|start|end|cease|require|born|acquire)/;
+ if(negation.test(t))return null;
+ const hits=rules.map((p,i)=>{const m=p.exec(t);return m?{id:criteria[i].id,evidence:m[0].slice(0,150)}:null;}).filter(Boolean);
  if(!hits.length)return null;
  const missing=criteria.filter(c=>!hits.some((h:any)=>h.id===c.id)).map(c=>c.id);
  const score=Math.round(100*criteria.filter(c=>hits.some((h:any)=>h.id===c.id)).reduce((sum,c)=>sum+c.weight,0)/7);
  return {score,achieved:hits,missing,confidence:"limited_rules",feedback:ar?
-  "تقييم مبدئي محدود: رُصدت عناصر قانونية صريحة من إجابتك. اختلاف الصياغة أو العناصر التي لم يتعرف عليها المحرك تحتاج مراجعة المشرف. هذه ليست نتيجة تصحيح دلالي شامل.":
-  "Limited provisional check: explicitly identifiable legal elements were found. Unrecognized paraphrases require supervisor review; this is not full semantic AI grading."};
+  "فحص قانوني مبدئي للعناصر الصريحة في الإجابة؛ يقبل بعض الصياغات المتكافئة ولا يدعي فهم كل التعبيرات. الدرجة قابلة لمراجعة المشرف، والعناصر غير المكتشفة ليست بالضرورة خاطئة.":
+  "Provisional rule-based legal screening. Some equivalent paraphrases are accepted; unrecognized wording is not necessarily wrong. Supervisor review is needed."};
 }
 Deno.serve(async req=>{
  if(req.method==="OPTIONS")return new Response("ok",{headers:cors});
