@@ -20,7 +20,7 @@ form.addEventListener("submit",async function(ev){
   var db=LEX_CLOUD.db();
   var result=await db.auth.signUp({
    email:email,password:password,
-   options:{data:{display_name:name,university:uni,year_label:year,country_code:country,registration_channel:"self",privacy_notice_version:"2026-10-06-v1"}}
+   options:{data:{display_name:name,university:uni,year_label:year,country_code:country,registration_channel:"self",privacy_notice_version:"2026-10-12-v2"}}
   });
   if(result.error)throw result.error;
   if(result.data&&result.data.session)await db.auth.signOut();
