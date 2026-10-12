@@ -185,7 +185,9 @@ function modal(){
 async function load(){
  state.busy=true;renderLoading();
  try{
-  var me=await LEX_CLOUD.profile();state.staffRole=me&&me.role;
+  var me=await LEX_CLOUD.profile();
+  if(!me||me.active!==true||["owner","admin","instructor"].indexOf(me.role)<0){localStorage.removeItem(SKEY);location.replace("admin-login.html");return;}
+  state.staffRole=me.role;
   var c=LEX_CLOUD.db(),results=await Promise.all([
     LEX_CLOUD.listStudents(),LEX_CLOUD.listCohorts(),LEX_CLOUD.listAudit(),Promise.all([LEX_CLOUD.listContentItems("qa-qu-lawc213"),LEX_CLOUD.listContentItems("qa-qu-lawc101-rights")]).then(function(groups){return groups[0].concat(groups[1].filter(function(x){return /^rights-v1-s(?:1|22)-(?:recall|understanding|exam)$/.test(x.id);}));}),
     c.from("learner_snapshots").select("user_id,course_id,snapshot_type,state,updated_at"),
