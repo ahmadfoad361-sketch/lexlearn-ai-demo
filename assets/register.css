@@ -16,3 +16,10 @@ form[hidden],.conferenceAccount[hidden]{display:none!important}
 .conferenceAccount .accountButtons button{background:white;border:1px solid #142B5F;color:#142B5F}
 .conferenceAccount .accountButtons .startBtn{display:inline-flex;align-items:center;background:#8F1D3F;border:1px solid #8F1D3F;color:white}
 .conferenceAccount small{font-size:12px;line-height:1.7}
+
+/* Registration completion remains visible after the form is hidden. */
+.formCard>#status{margin:14px 0 5px;min-height:0}
+.formCard>.conferenceAccount{display:block}
+.formCard>.conferenceAccount[hidden]{display:none!important}
+.studentGreeting{font-size:clamp(18px,2vw,23px);line-height:1.7;color:#142B5F;margin:0 0 14px}
+.studentGreeting span{color:#8F1D3F;overflow-wrap:anywhere}
