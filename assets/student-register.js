@@ -6,6 +6,7 @@ var ar=document.documentElement.lang==="ar",
  button=document.getElementById("registerBtn"),
  receipt=document.getElementById("conferenceAccount"),
  usernameLabel=document.getElementById("createdUsername"),
+ studentNameLabel=document.getElementById("createdStudentName"),
  copyButton=document.getElementById("copyUsername"),
  startButton=document.getElementById("startTraining");
 function say(a,b){return ar?a:b;}
@@ -71,8 +72,10 @@ form.addEventListener("submit",async function(ev){
   var username=String(response.data.username);
   try{localStorage.setItem("lexlearn_last_student_username",username);}catch(_){}
   usernameLabel.textContent=username;
+  studentNameLabel.textContent=name;
   receipt.hidden=false;
   form.hidden=true;
+  if(typeof receipt.scrollIntoView==="function")receipt.scrollIntoView({block:"center",behavior:"smooth"});
   copyButton.textContent=say("نسخ اسم المستخدم","Copy username");
   // Supabase Auth is based on the generated username, not unverified contact data.
   try{
