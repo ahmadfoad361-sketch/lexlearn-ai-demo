@@ -36,3 +36,11 @@
 
 /* Only recall/understanding change; other dashboard axes keep their identity. */
 .metric.axis-recall span,.metric.axis-recall b{color:#8F1D3F}.metric.axis-understanding span,.metric.axis-understanding b{color:#142B5F}.metric.axis-recall .bar i{background:linear-gradient(90deg,#8F1D3F,#6E1531)}.metric.axis-understanding .bar i{background:linear-gradient(90deg,#142B5F,#50306A,#8F1D3F)}
+
+.studentSectionBanner{display:flex;align-items:center;gap:16px;border-radius:16px;margin:22px 0 12px;padding:18px 22px;color:#fff}
+.studentSectionBanner span{display:grid;place-items:center;width:46px;height:46px;border-radius:12px;background:rgba(255,255,255,.16);font-weight:800}
+.studentSectionBanner div{display:grid;gap:3px}.studentSectionBanner b{font-size:18px}.studentSectionBanner small{font-size:12px;color:#e8e5ee}
+.identitySection{background:linear-gradient(105deg,#6E1531,#8F1D3F,#50306A)}
+.trainingSection{background:linear-gradient(105deg,#0D1E45,#142B5F,#50306A)}
+.registrationHint{color:#5b6678;font-size:13px;line-height:1.8}
+@media(max-width:600px){.studentSectionBanner{padding:13px 15px;margin:16px 0 10px}}
