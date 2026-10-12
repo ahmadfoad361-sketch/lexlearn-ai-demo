@@ -4,7 +4,7 @@ var APP=document.getElementById("adminApp");
 var SKEY="lexlearn_admin_session";
 var ss=null;try{ss=JSON.parse(localStorage.getItem(SKEY)||"null");}catch(e){}
 if(!ss||!ss.cloud||!window.LEX_CLOUD||!LEX_CLOUD.isConfigured()){location.replace("admin-login.html");return;}
-var state={tab:"dashboard",students:[],cohorts:[],audit:[],content:[],snapshots:[],attempts:[],pilotAttempts:[],pilotGrades:[],pilotAi:[],selected:null,q:"",busy:false,error:"",creds:null};
+var state={tab:"dashboard",students:[],cohorts:[],audit:[],content:[],snapshots:[],attempts:[],pilotAttempts:[],pilotGrades:[],pilotAi:[],selected:null,q:"",busy:false,error:"",creds:null,staffRole:null};
 
 function nextStudentUsername(){
  var used=new Set(state.students.map(function(s){return String(s.username||"").toLowerCase();}));
@@ -127,7 +127,7 @@ function detail(v){
  essayAttempts(v)+
  '</section>'+
  '<section class="twoCols"><div class="panel"><h3>التقدم</h3><div class="progressWrap"><div class="progressLine"><i style="width:'+Math.round(v.completed/30*100)+'%"></i></div><b>'+v.completed+'/30</b></div><p>الجلسة الحالية: '+v.session+' • '+(v.course.completedProgram?"البرنامج مكتمل":"البرنامج مستمر")+'</p><div class="recommend"><b>التدخل المقترح</b><span>'+esc(modelText(v))+'</span></div></div>'+
- '<div class="panel"><h3>إجراءات الإدارة</h3><div class="adminActions"><button data-reset="'+s.id+'">'+ico("key")+' كلمة مرور مؤقتة</button><button data-toggle="'+s.id+'" data-active="'+(s.active!==false)+'">'+ico("users")+' '+(s.active===false?"تفعيل":"تعطيل")+'</button><button data-unlock="'+s.id+'">فتح الأسبوع التالي</button><button data-repair="'+s.id+'">جلسة تثبيت</button></div></div></section>'+
+ '<div class="panel studentManagement"><h3>إدارة حساب الطالب</h3><p class="managementHint">إيقاف مؤقت أو تعطيل دون حذف نتائج التدريب. يمكنك استخراج ملف PDF أو نص كامل للتوثيق قبل أي حذف نهائي.</p><div class="accountState '+(s.accountStatus||"active")+'">حالة الحساب: '+({"active":"نشط","paused":"موقوف مؤقتًا","disabled":"معطّل"}[s.accountStatus||"active"]||"غير محددة")+'</div><div class="adminActions"><button class="reportBtn" data-report="'+s.id+'">'+ico("audit")+' تصدير ملف الطالب / PDF</button><button data-reset="'+s.id+'">'+ico("key")+' كلمة مرور مؤقتة</button>'+(s.accountStatus!=="paused"&&s.active!==false?'<button data-set-status="paused" data-user="'+s.id+'">إيقاف مؤقت</button>':'')+(s.accountStatus!=="disabled"?'<button data-set-status="disabled" data-user="'+s.id+'">تعطيل الحساب</button>':'')+(s.active===false?'<button data-set-status="active" data-user="'+s.id+'">إعادة التفعيل</button>':'')+'<button data-unlock="'+s.id+'">فتح الأسبوع التالي</button><button data-repair="'+s.id+'">جلسة تثبيت</button>'+(["owner","admin"].indexOf(state.staffRole)>=0?'<button class="deleteStudentButton" data-delete-student="'+s.id+'">حذف الحساب نهائيًا</button>':'')+'</div></div></section>'+
  '<section class="panel evidence"><h3>لماذا اتخذ النظام هذا القرار؟</h3><div class="evidenceGrid">'+["recall","understanding","application","legal_precision","retention","exam"].map(function(k){var a=axes[k];return '<div><b>'+label(k)+'</b><span>'+(a?("تقدير "+a.value+"% • عدم يقين ±"+a.uncertainty+" • اتجاه "+(a.trend>0?"+":"")+a.trend):"لا توجد أدلة كافية بعد")+'</span></div>';}).join("")+'</div></section>';
 }
 function essayAttempts(v){
@@ -142,7 +142,7 @@ function dashboard(){
 }
 function studentsTab(){
  var a=studentList();
- return '<section class="pageTitle"><div><span class="overline">Central Accounts</span><h1>الطلاب</h1><p>حسابات مركزية، والمجموعة والأستاذ اختياريان. يمكن للمشرف مساعدة أي طالب تعثر في التسجيل.</p></div><div class="pageActions"><button class="btn primary" id="add">'+ico("plus")+' إضافة طالب</button><button class="btn secondary" id="export">تصدير CSV</button></div></section><section class="panel"><input class="search" id="ssearch" value="'+esc(state.q)+'" placeholder="بحث..."><div class="studentTable"><div class="tr head"><span>الطالب</span><span>المجموعة</span><span>التقدم</span><span>الأولوية</span><span>الحالة</span></div>'+a.map(function(s){var v=view(s),r=risk(v);return '<button class="tr" data-open="'+s.id+'"><span><b>'+esc(s.name||s.username)+'</b><small>@'+esc(s.username)+'</small></span><span>'+esc(s.cohort||"—")+'</span><span>'+v.completed+'/30</span><span>'+esc(v.model.weakest?label(v.model.weakest):"—")+'</span><span class="risk '+(s.active===false?"none":r)+'">'+(s.active===false?"غير نشط":rlabel(r))+'</span></button>';}).join("")+'</div></section>';
+ return '<section class="pageTitle"><div><span class="overline">Central Accounts</span><h1>الطلاب</h1><p>حسابات مركزية، والمجموعة والأستاذ اختياريان. يمكن للمشرف مساعدة أي طالب تعثر في التسجيل.</p></div><div class="pageActions"><button class="btn primary" id="add">'+ico("plus")+' إضافة طالب</button><button class="btn secondary" id="export">تصدير CSV</button></div></section><section class="panel"><input class="search" id="ssearch" value="'+esc(state.q)+'" placeholder="بحث..."><div class="studentTable"><div class="tr head"><span>الطالب</span><span>المجموعة</span><span>التقدم</span><span>الأولوية</span><span>الحالة</span></div>'+a.map(function(s){var v=view(s),r=risk(v);return '<button class="tr" data-open="'+s.id+'"><span><b>'+esc(s.name||s.username)+'</b><small>@'+esc(s.username)+'</small></span><span>'+esc(s.cohort||"—")+'</span><span>'+v.completed+'/30</span><span>'+esc(v.model.weakest?label(v.model.weakest):"—")+'</span><span class="risk '+(s.active===false?"none":r)+'">'+(s.active===false?((s.accountStatus==="paused")?"موقوف مؤقتًا":"معطّل"):rlabel(r))+'</span></button>';}).join("")+'</div></section>';
 }
 function cohortsTab(){
  return '<section class="pageTitle"><div><span class="overline">Cohorts</span><h1>المجموعات</h1><p>مجموعات الـPilot والمؤسسات.</p></div><button class="btn primary" id="newCohort">'+ico("plus")+' مجموعة جديدة</button></section><section class="cohortGrid">'+state.cohorts.map(function(c){return '<div class="panel cohortCard"><span class="cohortIcon">'+ico("group")+'</span><h3>'+esc(c.name)+'</h3><p>'+state.students.filter(function(s){return s.cohort===c.name;}).length+' طالب</p><div class="cohortMeta"><span>'+esc(c.institution||"—")+'</span><span>'+esc(c.academic_year||"—")+'</span></div></div>';}).join("")+'</section>';
@@ -185,6 +185,7 @@ function modal(){
 async function load(){
  state.busy=true;renderLoading();
  try{
+  var me=await LEX_CLOUD.profile();state.staffRole=me&&me.role;
   var c=LEX_CLOUD.db(),results=await Promise.all([
     LEX_CLOUD.listStudents(),LEX_CLOUD.listCohorts(),LEX_CLOUD.listAudit(),Promise.all([LEX_CLOUD.listContentItems("qa-qu-lawc213"),LEX_CLOUD.listContentItems("qa-qu-lawc101-rights")]).then(function(groups){return groups[0].concat(groups[1].filter(function(x){return /^rights-v1-s(?:1|22)-(?:recall|understanding|exam)$/.test(x.id);}));}),
     c.from("learner_snapshots").select("user_id,course_id,snapshot_type,state,updated_at"),
@@ -241,7 +242,36 @@ function bind(){
  var cc=document.getElementById("copyCreds");if(cc)cc.onclick=function(){var t="Username: "+state.creds.username+"\nTemporary password: "+state.creds.password;navigator.clipboard&&navigator.clipboard.writeText(t);cc.textContent="تم النسخ";};
  var nc=document.getElementById("newCohort");if(nc)nc.onclick=async function(){var name=prompt("اسم المجموعة");if(!name)return;try{await LEX_CLOUD.createCohort({name:name,institution:"Qatar University"});await load();}catch(e){alert("تعذر إنشاء المجموعة");}};
  document.querySelectorAll("[data-reset]").forEach(function(b){b.onclick=async function(){var s=state.students.find(function(x){return x.id===b.dataset.reset;});try{var r=await LEX_CLOUD.manageStudent({action:"reset_password",user_id:s.id});state.creds={username:s.username,password:r.temporary_password};state.modal="creds";render();}catch(e){alert("تعذر إعادة كلمة المرور");}};});
- document.querySelectorAll("[data-toggle]").forEach(function(b){b.onclick=async function(){try{await LEX_CLOUD.manageStudent({action:"toggle_active",user_id:b.dataset.toggle,active:b.dataset.active!=="true"});await load();}catch(e){alert("تعذر تغيير الحالة");}};});
+ document.querySelectorAll("[data-set-status]").forEach(function(button){button.onclick=async function(){
+   var student=state.students.find(function(x){return x.id===button.dataset.user;});
+   if(!student)return;
+   var status=button.dataset.setStatus,term={paused:"إيقاف مؤقت",disabled:"تعطيل",active:"إعادة تفعيل"}[status];
+   var msg="هل تؤكد "+term+" حساب "+(student.name||student.username)+"؟"+(status==="active"?"": "\nستظل كل الاختبارات والدرجات محفوظة.");
+   if(!confirm(msg))return;
+   var reason="";
+   if(status!=="active"){var entered=prompt("سبب الإجراء (اختياري، يظهر في سجل الإدارة):","");if(entered===null)return;reason=entered.trim();}
+   button.disabled=true;
+   try{await LEX_CLOUD.manageStudent({action:"set_status",user_id:student.id,status:status,reason:reason});await load();}
+   catch(e){button.disabled=false;alert("تعذر تغيير حالة الحساب: "+(e&&e.message||e));}
+  };});
+ document.querySelectorAll("[data-report]").forEach(function(button){button.onclick=function(){
+   if(!window.LEX_STUDENT_REPORT){alert("مكون تصدير التقرير لم يتم تحميله، أعد فتح الصفحة.");return;}
+   window.LEX_STUDENT_REPORT.open(button.dataset.report);
+  };});
+ document.querySelectorAll("[data-delete-student]").forEach(function(button){button.onclick=async function(){
+   var student=state.students.find(function(x){return x.id===button.dataset.deleteStudent;});
+   if(!student)return;
+   if(!confirm("تحذير خطير: حذف حساب "+(student.name||student.username)+" حذف نهائي وقد يمسح إجابات الطالب وجلساته وتقييماته ولا يمكن التراجع عنه.\nينصح بتصدير ملف الطالب أولًا.\nهل تريد الاستمرار؟"))return;
+   var typed=prompt("لتأكيد الحذف النهائي اكتب اسم المستخدم بالإنجليزية كما يظهر: "+student.username,"");
+   if(typed===null||typed.trim().toLowerCase()!==String(student.username).toLowerCase()){alert("لم يتم الحذف: اسم المستخدم غير مطابق.");return;}
+   if(!confirm("التأكيد الأخير: سيتم حذف الحساب وبيانات التدريب المرتبطة نهائيًا. هل توافق على فقد البيانات؟"))return;
+   button.disabled=true;
+   try{
+    var resp=await LEX_CLOUD.manageStudent({action:"delete_student",user_id:student.id,confirm_username:typed.trim(),acknowledge_data_loss:true});
+    if(!resp||resp.ok!==true||resp.deleted!==true)throw new Error("لم يُؤكد الخادم الحذف");
+    state.selected=null;await load();alert("تم حذف حساب الطالب نهائيًا.");
+   }catch(e){button.disabled=false;alert("تعذر حذف الحساب: "+(e&&e.message||e));}
+  };});
  document.querySelectorAll("[data-unlock]").forEach(function(b){b.onclick=function(){snapshotAction(b.dataset.unlock,"unlock");};});
  document.querySelectorAll("[data-repair]").forEach(function(b){b.onclick=function(){snapshotAction(b.dataset.repair,"repair");};});
  document.querySelectorAll("[data-review]").forEach(function(b){b.onclick=async function(){
