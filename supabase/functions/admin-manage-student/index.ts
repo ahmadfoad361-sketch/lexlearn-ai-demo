@@ -18,6 +18,17 @@ Deno.serve(async(req)=>{
     const {data:student,error:studentError}=await admin.from("profiles").select("id,role,username,active,account_status,display_name,country_code").eq("id",target).maybeSingle();
     if(studentError||!student||student.role!=="student")return json({error:"student_account_required"},404);
     if(target===user.id)return json({error:"self_action_denied"},403);
+    // Instructor access is restricted to an explicitly assigned cohort.
+    if(profile.role==="instructor"){
+      const [staffScope,studentScope]=await Promise.all([
+        admin.from("profiles").select("cohort_id").eq("id",user.id).single(),
+        admin.from("profiles").select("cohort_id").eq("id",target).single()
+      ]);
+      if(staffScope.error||studentScope.error||!staffScope.data.cohort_id||
+         staffScope.data.cohort_id!==studentScope.data.cohort_id)
+        return json({error:"student_outside_instructor_scope"},403);
+    }
+
     if(action==="reset_password"){
       const p=String(b.password||temporaryPassword());
       if(p.length<10)return json({error:"password_too_short"},400);
