@@ -26,7 +26,7 @@ async function login(u,p){
       if(ENTRY_COUNTRY==="qa")localStorage.setItem("lexlearn_country_setup_v2_rights_"+pr.id,"true");
       location.href="student.html";return;
     }catch(e){
-      err.textContent="تعذر تسجيل الدخول. تحقق من اسم المستخدم وكلمة المرور أو حالة الحساب.";
+      err.textContent=e&&e.message==="student_pending_approval"?"تم تسجيل طلبك، والحساب في انتظار موافقة المشرف.":e&&e.message==="student_account_not_active"?"الحساب موقوف أو معطّل؛ تواصل مع إدارة LexLearn.":"تعذر الدخول. تحقق من البريد أو اسم المستخدم وكلمة المرور.";
       err.style.display="block";return;
     }
   }
