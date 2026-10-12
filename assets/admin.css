@@ -54,3 +54,13 @@
 .studentManagement .adminActions .reportBtn{background:#142B5F;color:#fff}
 .studentManagement .adminActions .deleteStudentButton{background:#fff4f5;color:#8F1D3F;border:1px solid #b53654}
 .studentManagement .adminActions .deleteStudentButton:hover{background:#8F1D3F;color:#fff}
+
+/* LexLearn brand tokens — shared across public, student, demo and supervisor views */
+:root{--maroon:#8F1D3F;--navy:#142B5F;--navy2:#0D1E45}
+
+/* Legible learning records on desktop and mobile. */
+.panel p,.recommend span,.studentBtn small,.metric>span,.metric small,.evidenceGrid span,.auditRow small,.tr small,.formGrid label,.credentials span,.risk,.overline,.demoTag,.tr.head,.kpis span{font-size:max(12px,0.75rem);line-height:1.6}
+.recommend b,.evidenceGrid b,.tr b,.auditRow b,.studentBtn b{font-size:max(13px,.81rem)}
+.nav button,.studentManagement .adminActions button{font-size:13px;line-height:1.55}
+.weekMini span,.weekMini b{font-size:11px}
+@media(max-width:720px){.tr{gap:8px}.studentManagement .adminActions{gap:9px}}
