@@ -52,6 +52,13 @@ function render(d,raw){
  '<main class="wrap"><p class="footnote">تقرير إداري مستخرج من السجلات التعليمية المتاحة للمشرف. المؤشرات الآلية أولية وليست درجات جامعية معتمدة.</p>'+
  (d.truncated&&d.truncated.length?'<p class="warn">تنبيه: تم تجاوز حد تصدير بعض الجداول. يلزم استكمال الأرشفة قبل حذف الطالب.</p>':'')+
  section("01 — بيانات الطالب",html)+
+ section("ملخص النشاط التعليمي",
+   '<div class="fieldgrid"><div><small>إجمالي المحاولات</small><b>'+arr.length+'</b></div>'+
+   '<div><small>محاولات بتقدير مسجل</small><b>'+arr.filter(function(a){return a.score!=null;}).length+'</b></div>'+
+   '<div><small>مراجعات المشرف</small><b>'+(records.pilot_human_grades||[]).length+'</b></div>'+
+   '<div><small>تاريخ آخر محاولة</small><b>'+escapeHTML(fmtDate(arr.length?arr.slice().sort(function(a,b){return new Date(b.created_at)-new Date(a.created_at);})[0].created_at:null))+'</b></div></div>'+
+   '<p class="footnote">ملخص وصفي للسجلات المتاحة، لا يثبت تحسنًا أكاديميًا ولا يعادل اعتماد الدرجة.</p>',
+   "training")+
  section("المقررات المسجلة",enroll)+
  section("02 — الاختبارات والإجابات ("+arr.length+")",tests,"training")+
  other("ملخصات التقدم والتدريب","learner_snapshots")+
