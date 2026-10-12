@@ -6,9 +6,9 @@ fs.mkdirSync(path.join(out,"assets"),{recursive:true});
 const pages=[
   "index.html","showcase.html","program.html",
   "index-en.html","showcase-en.html","program-en.html",
-  "student-login.html","student.html","student-login-en.html","student-en.html",
+  "student-login.html","student-register.html","student.html","student-login-en.html","student-register-en.html","student-en.html",
   "admin-login.html","admin.html","demo-supervisor.html","pilot-review.html","pilot-qa.html",
-  "privacy.html","terms.html","reset-password.html",".nojekyll"
+  "privacy.html","privacy-en.html","terms.html","terms-en.html","reset-password.html",".nojekyll"
 ];
 const assets=[
   "lexlearn-logo.svg","brand-intro.js","training-carousel.js",
@@ -16,10 +16,10 @@ const assets=[
   "adaptive-engine.js","learning-quality.js","pilot-learning.js","pilot-review.js","pilot-qa.js","quality.css",
   "showcase-recall.js","showcase.css","showcase.js","showcase-en.js",
   "program.css","program.js","program-en.js",
-  "portal.css","student-login.js","student-login-en.js","admin-login-v2.js",
+  "portal.css","register.css","student-register.js","student-login.js","student-login-en.js","admin-login-v2.js",
   "student.css","student.js","student-en.js",
   "english.css",
-  "admin.css","admin-entry.js","admin-cloud.js","admin.js",
+  "admin.css","admin-entry.js","admin-cloud.js","student-report.js","admin.js",
   "lexlearn-config.js","cloud-data.js","reset-password.js",
   "legal-pages.css"
 ];
@@ -29,6 +29,21 @@ function cp(src,dst){
 }
 for(const p of pages)cp(p,path.join(out,p));
 for(const p of assets)cp(path.join("assets",p),path.join(out,"assets",p));
+
+// Release-gate: the student self-registration route and both languages must be present.
+// Silent omissions caused valid GitHub source changes to be absent from the live site.
+for(const required of [
+  "student-register.html","student-register-en.html",
+  "privacy-en.html","terms-en.html",
+  "assets/student-register.js","assets/register.css","assets/student-report.js"
+]) {
+  if(!fs.existsSync(path.join(out,required)))
+    throw new Error("Missing live registration or report asset: "+required);
+}
+for(const login of ["student-login.html","student-login-en.html"]) {
+  if(!fs.readFileSync(path.join(out,login),"utf8").includes("student-register"))
+    throw new Error("Student login page has no registration link: "+login);
+}
 
 // Production artifact must not publish repository internals or abandoned prototypes.
 for(const forbidden of [
