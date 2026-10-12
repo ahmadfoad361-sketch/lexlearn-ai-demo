@@ -38,7 +38,7 @@ Deno.serve(async(req)=>{
     });
     if(created.error)return json({error:"create_user_failed",detail:created.error.message},409);
     const uid=created.data.user.id;
-    const upd=await admin.from("profiles").update({cohort_id:cohortId,university:body.university||null,year_label:body.year||body.year_label||"السنة الأولى",country_code:body.country_code||"qa"}).eq("id",uid);
+    const upd=await admin.from("profiles").update({active:true,account_status:"active",cohort_id:cohortId,university:body.university||null,year_label:body.year||body.year_label||"السنة الأولى",country_code:body.country_code||"qa"}).eq("id",uid);
     if(upd.error)throw upd.error;
     const courseId=String(body.course_id||"qa-qu-lawc101-rights");
     await admin.from("enrollments").upsert({user_id:uid,course_id:courseId,status:"active"},{onConflict:"user_id,course_id"});
