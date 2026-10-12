@@ -13,6 +13,11 @@ assert.doesNotMatch(server,/!name\|\|!university\|\|!year\|\|!phone/,"contact mu
 for(const html of [ar,en]){
  assert.match(html,/id="conferenceAccount"/);
  assert.match(html,/id="createdUsername"/);
+ assert.match(html,/id="createdStudentName"/);
+ assert.ok(html.indexOf("</form>")>=0&&html.indexOf("</form>")<html.indexOf('id="conferenceAccount"'),
+ "Username confirmation must be outside the form (form is hidden after registration)");
+ assert.ok(html.indexOf("</form>")<html.indexOf('id="status"'),
+ "Status message must remain visible after form is hidden");
  assert.doesNotMatch(html,/id="whatsapp"[^>]*\srequired\b/);
  assert.doesNotMatch(html,/id="email"[^>]*\srequired\b/);
 }
@@ -22,7 +27,7 @@ async function runSignup({email="",phone="",lang="ar"}={}){
  const elements={
   registerForm:{hidden:false,addEventListener:(ev,fn)=>{if(ev==="submit")submit=fn;},reset:()=>{reset=true;}},
   status:{textContent:"",className:""},registerBtn:{disabled:false},
-  conferenceAccount:{hidden:true},createdUsername:{textContent:""},
+  conferenceAccount:{hidden:true},createdUsername:{textContent:""},createdStudentName:{textContent:""},
   copyUsername:{textContent:"",addEventListener:()=>{}},startTraining:{href:"#",textContent:""},
   fullName:{value:"Test Learner"},email:{value:email},whatsapp:{value:phone},
   password:{value:"ConferenceTest!123"},university:{value:"Qatar University"},
@@ -53,6 +58,7 @@ async function runSignup({email="",phone="",lang="ar"}={}){
  assert.equal(empty.elements.conferenceAccount.hidden,false);
  assert.equal(empty.elements.registerForm.hidden,true);
  assert.equal(empty.elements.createdUsername.textContent,"lexabc123def456");
+ assert.equal(empty.elements.createdStudentName.textContent,"Test Learner");
  assert.equal(empty.elements.startTraining.href,"student.html");
  assert.equal(empty.signedIn.username,"lexabc123def456");
  assert.equal(empty.reset,true);
