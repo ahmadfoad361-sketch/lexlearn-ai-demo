@@ -15,7 +15,7 @@ Deno.serve(async(req)=>{
     const b=await req.json(),target=String(b.user_id||"");
     if(!target)return json({error:"user_id_required"},400);
     const action=String(b.action||"");
-    const {data:student,error:studentError}=await admin.from("profiles").select("id,role,username,active,account_status,display_name").eq("id",target).maybeSingle();
+    const {data:student,error:studentError}=await admin.from("profiles").select("id,role,username,active,account_status,display_name,country_code").eq("id",target).maybeSingle();
     if(studentError||!student||student.role!=="student")return json({error:"student_account_required"},404);
     if(target===user.id)return json({error:"self_action_denied"},403);
     if(action==="reset_password"){
@@ -30,6 +30,18 @@ Deno.serve(async(req)=>{
       const status=action==="toggle_active"?(b.active?"active":"disabled"):String(b.status||"");
       if(!["active","paused","disabled"].includes(status))return json({error:"invalid_account_status"},400);
       if(status==="active"){
+        if(student.account_status==="pending"){
+          const authUser=await admin.auth.admin.getUserById(target);
+          if(authUser.error||!authUser.data.user)return json({error:"student_auth_account_unavailable"},409);
+          if(!authUser.data.user.email_confirmed_at)return json({error:"verify_student_email_first"},409);
+          // Assign the Qatar pilot without requiring an instructor or cohort.
+          if(student.country_code==="qa"){
+            const enroll=await admin.from("enrollments").upsert(
+              {user_id:target,course_id:"qa-qu-lawc101-rights",status:"active"},
+              {onConflict:"user_id,course_id"});
+            if(enroll.error)throw enroll.error;
+          }
+        }
         const authChange=await admin.auth.admin.updateUserById(target,{ban_duration:"none"});
         if(authChange.error)throw authChange.error;
         const upd=await admin.from("profiles").update({active:true,account_status:"active"}).eq("id",target);
