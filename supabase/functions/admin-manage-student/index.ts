@@ -45,17 +45,21 @@ Deno.serve(async(req)=>{
           const authUser=await admin.auth.admin.getUserById(target);
           if(authUser.error||!authUser.data.user)return json({error:"student_auth_account_unavailable"},409);
           const account=authUser.data.user;
-          if(account.email){
+          // WhatsApp is the primary identity confirmation for every new account.
+          // The optional contact email never gates activation.
+          if(student.whatsapp_e164){
+            if(!student.whatsapp_verified_at){
+              if(b.whatsapp_verified_manually!==true)return json({error:"manual_whatsapp_verification_required"},409);
+              const updated=await admin.auth.admin.updateUserById(target,{
+                phone:student.whatsapp_e164,phone_confirm:true
+              });
+              if(updated.error)throw updated.error;
+              const verified=await admin.from("profiles").update({whatsapp_verified_at:new Date().toISOString()}).eq("id",target);
+              if(verified.error)throw verified.error;
+            }
+          }else if(account.email){
+            // Older accounts that did not record WhatsApp retain legacy email checks.
             if(!account.email_confirmed_at)return json({error:"verify_student_email_first"},409);
-          }else if(account.phone){
-            // WhatsApp numbers are not verified by merely submitting a form.
-            if(b.whatsapp_verified_manually!==true)return json({error:"manual_whatsapp_verification_required"},409);
-            if(String(account.phone).replace(/[^+0-9]/g,"")!==String(student.whatsapp_e164||""))
-              return json({error:"whatsapp_number_mismatch"},409);
-            const confirmed=await admin.auth.admin.updateUserById(target,{phone_confirm:true});
-            if(confirmed.error)throw confirmed.error;
-            const stamp=await admin.from("profiles").update({whatsapp_verified_at:new Date().toISOString()}).eq("id",target);
-            if(stamp.error)throw stamp.error;
           }else return json({error:"student_contact_not_configured"},409);
           // Assign the Qatar pilot without requiring an instructor or cohort.
           if(account.email&&b.whatsapp_verified_manually===true&&student.whatsapp_e164){
