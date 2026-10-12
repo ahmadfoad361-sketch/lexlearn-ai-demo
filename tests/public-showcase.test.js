@@ -12,7 +12,7 @@ for(const page of ["showcase","showcase-en"]){
  assert(!js.includes('LEX_CLOUD.recordAttempt'),'Demo cannot write student attempts');
  assert(js.includes('send_not_confirmed'),'Demo must not claim delivery without confirmation');
  assert(js.includes('selected:a.selected'),'Option selections are verified on the server');
- assert(html.includes('showcase-recall.js?v=20261012.2'),'Page loads shared recall evaluator');
+ assert(/showcase-recall\.js\?v=[0-9A-Za-z._-]+/.test(html),'Page loads shared recall evaluator');
 }
 const initial=["recall","recall","understanding","application","application","legal_precision"].map(type=>({type,correct:true}));
 const grade=Q.grade("لا أتذكر",Q.makeEssay(Q.topic(1),"ar","recall"),"ar");
