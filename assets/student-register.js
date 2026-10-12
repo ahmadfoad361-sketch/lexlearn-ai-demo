@@ -5,9 +5,9 @@ var ar=document.documentElement.lang==="ar",
 function say(a,b){return ar?a:b;}
 function show(message,error){status.textContent=message;status.className=error?"error":"ok";}
 function phoneNumber(value){
- var x=String(value||"").trim().replace(/[\\s().-]/g,"");
+ var x=String(value||"").trim().replace(/[\s().-]/g,"");
  if(x.startsWith("00"))x="+"+x.slice(2);
- return /^\\+[1-9][0-9]{7,14}$/.test(x)?x:null;
+ return /^\+[1-9][0-9]{7,14}$/.test(x)?x:null;
 }
 form.addEventListener("submit",async function(ev){
  ev.preventDefault();
@@ -22,7 +22,7 @@ form.addEventListener("submit",async function(ev){
   show(say("أكمل البيانات المطلوبة، واستخدم كلمة مرور من 10 إلى 72 حرفًا.","Complete required fields and use a 10–72 character password."),true);return;
  }
  if(!whatsapp){show(say("أدخل رقم واتساب دوليًا صحيحًا يبدأ بمفتاح الدولة مثل +974 أو +20.","Enter a valid international WhatsApp number starting with +974, +20, etc."),true);return;}
- if(email&&!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)){
+ if(email&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
   show(say("صيغة البريد الإلكتروني غير صحيحة. يمكنك تركه فارغًا.","The email address is not valid; you can leave it blank."),true);return;
  }
  if(!document.getElementById("consent").checked){
