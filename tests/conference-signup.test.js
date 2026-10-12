@@ -1,0 +1,67 @@
+const assert=require("node:assert/strict");
+const fs=require("node:fs");
+const vm=require("node:vm");
+
+const client=fs.readFileSync("assets/student-register.js","utf8");
+const server=fs.readFileSync("supabase/functions/student-register-whatsapp/index.ts","utf8");
+const ar=fs.readFileSync("student-register.html","utf8");
+const en=fs.readFileSync("student-register-en.html","utf8");
+assert.match(server,/email:internalEmail,password,email_confirm:true/,"conference auth must use internal confirmed login identity");
+assert.match(server,/active:true,account_status:"active"/,"conference accounts should be activated server-side");
+assert.match(server,/role!=="student"/,"only students can be created");
+assert.doesNotMatch(server,/!name\|\|!university\|\|!year\|\|!phone/,"contact must not be mandatory");
+for(const html of [ar,en]){
+ assert.match(html,/id="conferenceAccount"/);
+ assert.match(html,/id="createdUsername"/);
+ assert.doesNotMatch(html,/id="whatsapp"[^>]*\srequired\b/);
+ assert.doesNotMatch(html,/id="email"[^>]*\srequired\b/);
+}
+async function runSignup({email="",phone="",lang="ar"}={}){
+ let signupArgs=null,signedIn=null,submit=null,reset=false;
+ const storage=new Map();
+ const elements={
+  registerForm:{hidden:false,addEventListener:(ev,fn)=>{if(ev==="submit")submit=fn;},reset:()=>{reset=true;}},
+  status:{textContent:"",className:""},registerBtn:{disabled:false},
+  conferenceAccount:{hidden:true},createdUsername:{textContent:""},
+  copyUsername:{textContent:"",addEventListener:()=>{}},startTraining:{href:"#",textContent:""},
+  fullName:{value:"Test Learner"},email:{value:email},whatsapp:{value:phone},
+  password:{value:"ConferenceTest!123"},university:{value:"Qatar University"},
+  year:{value:"Year 1"},country:{value:"qa"},consent:{checked:true}
+ };
+ const cloud={
+  isConfigured:()=>true,
+  db:()=>({functions:{invoke:async(name,args)=>{
+   signupArgs={name,...args.body};
+   return {data:{ok:true,username:"lexabc123def456",can_sign_in:true}};
+  }}}),
+  signInStudent:async(username,password)=>{
+   signedIn={username,password};
+   return {profile:{id:"test-id",username,display_name:"Test Learner",country_code:"qa"}};
+  }
+ };
+ const document={documentElement:{lang},getElementById:id=>elements[id]};
+ const localStorage={setItem:(k,v)=>storage.set(k,v),getItem:k=>storage.get(k)||null};
+ const context={document,window:{LEX_CLOUD:cloud},LEX_CLOUD:cloud,localStorage,navigator:{clipboard:{writeText:async()=>{}}},console};
+ vm.runInNewContext(client,context);
+ await submit({preventDefault(){}});
+ return {signupArgs,signedIn,reset,storage,elements};
+}
+(async()=>{
+ const empty=await runSignup();
+ assert.equal(empty.signupArgs.whatsapp_e164,null);
+ assert.equal(empty.signupArgs.email,null);
+ assert.equal(empty.elements.conferenceAccount.hidden,false);
+ assert.equal(empty.elements.registerForm.hidden,true);
+ assert.equal(empty.elements.createdUsername.textContent,"lexabc123def456");
+ assert.equal(empty.elements.startTraining.href,"student.html");
+ assert.equal(empty.signedIn.username,"lexabc123def456");
+ assert.equal(empty.reset,true);
+ assert.equal(empty.storage.get("lexlearn_last_student_username"),"lexabc123def456");
+ assert.ok(empty.storage.get("lexlearn_student_session"));
+ assert.ok(!Array.from(empty.storage.values()).some(v=>v==="ConferenceTest!123"),"password must not be saved");
+ const contact=await runSignup({email:"learner@example.com",phone:"+974 5555 1234",lang:"en"});
+ assert.equal(contact.signupArgs.email,"learner@example.com");
+ assert.equal(contact.signupArgs.whatsapp_e164,"+97455551234");
+ assert.equal(contact.elements.startTraining.href,"student-en.html");
+ console.log("conference registration optional-contact and instant-login smoke tests: PASS");
+})().catch(err=>{console.error(err);process.exitCode=1;});
