@@ -1,64 +1,71 @@
 import {adminClient,corsHeaders,json} from "../_shared/auth.ts";
 
-// Public WhatsApp-only registration. Accounts are always inactive until manual
-// supervisor verification; this endpoint cannot assign elevated roles or courses.
-function normalizePhone(value:unknown){
-  let s=String(value||"").trim().replace(/[\s().-]/g,"");
-  if(s.startsWith("00"))s="+"+s.slice(2);
-  return /^\+[1-9][0-9]{7,14}$/.test(s)?s:null;
+// Conference registration: no contact verification. All accounts are students.
+// Email and WhatsApp are OPTIONAL and are never linked to Supabase Auth as
+// verified identities. Students authenticate with a generated username.
+function clean(value:unknown,max:number){return String(value??"").trim().slice(0,max);}
+function phoneNumber(value:unknown){
+ const raw=clean(value,25).replace(/[\s().-]/g,"");
+ const normalized=raw.startsWith("00")?"+"+raw.slice(2):raw;
+ return normalized===""?null:(/^\+[1-9][0-9]{7,14}$/.test(normalized)?normalized:undefined);
 }
-function safeString(value:unknown,n:number){return String(value||"").trim().slice(0,n);}
 async function rateKey(req:Request){
-  const raw=req.headers.get("cf-connecting-ip")||req.headers.get("x-real-ip")||
-    (req.headers.get("x-forwarded-for")||"").split(",")[0].trim()||"anonymous";
-  const windowStart=new Date();
-  windowStart.setUTCMinutes(0,0,0);
-  const salt=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")||"";
-  const bytes=new TextEncoder().encode(salt+"|"+raw+"|"+windowStart.toISOString());
-  const hash=await crypto.subtle.digest("SHA-256",bytes);
-  return {ip_bucket_hash:Array.from(new Uint8Array(hash)).map(x=>x.toString(16).padStart(2,"0")).join(""),window_start:windowStart.toISOString()};
+ const raw=req.headers.get("cf-connecting-ip")||req.headers.get("x-real-ip")||
+  (req.headers.get("x-forwarded-for")||"").split(",")[0].trim()||"anonymous";
+ const windowStart=new Date();windowStart.setUTCMinutes(0,0,0);
+ const salt=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")||"";
+ const digest=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(salt+"|"+raw+"|"+windowStart.toISOString()));
+ return {p_hash:Array.from(new Uint8Array(digest)).map(x=>x.toString(16).padStart(2,"0")).join(""),p_window:windowStart.toISOString()};
 }
-Deno.serve(async req=>{
+Deno.serve(async(req)=>{
  if(req.method==="OPTIONS")return new Response("ok",{headers:corsHeaders});
  if(req.method!=="POST")return json({error:"method_not_allowed"},405);
  try{
-  const data=await req.json();
-  const name=safeString(data.name,160),password=String(data.password||""),
-    phone=normalizePhone(data.whatsapp_e164),email=safeString(data.email,254).toLowerCase(),
-    country=safeString(data.country_code,8),university=safeString(data.university,160),
-    year=safeString(data.year_label,80);
-  if(!name||!university||!year||!phone||password.length<10||password.length>72||
+  const body=await req.json();
+  if(clean(body.website,120))return json({error:"registration_not_completed"},400);
+  const name=clean(body.name,160),password=String(body.password||""),
+   whatsapp=phoneNumber(body.whatsapp_e164),email=clean(body.email,254).toLowerCase(),
+   country=clean(body.country_code,8),university=clean(body.university,160),year=clean(body.year_label,80);
+  if(!name||!university||!year||whatsapp===undefined||password.length<10||password.length>72||
      !["qa","eg","sa","ae","other"].includes(country)||
      (email&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)))
-    return json({error:"invalid_registration_details"},400);
-  if(data.accepted_privacy!==true)return json({error:"consent_required"},400);
+   return json({error:"invalid_registration_details"},400);
+  if(body.accepted_privacy!==true)return json({error:"consent_required"},400);
   const admin=adminClient();
-  const key=await rateKey(req);
-  const used=await admin.rpc("consume_student_signup_slot",{p_hash:key.ip_bucket_hash,p_window:key.window_start});
-  if(used.error)return json({error:"registration_temporarily_unavailable"},503);
-  if(used.data!==true)return json({error:"too_many_registrations"},429);
-  const meta={
-    display_name:name,university,year_label:year,country_code:country,
-    whatsapp_e164:phone,contact_email:email||null,registration_channel:"whatsapp_verified_by_supervisor",
-    privacy_notice_version:"2026-10-12-v3"
-  };
-  const creation=await admin.auth.admin.createUser({
-    phone:phone,password:password,phone_confirm:false,
-    user_metadata:meta
+  const rate=await admin.rpc("consume_student_signup_slot",await rateKey(req));
+  if(rate.error)return json({error:"registration_temporarily_unavailable"},503);
+  if(rate.data!==true)return json({error:"too_many_registrations"},429);
+  const username="lex"+crypto.randomUUID().replace(/-/g,"").slice(0,12);
+  const internalEmail=username+"@students.lexlearn.local";
+  const created=await admin.auth.admin.createUser({
+   email:internalEmail,password,email_confirm:true,
+   user_metadata:{
+    username,display_name:name,university,year_label:year,country_code:country,
+    whatsapp_e164:whatsapp,contact_email:email||null,
+    registration_channel:"conference_self",
+    privacy_notice_version:"2026-10-12-v4",
+    must_change_password:false
+   }
   });
-  if(creation.error){
-    // Do not disclose whether a WhatsApp number belongs to another account.
-    return json({error:"registration_not_completed"},409);
+  if(created.error||!created.data.user)return json({error:"registration_not_completed"},409);
+  const uid=created.data.user.id;
+  try{
+   const p=await admin.from("profiles").select("id,role,active,account_status,username").eq("id",uid).single();
+   if(p.error||p.data?.role!=="student"||p.data?.active!==false||p.data?.account_status!=="pending"||
+       p.data?.username!==username)throw new Error("profile_creation_inconsistent");
+   if(country==="qa"){
+    const enrolled=await admin.from("enrollments").upsert({
+     user_id:uid,course_id:"qa-qu-lawc101-rights",status:"active"
+    },{onConflict:"user_id,course_id"});
+    if(enrolled.error)throw enrolled.error;
+   }
+   const activated=await admin.from("profiles").update({active:true,account_status:"active"})
+     .eq("id",uid).eq("role","student").eq("account_status","pending").select("id").single();
+   if(activated.error||!activated.data)throw new Error("student_activation_failed");
+  }catch(_){
+   await admin.auth.admin.deleteUser(uid);
+   return json({error:"registration_not_completed"},503);
   }
-  const userId=creation.data.user?.id;
-  if(!userId)return json({error:"registration_not_completed"},503);
-  const p=await admin.from("profiles").select("id,role,active,account_status,whatsapp_e164").eq("id",userId).single();
-  if(p.error||p.data.whatsapp_e164!==phone||p.data.active!==false||p.data.role!=="student"||p.data.account_status!=="pending"){
-    await admin.auth.admin.deleteUser(userId);
-    return json({error:"registration_not_completed"},503);
-  }
-  return json({ok:true,pending:true,confirmation_channel:"whatsapp",requires_manual_whatsapp_verification:true});
- }catch(_){
-  return json({error:"registration_not_completed"},503);
- }
+  return json({ok:true,username,can_sign_in:true,confirmation_required:false});
+ }catch(_){return json({error:"registration_not_completed"},503);}
 });
