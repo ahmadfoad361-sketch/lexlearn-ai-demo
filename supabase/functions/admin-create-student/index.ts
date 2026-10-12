@@ -11,7 +11,7 @@ function temporaryPassword(){
 Deno.serve(async(req)=>{
   if(req.method==="OPTIONS")return new Response("ok",{headers:corsHeaders});
   try{
-    const {user,admin}=await requireStaff(req);
+    const {user,admin,profile}=await requireStaff(req);
     const body=await req.json();
     const username=String(body.username||"").trim().toLowerCase();
     const password=String(body.password||temporaryPassword());
@@ -21,6 +21,11 @@ Deno.serve(async(req)=>{
     if(!displayName)return json({error:"display_name_required"},400);
 
     let cohortId=body.cohort_id||null;
+    if(profile.role==="instructor"){
+      const scope=await admin.from("profiles").select("cohort_id").eq("id",user.id).single();
+      if(scope.error||!scope.data.cohort_id||scope.data.cohort_id!==cohortId)
+        return json({error:"instructor_cohort_required"},403);
+    }
     if(!cohortId&&body.cohort){
       const name=String(body.cohort).trim();
       const found=await admin.from("cohorts").select("id").eq("name",name).maybeSingle();
