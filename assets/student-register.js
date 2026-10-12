@@ -33,35 +33,21 @@ form.addEventListener("submit",async function(ev){
  }
  btn.disabled=true;show(say("جارٍ إرسال طلب التسجيل...","Submitting your registration..."),false);
  try{
-  var db=LEX_CLOUD.db(),result;
-  if(email){
-    result=await db.auth.signUp({
-      email:email,password:password,
-      options:{data:{display_name:name,university:uni,year_label:year,country_code:country,
-        whatsapp_e164:whatsapp,registration_channel:"self",
-        privacy_notice_version:"2026-10-12-v3"}}
-    });
-    if(result.error)throw result.error;
-    if(result.data&&result.data.session)await db.auth.signOut();
-  }else{
-    result=await db.functions.invoke("student-register-whatsapp",{body:{
-      name:name,whatsapp_e164:whatsapp,password:password,university:uni,year_label:year,
-      country_code:country,accepted_privacy:true
-    }});
-    if(result.error||!result.data||result.data.ok!==true){
-      var code=result.data&&result.data.error;
-      if(!code&&result.error&&result.error.context&&typeof result.error.context.json==="function"){
-        try{code=(await result.error.context.json()).error;}catch(_){}
-      }
-      if(code==="too_many_registrations")throw new Error("rate_limit");
-      if(code==="registration_not_completed")throw new Error("registration_not_completed");
-      throw new Error("request_failed");
+  var db=LEX_CLOUD.db();
+  var result=await db.functions.invoke("student-register-whatsapp",{body:{
+    name:name,email:email||null,whatsapp_e164:whatsapp,password:password,
+    university:uni,year_label:year,country_code:country,accepted_privacy:true
+  }});
+  if(result.error||!result.data||result.data.ok!==true){
+    var code=result.data&&result.data.error;
+    if(!code&&result.error&&result.error.context&&typeof result.error.context.json==="function"){
+      try{code=(await result.error.context.json()).error;}catch(_){}
     }
+    if(code==="too_many_registrations")throw new Error("rate_limit");
+    throw new Error("request_failed");
   }
   form.reset();
-  show(email?
-    say("تم إرسال الطلب. تحقق من بريدك إذا وصلتك رسالة، ثم انتظر موافقة المشرف.","Registration submitted. Please verify your email if requested and wait for supervisor approval."):
-    say("تم تسجيل طلبك بالواتساب. احتفظ بكلمة المرور، وينتظر الحساب تحقق المشرف من الرقم واعتماده قبل تسجيل الدخول.","WhatsApp registration submitted. Keep your password safe; your supervisor must verify the number and approve your account before sign-in."),false);
+  show(say("تم استلام طلب التسجيل. لن تُرسل رسالة تأكيد بالبريد الإلكتروني؛ يعتمد التفعيل على التحقق من رقم الواتساب بواسطة المشرف. احتفظ بكلمة المرور لتسجيل الدخول بعد الاعتماد.","Registration received. No email confirmation is required; your supervisor will verify your WhatsApp number before activation. Keep your password for sign-in after approval."),false);;
  }catch(e){
   show(e&&e.message==="rate_limit"?
    say("وصلت للحد المسموح لطلبات التسجيل. حاول بعد ساعة.","Registration limit reached. Try again in an hour."):
