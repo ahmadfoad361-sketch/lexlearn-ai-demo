@@ -28,9 +28,10 @@ function assess(answer,lang){
   var death=/(?:موت|موته|وفا[ته]|توفي|مات|death|dies|dying)/.test(t);
   var ending=/(?:تنتهي|تنقضي|انتهاء|تنقطع|انتهت|تزول|خاتمه|نهايه|تمتد الي لحظه|ends?|terminat|ceases?)/.test(t);
   var negStart=/(?:لا|لم|ليس|لن)\s+(?:تبدا|يبدا|يكتسب|تثبت|يثبت|تقوم)|(?:does not|doesnt|never)\s+(?:begin|start)|not (?:begin|start)/.test(t)&&!/(?:الا|only)/.test(t);
+  var wrongTiming=/(?:قبل[^،؛.]{0,18}(?:ولاد|ميلاد)|لا بالولاد|before[^.]{0,15}(?:birth|born))/.test(t);
   var wrongBirth=/(?:ولاد\S*\s+ميت|الولاده ميت|ولد\S*\s+ميت|سن الرشد|بلوغ|conception|stillbirth|born dead|adulthood)/.test(t);
-  if(hasPerson&&start&&hasBirth&&!hasPrenatal&&!negStart&&!wrongBirth)add(0,true,p);
-  if(hasPerson&&start&&(negStart||(wrongBirth&&!/(?:^|\s)(?:لا|لم|ليس|not|never)(?:\s|$)/.test(t))))add(0,false,p);
+  if(hasPerson&&start&&hasBirth&&!hasPrenatal&&!negStart&&!wrongBirth&&!wrongTiming)add(0,true,p);
+  if(hasPerson&&start&&(negStart||wrongTiming||(wrongBirth&&!/(?:^|\s)(?:لا|لم|ليس|not|never)(?:\s|$)/.test(t))))add(0,false,p);
   var negEnd=/(?:لا|لم|لن)\s+(?:تنتهي|تنقضي|تنقطع)|(?:does not|doesnt|never)\s+(?:end|cease|terminat)/.test(t);
   var continues=/(?:تستمر|تبقي|تظل|continues?|survives?|persists?)/.test(t)&&/(?:بعد|after)/.test(t);
   if(death&&(hasPerson||personality.test(prev))){
@@ -39,13 +40,13 @@ function assess(answer,lang){
   }
   var noAcceptance=/(?:لا|لم)\s+(?:يحتاج|تحتاج|تتطلب|يتطلب|تستلزم|يستلزم|يقتضي|يتوقف)[^،؛.]{0,45}قبول|دون\s+(?:اشتراط\s+)?قبول|دون حاجه[^،؛.]{0,20}قبول|بغير قبول|غير متوقف[^،؛.]{0,20}قبول|(?:do(?:es)? not|dont|doesnt) require acceptance|requir(?:e|ing|es) no acceptance|without (?:requiring )?acceptance/.test(t);
   var requireAcceptance=/(?:يحتاج|تحتاج|تتطلب|يتطلب|تستلزم|يستلزم)[^،؛.]{0,25}قبول|(?:requires?|requiring) acceptance/.test(t)&&!noAcceptance;
-  if(hasPrenatal&&rights.test(t)&&noAcceptance&&!/(?:لا تثبت|ليس[^.]{0,20}حقوق|no rights)/.test(t))add(2,true,p);
+  if(hasPrenatal&&rights.test(t)&&noAcceptance&&!/(?:لا تثبت|لا حقوق|ليست[^.]{0,20}حقوق|ليس[^.]{0,20}حقوق|no rights)/.test(t))add(2,true,p);
   if(hasPrenatal&&rights.test(t)&&requireAcceptance)add(2,false,p);
   var cond=/(?:بشرط|شريطه|شرط|يشترط|يتوقف|متوقف|على ان|علي ان|على شرط|علي شرط|ما دام|متي|اذا|رهين|مرهون|مشروط|provided|conditional|depend|only if|subject to)/.test(t);
-  var deniesCondition=/(?:لا يشترط|دون شرط|من دون شرط|بلا شرط|بصرف النظر|حتي لو لم يولد|ولو لم يولد|ولو ولد ميت|حتى لو ولد ميت|regardless|even if[^.]{0,20}(?:not|dead)|no condition|not conditional|does not depend|without live birth)/.test(t);
+  var deniesCondition=/(?:لا يشترط|شرط عدم الولاد|بشرط ان لا يولد|اذا لم يولد|دون شرط|من دون شرط|بلا شرط|بصرف النظر|حتي لو لم يولد|ولو لم يولد|ولو ولد ميت|حتى لو ولد ميت|regardless|even if[^.]{0,20}(?:not|dead)|no condition|not conditional|does not depend|without live birth)/.test(t);
   // A condition-only clause can inherit its referent from the immediately preceding prenatal-rights clause.
   var rightContext=(hasPrenatal&&rights.test(t))||(!hasPerson&&prenatal.test(ctx)&&rights.test(ctx));
-  if(rightContext&&hasBirth&&cond&&!deniesCondition&&!/(?:لم|لا|لن) يولد/.test(t))add(3,true,p);
+  if(rightContext&&hasBirth&&cond&&!/(?:لا تثبت|لا حقوق|no rights)/.test(t)&&!deniesCondition&&!/(?:لم|لا|لن) يولد/.test(t))add(3,true,p);
   if(rightContext&&deniesCondition)add(3,false,p);
  });
  var conflicts=[];
@@ -56,7 +57,7 @@ function assess(answer,lang){
  });
  var points=rows.reduce(function(n,r){return n+r.points;},0),wrong=rows.some(function(r){return r.status==='contradicted';});
  // Questions, quoted hypotheticals, uncertain assertions and complex unscoped negation abstain.
- var uncertain=/[?؟]|(?:ربما|لعل|قد تبدا|اظن|لست متاكدا|maybe|perhaps|not sure)/i.test(norm(raw));
+ var uncertain=/[?؟]|(?:ربما|لعل|قد تبدا|اظن|لست متاكدا|maybe|perhaps|not sure|ليس صحيحا|غير صحيح|خاطئ|عباره|العباره|قال|يقول|it is false|incorrect statement|quoted)/i.test(norm(raw));
  var reason=conflicts.length?'conflicting_propositions':uncertain?'ambiguous_assertion':points?'evidenced_elements':wrong?'explicit_incorrect_proposition':raw.length<40?'incomplete_proposition':'unrecognized_wording';
  var score=conflicts.length||uncertain?null:points?Math.round(points/7*100):wrong?0:null;
  var messages={
