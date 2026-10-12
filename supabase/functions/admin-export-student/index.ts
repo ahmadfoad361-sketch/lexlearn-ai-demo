@@ -40,7 +40,7 @@ Deno.serve(async(req)=>{
   const itemIds=[...new Set((data.attempts as Array<{item_id:string}>).map(x=>x.item_id).filter(Boolean))];
   const items:unknown[]=[];
   for(let i=0;i<itemIds.length;i+=100){
-   const q=await admin.from("content_items").select("id,prompt_ar,prompt_en,dimension,course_id,source_ids").in("id",itemIds.slice(i,i+100));
+   const q=await admin.from("content_items").select("id,prompt_ar,dimension,course_id,source_ids").in("id",itemIds.slice(i,i+100));
    if(q.error)throw new Error("content_items_fetch_failed: "+q.error.message);
    items.push(...(q.data||[]));
   }
