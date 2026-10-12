@@ -637,3 +637,9 @@ textarea{text-align:right;direction:rtl;line-height:1.8}
 .pilot-course-actions{display:grid;gap:9px}
 @media(max-width:820px){.pilot-course-card{grid-template-columns:1fr}.pilot-course-icon{width:76px;height:76px}.pilot-course-actions{grid-template-columns:1fr}.country-launch-grid{grid-template-columns:1fr 1fr}}
 @media(max-width:560px){.country-launch-grid{grid-template-columns:1fr}.pilot-course-copy h2{font-size:24px}}
+
+/* LexLearn brand tokens — shared across public, student, demo and supervisor views */
+:root{--maroon:#8F1D3F;--maroon-2:#6E1531;--navy:#142B5F;--navy-2:#0D1E45}
+
+/* Accessible legal-learning captions */
+.metric span,.result-skill small,.jurisdiction-foot,.entry-note,.dock-copy small,.how-title span,.section-overline{font-size:12px;line-height:1.7}
