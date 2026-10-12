@@ -26,7 +26,7 @@ async function login(u,p){
       if(ENTRY_COUNTRY==="qa")localStorage.setItem("lexlearn_country_setup_v2_rights_"+pr.id,"true");
       location.href="student-en.html";return;
     }catch(e){
-      err.textContent="Unable to sign in. Check the username, password, and account status.";
+      err.textContent=e&&e.message==="student_pending_approval"?"Registration received; your account is awaiting supervisor approval.":e&&e.message==="student_account_not_active"?"This account is paused or disabled; contact LexLearn support.":"Sign-in failed. Check your email or username and password.";
       err.style.display="block";return;
     }
   }
