@@ -7,3 +7,7 @@ a{color:inherit}.en-shell{min-height:100vh}.en-top{border-bottom:1px solid var(-
 @media(max-width:760px){.en-hero,.course-card,.login-card{grid-template-columns:1fr}h1{font-size:40px}.en-main{padding-top:32px}}
 /* LexLearn brand tokens — shared across public, student, demo and supervisor views */
 :root{--wine:#8F1D3F;--navy:#142B5F}
+
+.passwordToggle{margin-top:8px;border:1px solid #b7c5dd;background:#f5f7fc;color:#142B5F;border-radius:9px;padding:7px 17px;cursor:pointer;font:inherit;font-size:13px}
+.rememberRow{display:flex;align-items:center;gap:10px;font-size:13px;font-weight:600;color:#243756;cursor:pointer;margin:10px 0 15px}
+.rememberRow input{width:18px;height:18px;margin:0;accent-color:#8F1D3F}
