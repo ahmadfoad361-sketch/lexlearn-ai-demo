@@ -11,15 +11,20 @@ function studentEmail(username){return String(username||"").trim().toLowerCase()
 async function profile(){
   var c=db();if(!c)return null;
   var u=await c.auth.getUser();if(u.error||!u.data.user)return null;
-  var p=await c.from("profiles").select("id,role,username,display_name,active,must_change_password,university,year_label,cohort_id,locale,country_code").eq("id",u.data.user.id).single();
+  var p=await c.from("profiles").select("id,role,username,display_name,active,account_status,must_change_password,university,year_label,cohort_id,locale,country_code").eq("id",u.data.user.id).single();
   if(p.error)throw p.error;return p.data;
 }
 async function signInStudent(username,password){
   var c=db();if(!c)throw new Error("cloud_not_configured");
-  var r=await c.auth.signInWithPassword({email:studentEmail(username),password:password});
+  var identifier=String(username||"").trim().toLowerCase();
+  var email=identifier.includes("@")?identifier:studentEmail(identifier);
+  var r=await c.auth.signInWithPassword({email:email,password:password});
   if(r.error)throw r.error;
   var p=await profile();
-  if(!p||p.role!=="student"||p.active===false){await c.auth.signOut();throw new Error("student_account_not_active");}
+  if(!p||p.role!=="student"||p.active===false){
+   await c.auth.signOut();
+   throw new Error(p&&p.account_status==="pending"?"student_pending_approval":"student_account_not_active");
+  }
   return {user:r.data.user,profile:p};
 }
 async function signInAdmin(email,password){
