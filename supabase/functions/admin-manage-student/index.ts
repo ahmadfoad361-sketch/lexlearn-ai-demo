@@ -58,6 +58,10 @@ Deno.serve(async(req)=>{
             if(stamp.error)throw stamp.error;
           }else return json({error:"student_contact_not_configured"},409);
           // Assign the Qatar pilot without requiring an instructor or cohort.
+          if(account.email&&b.whatsapp_verified_manually===true&&student.whatsapp_e164){
+            const stamp=await admin.from("profiles").update({whatsapp_verified_at:new Date().toISOString()}).eq("id",target);
+            if(stamp.error)throw stamp.error;
+          }
           if(student.country_code==="qa"){
             const enroll=await admin.from("enrollments").upsert(
               {user_id:target,course_id:"qa-qu-lawc101-rights",status:"active"},
