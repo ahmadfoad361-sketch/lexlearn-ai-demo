@@ -119,3 +119,9 @@
 .tipCard>span{font-size:21px}
 .badgeIcon{font-size:21px}
 .countryMessage>span{font-family:Georgia,"Times New Roman",serif;color:var(--navy);font-size:22px}
+
+/* LexLearn brand tokens — shared across public, student, demo and supervisor views */
+:root{--maroon:#8F1D3F;--navy:#142B5F;--navy2:#0D1E45}
+
+/* Accessible student learning captions. */
+.week small,.week em,.skill small,.badge small,.simpleSkill span,.tipCard small,.countryCard small,.countryCard em{font-size:12px;line-height:1.65}
