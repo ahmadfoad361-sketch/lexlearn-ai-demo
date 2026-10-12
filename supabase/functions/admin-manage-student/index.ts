@@ -15,7 +15,7 @@ Deno.serve(async(req)=>{
     const b=await req.json(),target=String(b.user_id||"");
     if(!target)return json({error:"user_id_required"},400);
     const action=String(b.action||"");
-    const {data:student,error:studentError}=await admin.from("profiles").select("id,role,username,active,account_status,display_name,country_code").eq("id",target).maybeSingle();
+    const {data:student,error:studentError}=await admin.from("profiles").select("id,role,username,active,account_status,display_name,country_code,whatsapp_e164,whatsapp_verified_at").eq("id",target).maybeSingle();
     if(studentError||!student||student.role!=="student")return json({error:"student_account_required"},404);
     if(target===user.id)return json({error:"self_action_denied"},403);
     // Instructor access is restricted to an explicitly assigned cohort.
@@ -44,7 +44,19 @@ Deno.serve(async(req)=>{
         if(student.account_status==="pending"){
           const authUser=await admin.auth.admin.getUserById(target);
           if(authUser.error||!authUser.data.user)return json({error:"student_auth_account_unavailable"},409);
-          if(!authUser.data.user.email_confirmed_at)return json({error:"verify_student_email_first"},409);
+          const account=authUser.data.user;
+          if(account.email){
+            if(!account.email_confirmed_at)return json({error:"verify_student_email_first"},409);
+          }else if(account.phone){
+            // WhatsApp numbers are not verified by merely submitting a form.
+            if(b.whatsapp_verified_manually!==true)return json({error:"manual_whatsapp_verification_required"},409);
+            if(String(account.phone).replace(/[^+0-9]/g,"")!==String(student.whatsapp_e164||""))
+              return json({error:"whatsapp_number_mismatch"},409);
+            const confirmed=await admin.auth.admin.updateUserById(target,{phone_confirm:true});
+            if(confirmed.error)throw confirmed.error;
+            const stamp=await admin.from("profiles").update({whatsapp_verified_at:new Date().toISOString()}).eq("id",target);
+            if(stamp.error)throw stamp.error;
+          }else return json({error:"student_contact_not_configured"},409);
           // Assign the Qatar pilot without requiring an instructor or cohort.
           if(student.country_code==="qa"){
             const enroll=await admin.from("enrollments").upsert(
@@ -63,7 +75,7 @@ Deno.serve(async(req)=>{
         const upd=await admin.from("profiles").update({active:false,account_status:status}).eq("id",target);
         if(upd.error){await admin.auth.admin.updateUserById(target,{ban_duration:"none"});throw upd.error;}
       }
-      b.details={from:student.account_status||(student.active?"active":"disabled"),to:status,reason:String(b.reason||"").slice(0,500)};
+      b.details={from:student.account_status||(student.active?"active":"disabled"),to:status,reason:String(b.reason||"").slice(0,500),whatsapp_verified_manually:b.whatsapp_verified_manually===true};
     }else if(action==="delete_student"){
       // Irreversible: removing auth.users cascades to profiles, attempts and learning records.
       // Only owner/admin may execute, never an instructor.
