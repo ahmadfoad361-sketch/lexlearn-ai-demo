@@ -16,7 +16,7 @@ const assets=[
   "adaptive-engine.js","learning-quality.js","pilot-learning.js","pilot-review.js","pilot-qa.js","quality.css",
   "showcase-recall.js","showcase.css","showcase.js","showcase-en.js",
   "program.css","program.js","program-en.js",
-  "portal.css","register.css","student-register.js","student-login.js","student-login-en.js","admin-login-v2.js",
+  "portal.css","register.css","auth-controls.js","student-register.js","student-login.js","student-login-en.js","admin-login-v2.js",
   "student.css","student.js","student-en.js",
   "english.css",
   "admin.css","admin-entry.js","admin-cloud.js","student-report.js","admin.js",
@@ -35,7 +35,7 @@ for(const p of assets)cp(path.join("assets",p),path.join(out,"assets",p));
 for(const required of [
   "student-register.html","student-register-en.html",
   "privacy-en.html","terms-en.html",
-  "assets/student-register.js","assets/register.css","assets/student-report.js"
+  "assets/student-register.js","assets/register.css","assets/auth-controls.js","assets/student-report.js"
 ]) {
   if(!fs.existsSync(path.join(out,required)))
     throw new Error("Missing live registration or report asset: "+required);
