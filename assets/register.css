@@ -5,3 +5,14 @@ a{color:var(--navy)}.top{display:flex;justify-content:space-between;align-items:
 label .passwordToggle{justify-self:start;border:1px solid #bec9da;background:#f5f7fb;border-radius:8px;padding:6px 16px;font:inherit;color:#142B5F;cursor:pointer}
 label small{font-weight:400;color:#5b6679;line-height:1.75;font-size:12px}
 input[type=tel]{direction:ltr;text-align:left;unicode-bidi:plaintext}
+
+/* Conference registration confirmation: keep the issued username visible. */
+form[hidden],.conferenceAccount[hidden]{display:none!important}
+.conferenceAccount{margin-top:18px;border:1px solid #bdcce6;background:#f5f8ff;border-radius:14px;padding:20px;line-height:1.9}
+.conferenceAccount p{margin:0 0 6px;font-weight:700;color:#142B5F}
+.conferenceAccount strong{display:block;direction:ltr;text-align:center;font:800 23px ui-monospace,Consolas,monospace;letter-spacing:1px;overflow-wrap:anywhere;background:white;padding:12px;border:1px solid #dbe3ef;border-radius:9px}
+.conferenceAccount .accountButtons{display:flex;flex-wrap:wrap;gap:9px;margin:12px 0}
+.conferenceAccount .accountButtons button,.conferenceAccount .accountButtons .startBtn{font:inherit;font-weight:700;min-height:42px;padding:9px 15px;border-radius:9px;cursor:pointer;text-decoration:none}
+.conferenceAccount .accountButtons button{background:white;border:1px solid #142B5F;color:#142B5F}
+.conferenceAccount .accountButtons .startBtn{display:inline-flex;align-items:center;background:#8F1D3F;border:1px solid #8F1D3F;color:white}
+.conferenceAccount small{font-size:12px;line-height:1.7}
