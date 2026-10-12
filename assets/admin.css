@@ -33,3 +33,6 @@
 
 /* central adaptive six-axis */
 @media(min-width:1101px){.metricGrid,.evidenceGrid{grid-template-columns:repeat(6,1fr)}}
+
+/* Only recall/understanding change; other dashboard axes keep their identity. */
+.metric.axis-recall span,.metric.axis-recall b{color:#8F1D3F}.metric.axis-understanding span,.metric.axis-understanding b{color:#142B5F}.metric.axis-recall .bar i{background:linear-gradient(90deg,#8F1D3F,#6E1531)}.metric.axis-understanding .bar i{background:linear-gradient(90deg,#142B5F,#50306A,#8F1D3F)}

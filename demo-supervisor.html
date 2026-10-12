@@ -3,13 +3,13 @@
 <title>LexLearn — نتائج الديمو للمشرف</title><link rel="icon" href="assets/lexlearn-logo.svg">
 <style>
 :root{--navy:#101c38;--maroon:#8a1f39;--gold:#c7a66a}*{box-sizing:border-box}body{background:#f5f2ee;color:#152136;font-family:Tahoma,Arial,sans-serif;margin:0;line-height:1.75}.top{background:#101c38;color:white;padding:16px 24px;display:flex;align-items:center;gap:15px;flex-wrap:wrap}.top img{width:54px;height:54px;object-fit:contain;background:white;border-radius:8px}.top a{color:white;margin-inline-start:auto}main{max-width:1050px;margin:25px auto;padding:0 18px}h1{margin:0 0 5px;font-size:29px}p{margin:0 0 15px}.banner{padding:18px;border-radius:16px;background:#ece5dc;color:#574c43;margin-bottom:16px}.card{background:#fff;border:1px solid #ddd6cd;border-radius:18px;padding:20px;margin:16px 0;box-shadow:0 4px 20px #00000009}.meta{display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;color:#6a6f7a;font-size:12px}.state{display:inline-block;border-radius:16px;padding:2px 10px;background:#e8ebf2;color:#101c38}.answer{white-space:pre-wrap;background:#f8f6f4;border-radius:12px;padding:15px;margin-top:8px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin:15px 0}.metric{background:#101c38;color:#fff;padding:10px;border-radius:12px}.metric small{color:#cad1dd}.controls{display:grid;grid-template-columns:170px 160px 1fr auto;gap:10px;align-items:end;margin-top:12px}label{display:grid;gap:5px;font-size:12px}input,select{border:1px solid #cac7c6;border-radius:9px;padding:9px;font:inherit;min-width:0}button{background:#8a1f39;color:white;border:0;padding:11px 18px;border-radius:10px;cursor:pointer;font:inherit}button:disabled{opacity:.5}.notice{margin:12px 0;color:#8a1f39}.empty{padding:22px;text-align:center}@media(max-width:740px){.controls{grid-template-columns:1fr 1fr}.controls label:nth-child(3){grid-column:1/-1}.controls button{grid-column:1/-1}}
-.skillRecall{background:linear-gradient(115deg,#6E1531,#8F1D3F 66%,#50306A)!important;color:white}.skillUnderstanding{background:linear-gradient(115deg,#0D1E45,#142B5F 66%,#50306A)!important;color:white}.skillRecall small,.skillUnderstanding small{color:#f1dee7!important}</style><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+.skillRecall{background:linear-gradient(115deg,#6E1531,#8F1D3F 66%,#50306A)!important;color:white}.skillUnderstanding{background:linear-gradient(115deg,#0D1E45,#142B5F 66%,#50306A)!important;color:white}.skillRecall small,.skillUnderstanding small{color:#f1dee7!important}.evidenceRow{border:1px solid #dce1e9;border-radius:12px;margin:10px 0;padding:12px}.evidenceRow blockquote{white-space:pre-wrap;margin:8px 0;padding:10px;background:#f3f5f8;border-inline-start:3px solid #142B5F}.card small{overflow-wrap:anywhere}.skillRecall{background:#fff!important;color:#8F1D3F!important;border:1px solid #dfcad2}.skillUnderstanding{background:#fff!important;color:#142B5F!important;border:1px solid #cbd4e6}.skillRecall small{color:#6E1531!important}.skillUnderstanding small{color:#0D1E45!important}.skillFill{height:9px;background:#e9ecf2;border-radius:9px;overflow:hidden;margin-top:8px;direction:ltr}.skillFill i{display:block;height:100%;background:linear-gradient(90deg,#8F1D3F,#6E1531)}.skillUnderstanding .skillFill i{background:linear-gradient(90deg,#142B5F,#50306A,#8F1D3F)}</style><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="assets/lexlearn-config.js?v=1.3"></script><script src="assets/cloud-data.js?v=1.2"></script>
 </head><body>
 <header class="top"><img src="assets/lexlearn-logo.svg" alt="LexLearn"><div><b>LexLearn</b><div>نتائج التجربة المستقلة — لوحة المشرف</div></div><a href="admin.html">لوحة الإدارة</a></header>
 <main><h1>متابعة إجابات الديمو</h1><p>هذه النتائج منفصلة تمامًا عن سجلات تقدم الطلاب. التصحيح الآلي قد يكون أوليًا أو معلقًا، ويحق للمشرف تأكيده أو تصحيحه.</p>
 <div class="banner">يعرض هذا السجل الإجابات المقدمة من زوار الديمو دون اسم الطالب. لا تدخل نتائجه في أي درجة أو خطة تعليمية رسمية.</div>
-<div id="notice" role="status">جارٍ التحقق من صلاحية المشرف...</div><div id="list"></div></main>
+<button id="refreshResults" type="button">تحديث السجل</button><div id="notice" role="status">جارٍ التحقق من صلاحية المشرف...</div><div id="list"></div></main>
 <script>
 (async function(){
 "use strict";
@@ -31,30 +31,38 @@ async function load(){
  var rows=res.data||[];
  note.textContent=rows.length?("آخر "+rows.length+" نتيجة تجريبية"):"لم تصل بعد أي نتائج إلى سجل المشرف.";
  for(const r of rows){
-  var card=el("section","card");
+  var card=el("section","card");card.dataset.submissionId=r.id;card.appendChild(el("small",null,"رقم المحاولة: "+r.id+" — حالة المراجعة: "+({unreviewed:"لم تراجع",confirmed:"مؤكدة",corrected:"مصححة"}[r.review_status]||r.review_status)));
   var meta=el("div","meta");
   meta.appendChild(el("span",null,new Date(r.created_at).toLocaleString("ar-EG")+" • "+(r.language==="ar"?"عربي":"English")+" • s1 بداية الشخصية"));
-  meta.appendChild(el("span","state",r.grade_status==="graded"?"تصحيح آلي أولي":"في انتظار التصحيح"));
+  meta.appendChild(el("span","state",r.grade_status==="rule_assessed"?"درجة مقترحة — قواعد محلية محدودة":r.grade_status==="graded"?"تصحيح آلي أولي":"لا درجة موثوقة — راجع السبب"));
   card.appendChild(meta);
   card.appendChild(el("h2",null,"إجابة الطالب المجهول"));
   card.appendChild(el("div","answer",r.answer_text));
   var row=el("div","grid");
   var keys={recall:"اختيارات الحفظ",understanding:"الفهم",application:"التطبيق",legal_precision:"الدقة (مؤشر اختيار)"};
-  for(const key of Object.keys(keys)){var x=el("div","metric");if(key==="recall")x.classList.add("skillRecall");if(key==="understanding")x.classList.add("skillUnderstanding");x.appendChild(el("small",null,keys[key]));x.appendChild(el("div",null,r.choice_indicators&&r.choice_indicators[key]!=null?r.choice_indicators[key]+"%":"لم يُختبر"));row.appendChild(x);}
-  var x=el("div","metric skillRecall");x.appendChild(el("small",null,"الحفظ — الإجابة الحرة"));x.appendChild(el("div",null,r.recall_score===null?"تحتاج مراجعة":r.recall_score+"%"));row.appendChild(x);
+  for(const key of Object.keys(keys)){var x=el("div","metric");if(key==="recall")x.classList.add("skillRecall");if(key==="understanding")x.classList.add("skillUnderstanding");x.appendChild(el("small",null,keys[key]));x.appendChild(el("div",null,r.choice_indicators&&r.choice_indicators[key]!=null?r.choice_indicators[key]+"%":"لم يُختبر"));if((key==="recall"||key==="understanding")&&r.choice_indicators&&r.choice_indicators[key]!=null){const bar=el("div","skillFill"),fill=el("i");fill.style.width=Math.max(0,Math.min(100,r.choice_indicators[key]))+"%";bar.appendChild(fill);x.appendChild(bar);}row.appendChild(x);}
+  var x=el("div","metric skillRecall");x.appendChild(el("small",null,"الحفظ — الإجابة الحرة"));x.appendChild(el("div",null,r.recall_score===null?"تحتاج مراجعة":r.recall_score+"%"));if(r.recall_score!==null){const bar=el("div","skillFill"),fill=el("i");fill.style.width=r.recall_score+"%";bar.appendChild(fill);x.appendChild(bar);}row.appendChild(x);
   card.appendChild(row);
   card.appendChild(el("p",null,"ملاحظات التصحيح: "+(r.grade_feedback||"بانتظار مراجعة المشرف")));
   var evidence=r.grade_evidence||{};
-  if(evidence.reason)card.appendChild(el("p",null,"سبب التعليق: "+evidence.reason));
+  if(evidence.criteria){
+   card.appendChild(el("h3",null,"الأدلة القانونية والعناصر الناقصة — "+evidence.points+" / 7"));
+   for(const c of evidence.criteria){
+    const names={birth_alive:"بداية الشخصية بالولادة حية",death:"انتهاء الشخصية بالموت",prenatal_rights:"حقوق الحمل التي لا يحتاج سببها إلى قبول",live_birth_condition:"شرط الولادة حية لثبوت الحقوق"};
+    const e=el("div","evidenceRow");e.appendChild(el("b",null,(names[c.id]||c.label)+" — "+c.points+" / "+c.max_points));
+    e.appendChild(el("div",null,({supported:"مثبت بدليل",unrecognized:"لم يُثبت؛ قد يكون ناقصًا أو غير مفهوم للمحرك",contradicted:"حكم مخالف",conflicting:"أدلة متناقضة"})[c.status]));
+    for(const quote of (c.evidence||[]).concat(c.contrary||[]))e.appendChild(el("blockquote",null,quote));card.appendChild(e);
+   }
+  }
   if(evidence.contradictions&&evidence.contradictions.length)card.appendChild(el("p",null,"تعارضات قانونية: "+evidence.contradictions.join(" — ")));
-  var controls=el("div","controls");
-  var state=el("select");for(const [v,t] of [["unreviewed","لم أراجع بعد"],["confirmed","تأكيد التقييم"],["corrected","تصحيح التقييم"]]){var o=el("option",null,t);o.value=v;if(r.review_status===v)o.selected=true;state.appendChild(o);}
+  let controls=el("div","controls");
+  let state=el("select");for(const [v,t] of [["unreviewed","لم أراجع بعد"],["confirmed","تأكيد التقييم"],["corrected","تصحيح التقييم"]]){var o=el("option",null,t);o.value=v;if(r.review_status===v)o.selected=true;state.appendChild(o);}
   controls.appendChild(field("قرار المشرف",state));
-  var score=el("input");score.type="number";score.min="0";score.max="100";score.placeholder="بدون درجة";score.value=r.supervisor_score==null?(r.recall_score==null?"":r.recall_score):r.supervisor_score;
+  let score=el("input");score.type="number";score.min="0";score.max="100";score.placeholder="بدون درجة";score.value=r.supervisor_score==null?(r.recall_score==null?"":r.recall_score):r.supervisor_score;
   controls.appendChild(field("درجة الحفظ بعد المراجعة",score));
-  var comment=el("input");comment.maxLength=500;comment.placeholder="سبب التأكيد أو التعديل";comment.value=r.review_note||"";
+  let comment=el("input");comment.maxLength=500;comment.placeholder="سبب التأكيد أو التعديل";comment.value=r.review_note||"";
   controls.appendChild(field("ملاحظة المشرف",comment));
-  var btn=el("button",null,"حفظ المراجعة");
+  let btn=el("button",null,"حفظ المراجعة");
   btn.onclick=async function(){
    if(state.value==="unreviewed"){note.textContent="اختر تأكيدًا أو تصحيحًا لحفظ المراجعة.";return;}
    var number=score.value.trim()===""?null:Number(score.value);
@@ -70,6 +78,7 @@ async function load(){
   root.appendChild(card);
  }
 }
+document.getElementById("refreshResults").onclick=load;
 await load();
 })();
 </script></body></html>

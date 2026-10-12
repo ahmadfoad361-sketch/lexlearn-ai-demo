@@ -55,7 +55,7 @@ function rlabel(r){return r==="high"?"عاجل":r==="mid"?"متابعة":r==="lo
 function metric(k,v,meta){
  var t=v==null?"—":Math.round(v)+"%";
  var note=meta&&meta.status?meta.status:(v==null?"لم يُقَس":v>=80?"قوي":v>=60?"نامٍ":"أولوية");
- return '<div class="metric"><span>'+label(k)+'</span><b>'+t+'</b><small>'+esc(note)+'</small><div class="bar"><i style="width:'+(v==null?3:Math.max(3,Math.min(100,v)))+'%"></i></div></div>';
+ return '<div class="metric '+(k==='recall'?'axis-recall':k==='understanding'?'axis-understanding':'')+'"><span>'+label(k)+'</span><b>'+t+'</b><small>'+esc(note)+'</small><div class="bar"><i style="width:'+(v==null?((k==='recall'||k==='understanding')?0:3):Math.max((k==='recall'||k==='understanding')?0:3,Math.min(100,v)))+'%"></i></div></div>';
 }
 function modelText(v){
  if(v.model&&v.model.bridge&&v.model.bridge.label)return v.model.bridge.label;

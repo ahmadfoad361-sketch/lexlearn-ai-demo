@@ -51,6 +51,9 @@ jobs:
           node tests/pilot-supervisor-audit.test.js
           node scripts/validate-pilot-grading.js
           node tests/program-flow.test.js
+          node tests/public-showcase.test.js
+          node tests/showcase-recall.test.js
+          node tests/showcase-delivery.test.js
       - name: Production boundary tests
         run: node tests/production-boundaries.test.js
 

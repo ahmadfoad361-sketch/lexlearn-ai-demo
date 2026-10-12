@@ -1,6 +1,9 @@
 (function(){
 "use strict";
 var ar=document.documentElement.lang==="ar",lang=ar?"ar":"en",Q=window.LEX_QUALITY,APP=document.getElementById("showcaseApp"),questions=[],answers=[],step=0,timer=null,free="",started=0;
+var requestId=null,busy=false,draftKey='lexlearn-demo-v3-'+lang;
+function persist(){try{sessionStorage.setItem(draftKey,JSON.stringify({requestId:requestId,answers:answers,free:free,step:step,receipt:lastDemo&&lastDemo.receipt}));}catch(_){}}
+function restore(){try{return JSON.parse(sessionStorage.getItem(draftKey)||'null');}catch(_){return null;}}
 function tr(a,b){return ar?a:b;}
 function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
 function chrome(s){APP.innerHTML='<div class="demoShell"><header class="demoTop"><div class="demoTopIn"><div class="demoBrand"><div class="demoLogo"><img src="assets/lexlearn-logo.svg" alt="LexLearn"></div><div><b>Lex<span class="brandLearn">Learn</span></b><small>'+tr('نفهم طريقة تفكيرك، ونبني طريقك.','We understand your mind and build your path.')+'</small></div></div><div class="demoMeta"><a class="demoGhost" href="'+(ar?'showcase-en.html':'showcase.html')+'?country=qa&subject=rights">'+tr('English','العربية')+'</a><a class="demoGhost" href="'+(ar?'index.html':'index-en.html')+'">'+tr('الرئيسية','Home')+'</a></div></div></header><main class="demoWrap">'+s+'</main><footer class="demoFooter">LexLearn</footer></div>';}
@@ -19,75 +22,51 @@ function makeQuestions(){
 }
 function hero(){chrome('<section class="demoStage demoIntro"><div class="stageCard centered"><span class="demoEyebrow">'+tr('تقييم أولي · نحو 3 دقائق','Initial diagnostic · about 3 minutes')+'</span><h2>'+tr('ابدأ من قوتك','Start from your strength')+'</h2><p>'+tr('اقرأ القاعدة، ثم أجب عن 6 أسئلة ومهمة حفظ قصيرة. النتيجة مؤشر لهذه المحاولة، وليست وصفًا ثابتًا لطريقة تفكيرك. قد تُرسل الإجابة دون اسم إلى سجل مشرف الديمو.','Read the rule, then answer six questions and one short recall task. The result describes this attempt, not a permanent learning type. Your answer may be saved without a name to a separate demo supervisor queue.')+'</p><button class="btn primary" id="startDemo">'+tr('ابدأ','Start')+'</button></div></section>');document.getElementById('startDemo').onclick=read;}
 function read(){
- answers=[];step=0;makeQuestions();started=Date.now();
+ answers=[];step=0;free="";lastDemo=null;requestId=crypto.randomUUID();makeQuestions();started=Date.now();persist();
  var rule=tr('تبدأ شخصية الإنسان بتمام ولادته حيًا، وتنتهي بموته. والحمل المستكن أهل لثبوت الحقوق التي لا يحتاج سببها إلى قبول، وذلك بشرط تمام ولادته حيًا.','A human being acquires legal personality upon being born alive, and it ends at death. An unborn child may acquire rights whose cause does not require acceptance, provided that the child is born alive.');
  stage(5,'<span class="demoEyebrow">'+tr('اقرأ قبل اختبار الذاكرة','Read before the recall task')+'</span><h2>'+tr('الشخصية القانونية · المادتان 39–40','Legal personality · Articles 39–40')+'</h2><div class="legalPaper"><small>'+tr('القانون المدني القطري · مقتطف تعليمي','Qatar Civil Code · educational English rendering')+'</small><div class="txt">'+rule+'</div></div><p>'+tr('خذ وقتك. النص يختفي عندما تختار «انتهيت»؛ سرعة القراءة لا تحدد قدرتك القانونية.','Take your time. The text disappears when you select Done; reading speed does not determine legal ability.')+'</p><button class="btn primary" id="finishRead">'+tr('انتهيت','Done')+'</button>');document.getElementById('finishRead').onclick=quiz;
 }
 function quiz(){
  var t=questions[step],ord=Q.shuffleOptions(t);
  stage(Math.round((step+1)/7*90),'<span class="demoEyebrow">'+tr('السؤال ','Question ')+(step+1)+tr(' من 7',' of 7')+'</span><h2>'+esc(t.q)+'</h2><div class="choices">'+ord.map(function(x){return '<button class="choice" data-o="'+x.orig+'">'+esc(x.text)+'</button>';}).join('')+'</div>');
- document.querySelectorAll('[data-o]').forEach(function(b){b.onclick=function(){answers.push({type:t.type,correct:Number(b.dataset.o)===t.a,selected:Number(b.dataset.o),latency:Date.now()-started});step++;started=Date.now();if(step<questions.length)quiz();else recall();};});
+ document.querySelectorAll('[data-o]').forEach(function(b){b.onclick=function(){answers.push({type:t.type,correct:Number(b.dataset.o)===t.a,selected:Number(b.dataset.o),latency:Date.now()-started});step++;persist();started=Date.now();if(step<questions.length)quiz();else recall();};});
 }
-function recall(){stage(90,'<span class="demoEyebrow">'+tr('السؤال 7 من 7','Question 7 of 7')+'</span><h2>'+tr('أعد بناء القاعدة من ذاكرتك','Reconstruct the rule from memory')+'</h2><p>'+tr('اكتب بداية الشخصية ونهايتها، ثم نوع حقوق الحمل وشرط ثبوتها. لا يلزم مثال أو واقعة.','State when personality begins and ends, then identify the prenatal rights and their condition. No example or fact pattern is required.')+'</p><textarea class="freeInput" id="freeText" placeholder="'+tr('اكتب ما تتذكره...','Write what you remember...')+'"></textarea><button class="btn primary" id="seeResult">'+tr('عرض النتيجة','Show result')+'</button><div id="recallNote"></div>');document.getElementById('seeResult').onclick=function(){free=document.getElementById('freeText').value.trim();if(!free){document.getElementById('recallNote').textContent=tr('اكتب ما تتذكره أو «لا أتذكر».','Write what you remember or “I do not remember”.');return;}result();};}
+function recall(){stage(90,'<span class="demoEyebrow">'+tr('السؤال 7 من 7','Question 7 of 7')+'</span><h2>'+tr('أعد بناء القاعدة من ذاكرتك','Reconstruct the rule from memory')+'</h2><p>'+tr('اكتب بداية الشخصية ونهايتها، ثم نوع حقوق الحمل وشرط ثبوتها. لا يلزم مثال أو واقعة.','State when personality begins and ends, then identify the prenatal rights and their condition. No example or fact pattern is required.')+'</p><textarea class="freeInput" id="freeText" maxlength="1800" aria-label="'+tr('إجابة الحفظ','Recall answer')+'" placeholder="'+tr('اكتب ما تتذكره...','Write what you remember...')+'"></textarea><button class="btn primary" id="seeResult">'+tr('عرض النتيجة','Show result')+'</button><div id="recallNote"></div>');document.getElementById('freeText').value=free;document.getElementById('freeText').oninput=function(){free=this.value;persist();};document.getElementById('seeResult').onclick=function(){free=document.getElementById('freeText').value.trim();if(!free){document.getElementById('recallNote').textContent=tr('اكتب ما تتذكره أو «لا أتذكر».','Write what you remember or “I do not remember”.');return;}persist();result();};}
 function pct(type){var a=answers.filter(function(x){return x.type===type;});return a.length?Math.round(a.filter(function(x){return x.correct;}).length/a.length*100):null;}
 function metric(k,v){return '<div class="metric"><span>'+Q.labels[lang][k]+'</span><b>'+(v==null?tr('لم يُقَس','Not assessed'):v+'%')+'</b></div>';}
 var lastDemo=null;
 function analysisPage(){
- stage(97,'<div class="analysisScreen" role="status" aria-live="polite"><div class="analysisLogoWrap"><img src="assets/lexlearn-logo.svg" alt="LexLearn"></div><span class="demoEyebrow">'+tr('تحليل إجاباتك','Analysing your answers')+'</span><h2>'+tr('جاري تحليل النتيجة بالذكاء الاصطناعي','Analysing your result with AI')+'</h2><p>'+tr('نفحص المعنى القانوني في إجابتك، ثم نجهز تقرير المهارات والمتابعة.','Checking the legal meaning of your answer and preparing your skills report.')+'</p><div class="analysisProgress"><i></i></div><small>'+tr('إذا تعذر التصحيح، ستظهر حالة انتظار المراجعة دون تخمين درجة.','If grading is unavailable, review will be pending; no score will be guessed.')+'</small></div>');
+ stage(97,'<div class="analysisScreen" role="status"><div class="analysisLogoWrap"><img src="assets/lexlearn-logo.svg" alt="LexLearn"></div><h2>'+tr('فحص عناصر الإجابة وحفظ المحاولة','Checking answer elements and saving your attempt')+'</h2><p>'+tr('تقييم محلي مبدئي بقواعد محدودة، ثم إرسال الإجابة للمشرف.','A preliminary check using limited local rules, followed by delivery for supervisor review.')+'</p></div>');
 }
 async function sendDemo(){
- if(!window.LEX_CLOUD||!LEX_CLOUD.isConfigured())throw new Error("cloud_unavailable");
- var db=LEX_CLOUD.db(),u=await db.auth.getUser();
- if(u.error||!u.data.user){
+ if(!window.LEX_CLOUD||!LEX_CLOUD.isConfigured())throw new Error('cloud_unavailable');
+ var db=LEX_CLOUD.db(),session=await db.auth.getSession();
+ if(session.error)throw new Error('authentication_required');
+ if(!session.data.session){
   var guest=await db.auth.signInAnonymously();
-  if(guest.error||!guest.data.user)throw new Error("guest_auth_disabled");
+  if(guest.error||!guest.data.user)throw new Error('guest_auth_unavailable');
  }
- var r=await db.functions.invoke("showcase-grade",{body:{topic:1,language:lang,answer:free,choices:answers.map(function(a){return{type:a.type,selected:a.selected};})}});
+ var r=await db.functions.invoke('showcase-grade',{body:{request_id:requestId,topic:1,language:lang,answer:free,choices:answers.map(function(a){return{type:a.type,selected:a.selected};})}});
  if(r.error||!r.data||r.data.received!==true||!r.data.submission_id){
-  var info=r.data&&r.data.error||"";
-  if(r.error&&r.error.context&&typeof r.error.context.json==="function"){try{var errBody=await r.error.context.json();info=errBody&&errBody.error||info;}catch(_){}}
-  var e=new Error(info||"send_not_confirmed");e.detail=info||r.error&&r.error.message||"no_confirmation";throw e;
+  var info=r.data&&r.data.error||'';
+  if(r.error&&r.error.context&&typeof r.error.context.json==='function'){try{var errBody=await r.error.context.json();info=errBody&&errBody.error||info;}catch(_){}}
+  throw new Error(info||'send_not_confirmed');
  }
  return r.data;
 }
-function metricV2(k,v,pending){
- var name=Q.labels[lang][k],shown=v==null?(k==="recall"&&pending?tr('التصحيح معلّق','Grading pending'):tr('لم يُختبر مستقلًا','Not independently assessed')):v+'%';
- var note=v!=null?(k==="recall"?tr('نتيجة إجابة حرة أولية','Preliminary free-answer score'):tr('مؤشر من الاختيارات','Choice-question indicator')):k==="recall"?tr('أُجريت مهمة الحفظ بالفعل','Recall task was attempted'):'';
- return '<div class="metric"><span>'+esc(name)+'</span><b class="'+(v==null?'metricPending':'')+'">'+esc(shown)+'</b><small>'+esc(note)+'</small></div>';
-}
-function demoAdvice(s){
- if(s.pendingRecall)return tr('إجابة الحفظ قُدمت، لكن تقييم معناها معلق. نبدأ تدريبًا استكشافيًا دون اعتبار الحفظ قوة أو ضعفًا.','Recall was attempted but not yet graded. Begin exploratory training without assuming strong or weak recall.');
- if(s.weak==="recall")return tr('نحوّل الفهم إلى مفاتيح للحفظ، ثم نعيد بناء القاعدة القانونية من الذاكرة.','Turn understanding into memory cues and reconstruct the legal rule.');
- if(s.weak==="understanding")return tr('نستخدم عناصر القاعدة المسترجعة لنشرح وظيفة كل عنصر.','Use recalled legal elements to explain the role of each.');
- if(s.weak==="application")return tr('نغيّر عنصرًا في واقعة قصيرة ونفحص أثر ذلك على النتيجة.','Change one fact and test its effect on the legal conclusion.');
- return tr('التجربة قصيرة؛ نحتاج أدلة إضافية قبل تحديد مهارة أضعف بثقة.','This short demo needs more evidence before identifying a weakest skill.');
+function errorLabel(code){
+ var labels={daily_demo_limit:tr('بلغت التجربة الحد اليومي. أُبقيت إجابتك هنا؛ أعد إرسالها بعد تجدد الحصة عند 00:00 UTC.','The daily demo limit was reached. Your answer is retained; retry after the quota resets at 00:00 UTC.'),authentication_required:tr('تعذر التحقق من جلسة الدخول. إجابتك محفوظة في هذا التبويب؛ سجّل الدخول ثم أعد الإرسال.','Your session could not be verified. Your answer remains in this tab; sign in and retry.'),guest_auth_unavailable:tr('تعذر بدء جلسة الزائر. تحقق من الاتصال وأعد الإرسال.','Guest sign-in failed. Check your connection and retry.'),invalid_demo_payload:tr('بيانات الاختبار غير مكتملة؛ راجع إجاباتك.','The submitted test data is incomplete; review your answers.'),request_conflict:tr('معرّف هذه المحاولة مرتبط بإجابة أخرى؛ ابدأ محاولة جديدة مع الاحتفاظ بنسخة من إجابتك.','This attempt ID belongs to different content; keep a copy and start a new attempt.'),demo_result_save_failed:tr('تعذر تسجيل المحاولة في قاعدة البيانات؛ إجابتك باقية هنا ويمكن إعادة إرسالها.','The database could not save the attempt. Your answer remains here for retry.')};
+ return labels[code]||tr('لم يصل تأكيد من الخادم. تحقق من الاتصال ثم اضغط إعادة الإرسال؛ لن تتكرر المحاولة.','No server confirmation was received. Check your connection and retry; the same attempt will not be duplicated.');
 }
 function resultScreen(){
- var s=lastDemo.summary,r=lastDemo.receipt,grade=lastDemo.grade;
- var recall=typeof r.recall_score==="number"?r.recall_score:null;
- var understanding=s.metrics&&typeof s.metrics.understanding==="number"?s.metrics.understanding:null;
- var fragment=r.grade_status==="insufficient_evidence";
- var recallLabel=recall===null?(fragment?tr("إجابة غير مكتملة","Incomplete answer"):tr("يلزم مراجعة الإجابة","Answer needs review")):recall+"%";
- var understandLabel=understanding===null?tr("لم يُقَس","Not measured"):understanding+"%";
- function axisCard(title,value,label,subtitle,style){
-  return '<div style="border:1px solid #dfe4ed;border-radius:20px;background:#fff;padding:22px;flex:1;min-width:220px;box-shadow:0 9px 24px #101c3310"><div style="font-size:15px;color:#475569;font-weight:700">'+title+'</div><div style="font-size:clamp(24px,4vw,38px);font-weight:900;color:#13213d;margin:12px 0">'+esc(label)+'</div><div style="height:13px;background:#edf1f7;border-radius:40px;overflow:hidden"><div style="height:100%;border-radius:40px;background:'+style+';width:'+(value==null?0:Math.max(0,Math.min(100,value)))+'%"></div></div><small style="display:block;margin-top:12px;line-height:1.8;color:#475569">'+esc(subtitle)+'</small></div>';
- }
- var recallHint=recall!==null?(r.grade_status==="rule_assessed"?tr("فحص قانوني أولي بقواعد محدودة؛ يُراجع المشرف التصنيف.","Preliminary rules-based check; supervisor verifies grading."):tr("تحليل دلالي أولي للإجابة الحرة.","Preliminary semantic analysis of the free response.")):fragment?tr("ذكرتَ عبارة لا تكفي وحدها للإجابة عن كل عناصر السؤال؛ لا تُحسب صفرًا.","The fragment cannot answer all question elements; it is not scored as zero."):tr("لم تتوافر أدلة كافية لدرجة آلية موثوقة؛ ستراجع الإجابة.","Not enough evidence for a trustworthy automatic score; review is needed.");
- var understandHint=understanding===null?tr("لم تُجمع إجابات كافية لتقييم الفهم.","Not enough evidence was collected."):tr("مؤشر أولي من سؤال الفهم في هذه المحاولة، لا حكم نهائي.","An initial indicator from the understanding question, not a final mastery decision.");
- var advice=recall===null?tr("أكمل القاعدة القانونية في إجابة الحفظ، ثم فسّر سبب ارتباط حقوق الحمل بالولادة الحية. هذا يساعد على التمييز بين الحفظ والفهم.","Complete the recall rule, then explain why prenatal rights depend on live birth."):recall<understanding?tr("الفهم يظهر أقوى في هذه المحاولة؛ استخدمه لإعادة بناء عناصر القاعدة من الذاكرة.","Understanding looks stronger in this attempt; use it to reconstruct the rule from memory."):recall>understanding?tr("الحفظ يظهر أقوى في هذه المحاولة؛ جرّب شرح معنى كل عنصر بكلماتك.","Recall looks stronger; explain the meaning of each legal element in your own words."):tr("المؤشران متقاربان؛ نحتاج محاولات إضافية لتحديد الفارق بدقة.","The two indicators are close; more attempts are required.");
- stage(100,'<span class="demoEyebrow">'+tr("بطاقة التحليل التعليمي","Learning analysis card")+'</span><h2>'+tr("نتيجتك: الحفظ والفهم","Your result: recall & understanding")+'</h2><p>'+tr("نتيجة استكشافية لهذه المحاولة فقط؛ لا نخلط الحفظ بالفهم ولا نعتبر غياب الدرجة صفرًا.","Exploratory results for this attempt only; missing scores do not mean zero.")+'</p><div style="display:flex;flex-wrap:wrap;gap:18px;margin:22px 0" class="resultInfographic">'+axisCard(tr("الحفظ","Recall"),recall,recallLabel,recallHint,"linear-gradient(90deg,#8F1D3F,#7A2550,#142B5F)")+axisCard(tr("الفهم","Understanding"),understanding,understandLabel,understandHint,"linear-gradient(90deg,#142B5F,#50306A,#8F1D3F)")+'</div><div class="planCard"><h3>'+tr("ماذا تقول هذه النتيجة؟","What does this mean?")+'</h3><p>'+esc(advice)+'</p><small>'+tr("قياس مبدئي لا يثبت طريقة تفكير الطالب أو إتقانه النهائي للمادة.","An initial indicator, not proof of the student's learning style or final mastery.")+'</small></div><details><summary>'+tr("تفاصيل إجابة الحفظ","Recall answer details")+'</summary><p>'+esc(r.feedback||grade.note||recallHint)+'</p>'+(recall!==null?Q.feedback(grade,lang,esc):'')+'</details><p class="deliveryState" role="status">'+(r.received?tr("تم حفظ المحاولة في لوحة المشرف.","Attempt saved in the supervisor review queue."):tr("تعذر تأكيد الحفظ في هذه المحاولة. لا نعرض نجاحًا غير مؤكد.","Saving could not be confirmed for this attempt."))+'</p><div class="demoActions"><button class="btn primary" id="previewDemo">'+tr("تدريب مقترح","Suggested practice")+'</button><button class="btn secondary" id="closeDemo">'+tr("إنهاء التجربة","Finish")+'</button><button class="btn secondary" id="retryDemo">'+tr("إعادة الاختبار","Try again")+'</button></div>');
- document.getElementById("previewDemo").onclick=previewTraining;
- document.getElementById("closeDemo").onclick=receiptScreen;
- document.getElementById("retryDemo").onclick=hero;
- if(!r.received){
-   var state=document.querySelector(".deliveryState");
-   if(state){
-     var why=document.createElement("small");why.style.display="block";why.style.marginTop="8px";
-     var labels={daily_demo_limit:tr("وصلت للحد اليومي لعدد تجارب الديمو. جرّب غدًا أو بحساب آخر للاختبار.","Daily demo limit reached. Please try tomorrow."),authentication_required:tr("انتهت جلسة الدخول؛ أعد فتح التجربة.","Session expired; reopen the demo."),invalid_demo_payload:tr("تعذر مطابقة إجابات الاختبار مع الطلب؛ أعد المحاولة.","Answer data was not accepted; retry."),guest_auth_disabled:tr("تعذر بدء جلسة زائر؛ يرجى التأكد من تفعيل الدخول المجهول.","Guest sign-in is unavailable."),cloud_unavailable:tr("خدمة الاتصال غير متاحة.","Cloud connection unavailable."),send_not_confirmed:tr("لم يرسل الخادم تأكيد الحفظ.","The server did not confirm saving.")};
-     why.textContent=labels[r.error]||labels[r.detail]||tr("تحقق من الاتصال وجرب من جديد.","Check your connection and try again.");
-     state.appendChild(why);
-   }
- }
+ var r=lastDemo.receipt,g=lastDemo.grade,d=g.details||{},recall=g.recall_score,understanding=lastDemo.summary.metrics.understanding;
+ function axisCard(key,title,value,hint){return '<section class="skillCard skill-'+key+'" aria-label="'+title+'"><h3>'+title+'</h3><strong class="skillValue">'+(value==null?tr('لا درجة موثوقة بعد','Not yet scorable'):value+'%')+'</strong>'+(value==null?'':'<div class="skillTrack" role="progressbar" aria-label="'+title+'" aria-valuemin="0" aria-valuemax="100" aria-valuenow="'+value+'"><i style="width:'+value+'%"></i></div>')+'<p>'+esc(hint)+'</p></section>';}
+ var rows=(d.criteria||[]).map(function(c){var status={supported:tr('مثبت','Supported'),unrecognized:tr('لم يُثبت: أضف أو وضّح هذا العنصر','Not established: add or clarify this element'),contradicted:tr('حكم مخالف: راجع القاعدة','Contrary claim: review the rule'),conflicting:tr('عبارتان متعارضتان: تحتاج مراجعة','Conflicting claims: review needed')};return '<li class="criterion '+c.status+'"><div><b>'+esc(c.label)+'</b><span>'+c.points+' / '+c.max_points+'</span></div><small>'+status[c.status]+'</small>'+c.evidence.concat(c.contrary).map(function(e){return '<blockquote>'+esc(e)+'</blockquote>';}).join('')+'</li>';}).join('');
+ stage(100,'<span class="demoEyebrow">'+tr('نتيجة هذه المحاولة','Results for this attempt')+'</span><h2>'+tr('نتيجتك: الحفظ والفهم','Your result: recall & understanding')+'</h2><p>'+tr('مهارتان فقط. الفهم من أسئلته المستقلة؛ لا يُستنتج من إعادة صياغة الإجابة الحرة.','Two skills only. Understanding comes from its own questions, not from paraphrasing the free response.')+'</p><div class="resultInfographic">'+axisCard('recall',tr('الحفظ','Recall'),recall,tr('الإجابة الحرة: نقاط العناصر المثبتة '+(d.points==null?'—':d.points)+' من 7.','Free response: '+(d.points==null?'—':d.points)+' evidenced points out of 7.'))+axisCard('understanding',tr('الفهم','Understanding'),understanding,tr('مؤشر من أربعة أسئلة فهم، وليس حكمًا نهائيًا على الإتقان.','Indicator from four understanding questions, not a final mastery assessment.'))+'</div><div class="resultExplanation"><h3>'+tr('كيف نقرأ النتيجة؟','How to read this result')+'</h3><p>'+esc(g.feedback)+'</p><small>'+tr('تصحيح محلي بقواعد محدودة، وليس تصحيحًا دلاليًا كاملًا. الدرجة مبدئية ويستطيع المشرف تأكيدها أو تعديلها.','Limited local rules, not full semantic grading. This provisional score can be confirmed or corrected by the supervisor.')+'</small></div><p>'+tr('أسئلة الحفظ المرتبطة: ','Related recall questions: ')+pct('recall')+'% — '+tr('مؤشر منفصل لا يستبدل تقييم الإجابة الحرة.','a separate indicator that does not replace the free-response assessment.')+'</p><h3>'+tr('الأدلة والعناصر التي تحتاج استكمالًا','Evidence and elements to complete')+'</h3><ul class="criteriaList">'+rows+'</ul><details><summary>'+tr('إجابتك الأصلية','Your original answer')+'</summary><p class="originalAnswer">'+esc(free)+'</p></details><div class="deliveryState" role="status">'+(r.received&&r.submission_id?tr('تم تأكيد حفظ المحاولة. رقمها: ','Saving confirmed. Attempt ID: ')+'<code>'+esc(r.submission_id)+'</code>':esc(errorLabel(r.error)))+'</div><div class="demoActions">'+(!r.received?'<button class="btn primary" id="retrySave">'+tr('إعادة إرسال نفس المحاولة','Retry saving this attempt')+'</button>':'')+'<button class="btn secondary" id="previewDemo">'+tr('تدريب مقترح','Suggested practice')+'</button><button class="btn secondary" id="closeDemo">'+tr('إنهاء التجربة','Finish')+'</button><button class="btn secondary" id="retryDemo">'+tr('اختبار جديد','New test')+'</button></div>');
+ document.getElementById('previewDemo').onclick=previewTraining;
+ document.getElementById('closeDemo').onclick=receiptScreen;
+ document.getElementById('retryDemo').onclick=read;
+ if(document.getElementById('retrySave'))document.getElementById('retrySave').onclick=result;
 }
 function previewTraining(){
  var w=lastDemo.summary.weak;
@@ -97,28 +76,24 @@ function previewTraining(){
  document.getElementById("previewExplain").onclick=function(){document.getElementById("previewExplanation").textContent=tr('تبدأ الشخصية بالولادة حية وتنتهي بالموت، أما حقوق الحمل التي لا يحتاج سببها إلى قبول فتتوقف على شرط الولادة حية. هذه معاينة تدريب وليست تصحيحًا لإجابتك.','Personality begins with live birth and ends at death; the stated prenatal rights depend on live birth. This is a training preview, not grading of your answer.');};
 }
 function receiptScreen(){
- var sent=lastDemo.receipt.received;
- stage(100,'<div class="receiptScreen"><div class="receiptLogoWrap"><img src="assets/lexlearn-logo.svg" alt="LexLearn"></div><h2>'+(sent?tr('تم إرسال النتيجة للمشرف للمتابعة ولإعداد البرنامج التكيفي الخاص بكم','Your result has been sent to the supervisor for follow-up and an adaptive learning plan'):tr('انتهى الديمو، ولكن لم يتأكد إرسال النتيجة','Demo complete, but delivery was not confirmed'))+'</h2><p>'+(sent?tr('هذه نتيجة تجريبية منفصلة عن سجلات الطلاب، ويمكن للمشرف مراجعة إجابتك والتصحيح الآلي.','This demo result is separate from real student records; the supervisor can review your answer and its grading.'):tr('لم نؤكد وصول النتيجة للمشرف. يمكنك إعادة التجربة أو العودة إلى الموقع.','The result was not confirmed as received. You can retry or return to the website.'))+'</p><div class="demoActions centeredActions"><a class="btn primary" href="'+(ar?'index.html':'index-en.html')+'">'+tr('الصفحة الرئيسية','Home page')+'</a><button class="btn secondary" id="receiptAgain">'+tr('تجربة جديدة','New demo')+'</button></div></div>');
- document.getElementById("receiptAgain").onclick=hero;
+ var r=lastDemo.receipt;
+ stage(100,'<div class="receiptScreen"><div class="receiptLogoWrap"><img src="assets/lexlearn-logo.svg" alt="LexLearn"></div><h2>'+(r.received?tr('انتهى الديمو وتم حفظ المحاولة','Demo complete — attempt saved'):tr('انتهى الاختبار ولم يتأكد الحفظ','Test complete — saving not confirmed'))+'</h2><p>'+(r.received?tr('إجابتك ونتيجتها المبدئية متاحتان لمراجعة المشرف.','Your answer and provisional assessment are available for supervisor review.'):esc(errorLabel(r.error)))+'</p>'+(r.received?'<code>'+esc(r.submission_id)+'</code>':'')+'<div class="demoActions"><button class="btn primary" id="receiptReturn">'+tr('العودة للنتيجة','Back to results')+'</button><a class="btn secondary" href="'+(ar?'index.html':'index-en.html')+'">'+tr('الرئيسية','Home')+'</a></div></div>');
+ document.getElementById('receiptReturn').onclick=resultScreen;
 }
 async function result(){
- analysisPage();
- var receipt;
- try{receipt=await sendDemo();}catch(e){receipt={received:false,error:String(e&&e.message||'not_sent'),detail:String(e&&e.detail||'')};}
- var grade=Q.grade(free,Q.makeEssay(Q.topic(1),lang,'recall'),lang);
- if(receipt.received&&(receipt.grade_status==='graded'||receipt.grade_status==='rule_assessed')&&typeof receipt.recall_score==='number'){
-  grade.pending=false;grade.needsHumanReview=receipt.grade_status==='rule_assessed';grade.provisional=true;grade.gradingMethod=receipt.grade_status==='rule_assessed'?'limited_rule_screen':'grounded_semantic';
-  grade.overall=receipt.recall_score;grade.axes.recall=receipt.recall_score;
-  grade.style=receipt.grade_status==='rule_assessed'?tr('فحص قانوني آلي محدود — نتيجة مبدئية قابلة للمراجعة، وليست تصحيحًا دلاليًا شاملًا.','Limited automated legal check — provisional and subject to review, not full semantic AI grading.'):tr('تقييم معنى أولي بحسب المصادر القانونية المعتمدة.','Preliminary semantic evaluation using approved legal sources.');
-  grade.note=receipt.feedback||'';
-  grade.checks=(receipt.details&&receipt.details.achieved||[]).map(function(x){return{label:x.id,matched:true,evidence:x.evidence};});
-  grade.studyChecks=[];grade.conflicts=receipt.details&&receipt.details.contradictions||[];
- }else{
-  grade.pending=true;grade.gradingMethod='pending_semantic_review';grade.axes.recall=null;
-  grade.note=receipt.received?tr('حُفظت الإجابة للمشرف في انتظار التصحيح.','Answer saved for supervisor review.'):tr('لم يتأكد حفظ الإجابة للمشرف.','Supervisor delivery was not confirmed.');
- }
- lastDemo={receipt:receipt,grade:grade,summary:Q.diagnosticSummary(answers,grade)};
- resultScreen();
+ if(busy)return;busy=true;persist();analysisPage();
+ var local=window.LEX_RECALL.assess(free,lang),receipt;
+ var deadline;try{receipt=await Promise.race([sendDemo(),new Promise(function(_,reject){deadline=setTimeout(function(){reject(new Error('send_not_confirmed'));},18000);})]);}catch(e){receipt={received:false,error:String(e&&e.message||'send_not_confirmed')};}
+ clearTimeout(deadline);var g=receipt.received?receipt:local;
+ var understanding=receipt.received?receipt.choice_indicators.understanding:pct('understanding');
+ lastDemo={receipt:receipt,grade:g,summary:{metrics:{recall:g.recall_score,understanding:understanding},weak:g.recall_score===null?null:g.recall_score<understanding?'recall':g.recall_score>understanding?'understanding':null}};
+ busy=false;persist();resultScreen();
 }
 hero();
+var saved=restore();
+if(saved&&saved.requestId&&Array.isArray(saved.answers)){
+ var resume=document.createElement('button');resume.className='btn secondary';resume.textContent=tr('استكمال المحاولة المحفوظة في هذا التبويب','Resume the attempt saved in this tab');
+ resume.onclick=function(){requestId=saved.requestId;answers=saved.answers;free=saved.free||'';step=saved.step||0;makeQuestions();if(saved.receipt&&saved.receipt.received){var r=saved.receipt;lastDemo={receipt:r,grade:r,summary:{metrics:{recall:r.recall_score,understanding:r.choice_indicators.understanding},weak:null}};resultScreen();}else if(step>=6)recall();else if(step>0)quiz();else read();};
+ document.getElementById('startDemo').parentNode.appendChild(resume);
+}
 })();
