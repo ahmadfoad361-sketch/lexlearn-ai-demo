@@ -28,3 +28,8 @@ a{text-decoration:none}.shell{min-height:100vh;display:grid;place-items:center;p
 
 /* LexLearn brand tokens — shared across public, student, demo and supervisor views */
 :root{--maroon:#8F1D3F;--maroon-2:#6E1531;--navy:#142B5F;--navy2:#0D1E45}
+
+/* Legible sign-in controls. Passwords are never saved by the checkbox. */
+.passwordToggle{justify-self:start;border:1px solid #b7c5dd;background:#f5f7fc;color:#142B5F;border-radius:9px;padding:7px 17px;cursor:pointer;font:inherit;font-size:13px}
+.rememberRow{display:flex;align-items:center;gap:10px;font-size:13px;font-weight:600;color:#243756;cursor:pointer;margin:6px 0 14px}
+.rememberRow input{width:18px;height:18px;margin:0;accent-color:#8F1D3F}
