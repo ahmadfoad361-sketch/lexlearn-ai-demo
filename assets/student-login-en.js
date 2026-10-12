@@ -13,6 +13,7 @@ function seed(){
   return a;
 }
 var students=seed(),err=document.getElementById("studentError");
+try{var lastUsername=localStorage.getItem("lexlearn_last_student_username");if(lastUsername)document.getElementById("studentUser").value=lastUsername;}catch(_){}
 async function login(u,p){
   err.style.display="none";
   if(window.LEX_CLOUD&&LEX_CLOUD.isConfigured&&LEX_CLOUD.isConfigured()){
