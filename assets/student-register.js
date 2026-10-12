@@ -69,6 +69,7 @@ form.addEventListener("submit",async function(ev){
    throw new Error("registration_failed");
   }
   var username=String(response.data.username);
+  try{localStorage.setItem("lexlearn_last_student_username",username);}catch(_){}
   usernameLabel.textContent=username;
   receipt.hidden=false;
   form.hidden=true;
