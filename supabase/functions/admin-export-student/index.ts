@@ -5,12 +5,17 @@ Deno.serve(async(req)=>{
  if(req.method==="OPTIONS")return new Response("ok",{headers:corsHeaders});
  if(req.method!=="POST")return reply({error:"method_not_allowed"},405);
  try{
-  const {admin}=await requireStaff(req);
+  const {admin,profile,user}=await requireStaff(req);
   const body=await req.json();
   const uid=String(body.user_id||"");
   if(!/^[a-f0-9-]{36}$/i.test(uid))return reply({error:"invalid_student_id"},400);
   const prof=await admin.from("profiles").select("id,role,username,display_name,university,year_label,country_code,cohort_id,active,account_status,created_at").eq("id",uid).single();
   if(prof.error||!prof.data||prof.data.role!=="student")return reply({error:"student_not_found"},404);
+  if(profile.role==="instructor"){
+    const scoped=await admin.from("profiles").select("cohort_id").eq("id",user.id).single();
+    if(scoped.error||!scoped.data.cohort_id||scoped.data.cohort_id!==prof.data.cohort_id)
+      return reply({error:"student_outside_instructor_scope"},403);
+  }
   const tables=["enrollments","attempts","learner_snapshots","learning_plans","mastery_evidence","reviews","pilot_ai_grades","ai_grading_runs"];
   async function pageTable(table:string,key="user_id"){
    const output:Record<string,unknown>[]=[];
