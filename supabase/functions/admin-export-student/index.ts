@@ -17,7 +17,8 @@ Deno.serve(async(req)=>{
    let page=0,more=true;
    while(more&&page<40){
     const a=page*500,b=a+499;
-    const q=await admin.from(table).select("*").eq(key,uid).range(a,b);
+    const orderField=table==="enrollments"?"course_id":table==="pilot_ai_grades"?"attempt_id":"id";
+    const q=await admin.from(table).select("*").eq(key,uid).order(orderField,{ascending:true}).range(a,b);
     if(q.error)throw new Error(table+"_fetch_failed: "+q.error.message);
     const entries=q.data||[];
     output.push(...entries);
