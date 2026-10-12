@@ -52,6 +52,6 @@ assert.ok(manage.includes("temporaryPassword"),"password reset must generate cre
 assert.ok(manage.includes("admin_audit"),"admin actions must be audited");
 
 const privacy=read("privacy.html"),terms=read("terms.html");
-assert.ok(/2026-10-(06|12)-v[12]/.test(privacy)&&terms.includes("شروط الاستخدام"),"legal notices and terms must be published");
+assert.ok(/2026-10-12-v4/.test(privacy)&&terms.includes("شروط الاستخدام"),"legal notices and terms must be published");
 
 console.log("production-boundaries tests: PASS");
