@@ -177,3 +177,6 @@ body{direction:rtl;text-align:right}
 /* Light demo canvas and explicit contrast, including legacy stage styles. */
 html,body{background:#f4f6fa;color:#142B5F}.demoTop{background:#0D1E45}.demoBrand{color:white}.demoGhost{color:white;border-color:#ffffff40}.demoBrand small{color:#dce4f5}.stageCard{background:#fbfcfe;box-shadow:0 12px 42px #142b5f12}.stageCard:before{background:linear-gradient(180deg,#8F1D3F,#142B5F)}.demoEyebrow{background:#e9edf6;border-color:#d3dcec;color:#142B5F}.progress{background:#e0e5ee}.progress i{background:linear-gradient(90deg,#8F1D3F 0%,#7A2550 38%,#50306A 66%,#142B5F 100%)}.stageCard .resultExplanation p,.stageCard .resultExplanation h3,.stageCard .resultExplanation small{color:#fff}.stageCard .btn.secondary{background:#fff;color:#142B5F;border:1px solid #b9c5dc}.btn.primary{background:#8F1D3F}.freeInput:focus{outline:2px solid #8F1D3F;outline-offset:2px}.demoFooter{color:#52627f}
 html[lang="en"],html[lang="en"] body,html[lang="en"] .demoStage,html[lang="en"] .demoTopIn,html[lang="en"] .demoBrand,html[lang="en"] .choices,html[lang="en"] .choice,html[lang="en"] .freeInput{direction:ltr;text-align:left}
+
+/* LexLearn brand tokens — shared across public, student, demo and supervisor views */
+:root{--maroon:#8F1D3F;--maroon-2:#6E1531;--navy:#142B5F}
