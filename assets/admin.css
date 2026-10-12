@@ -44,3 +44,13 @@
 .trainingSection{background:linear-gradient(105deg,#0D1E45,#142B5F,#50306A)}
 .registrationHint{color:#5b6678;font-size:13px;line-height:1.8}
 @media(max-width:600px){.studentSectionBanner{padding:13px 15px;margin:16px 0 10px}}
+
+/* Administrative student lifecycle and archival report controls. */
+.studentManagement{border-top:4px solid #8F1D3F}
+.studentManagement .managementHint{font-size:13px;color:#59647a;line-height:1.9}
+.studentManagement .accountState{display:inline-block;border-radius:999px;font-weight:700;padding:5px 12px;margin:6px 0 15px;background:#e5f2eb;color:#1c5c41}
+.studentManagement .accountState.paused{background:#fff0d8;color:#77521a}
+.studentManagement .accountState.disabled{background:#f8e4e7;color:#8F1D3F}
+.studentManagement .adminActions .reportBtn{background:#142B5F;color:#fff}
+.studentManagement .adminActions .deleteStudentButton{background:#fff4f5;color:#8F1D3F;border:1px solid #b53654}
+.studentManagement .adminActions .deleteStudentButton:hover{background:#8F1D3F;color:#fff}
