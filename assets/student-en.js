@@ -364,9 +364,10 @@ function render(){
   var cp=document.getElementById("changePass");
   if(cp)cp.onclick=function(){changePasswordView(false);};
   var logout=document.getElementById("logout");
-  if(logout)logout.onclick=function(){
+  if(logout)logout.onclick=async function(){
+    if(session.cloud&&window.LEX_CLOUD&&LEX_CLOUD.isConfigured&&LEX_CLOUD.isConfigured())await LEX_CLOUD.signOut().catch(function(){});
     localStorage.removeItem(SESSION_KEY);
-    location.href="student-login-en.html";
+    location.replace("student-login-en.html");
   };
 }
 
@@ -374,6 +375,11 @@ async function boot(){
   if(session.cloud&&window.LEX_CLOUD&&LEX_CLOUD.isConfigured&&LEX_CLOUD.isConfigured()){
     try{
       var cloudProfile=await LEX_CLOUD.profile();
+      if(!cloudProfile||cloudProfile.role!=="student"||cloudProfile.active!==true){
+        localStorage.removeItem(SESSION_KEY);
+        location.replace("student-login-en.html");
+        return;
+      }
       var consent=await LEX_CLOUD.getConsent(CONSENT_VERSION,"learning_data");
       consentOk=!!consent;
       if(cloudProfile){
@@ -403,7 +409,10 @@ async function boot(){
         // Recover real training progress already completed by this signed-in student in this browser.
         await LEX_CLOUD.saveSnapshot({courseId:country+"-"+(country==="qa"?"rights":"sources"),snapshotType:"course",state:course});
       }
-    }catch(e){}
+    }catch(e){
+      APP.innerHTML="Unable to verify your session. Please <a href='student-login-en.html'>sign in again</a>.";
+      return;
+    }
   }
   render();
 }
