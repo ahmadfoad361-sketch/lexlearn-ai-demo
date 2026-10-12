@@ -2,23 +2,45 @@
 "use strict";
 var cfg=root.LEX_CONFIG||{},client=null;
 function isConfigured(){return !!(cfg.supabaseUrl&&cfg.supabaseAnonKey&&root.supabase&&root.supabase.createClient);}
+var REMEMBER_KEY="lexlearn_keep_signed_in";
+function rememberMe(){try{return root.localStorage.getItem(REMEMBER_KEY)!=="0";}catch(_){return true;}}
+function storageKey(){return "sb-"+String(cfg.supabaseUrl||"").split("://").pop().split(".")[0]+"-auth-token";}
+function authStorage(){
+ return {
+  getItem:function(k){try{return (rememberMe()?root.localStorage:root.sessionStorage).getItem(k);}catch(_){return null;}},
+  setItem:function(k,v){try{var keep=rememberMe(),dst=keep?root.localStorage:root.sessionStorage,other=keep?root.sessionStorage:root.localStorage;dst.setItem(k,v);other.removeItem(k);}catch(_){}},
+  removeItem:function(k){try{root.localStorage.removeItem(k);root.sessionStorage.removeItem(k);}catch(_){}}
+ };
+}
+function setRememberMe(keep){
+ var current=rememberMe(),from=current?root.localStorage:root.sessionStorage,to=keep?root.localStorage:root.sessionStorage;
+ try{
+  var keys=[storageKey(),storageKey()+"-code-verifier"];
+  keys.forEach(function(k){var value=from.getItem(k);if(value)to.setItem(k,value);from.removeItem(k);});
+  root.localStorage.setItem(REMEMBER_KEY,keep?"1":"0");
+ }catch(_){}
+}
 function db(){
   if(!isConfigured())return null;
-  if(!client)client=root.supabase.createClient(cfg.supabaseUrl,cfg.supabaseAnonKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+  if(!client)client=root.supabase.createClient(cfg.supabaseUrl,cfg.supabaseAnonKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storage:authStorage()}});
   return client;
 }
 function studentEmail(username){return String(username||"").trim().toLowerCase()+"@"+(cfg.studentEmailDomain||"students.lexlearn.local");}
 async function profile(){
   var c=db();if(!c)return null;
   var u=await c.auth.getUser();if(u.error||!u.data.user)return null;
-  var p=await c.from("profiles").select("id,role,username,display_name,active,account_status,must_change_password,university,year_label,cohort_id,locale,country_code").eq("id",u.data.user.id).single();
+  var p=await c.from("profiles").select("id,role,username,display_name,active,account_status,whatsapp_e164,must_change_password,university,year_label,cohort_id,locale,country_code").eq("id",u.data.user.id).single();
   if(p.error)throw p.error;return p.data;
 }
 async function signInStudent(username,password){
   var c=db();if(!c)throw new Error("cloud_not_configured");
   var identifier=String(username||"").trim().toLowerCase();
-  var email=identifier.includes("@")?identifier:studentEmail(identifier);
-  var r=await c.auth.signInWithPassword({email:email,password:password});
+  var phone=identifier.replace(/[\s().-]/g,"");
+  if(phone.startsWith("00"))phone="+"+phone.slice(2);
+  var options=/^\+[1-9][0-9]{7,14}$/.test(phone)?
+   {phone:phone,password:password}:
+   {email:identifier.includes("@")?identifier:studentEmail(identifier),password:password};
+  var r=await c.auth.signInWithPassword(options);
   if(r.error)throw r.error;
   var p=await profile();
   if(!p||p.role!=="student"||p.active===false){
@@ -57,9 +79,9 @@ async function saveSnapshot(opts){
 }
 async function listStudents(){
   var c=db();if(!c)return [];
-  var r=await c.from("profiles").select("id,username,display_name,active,account_status,must_change_password,university,year_label,country_code,cohort_id,created_at,cohorts(name)").eq("role","student").order("created_at",{ascending:false});
+  var r=await c.from("profiles").select("id,username,display_name,active,account_status,whatsapp_e164,whatsapp_verified_at,must_change_password,university,year_label,country_code,cohort_id,created_at,cohorts(name)").eq("role","student").order("created_at",{ascending:false});
   if(r.error)throw r.error;
-  return (r.data||[]).map(function(x){return{id:x.id,name:x.display_name,username:x.username,active:x.active,accountStatus:x.account_status||(x.active?"active":"disabled"),mustChangePassword:x.must_change_password,university:x.university,year:x.year_label,country:x.country_code||"qa",cohort:x.cohorts&&x.cohorts.name||"",createdAt:x.created_at,cloud:true};});
+  return (r.data||[]).map(function(x){return{id:x.id,name:x.display_name,username:x.username,active:x.active,accountStatus:x.account_status||(x.active?"active":"disabled"),whatsapp:x.whatsapp_e164,whatsappVerified:!!x.whatsapp_verified_at,mustChangePassword:x.must_change_password,university:x.university,year:x.year_label,country:x.country_code||"qa",cohort:x.cohorts&&x.cohorts.name||"",createdAt:x.created_at,cloud:true};});
 }
 async function listCohorts(){
   var c=db();if(!c)return[];
@@ -129,7 +151,7 @@ async function saveLearningPlan(row){
   row=Object.assign({},row,{user_id:u.data.user.id,updated_at:new Date().toISOString()});
   var r=await c.from("learning_plans").upsert(row,{onConflict:"user_id,course_id"}).select().single();if(r.error)throw r.error;return r.data;
 }
-root.LEX_CLOUD={isConfigured:isConfigured,db:db,studentEmail:studentEmail,profile:profile,signInStudent:signInStudent,signInAdmin:signInAdmin,signOut:signOut,requestPasswordReset:requestPasswordReset,loadSnapshot:loadSnapshot,saveSnapshot:saveSnapshot,listStudents:listStudents,listCohorts:listCohorts,listAudit:listAudit,listContentItems:listContentItems,reviewContent:reviewContent,createStudent:createStudent,manageStudent:manageStudent,createCohort:createCohort,setOwnPassword:setOwnPassword,updateOwnProfile:updateOwnProfile,gradeAnswer:gradeAnswer,gradePilot:gradePilot,getConsent:getConsent,recordConsent:recordConsent,logEvent:logEvent,recordAttempt:recordAttempt,saveLearningPlan:saveLearningPlan};
+root.LEX_CLOUD={isConfigured:isConfigured,db:db,rememberMe:rememberMe,setRememberMe:setRememberMe,studentEmail:studentEmail,profile:profile,signInStudent:signInStudent,signInAdmin:signInAdmin,signOut:signOut,requestPasswordReset:requestPasswordReset,loadSnapshot:loadSnapshot,saveSnapshot:saveSnapshot,listStudents:listStudents,listCohorts:listCohorts,listAudit:listAudit,listContentItems:listContentItems,reviewContent:reviewContent,createStudent:createStudent,manageStudent:manageStudent,createCohort:createCohort,setOwnPassword:setOwnPassword,updateOwnProfile:updateOwnProfile,gradeAnswer:gradeAnswer,gradePilot:gradePilot,getConsent:getConsent,recordConsent:recordConsent,logEvent:logEvent,recordAttempt:recordAttempt,saveLearningPlan:saveLearningPlan};
 if(typeof window!=="undefined"){
   window.addEventListener("error",function(ev){
     if(!isConfigured())return;
