@@ -28,7 +28,8 @@ Deno.serve(async req=>{
     country=safeString(data.country_code,8),university=safeString(data.university,160),
     year=safeString(data.year_label,80);
   if(!name||!university||!year||!phone||password.length<10||password.length>72||
-     !["qa","eg","sa","ae","other"].includes(country)||email)
+     !["qa","eg","sa","ae","other"].includes(country)||
+     (email&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)))
     return json({error:"invalid_registration_details"},400);
   if(data.accepted_privacy!==true)return json({error:"consent_required"},400);
   const admin=adminClient();
@@ -38,7 +39,7 @@ Deno.serve(async req=>{
   if(used.data!==true)return json({error:"too_many_registrations"},429);
   const meta={
     display_name:name,university,year_label:year,country_code:country,
-    whatsapp_e164:phone,registration_channel:"whatsapp_only",
+    whatsapp_e164:phone,contact_email:email||null,registration_channel:"whatsapp_verified_by_supervisor",
     privacy_notice_version:"2026-10-12-v3"
   };
   const creation=await admin.auth.admin.createUser({
@@ -56,7 +57,7 @@ Deno.serve(async req=>{
     await admin.auth.admin.deleteUser(userId);
     return json({error:"registration_not_completed"},503);
   }
-  return json({ok:true,pending:true,requires_manual_whatsapp_verification:true});
+  return json({ok:true,pending:true,confirmation_channel:"whatsapp",requires_manual_whatsapp_verification:true});
  }catch(_){
   return json({error:"registration_not_completed"},503);
  }
