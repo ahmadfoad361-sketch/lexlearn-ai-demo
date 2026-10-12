@@ -64,3 +64,5 @@
 .nav button,.studentManagement .adminActions button{font-size:13px;line-height:1.55}
 .weekMini span,.weekMini b{font-size:11px}
 @media(max-width:720px){.tr{gap:8px}.studentManagement .adminActions{gap:9px}}
+
+.studentManagement .accountState.pending{background:#e5eefc;color:#142B5F;border:1px solid #bccfe8}
