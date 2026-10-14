@@ -1,6 +1,7 @@
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const Cycle = require("../assets/showcase-learning-cycle.js");
+const asHtml=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 
 for(const lang of ["ar","en"]){
   for(const mode of ["recall","understanding","balanced"]){
@@ -51,14 +52,14 @@ for(const lang of ["ar","en"]){
       if(tasks[i].type==="free"){
         els.cycleAnswer.value="المعلومة القانونية مع شرح الشرط والنتيجة. Reasoned comparison.";
         els.cycleCompare.onclick();
-        assert(els.cycleFeedback.innerHTML.includes(tasks[i].comparison));
+        assert(els.cycleFeedback.innerHTML.includes(asHtml(tasks[i].comparison)));
         assert(els.cycleFeedback.innerHTML.includes(lang==="en"?"No automated semantic grading":"لم تُجرَ مقارنة دلالية"));
       }else{
         const right=els._choices.find(x=>x.getAttribute("data-cycle-choice")==="0");
         assert(right,"Expected an objective correct alternative");
         right.onclick();
         assert(els._choices.every(x=>x.disabled),"Options must lock after an answer");
-        assert(els.cycleFeedback.innerHTML.includes(tasks[i].feedback));
+        assert(els.cycleFeedback.innerHTML.includes(asHtml(tasks[i].feedback)));
       }
       assert(els.cycleNext,"Next step must require completed interaction");
       els.cycleNext.onclick();
