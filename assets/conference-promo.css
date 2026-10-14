@@ -125,8 +125,8 @@
     top:50%!important;
     transform:translateY(-50%)!important;
     margin:0!important;
-    inset-inline-start:auto!important;
-    inset-inline-end:auto!important;
+    /* Keep physical left last; logical inset-end resolves to left in RTL. */
+    left:calc(12px + env(safe-area-inset-left,0px))!important;
     z-index:3;
   }
   .v9-topin>.v9-brand,.en-topin>.en-brand{
