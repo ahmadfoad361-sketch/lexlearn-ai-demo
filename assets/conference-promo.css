@@ -1,41 +1,73 @@
-/* LexLearn + Web Summit Qatar 2027 homepage presentation.
-   Official event logo stays unmodified on a light background. */
-.conferencePromo{background:#111D31;color:#fff;font:600 12px/1.6 Tahoma,Arial,sans-serif;text-align:center;padding:8px 16px;max-width:100%;direction:inherit}
-.conferencePromo .promoLong{display:block}
-.conferencePromo .promoCompact{display:none}
-.conferenceDiscoverCTA{border:1px solid #8A1F39!important;background:#8A1F39!important;color:#fff!important;text-align:center}
-.homeUtilityBar{max-width:1280px;margin:0 auto;padding:8px 22px;min-height:54px;display:flex;justify-content:space-between;align-items:center;gap:12px}
-.homeUtilityLabel{font:800 16px/1.4 Arial,sans-serif;direction:ltr;color:#111D31}
-.homeUtilityBar .homeLanguage{position:static!important;inset:auto!important;top:auto!important;left:auto!important;right:auto!important;z-index:auto!important;display:inline-flex;align-items:center;justify-content:center;min-height:42px;margin:0;padding:8px 14px;border:1px solid #e2d8cf;border-radius:999px;background:#fffdfb;color:#111D31;text-decoration:none;font:750 14px/1.35 Arial,Tahoma,sans-serif;box-shadow:none!important}
-.homeUtilityBar .homeLanguage:focus-visible,.wsqEventCTA:focus-visible{outline:3px solid #8A1F39;outline-offset:3px}
-.wsqHomeFeature{max-width:1200px;margin:0 auto;padding:17px 20px 4px;display:flex;align-items:center;justify-content:center;min-width:0}
-.wsqEventCTA{box-sizing:border-box;display:grid;grid-template-columns:210px minmax(0,1fr);align-items:center;gap:20px;width:min(100%,740px);min-width:0;min-height:135px;padding:20px 24px;background:#fffdfb;border:1px solid #e0d9d0;border-top:4px solid #8A1F39;border-radius:19px;box-shadow:0 14px 34px rgba(17,29,49,.07);color:#111D31;text-decoration:none;direction:inherit;transition:transform .18s ease,box-shadow .18s ease}
-.wsqEventCTA:hover{transform:translateY(-2px);box-shadow:0 18px 40px rgba(17,29,49,.11)}
-.wsqEventCTA>img{display:block;box-sizing:border-box;width:100%;max-width:210px;height:auto;aspect-ratio:768/139;object-fit:contain;justify-self:center;background:#fff;flex:none}
-.wsqEventCopy{display:flex;flex-direction:column;gap:7px;min-width:0;max-width:100%;text-align:start}
-.wsqEventCopy strong{font:800 clamp(15px,2.1vw,19px)/1.55 Tahoma,Arial,sans-serif;color:#111D31;overflow-wrap:break-word}
-.wsqEventCopy small{font:500 13px/1.75 Tahoma,Arial,sans-serif;color:#576276;overflow-wrap:break-word}
-.wsqEventAction{display:inline-flex;align-items:center;justify-content:center;align-self:flex-start;min-height:42px;padding:10px 17px;margin-top:4px;border-radius:11px;background:#8A1F39;color:#fff;font:800 13px/1.5 Tahoma,Arial,sans-serif;text-align:center}
-@media(max-width:760px){
- .conferencePromo{padding:7px 12px;font-size:11px;line-height:1.5;white-space:normal;overflow:hidden}
- .conferencePromo .promoLong{display:none}
- .conferencePromo .promoCompact{display:block;text-align:center;overflow-wrap:break-word}
- .homeUtilityBar{padding:8px 16px;min-height:51px}
- .homeUtilityLabel{font-size:15px}
- .homeUtilityBar .homeLanguage{min-height:42px;font-size:13px;padding:7px 13px}
- .wsqHomeFeature{padding:12px 16px 2px}
- .wsqEventCTA{width:100%;max-width:500px;min-height:0;grid-template-columns:minmax(0,1fr);gap:13px;border-top:4px solid #8A1F39;border-inline-start:1px solid #e0d9d0;padding:18px 17px;border-radius:18px}
- .wsqEventCTA>img{width:min(100%,220px);max-width:220px;justify-self:center}
- .wsqEventCopy{align-items:center;text-align:center;gap:8px}
- .wsqEventCopy strong{font-size:clamp(17px,4.5vw,19px);line-height:1.6}
- .wsqEventCopy small{font-size:13px;line-height:1.75}
- .wsqEventAction{align-self:stretch;display:flex;width:100%;min-height:48px;padding:12px 18px;margin-top:4px;font-size:14px}
+/* Web Summit Qatar 2027: full-width first impression on phones.
+   No promo/header before official event logo. Original logo remains unmodified. */
+.wsqHomeFeature{
+  width:100%;max-width:none;margin:0;padding:0 12px 14px;
+  background:#F9F4EF;display:block;box-sizing:border-box
 }
-@media(max-width:375px){
- .conferencePromo{font-size:10px}
- .wsqHomeFeature{padding-inline:13px}
- .wsqEventCTA{padding:17px 14px;gap:10px}
- .wsqEventCopy strong{font-size:17px}
- .wsqEventCTA>img{max-width:195px}
+.wsqHomeFeature .wsqEventHero{
+  position:relative;box-sizing:border-box;width:100%;max-width:1100px;margin:0 auto;
+  background:#fffdfb;border:1px solid #e4dbe0;border-top:none;
+  border-radius:0 0 23px 23px;box-shadow:0 18px 44px rgba(17,29,49,.07);
+  overflow:hidden;padding:8px 26px 25px
+}
+.wsqEventBrand{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  position:relative;max-width:100%;min-width:0;margin:0 auto;padding:13px 0 24px
+}
+.wsqEventBrand>img{
+  display:block;width:min(100%,670px);height:auto;aspect-ratio:768 / 139;
+  object-fit:contain;background:#fff;max-width:100%;border:0
+}
+.wsqLangSwitch{
+  position:absolute;bottom:0;inset-inline-end:0;direction:ltr;
+  display:inline-flex;align-items:center;justify-content:center;gap:3px;
+  border:1px solid #dfd5d5;background:#fffdfb;border-radius:999px;padding:3px;
+  font:800 12px/1.1 Arial,Tahoma,sans-serif;box-shadow:0 3px 9px rgba(17,29,49,.05)
+}
+.wsqLangSwitch>a,.wsqLangSwitch>.wsqLangCurrent{
+  min-height:34px;min-width:34px;display:grid;place-items:center;
+  border-radius:50%;text-align:center;text-decoration:none;
+}
+.wsqLangSwitch .wsqLangCurrent{background:#111D31;color:#fff}
+.wsqLangSwitch a{background:transparent;color:#111D31}
+.wsqLangSwitch a:hover{background:#F9F4EF}
+.wsqLangSwitch a:focus-visible{outline:3px solid #8A1F39;outline-offset:3px}
+.wsqHomeFeature .wsqEventCTA{
+  display:block;box-sizing:border-box;max-width:760px;width:100%;
+  min-height:0;margin:11px auto 0;padding:8px 6px 0;
+  border:0;border-radius:0;box-shadow:none;background:transparent;
+  color:#111D31;text-decoration:none;transition:none
+}
+.wsqHomeFeature .wsqEventCTA:hover{transform:none;box-shadow:none}
+.wsqEventCopy{display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center}
+.wsqEventCopy strong{font:800 clamp(20px,2.7vw,28px)/1.55 Tahoma,Arial,sans-serif;color:#111D31}
+.wsqEventCopy small{font:500 clamp(13px,1.5vw,16px)/1.75 Tahoma,Arial,sans-serif;color:#576276}
+.wsqEventAction{
+  box-sizing:border-box;display:flex;align-items:center;justify-content:center;
+  align-self:stretch;min-height:49px;margin-top:6px;padding:12px 18px;
+  background:#8A1F39;color:#fff;border-radius:13px;text-align:center;
+  font:800 15px/1.4 Tahoma,Arial,sans-serif
+}
+.wsqHomeFeature .wsqEventCTA:focus-visible{outline:3px solid #8A1F39;outline-offset:3px;border-radius:12px}
+@media(max-width:760px){
+  .wsqHomeFeature{padding:0 0 10px}
+  .wsqHomeFeature .wsqEventHero{
+    padding:5px clamp(16px,4vw,24px) 22px;border-inline:0;border-radius:0 0 21px 21px;
+    width:100%;box-shadow:0 10px 25px rgba(17,29,49,.07)
+  }
+  .wsqEventBrand{padding:8px 0 29px}
+  .wsqEventBrand>img{width:100%;max-width:100%;height:auto}
+  .wsqLangSwitch{bottom:-1px;inset-inline-end:0;padding:2px}
+  .wsqLangSwitch>a,.wsqLangSwitch>.wsqLangCurrent{min-height:32px;min-width:32px;font-size:13px}
+  .wsqHomeFeature .wsqEventCTA{margin:10px auto 0;padding:5px 0 0;width:100%}
+  .wsqEventCopy{gap:9px}
+  .wsqEventCopy strong{font-size:clamp(18px,5vw,23px);line-height:1.6;overflow-wrap:break-word}
+  .wsqEventCopy small{font-size:14px;line-height:1.7;overflow-wrap:break-word}
+  .wsqEventAction{width:100%;min-height:51px;margin-top:8px;font-size:15px}
+}
+@media(max-width:360px){
+  .wsqHomeFeature .wsqEventHero{padding-inline:14px}
+  .wsqEventCopy strong{font-size:18px}
+  .wsqEventCopy small{font-size:13px}
 }
 @media(prefers-reduced-motion:reduce){.wsqEventCTA{transition:none}}
