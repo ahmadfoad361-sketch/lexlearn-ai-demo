@@ -57,12 +57,13 @@ function chrome(inner){
   var metrics=res?res.metrics:{recall:null,understanding:null,application:null,retention:null,exam:null};
   var labels=[["recall","حفظ"],["understanding","فهم"],["application","تطبيق على الوقائع"],["legal_precision","دقة قانونية"],["retention","احتفاظ"],["exam","أداء امتحاني"]];
   APP.innerHTML='<div class="v9-shell"><header class="v9-top"><div class="v9-topin">'+
-    '<div class="v9-brand"><div class="v9-mark"><img src="assets/lexlearn-x-transparent.svg" alt="LexLearn"></div><div><b>Lex<span class="brandLearn">Learn</span></b><small>نفهم طريقة تفكيرك، ونبني طريقك.</small></div>'+"<nav class=\"lexHomeLang\" aria-label=\"اختر اللغة\"><span class=\"lexHomeLangCurrent\" lang=\"ar\" aria-current=\"page\" title=\"العربية\">ع</span><a href=\"index-en.html\" lang=\"en\" hreflang=\"en\" title=\"English\" aria-label=\"Switch to English\">E</a></nav>"+'</div>'+
+    '<div class="v9-brand"><div class="v9-mark"><img src="assets/lexlearn-x-transparent.svg" alt="LexLearn"></div><div><b>Lex<span class="brandLearn">Learn</span></b><small>نفهم طريقة تفكيرك، ونبني طريقك.</small></div></div>'+
     '<div class="v9-topactions">'+
       (state.countryId?'<button class="v9-topbtn" id="changeCountry">🌍 <span>'+esc(country().short)+'</span></button>':'')+
       (state.subjectId?'<button class="v9-topbtn" id="changeSubject">§ <span>'+esc(subject().title)+'</span></button>':'')+
       ''+
-    '</div></div></header>'+
+    '</div>'+
+    '<nav class="lexHomeLang" aria-label="اختر اللغة"><span class="lexHomeLangCurrent" lang="ar" aria-current="page" title="العربية">ع</span><a href="index-en.html" lang="en" hreflang="en" title="English" aria-label="Switch to English">E</a></nav></div></header>'+
     '<main class="v9-app">'+
     ((state.countryId&&state.subjectId)?'<div class="stat-strip">'+labels.map(function(x){var v=metrics[x[0]];return '<div class="stat-pill"><b>'+x[1]+'</b><span>'+qualitativeIndicator(v)+'</span></div>';}).join("")+'</div>':'')+
     inner+'</main><footer class="footer">LexLearn • نفهم طريقة تفكيرك، ونبني طريقك.</footer></div>';
