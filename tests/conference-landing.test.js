@@ -161,4 +161,60 @@ assert.ok(ar.includes("wsqHomeFeature")&&en.includes("wsqHomeFeature"),"2027 con
 assert.ok(!arLogic.includes('class="wsqEventCTA"'),"conference button should not duplicate in the Arabic app");
 assert.ok(ar.includes("QAT27_positive-768x139.png")&&en.includes("QAT27_positive-768x139.png"),"both conference buttons need the official logo");
 
+
+/* Web Summit visitors arrive via QR, usually on a narrow phone. */
+assert.ok(!html.includes('id="science"')&&!html.includes("researchBasis"),"no standalone research section in conference");
+assert.ok(html.includes('class="promoMobile"')&&html.includes('data-t="promoShort"'),"mobile banner must be concise");
+assert.ok(html.includes('class="deckSwipeHint"')&&html.includes('data-t="deckSwipeHint"'),"phone visitors must know pitch cards swipe");
+assert.ok(js.includes('promoShort:"LexLearn · Web Summit Qatar 2027 · ALPHA"'),"compact event identity in both languages");
+assert.ok(js.includes('deckSwipeHint:"مرّر أفقيًا لاستعراض بقية الشرائح ↔"'),"Arabic swipe hint required");
+assert.ok(css.includes("Mobile-first conference refinements for visitors"),"conference needs phone-first layout review");
+for(const marker of [".skills article{display:grid",".slides{display:flex",".path{min-height:0",".demoInfo .button{width:100%",".promoMobile{display:block","scroll-margin-top:115px"])
+  assert.ok(css.includes(marker),"missing mobile readability rule "+marker);
+assert.ok(nav.includes('isConference?"الرئيسية":"رجوع"')&&nav.includes('isConference?"Home":"Back"'),"conference button must say الرئيسية / Home, subpage button remains رجوع / Back");
+assert.ok(nav.includes('loc.assign(isArabic() ? "index.html" : "index-en.html")'),"conference Home always opens language-matched home");
+assert.ok(!nav.includes("if (isConference && loc.hash)"),"Home must not merely scroll to visitor cards");
+assert.ok(navCss.includes("Keep quote transitions usable on small and short iPhones"),"mobile transition must not clip quotations");
+assert.ok(pub.includes("20261014.11"),"public build must invalidate old navigation styles across routes");
+
+/* Verify conference Home action after arriving via /go, in both languages. */
+const navMockButtons=Object.create(null);
+function navFakeElement(){
+  const listeners={};
+  return {listeners, title:"", textContent:"", innerHTML:"", hidden:false,
+    classList:{add(){},remove(){},toggle(){}},
+    setAttribute(){},addEventListener(type,cb){listeners[type]=cb;},
+    querySelector(){return {textContent:"",addEventListener(){}};}
+  };
+}
+const homeButton=navFakeElement(), toolbarMock={insertBefore(node){assert.equal(node,homeButton);}};
+const navDoc={
+ documentElement:{lang:"ar"},
+ referrer:"https://ahmadfoad361-sketch.github.io/lexlearn-ai-demo/go/",
+ createElement(){return homeButton;},
+ querySelector(q){return q===".site-header .top-actions"?toolbarMock:null;},
+ getElementById(id){
+  if(id==="investorQuote")return null;
+  if(!navMockButtons[id])navMockButtons[id]=navFakeElement();
+  return navMockButtons[id];
+ },
+ body:{appendChild(){}}
+};
+let homeDestination="";
+const navWindow={
+ location:{pathname:"/lexlearn-ai-demo/conference.html",origin:"https://ahmadfoad361-sketch.github.io",search:"",hash:"#vision",assign(path){homeDestination=path;}},
+ history:{length:2,back(){throw Error("Home must not call history.back");}},
+ addEventListener(){}
+};
+vm.runInNewContext(nav,{document:navDoc,window:navWindow,clearTimeout,setTimeout});
+assert.equal(homeButton.title,"الرئيسية");
+homeButton.listeners.click();
+assert.equal(homeDestination,"index.html");
+homeDestination="";
+navDoc.documentElement.lang="en";
+navMockButtons.langEN.listeners.click();
+assert.equal(homeButton.title,"Home");
+homeButton.listeners.click();
+assert.equal(homeDestination,"index-en.html");
+
 console.log("conference landing release test PASS");
