@@ -69,7 +69,7 @@
     object(2, "<< /Type /Pages /Count " + images.length + " /Kids [" + kids + "] >>");
     images.forEach((img, i) => {
       const page = 3 + i * 3, im = page + 1, content = page + 2;
-      object(page, "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 842 595] /Resources << /XObject << /I /" + im + " 0 R >> >> /Contents " + content + " 0 R >>");
+      object(page, "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 842 595] /Resources << /XObject << /I " + im + " 0 R >> >> /Contents " + content + " 0 R >>");
       offsets[im] = position;
       plain(im + " 0 obj\n<< /Type /XObject /Subtype /Image /Width " + W + " /Height " + H + " /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length " + img.length + " >>\nstream\n");
       binary(img);
