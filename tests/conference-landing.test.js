@@ -218,4 +218,29 @@ assert.equal(homeButton.title,"Home");
 homeButton.listeners.click();
 assert.equal(homeDestination,"index-en.html");
 
+
+// Mobile-first homepages: four actions must stack, QR visitors must see a
+// complete conference card with an unchanged official logo (no arrow box).
+const homeCss=read("assets/quality.css"), promoCss=read("assets/conference-promo.css");
+assert.ok(ar.includes('class="homeUtilityBar"')&&ar.includes('class="homeLanguage"'),"Arabic language selector must sit in a home header, not float over Web Summit");
+assert.ok(promoCss.includes(".homeUtilityBar .homeLanguage{position:static!important"),"language control must not be fixed on iPhones");
+for(const home of [ar,en]){
+  assert.equal((home.match(/class="wsqEventCTA"/g)||[]).length,1,"only one official Web Summit entry card");
+  assert.ok(!home.includes("wsqEventArrow"),"avoid floating arrow box in the conference card");
+  assert.ok(home.includes('class="wsqEventAction"'),"Web Summit card needs a clear textual action");
+  assert.ok(home.includes('class="promoCompact"'),"mobile homepage promo should be short, not scroll horizontally");
+  assert.ok(home.includes("assets/quality.css?v=20261014.12")&&home.includes("assets/conference-promo.css?v=20261014.12"),"mobile stylesheet cache busters required");
+}
+assert.ok(ar.includes("افتح صفحة المؤتمر")&&en.includes("Explore the conference page"),"conference CTA must be localized");
+assert.ok(promoCss.includes(".wsqEventCTA{box-sizing:border-box;display:grid")&&promoCss.includes(".wsqEventAction{"),"conference should resemble a visitor card");
+assert.ok(promoCss.includes("grid-template-columns:minmax(0,1fr)"),"official conference logo must stack above copy on phone");
+assert.ok(promoCss.includes(".conferencePromo .promoLong{display:none"),"prevent overflowing marquee on mobile");
+assert.ok(homeCss.includes(".qualityHero .qualityActions,.en-hero .actions{display:grid!important;grid-template-columns:minmax(0,1fr)!important"),"Arabic and English hero actions must stack in single mobile column");
+assert.ok(homeCss.includes("width:100%!important;max-width:100%;min-width:0;min-height:53px!important"),"hero actions need safe tappable width and height");
+for(const action of ["conferenceDiscoverCTA","student-login","student-register","qualityDemoAction"]){
+  assert.ok(homeCss.includes(action),"missing responsive action "+action);
+}
+assert.ok(arLogic.includes('class="qualityActions"')&&arLogic.includes('class="qualityDemoAction"'),"check selectors still match the actual dynamic Arabic hero");
+assert.ok(en.includes('class="actions"')&&en.includes('class="qualityDemoAction"'),"check selectors still match the English hero");
+
 console.log("conference landing release test PASS");
