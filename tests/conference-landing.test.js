@@ -198,7 +198,8 @@ const navDoc={
   if(!navMockButtons[id])navMockButtons[id]=navFakeElement();
   return navMockButtons[id];
  },
- body:{appendChild(){}}
+ body:{appendChild(){}},
+ addEventListener(){}
 };
 let homeDestination="";
 const navWindow={
