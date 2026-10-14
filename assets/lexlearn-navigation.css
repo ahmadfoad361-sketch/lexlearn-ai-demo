@@ -86,3 +86,20 @@
 .ll-transition-message{font-size:clamp(12px,1.7vw,14px);color:#5b6576;margin:15px auto 13px;min-height:auto}
 @media(max-width:690px){.ll-learning-quote{max-width:270px}.ll-learning-quote .ll-quote-main{font-size:18px;line-height:1.65}.ll-learning-quote .ll-quote-source{font-size:10px}.ll-transition-message{font-size:12px}}
 @media(max-height:580px){.ll-learning-quote{min-height:0;margin-top:6px}.ll-learning-quote .ll-quote-main{font-size:15px;line-height:1.35}.ll-learning-quote .ll-quote-source{margin-top:4px}.ll-transition-message{margin:8px auto}}
+
+/* Investor visitor: rotating primary-sourced founder/investor insight. */
+.ll-transition.ll-investor-mode .ll-transition-panel{width:min(100%,430px);padding:27px 24px 22px}
+.ll-transition.ll-investor-mode .ll-paper-field{opacity:.22}
+.ll-transition.ll-investor-mode .ll-transition-logo{width:100px;height:100px;margin-bottom:7px}
+.ll-transition.ll-investor-mode .ll-transition-logo img{width:88px;height:88px}
+.ll-investor-mode .ll-learning-quote{max-width:365px;min-height:165px;margin:10px auto 4px}
+.ll-investor-mode .ll-learning-quote:before{content:"“";display:block;height:25px;color:#8A1F39;font:800 48px/1 Georgia,serif}
+.ll-investor-eyebrow{font:800 10px/1.5 Tahoma,Arial,sans-serif;color:#8A1F39;letter-spacing:.03em}
+.ll-investor-mode .ll-quote-main{font-size:clamp(19px,2.6vw,23px);line-height:1.5;margin:6px 0 11px}
+.ll-investor-author{display:block;color:#111D31;font-size:14px;line-height:1.5}
+.ll-investor-role{display:block;color:#657186;font:600 11px/1.5 Tahoma,Arial,sans-serif;margin:3px auto 7px}
+.ll-investor-source{display:inline-block;font:600 11px/1.5 Tahoma,Arial,sans-serif;color:#8A1F39;text-decoration:underline;text-underline-offset:3px}
+.ll-investor-source:focus-visible{outline:3px solid #8A1F39;outline-offset:3px}
+.ll-investor-mode .ll-transition-message{font-size:12px;margin-top:12px}
+@media(max-width:520px){.ll-transition.ll-investor-mode .ll-transition-panel{padding:19px 17px 17px}.ll-investor-mode .ll-learning-quote{min-height:0;margin-top:5px}.ll-investor-mode .ll-quote-main{font-size:19px;line-height:1.46}}
+@media(max-height:650px){.ll-transition.ll-investor-mode .ll-transition-logo{height:72px;width:72px}.ll-transition.ll-investor-mode .ll-transition-logo img{height:62px;width:62px}.ll-investor-mode .ll-learning-quote:before{display:none}.ll-investor-mode .ll-quote-main{font-size:17px}.ll-investor-mode .ll-investor-role{font-size:10px}}
