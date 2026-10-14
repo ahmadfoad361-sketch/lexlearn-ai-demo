@@ -15,3 +15,17 @@
 @media(max-width:400px){.top-actions>a{display:none}.skills article{padding:12px}.roadmap{grid-template-columns:1fr}.promo{font-size:9px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.path{transition:none}}
 @media print{body{background:white}.site-header,.foot,.contactButtons,.deckActions{display:none}.section{padding:16px 0;break-inside:avoid}.slides{display:grid;grid-template-columns:1fr 1fr}.slideCard{box-shadow:none}.frame{max-width:none}.path{box-shadow:none}}
+
+/* Refined, spacious academic pilot and more legible adaptive-learning diagram. */
+.pilot > div:first-child h2{font-size:clamp(23px,2.75vw,34px);line-height:1.43;margin-bottom:20px;max-width:27ch}
+.pilot > div:first-child p:not(.eyebrow){font-size:clamp(15px,1.5vw,17px);line-height:1.9;max-width:65ch}
+.pilot > div:first-child .eyebrow{margin-bottom:15px}
+html[lang="ar"] .pilot > div:first-child h2{letter-spacing:0;line-height:1.52}
+.demoDiagram div:last-child{font-weight:800;line-height:1.7;padding:14px 12px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.25)}
+.honesty span:last-child{background:rgba(255,255,255,.07);line-height:1.7;max-width:100%}
+@media(max-width:690px){
+  .pilot{gap:18px}
+  .pilot > div:first-child h2{margin-bottom:14px}
+  .pilot > div:first-child p:not(.eyebrow){line-height:1.85}
+  .honesty span{overflow-wrap:anywhere}
+}
