@@ -20,8 +20,8 @@
 
   function words() {
     return isArabic()
-      ? {back:"رجوع", toStudent:"جاري فتح تجربة الطالب…", toUniversity:"جاري عرض خطة التعاون الجامعي…", toInvestor:"جاري عرض الرؤية وخارطة الطريق…", cancel:"إلغاء"}
-      : {back:"Back", toStudent:"Opening the student demo…", toUniversity:"Opening the university pilot…", toInvestor:"Opening the vision and roadmap…", cancel:"Cancel"};
+      ? {back:isConference?"الرئيسية":"رجوع", toStudent:"جاري فتح تجربة الطالب…", toUniversity:"جاري عرض خطة التعاون الجامعي…", toInvestor:"جاري عرض الرؤية وخارطة الطريق…", cancel:"إلغاء"}
+      : {back:isConference?"Home":"Back", toStudent:"Opening the student demo…", toUniversity:"Opening the university pilot…", toInvestor:"Opening the vision and roadmap…", cancel:"Cancel"};
   }
   function sync() {
     var w = words();
@@ -56,15 +56,14 @@
   }
   back.addEventListener("click", function () {
     if (overlay && !overlay.hidden) { closeOverlay(); return; }
-    if (isConference && loc.hash) {
-      window.history.replaceState(null, "", loc.pathname + loc.search);
-      var cards = doc.querySelector(".paths");
-      if (cards) cards.scrollIntoView({block:"start", behavior:"auto"});
-      else window.scrollTo(0, 0);
+    // Explicit Home control on the public conference page, even when
+    // opened via the permanent QR redirect or from a section hash.
+    if (isConference) {
+      loc.assign(isArabic() ? "index.html" : "index-en.html");
       return;
     }
     if (internalHistory()) { window.history.back(); return; }
-    loc.assign(isConference ? (isArabic() ? "index.html" : "index-en.html") : "conference.html");
+    loc.assign("conference.html");
   });
   window.addEventListener("pageshow", closeOverlay);
 
