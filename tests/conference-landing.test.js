@@ -23,6 +23,11 @@ assert.ok(js.includes('localStorage.setItem("lexlearn_conference_language"'),"re
 assert.ok(css.includes("max-width:690px"),"mobile breakpoint required");
 assert.ok(go.includes("../conference.html")&&go.includes("window.location.replace("),"permanent QR redirect required");
 assert.ok(pub.includes('"go/index.html"')&&pub.includes('"conference.html"'),"release artifact must include routes");
+assert.ok(pub.includes('"lexlearn-go-qr.svg"')&&pub.includes('"conference-pdf.js"'),"release must ship PDF and QR assets");
+assert.ok(html.includes('id="printQR"')&&html.includes('assets/lexlearn-go-qr.svg'),"printable /go QR link missing");
+assert.ok(html.includes('assets/conference-pdf.js')&&js.includes('lexlearnDownloadPublicDeck("ar")'),"direct Arabic PDF download missing");
+assert.ok(read("assets/conference-pdf.js").includes('application/pdf'),"Arabic PDF generator not included");
+
 assert.ok(ar.includes("conferencePromo")&&en.includes("conferencePromo"),"one promo strip on homepages");
 assert.ok(arLogic.includes("اكتشف LexLearn | Explore LexLearn")&&en.includes("اكتشف LexLearn | Explore LexLearn"),"discover CTA on home");
 assert.ok(!read("student.html").includes("conferencePromo")&&!read("student-en.html").includes("conferencePromo"),"no promo in training");
