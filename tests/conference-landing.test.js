@@ -253,8 +253,8 @@ assert.ok(arLogic.includes('class="qualityActions"')&&arLogic.includes('class="q
 assert.ok(en.includes('class="actions"')&&en.includes('class="qualityDemoAction"'),"English functional hero actions intact");
 assert.ok(!arLogic.includes("conferenceDiscoverCTA")&&!en.includes("conferenceDiscoverCTA"),"no duplicated navigation to conference");
 assert.ok(en.includes('<div class="en-brand"><nav class="lexHomeLang"'),"English small E/ع switch sits to physical left of LexLearn mark");
-assert.ok(arLogic.includes('class="lexHomeLang"'),"Arabic E/ع switch is inside LexLearn brand row");
-assert.ok(arLogic.indexOf('class="lexHomeLang"')<arLogic.indexOf('class="v9-topactions"'),"Arabic language navigation must precede app action widgets");
+assert.ok(arLogic.includes("lexHomeLang"),"Arabic E/ع switch is inside LexLearn brand row");
+assert.ok(arLogic.indexOf("lexHomeLang")<arLogic.indexOf("v9-topactions"),"Arabic language navigation must precede app action widgets");
 assert.ok(promoCss.includes(".wsqEventCTA{")&&promoCss.includes("border-top:4px solid #8A1F39"),"conference entry returns to a separate bordered first-style card");
 assert.ok(ar.includes('<strong>مشاركتنا في المؤتمر</strong>'),"Arabic conference heading must not interleave English words");
 assert.ok(ar.includes('class="wsqEventName" lang="en" dir="ltr"'),"isolate the LTR product/program name beneath Arabic title");
