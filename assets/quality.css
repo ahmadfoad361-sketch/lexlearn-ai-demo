@@ -78,3 +78,50 @@ body{font-size:1rem}button,a,input,textarea,summary{touch-action:manipulation}bu
 .lexIntroQuote .ll-quote-main span+span{color:#edbdc9}
 .lexIntroQuote .ll-quote-source{display:block;margin-top:7px;font:500 11px/1.5 Tahoma,Arial,sans-serif;color:#d7dce7}
 @media(max-width:520px){.lexIntro{gap:13px}.lexIntroQuote .ll-quote-main{font-size:17px}.lexIntroQuote .ll-quote-source{font-size:10px}}
+
+/* Web Summit Qatar 2027: homepage CTAs are mobile-first, never overlapping. */
+@media(max-width:1040px){
+  .qualityHero,.en-hero{grid-template-columns:minmax(0,1fr);gap:22px}
+  .qualityHero>div,.en-hero>div,.qualityExample{min-width:0;max-width:100%}
+  .qualityHero .qualityActions,.en-hero .actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:100%;gap:12px;align-items:stretch}
+  .qualityHero .qualityActions>.btn,.en-hero .actions>.btn,.qualityHero .qualityDemoAction,.en-hero .qualityDemoAction{width:100%;min-width:0;max-width:100%;margin:0;flex:none}
+  .qualityHero .qualityDemoAction,.en-hero .qualityDemoAction{display:flex;flex-direction:column;align-self:stretch;gap:6px}
+  .qualityHero .qualityDemoAction>.btn,.en-hero .qualityDemoAction>.btn{width:100%;min-width:0;max-width:100%;margin:0;flex:none}
+}
+@media(max-width:760px){
+  .homeUtilityBar{display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .qualityHero .qualityActions,.en-hero .actions{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:11px!important;align-items:stretch!important;margin-block:20px!important;width:100%!important;min-width:0}
+  .qualityHero .qualityActions>.btn,.en-hero .actions>.btn,.qualityHero .qualityDemoAction>.btn,.en-hero .qualityDemoAction>.btn{
+    position:static!important;transform:none!important;display:flex!important;align-items:center;justify-content:center;text-align:center;
+    box-sizing:border-box;width:100%!important;max-width:100%;min-width:0;min-height:53px!important;height:auto!important;
+    white-space:normal!important;overflow-wrap:anywhere;line-height:1.55!important;padding:13px 16px!important;
+    border-radius:14px!important;font-size:16px!important;box-shadow:none;flex:none!important
+  }
+  .qualityHero .qualityActions>.conferenceDiscoverCTA,.en-hero .actions>.conferenceDiscoverCTA{order:1}
+  .qualityHero .qualityActions>a[href^="student-login"],.en-hero .actions>a[href^="student-login"]{order:2}
+  .qualityHero .qualityActions>a[href^="student-register"],.en-hero .actions>a[href^="student-register"]{order:3}
+  .qualityHero .qualityActions>.qualityDemoAction,.en-hero .actions>.qualityDemoAction{order:4;display:grid!important;grid-template-columns:minmax(0,1fr);align-self:stretch;width:100%;max-width:100%;min-width:0;gap:5px;margin:0}
+  .qualityHero .qualityDemoAction small,.en-hero .qualityDemoAction small{display:block;text-align:center;font-size:13px;line-height:1.65;max-width:100%;margin:0;padding:0 6px}
+  .qualityHero,.en-hero{display:grid;grid-template-columns:minmax(0,1fr);gap:24px;width:100%;max-width:100%;padding-block:21px 25px}
+  .qualityHero>div,.en-hero>div,.qualityExample,.qualityCarousel,.en-main{min-width:0;max-width:100%}
+  .qualityTitleGroup{width:100%;max-width:100%;min-width:0}
+  .qualityHeroTitle{max-width:100%;overflow-wrap:break-word}
+  .qualityHero .qualityLead,.en-hero .lead{font-size:15px;line-height:1.9}
+  .qualityExample{overflow:hidden}
+  .qualityCarouselViewport{min-width:0}
+  .qualitySlide{max-width:100%;min-width:0}
+  .qualityCarousel h2{font-size:clamp(18px,5vw,23px);line-height:1.5}
+}
+@media(max-width:420px){
+  .v9-app{padding-inline:16px}
+  .v9-topin{padding-inline:16px}
+  .qualityHero .qualityHeroTitle,.en-hero .qualityHeroTitle{font-size:clamp(25px,7vw,32px)}
+  .qualityHero .qualityLead,.en-hero .lead{font-size:15px}
+  .en-main{padding-inline:16px}
+  .en-topin{padding-inline:16px}
+  .qualityExample{padding:16px}
+}
+@media(max-width:360px){
+  .qualityHero .qualityActions,.en-hero .actions{gap:9px!important}
+  .qualityHero .qualityActions>.btn,.en-hero .actions>.btn,.qualityHero .qualityDemoAction>.btn,.en-hero .qualityDemoAction>.btn{font-size:15px!important;padding-inline:12px!important}
+}
