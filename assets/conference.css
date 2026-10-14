@@ -46,3 +46,123 @@ html[lang="ar"] .pilot > div:first-child h2{letter-spacing:0;line-height:1.52}
 .visionInvestorQuote .ll-investor-source{font-size:11px;color:#8A1F39;display:inline-block;margin-top:7px;text-underline-offset:3px}
 .visionInvestorQuote .ll-investor-source:focus-visible{outline:3px solid #8A1F39;outline-offset:2px}
 @media(max-width:690px){.visionInvestorQuote{padding:15px 17px;margin-bottom:19px}.visionInvestorQuote .ll-quote-main{font-size:18px}}
+
+/* Mobile-first conference refinements for visitors arriving from the printed QR.
+   Designed for 320–430px phones, larger devices and safe-area insets. */
+.promoMobile,.deckSwipeHint{display:none}
+.strength{display:grid;grid-template-columns:minmax(160px,230px) minmax(0,1fr);align-items:start;gap:12px 22px}
+.strength b{min-width:0;font-size:clamp(15px,1.7vw,18px);line-height:1.55}
+.strength p{font-size:15px;line-height:1.95;max-width:82ch;overflow-wrap:anywhere}
+.section,.first{scroll-margin-top:105px}
+@media(max-width:760px){
+  .site-header{position:sticky;top:0;z-index:70;background:var(--cream);padding-top:env(safe-area-inset-top,0px);box-shadow:0 5px 18px rgba(17,29,49,.055)}
+  .topbar{min-height:65px;gap:8px}
+  .identity{min-width:0;flex-shrink:1;gap:6px}
+  .identity img{width:36px;height:36px;flex-shrink:0}
+  .identity b{font-size:clamp(15px,4.5vw,19px);letter-spacing:-.5px}
+  .top-actions{gap:7px;flex-shrink:0}
+  .lang-switch button{min-height:44px;padding:8px 11px;font-size:12px}
+  .promo{font-size:11px;padding:7px 0}
+  .promo .frame{overflow:visible!important;white-space:normal!important;line-height:1.5;text-overflow:clip}
+  .promoDesktop{display:none}
+  .promoMobile{display:block;font-weight:700;line-height:1.5;text-align:center;white-space:normal}
+  .frame{padding-inline:clamp(16px,4.5vw,24px)}
+  .first{padding-block:28px 32px}
+  h1{font-size:clamp(29px,7.6vw,40px);line-height:1.32;letter-spacing:-.025em}
+  html[lang=ar] h1{line-height:1.52;letter-spacing:0}
+  h2{font-size:clamp(23px,6.3vw,30px);line-height:1.35}
+  html[lang=ar] h2{line-height:1.55}
+  .heroSub{font-size:15px;line-height:1.85;margin-bottom:21px}
+  .section{padding-block:34px}
+  .sectionhead{margin-bottom:19px}
+  .sectionhead h2{margin-bottom:9px}
+  .sectionhead>p:last-child{font-size:14px;line-height:1.8}
+  .paths,.problemGrid,.demoBlock,.pilot{grid-template-columns:minmax(0,1fr);gap:12px}
+  .path{min-height:0;padding:16px 18px;border-radius:15px;transition:none}
+  .pathNo{font-size:10px}
+  .path h2{font-size:21px;margin:9px 0 3px;line-height:1.4;padding-inline-end:25px}
+  .path p{font-size:14px;line-height:1.7;margin:0 0 9px}
+  .pathCTA{font-size:13px;line-height:1.5}
+  .pathGlyph{font-size:22px;top:11px;inset-inline-end:16px}
+  .lead{font-size:17px;line-height:1.85}
+  .solutionPanel{padding:19px}
+  .solutionPanel h3{font-size:21px;line-height:1.5}
+  .solutionPanel p{font-size:14px;line-height:1.75}
+  .skills{grid-template-columns:minmax(0,1fr);gap:8px}
+  .skills article{display:grid;grid-template-columns:30px minmax(0,1fr);align-content:center;column-gap:11px;min-height:0;padding:14px 16px}
+  .skills article>span{grid-row:1 / 3;align-self:start;font-size:12px;padding-top:2px}
+  .skills article h3{font-size:16px;line-height:1.4;margin:0 0 2px}
+  .skills article p{font-size:13px;line-height:1.65}
+  .strength{display:block;padding:18px;border-radius:14px}
+  .strength b{display:block;font-size:17px;line-height:1.45;margin-bottom:9px}
+  .strength p{font-size:14px;line-height:1.95;overflow-wrap:anywhere}
+  .demoBlock{gap:19px}
+  .demoInfo p:not(.eyebrow){font-size:15px;line-height:1.85}
+  .demoDiagram{max-width:420px;width:100%;padding:19px 17px;justify-self:center;gap:7px}
+  .demoDiagram div{font-size:14px;line-height:1.65;padding:11px 13px}
+  .demoDiagram span{font-size:18px;line-height:1.2}
+  .button{min-height:48px;font-size:14px;text-align:center;padding:13px 17px}
+  .demoInfo .button{width:100%}
+  .deckHeader{gap:10px;margin-bottom:12px}
+  .deckHeader p{font-size:14px;line-height:1.8}
+  .deckActions{width:100%}
+  .deckActions .button{width:100%}
+  .slides{display:flex;overflow-x:auto;overflow-y:hidden;gap:11px;padding:4px 3px 13px;scroll-snap-type:x mandatory;scroll-padding-inline:3px;overscroll-behavior-inline:contain;-webkit-overflow-scrolling:touch;scrollbar-width:thin}
+  .slideCard{flex:0 0 min(88%,380px);aspect-ratio:auto;min-height:255px;scroll-snap-align:start}
+  .slideBody{padding:19px 17px}
+  .slideBody h3{font-size:clamp(19px,5vw,23px);line-height:1.35;margin:9px 0}
+  .slideBody p{font-size:14px;line-height:1.8}
+  .deckSwipeHint{display:block;margin:3px 0 8px;color:var(--burgundy);font-size:12px;font-weight:750;text-align:center}
+  .deckNote{font-size:12px;line-height:1.8;margin-top:10px}
+  .pilot{gap:15px}
+  .pilotStats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .pilotStats>div{padding:16px 9px}
+  .pilotStats strong{font-size:28px}
+  .pilotStats span{font-size:12px}
+  .pilotSteps{grid-template-columns:minmax(0,1fr);gap:9px}
+  .pilotSteps p{font-size:14px;line-height:1.8;padding:15px 16px}
+  .textLink{display:flex;align-items:center;min-height:48px;font-size:14px;line-height:1.7;overflow-wrap:anywhere}
+  .roadmap{grid-template-columns:minmax(0,1fr);gap:9px}
+  .roadmap li{padding:17px;gap:12px}
+  .roadmap h3{font-size:17px;line-height:1.45}
+  .roadmap p{font-size:13px;line-height:1.7}
+  .honesty{padding:18px}
+  .honesty>div{display:grid;grid-template-columns:minmax(0,1fr);gap:8px}
+  .honesty span{font-size:13px;line-height:1.65;overflow-wrap:anywhere}
+  .honesty .honestyAi{min-width:0;max-width:none}
+  .contact{padding-bottom:52px}
+  .contact>p:not(.eyebrow){font-size:15px;line-height:1.8}
+  .contactButtons{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
+  .contactButtons .button{width:100%}
+  .founder{margin-top:30px;max-width:100%;gap:11px;align-items:start}
+  .founder img{width:44px;height:44px}
+  .founder div{min-width:0;overflow-wrap:anywhere}
+  .founder strong{font-size:14px}
+  .founder span{font-size:12px}
+  .foot>.frame{display:grid;grid-template-columns:minmax(0,1fr);gap:9px;text-align:center;justify-items:center}
+  .foot nav{gap:22px}
+  .foot small{font-size:11px;line-height:1.6}
+  .section,.first{scroll-margin-top:115px}
+}
+@media(max-width:430px){
+  .frame{padding-inline:16px}
+  .topbar{padding-inline:13px}
+  .top-actions{gap:6px}
+  .lang-switch button{padding:8px 9px}
+  .eyebrow{font-size:11px;line-height:1.55}
+  .path{padding:15px 16px}
+}
+@media(max-width:355px){
+  .identity img{width:31px;height:31px}
+  .identity b{font-size:14px}
+  .topbar{flex-wrap:wrap;gap:4px 7px;min-height:60px;padding-block:6px}
+  .top-actions{margin-inline-start:auto}
+  .top-actions .ll-back-inline{padding-inline:9px}
+  .lang-switch button{font-size:11px;padding-inline:8px}
+  .slideCard{flex-basis:94%;min-height:285px}
+}
+@media(orientation:landscape) and (max-height:520px){
+  .site-header{position:relative}
+  .section,.first{scroll-margin-top:20px}
+}
+@media(prefers-reduced-motion:reduce){.slides{scroll-behavior:auto}}
