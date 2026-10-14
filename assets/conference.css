@@ -48,3 +48,15 @@ html[lang="ar"] .pilot > div:first-child h2{letter-spacing:0;line-height:1.52}
 .honestyAi strong{font-size:13px;line-height:1.55;font-weight:750}
 .honestyAi small{font-size:11px;line-height:1.45;color:#ebced4}
 @media(max-width:760px){.researchCards{grid-template-columns:1fr}.researchBasis{padding:20px 17px}.researchCard{padding:16px}.honesty .honestyAi{min-width:0;max-width:100%}}
+
+/* Permanent source-linked investor idea selected at the transition. */
+.visionInvestorQuote{max-width:790px;margin:0 0 22px;padding:20px 25px;border:1px solid #e5d2d9;border-inline-start:4px solid #8A1F39;border-radius:14px;background:#fffdfb;box-shadow:0 8px 22px rgba(17,29,49,.045)}
+.visionInvestorQuote .ll-investor-eyebrow{font:800 10px/1.5 Tahoma,Arial,sans-serif;color:#8A1F39;letter-spacing:.025em}
+.visionInvestorQuote .ll-quote-main{margin:8px 0 12px;font:800 clamp(18px,2vw,23px)/1.6 Tahoma,Arial,sans-serif;color:#111D31}
+.visionInvestorQuote .ll-quote-main span{display:block}
+.visionInvestorQuote .ll-quote-main span+span{color:#8A1F39}
+.visionInvestorQuote .ll-investor-author{display:block;font-size:13px;font-weight:800}
+.visionInvestorQuote .ll-investor-role{display:block;font-size:11px;color:#657186}
+.visionInvestorQuote .ll-investor-source{font-size:11px;color:#8A1F39;display:inline-block;margin-top:7px;text-underline-offset:3px}
+.visionInvestorQuote .ll-investor-source:focus-visible{outline:3px solid #8A1F39;outline-offset:2px}
+@media(max-width:690px){.visionInvestorQuote{padding:15px 17px;margin-bottom:19px}.visionInvestorQuote .ll-quote-main{font-size:18px}}
