@@ -1,0 +1,21 @@
+/* Consistent LexLearn back navigation and branded route transition */
+.ll-back{appearance:none;border:1px solid rgba(17,29,49,.16);background:#fffdfb;color:#111D31;font:700 13px/1.3 Tahoma,Arial,sans-serif;border-radius:999px;box-shadow:0 5px 22px rgba(17,29,49,.12);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:42px;padding:9px 15px;white-space:nowrap;position:fixed;inset-inline-start:12px;top:calc(env(safe-area-inset-top,0px) + 90px);z-index:80}
+.ll-back-icon{font-size:21px;line-height:1;display:inline-block}
+.ll-back:hover{background:#F9F4EF}
+.ll-back:focus-visible,.ll-transition-cancel:focus-visible{outline:3px solid #8A1F39;outline-offset:3px}
+.ll-back-inline{position:static;inset:auto;box-shadow:none;min-height:38px;padding:7px 11px;z-index:auto}
+.ll-navigating .ll-back:not(.ll-back-inline){z-index:150}
+.ll-transition[hidden]{display:none!important}
+.ll-transition{position:fixed;inset:0;z-index:130;display:grid;place-items:center;background:rgba(17,29,49,.94);padding:20px;isolation:isolate}
+.ll-transition-panel{width:min(100%,370px);padding:36px 22px 28px;background:#F9F4EF;color:#111D31;border-radius:24px;text-align:center;box-shadow:0 28px 100px rgba(0,0,0,.18)}
+.ll-transition-logo{height:125px;width:125px;margin:0 auto 12px;border-radius:50%;display:grid;place-items:center;border:1px solid rgba(138,31,57,.17);background:#fff9f3}
+.ll-transition-logo img{display:block;width:108px;height:108px;object-fit:contain}
+.ll-transition-name{display:block;direction:ltr;font:bold 27px/1.3 Arial,sans-serif;letter-spacing:-.8px}
+.ll-transition-name span{color:#8A1F39}
+.ll-transition-message{font:700 clamp(16px,2vw,19px)/1.65 Tahoma,Arial,sans-serif;margin:17px auto 15px;min-height:32px}
+.ll-transition-bar{display:block;height:4px;max-width:190px;background:#e8dfe0;border-radius:10px;overflow:hidden;margin:0 auto 16px}
+.ll-transition-bar i{display:block;width:42%;height:100%;background:#8A1F39;border-radius:10px;animation:lexlearn-route 1s ease-in-out infinite alternate}
+.ll-transition-cancel{font:600 12px Tahoma,Arial,sans-serif;background:transparent;color:#586174;border:0;border-bottom:1px solid #b4abb0;padding:5px 9px;cursor:pointer}
+@keyframes lexlearn-route{from{transform:translateX(-55%)}to{transform:translateX(195%)}}
+@media(max-width:690px){.ll-back{top:calc(env(safe-area-inset-top,0px) + 84px);padding:8px 12px;font-size:12px}.ll-back-inline{top:auto;padding:7px 10px;font-size:12px;min-height:38px}.ll-transition-panel{padding:28px 20px 24px}.ll-transition-logo{height:110px;width:110px}.ll-transition-logo img{height:96px;width:96px}}
+@media(prefers-reduced-motion:reduce){.ll-transition-bar i{animation:none;width:100%}}
