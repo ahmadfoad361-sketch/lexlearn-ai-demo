@@ -4,14 +4,14 @@ fs.rmSync(out,{recursive:true,force:true});
 fs.mkdirSync(path.join(out,"assets"),{recursive:true});
 
 const pages=[
-  "index.html","showcase.html","program.html",
+  "index.html","conference.html","go/index.html","showcase.html","program.html",
   "index-en.html","showcase-en.html","program-en.html",
   "student-login.html","student-register.html","student.html","student-login-en.html","student-register-en.html","student-en.html",
   "admin-login.html","admin.html","demo-supervisor.html","pilot-review.html","pilot-qa.html",
   "privacy.html","privacy-en.html","terms.html","terms-en.html","reset-password.html",".nojekyll"
 ];
 const assets=[
-  "lexlearn-logo.svg","brand-intro.js","training-carousel.js",
+  "lexlearn-logo.svg","lexlearn-x-transparent.svg","lexlearn-og.jpg","lexlearn-public-pitch-en.pdf","conference.css","conference.js","conference-promo.css","brand-intro.js","training-carousel.js",
   "v9-law.css","v9-law-content.js","v9-law.js",
   "adaptive-engine.js","learning-quality.js","pilot-learning.js","pilot-review.js","pilot-qa.js","quality.css",
   "showcase-recall.js","showcase.css","showcase.js","showcase-en.js",
@@ -25,6 +25,7 @@ const assets=[
 ];
 function cp(src,dst){
   if(!fs.existsSync(src))throw new Error("Missing public artifact: "+src);
+  fs.mkdirSync(path.dirname(dst),{recursive:true});
   fs.copyFileSync(src,dst);
 }
 for(const p of pages)cp(p,path.join(out,p));
@@ -33,6 +34,7 @@ for(const p of assets)cp(path.join("assets",p),path.join(out,"assets",p));
 // Release-gate: the student self-registration route and both languages must be present.
 // Silent omissions caused valid GitHub source changes to be absent from the live site.
 for(const required of [
+  "conference.html","go/index.html","assets/conference.js","assets/conference.css","assets/lexlearn-public-pitch-en.pdf",
   "student-register.html","student-register-en.html",
   "privacy-en.html","terms-en.html",
   "assets/student-register.js","assets/register.css","assets/auth-controls.js","assets/student-report.js"
