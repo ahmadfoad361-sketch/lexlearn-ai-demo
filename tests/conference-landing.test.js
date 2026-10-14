@@ -240,7 +240,7 @@ const enEvent=en.indexOf('<div class="wsqHomeFeature"'),enHeader=en.indexOf('<he
 const arEvent=ar.indexOf('<div class="wsqHomeFeature"'),arApp=ar.indexOf('<div id="lawApp">');
 assert.ok(enEvent>=0&&enHeader>enEvent,"Web Summit logo must precede all English home branding");
 assert.ok(arEvent>=0&&arApp>arEvent,"Web Summit logo must precede dynamically-rendered Arabic header");
-assert.ok(arLogic.includes('title="العربية"')&&arLogic.includes('title="English"'),"dynamic Arabic LexLearn header must provide both language choices");
+assert.ok(arLogic.includes("lexHomeLangCurrent")&&arLogic.includes("العربية")&&arLogic.includes("English"),"dynamic Arabic LexLearn header must provide both language choices");
 assert.ok(en.includes('title="العربية"')&&en.includes('title="English"'),"English LexLearn header must provide both language choices");
 assert.ok(promoCss.includes(".wsqEventBrand")&&promoCss.includes(".wsqLogoLink>img"),"event logo must own large top-row layout");
 assert.ok(promoCss.includes(".lexHomeLang{")&&!promoCss.includes(".wsqLangSwitch{"),"language switch must be beside LexLearn instead of event logo");
