@@ -22,7 +22,7 @@ assert.ok(js.includes("لا تثبت الأثر التعليمي لمنصة LexL
 assert.ok(html.includes('class="honestyAi"')&&html.includes('data-t="status2Title"')&&html.includes('data-t="status2State"'),"AI development status must be readable as two lines");
 assert.ok(js.includes('status2State:"قيد التطوير والتحقق من الدقة"'),"AI beta status must remain honest");
 const transitions=read("assets/lexlearn-navigation.js");
-for(const name of ["Test-Enhanced Learning","Karpicke &amp; Blunt","Dunlosky et al.","ll-paper-field","ll-transition-context"])assert.ok(transitions.includes(name),"missing research-inspired transition "+name);
+for(const name of ["Test-Enhanced Learning","Karpicke &amp; Blunt","Dunlosky et al.","ll-paper-field","ll-learning-quote"])assert.ok(transitions.includes(name),"missing research-inspired transition "+name);
 assert.ok(read("assets/lexlearn-navigation.css").includes(".ll-research-slip"),"journal paper visuals missing");
 
 assert.ok(html.includes("api.whatsapp.com/send?text"),"WhatsApp share button");
@@ -97,5 +97,35 @@ node("langEN").handlers.click();
 assert.equal(language.lang,"en");assert.equal(language.dir,"ltr");
 assert.ok(node("studentCard").href.startsWith("showcase-en.html"));
 assert.ok(node("downloadDeck").href.endsWith("lexlearn-public-pitch-en.pdf"));
+
+
+/* Three research-grounded themes; short original editorial sentences,
+   shuffled once per cycle and rendered in two separate lines. */
+const linesCode=read("assets/lexlearn-learning-lines.js");
+assert.ok(html.includes("assets/lexlearn-learning-lines.js"),"conference must load quote bank before navigation");
+assert.ok(html.indexOf("assets/lexlearn-learning-lines.js")<html.indexOf("assets/lexlearn-navigation.js"),"quote bank must load before transition");
+assert.ok(ar.includes("assets/lexlearn-learning-lines.js")&&en.includes("assets/lexlearn-learning-lines.js"),"home splash must load quote bank in both languages");
+assert.ok(ar.includes('class="lexIntroQuote"')&&en.includes('class="lexIntroQuote"'),"home splash quote slot missing");
+assert.ok(read("assets/brand-intro.js").includes("paintHomeQuote"),"home splash must display randomized quote");
+assert.ok(nav.includes("LEXLEARN_LEARNING_LINES.render"),"visitor transition must display randomized phrase");
+assert.ok(!nav.includes("مستوحى من أبحاث التعلّم والاسترجاع"),"remove generic inspiration phrase");
+assert.ok(pub.includes('"lexlearn-learning-lines.js"'),"publish bilingual learning quote asset");
+assert.ok(linesCode.includes("Original editorial paraphrases, not verbatim quotations"),"avoid misattributing original editorial lines as direct quotations");
+const quoteStorage=new Map();
+const quoteWin={sessionStorage:{getItem:k=>quoteStorage.get(k)||null,setItem:(k,v)=>quoteStorage.set(k,v)}};
+vm.runInNewContext(linesCode,{window:quoteWin});
+const bank=quoteWin.LEXLEARN_LEARNING_LINES;
+assert.equal(bank.count,27,"must ship 27 short, bilingual paired learning lines");
+const seen=new Set(),categories=new Set();
+let lastPhrase="";
+for(let i=0;i<bank.count;i++){
+  const p=bank.next();
+  assert.equal(p.ar.length,2);assert.equal(p.en.length,2);
+  assert.ok(p.ar.every(Boolean)&&p.en.every(Boolean),"quotes must not have empty fragments");
+  seen.add(p.ar.join(" / "));categories.add(p.category);lastPhrase=p.ar.join(" / ");
+}
+assert.equal(seen.size,27,"do not repeat until all quotes appear");
+assert.equal(categories.size,3,"include understanding, retrieval and combined skills");
+assert.notEqual(bank.next().ar.join(" / "),lastPhrase,"do not repeat the immediate previous phrase");
 
 console.log("conference landing release test PASS");
