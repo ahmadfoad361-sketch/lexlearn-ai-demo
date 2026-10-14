@@ -56,6 +56,8 @@ jobs:
           node tests/showcase-delivery.test.js
       - name: Conference registration smoke tests
         run: node tests/conference-signup.test.js
+      - name: Conference landing release checks
+        run: node tests/conference-landing.test.js
       - name: Production boundary tests
         run: node tests/production-boundaries.test.js
 
