@@ -27,4 +27,37 @@ assert.ok(ar.includes("conferencePromo")&&en.includes("conferencePromo"),"one pr
 assert.ok(arLogic.includes("اكتشف LexLearn | Explore LexLearn")&&en.includes("اكتشف LexLearn | Explore LexLearn"),"discover CTA on home");
 assert.ok(!read("student.html").includes("conferencePromo")&&!read("student-en.html").includes("conferencePromo"),"no promo in training");
 assert.ok(fs.existsSync("showcase.html"),"demo link unchanged");
+
+/* Simulate language controls without external browser scripts or tracking. */
+const vm=require("node:vm");
+const nodes=new Map();
+function node(id){if(!nodes.has(id))nodes.set(id,{id,href:"",attrs:{},handlers:{},
+ addEventListener(type,fn){this.handlers[type]=fn;},
+ setAttribute(key,val){this.attrs[key]=val;},
+ removeAttribute(key){delete this.attrs[key];}
+});return nodes.get(id);}
+const translatable=["heroTitle","skill1","skill2","skill3","skill4","skill5","founderName","download"]
+ .map(k=>({key:k,textContent:"",getAttribute(){return this.key;}}));
+const language={lang:"en",dir:"ltr"},doc={
+ documentElement:language,title:"",
+ getElementById:node,
+ querySelectorAll(selector){return selector==="[data-t]"?translatable:[];}
+};
+const store=new Map();
+vm.runInNewContext(js,{document:doc,window:{},localStorage:{
+ getItem:key=>store.get(key)||null,setItem:(key,val)=>store.set(key,val)
+},encodeURIComponent,console});
+assert.equal(language.lang,"en");
+assert.equal(translatable.find(x=>x.key==="skill5").textContent,"Exam answer structure");
+node("langAR").handlers.click();
+assert.equal(language.lang,"ar");assert.equal(language.dir,"rtl");
+assert.equal(translatable.find(x=>x.key==="skill5").textContent,"بناء الإجابة الامتحانية");
+assert.equal(translatable.find(x=>x.key==="founderName").textContent,"د. أحمد فؤاد الفقي");
+assert.ok(node("studentCard").href.startsWith("showcase.html"));
+assert.equal(store.get("lexlearn_conference_language"),"ar");
+node("langEN").handlers.click();
+assert.equal(language.lang,"en");assert.equal(language.dir,"ltr");
+assert.ok(node("studentCard").href.startsWith("showcase-en.html"));
+assert.ok(node("downloadDeck").href.endsWith("lexlearn-public-pitch-en.pdf"));
+
 console.log("conference landing release test PASS");
