@@ -11,7 +11,7 @@ const pages=[
   "privacy.html","privacy-en.html","terms.html","terms-en.html","reset-password.html",".nojekyll"
 ];
 const assets=[
-  "lexlearn-logo.svg","lexlearn-x-transparent.svg","lexlearn-og.jpg","lexlearn-public-pitch-en.pdf","conference.css","conference.js","conference-promo.css","brand-intro.js","training-carousel.js",
+  "lexlearn-logo.svg","lexlearn-x-transparent.svg","lexlearn-og.jpg","lexlearn-public-pitch-en.pdf","lexlearn-go-qr.svg","conference.css","conference.js","conference-pdf.js","conference-promo.css","brand-intro.js","training-carousel.js",
   "v9-law.css","v9-law-content.js","v9-law.js",
   "adaptive-engine.js","learning-quality.js","pilot-learning.js","pilot-review.js","pilot-qa.js","quality.css",
   "showcase-recall.js","showcase.css","showcase.js","showcase-en.js",
@@ -34,7 +34,7 @@ for(const p of assets)cp(path.join("assets",p),path.join(out,"assets",p));
 // Release-gate: the student self-registration route and both languages must be present.
 // Silent omissions caused valid GitHub source changes to be absent from the live site.
 for(const required of [
-  "conference.html","go/index.html","assets/conference.js","assets/conference.css","assets/lexlearn-public-pitch-en.pdf",
+  "conference.html","go/index.html","assets/conference.js","assets/conference-pdf.js","assets/conference.css","assets/lexlearn-go-qr.svg","assets/lexlearn-public-pitch-en.pdf",
   "student-register.html","student-register-en.html",
   "privacy-en.html","terms-en.html",
   "assets/student-register.js","assets/register.css","assets/auth-controls.js","assets/student-report.js"
