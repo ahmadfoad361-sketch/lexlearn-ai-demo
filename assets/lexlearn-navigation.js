@@ -29,6 +29,9 @@
     back.querySelector(".ll-back-icon").textContent = isArabic() ? "→" : "←";
     back.setAttribute("aria-label", w.back);
     back.title = w.back;
+    if (isConference && investorQuotePanel && activeInvestorQuote && window.LEXLEARN_INVESTOR_QUOTES) {
+      window.LEXLEARN_INVESTOR_QUOTES.render(investorQuotePanel, isArabic()?"ar":"en", activeInvestorQuote);
+    }
   }
   sync();
   if (isConference) {
@@ -92,6 +95,10 @@
   doc.addEventListener("keydown", function (event) {
     if (event.key === "Escape" && !overlay.hidden) { event.preventDefault(); closeOverlay(); }
   });
+  var investorQuotePanel = doc.getElementById("investorQuote"), activeInvestorQuote = null;
+  if (investorQuotePanel && window.LEXLEARN_INVESTOR_QUOTES) {
+    activeInvestorQuote = window.LEXLEARN_INVESTOR_QUOTES.render(investorQuotePanel, isArabic()?"ar":"en");
+  }
   var links = [
     {selector:".paths .path.student", message:"toStudent"},
     {selector:".paths .path.university", message:"toUniversity"},
@@ -113,7 +120,8 @@
       var investorMode = config.message === "toInvestor";
       overlay.classList.toggle("ll-investor-mode", investorMode);
       if (investorMode && window.LEXLEARN_INVESTOR_QUOTES) {
-        window.LEXLEARN_INVESTOR_QUOTES.render(quoteTarget, isArabic() ? "ar" : "en");
+        activeInvestorQuote = window.LEXLEARN_INVESTOR_QUOTES.render(quoteTarget, isArabic() ? "ar" : "en");
+        if (investorQuotePanel) window.LEXLEARN_INVESTOR_QUOTES.render(investorQuotePanel, isArabic() ? "ar" : "en", activeInvestorQuote);
       } else if (window.LEXLEARN_LEARNING_LINES) {
         window.LEXLEARN_LEARNING_LINES.render(quoteTarget, isArabic() ? "ar" : "en");
       } else {
