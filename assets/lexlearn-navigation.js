@@ -20,8 +20,8 @@
 
   function words() {
     return isArabic()
-      ? {back:"رجوع", toStudent:"جاري فتح تجربة الطالب…", toUniversity:"جاري عرض خطة التعاون الجامعي…", toInvestor:"جاري عرض الرؤية وخارطة الطريق…", cancel:"إلغاء"}
-      : {back:"Back", toStudent:"Opening the student demo…", toUniversity:"Opening the university pilot…", toInvestor:"Opening the vision and roadmap…", cancel:"Cancel"};
+      ? {back:"رجوع", toStudent:"جاري فتح تجربة الطالب…", toUniversity:"جاري عرض خطة التعاون الجامعي…", toInvestor:"جاري عرض الرؤية وخارطة الطريق…", science:"مستوحى من أبحاث التعلّم والاسترجاع", cancel:"إلغاء"}
+      : {back:"Back", toStudent:"Opening the student demo…", toUniversity:"Opening the university pilot…", toInvestor:"Opening the vision and roadmap…", science:"Inspired by research on learning and recall", cancel:"Cancel"};
   }
   function sync() {
     var w = words();
@@ -74,9 +74,15 @@
   overlay.setAttribute("aria-live","polite");
   overlay.setAttribute("aria-atomic","true");
   overlay.innerHTML =
+    '<div class="ll-paper-field" aria-hidden="true">' +
+      '<div class="ll-research-slip ll-paper-one"><small>PSYCHOLOGICAL SCIENCE · 2006</small><strong>Test-Enhanced Learning</strong><p>Roediger &amp; Karpicke</p><em>Long-term retention</em></div>' +
+      '<div class="ll-research-slip ll-paper-two"><small>SCIENCE · 2011</small><strong>Retrieval Practice Produces More Learning than Elaborative Studying</strong><p>Karpicke &amp; Blunt</p><em>Meaningful learning</em></div>' +
+      '<div class="ll-research-slip ll-paper-three"><small>REVIEW · 2013</small><strong>Improving Students’ Learning With Effective Learning Techniques</strong><p>Dunlosky et al.</p><em>Practice testing · Distributed practice</em></div>' +
+    '</div>' +
     '<div class="ll-transition-panel">' +
       '<div class="ll-transition-logo"><img src="assets/lexlearn-x-transparent.svg" alt="LexLearn" width="108" height="108"></div>' +
       '<b class="ll-transition-name">Lex<span>Learn</span></b>' +
+      '<p class="ll-transition-context"></p>' +
       '<p class="ll-transition-message"></p>' +
       '<span class="ll-transition-bar" aria-hidden="true"><i></i></span>' +
       '<button class="ll-transition-cancel" type="button"></button>' +
@@ -102,6 +108,7 @@
       closeOverlay();
       var w = words();
       overlay.querySelector(".ll-transition-message").textContent = w[config.message];
+      overlay.querySelector(".ll-transition-context").textContent = w.science;
       overlay.querySelector(".ll-transition-cancel").textContent = w.cancel;
       overlay.setAttribute("lang", isArabic() ? "ar" : "en");
       overlay.setAttribute("dir", isArabic() ? "rtl" : "ltr");
