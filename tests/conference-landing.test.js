@@ -21,6 +21,12 @@ assert.ok(read("assets/lexlearn-x-transparent.svg").includes("clear-paper"));
 assert.ok(read("assets/lexlearn-public-pitch-en.pdf").startsWith("%PDF-1.4"),"downloadable public PDF required");
 assert.ok(js.includes('localStorage.setItem("lexlearn_conference_language"'),"remember language");
 assert.ok(css.includes("max-width:690px"),"mobile breakpoint required");
+for(const phrase of ["تعاون أكاديمي قابل للقياس","نقترح تجربة أكاديمية محددة بإشراف جامعي لقياس الأثر قبل التوسع","التحقق من الأثر التعليمي سيتم عبر التجربة المقترحة"]){
+  assert.ok(js.includes(phrase),"approved Arabic conference copy missing: "+phrase);
+}
+assert.ok(read("assets/lexlearn-navigation.css").includes(".ll-back-inline .ll-back-label{display:inline!important}"),"mobile back control must show visible label");
+assert.ok(read("assets/conference.css").includes(".pilot > div:first-child h2"),"pilot heading responsive treatment missing");
+
 assert.ok(go.includes("../conference.html")&&go.includes("window.location.replace("),"permanent QR redirect required");
 assert.ok(pub.includes('"go/index.html"')&&pub.includes('"conference.html"'),"release artifact must include routes");
 assert.ok(pub.includes('"lexlearn-go-qr.svg"')&&pub.includes('"conference-pdf.js"'),"release must ship PDF and QR assets");
@@ -37,9 +43,9 @@ const nav=read("assets/lexlearn-navigation.js"),navCss=read("assets/lexlearn-nav
 for(const key of ["toStudent","toUniversity","toInvestor","Opening the student demo","جاري عرض خطة التعاون الجامعي","lexlearnBack","lexlearnTransition"])assert.ok(nav.includes(key),"visitor navigation missing "+key);
 assert.ok(nav.includes('!\\/go')||nav.includes('go\\/?'),"back navigation must avoid /go redirect loops");
 assert.ok(navCss.includes("prefers-reduced-motion")&&navCss.includes("safe-area-inset-top"),"accessibility and iPhone back controls required");
-assert.ok(js.includes('flow4:"نستخدم مهارتك الأقوى لتقوية المهارة الأضعف"'),"flow must explicitly build on the stronger skill in Arabic");
-assert.ok(js.includes('flow4:"Use your stronger skill to strengthen the weaker one"'),"flow must explicitly build on the stronger skill in English");
-assert.ok(html.includes('data-t="flow4">Use your stronger skill to strengthen the weaker one'),"English default must match dynamic copy");
+assert.ok(js.includes('flow4:"نقوّي المهارة الأضعف بالمهارة الأقوى"'),"flow must explicitly build on the stronger skill in Arabic");
+assert.ok(js.includes('flow4:"Strengthen the weaker skill using the stronger one"'),"flow must explicitly build on the stronger skill in English");
+assert.ok(html.includes('data-t="flow4">Strengthen the weaker skill using the stronger one'),"English default must match dynamic copy");
 for(const page of ["showcase.html","showcase-en.html","program.html","program-en.html","student.html","student-en.html"]) {
   assert.ok(read(page).includes("lexlearn-navigation.js"),"back arrow missing in "+page);
 }
