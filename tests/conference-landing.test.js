@@ -269,7 +269,7 @@ for(const home of [ar,en]){
   assert.ok(home.indexOf('class="wsqHomeFeature"')<home.indexOf('class="wsqEventLogo"'),"event card is the first prominent home element");
   assert.equal((home.match(/class="wsqEventLogo"/g)||[]).length,1,"the event logo must never be duplicated above the card");
 }
-assert.ok(arLogic.includes("'</div>'+")&&arLogic.includes("'<nav class=\\\"lexHomeLang\\\""),"Arabic left-side language pill must be a sibling, not inside the wordmark");
+assert.ok(arLogic.includes('<nav class="lexHomeLang"')&&arLogic.indexOf('<nav class="lexHomeLang"')>arLogic.indexOf("v9-topactions"),"Arabic left-side language pill must be a sibling after the top action region");
 assert.ok(promoCss.includes(".v9-topin>.lexHomeLang")&&promoCss.includes(".en-topin>.lexHomeLang"),"small language control must anchor to LexLearn header row on both languages");
 
 
