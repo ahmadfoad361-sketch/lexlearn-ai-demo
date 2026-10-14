@@ -176,3 +176,52 @@
   .wsqParticipantName{font-size:27px}
   .wsqEventName{font-size:11px;letter-spacing:.025em}
 }
+
+/* Conference participation: the SAME card adapts deliberately to desktop,
+   tablet and phone. No alternate graphics, no horizontal overflow. */
+.wsqEventCTA{width:min(100%,1100px);max-width:1100px}
+.wsqEventDetails strong{overflow-wrap:break-word;text-wrap:balance}
+.wsqEventCopy,.wsqEventDetails,.wsqParticipant{max-width:100%;min-width:0}
+.wsqEventDetails small{max-width:58ch;text-wrap:pretty}
+@media(min-width:1024px){
+  .wsqHomeFeature{padding:24px clamp(20px,3vw,46px) 18px}
+  .wsqEventCTA{
+    display:grid;
+    grid-template-columns:minmax(0,0.98fr) minmax(0,1.02fr);
+    align-items:center;min-height:288px;gap:clamp(24px,3.2vw,52px);
+    padding:32px clamp(28px,3vw,44px);
+    border-radius:24px
+  }
+  .wsqEventLogo{width:100%;max-width:515px;justify-self:center}
+  .wsqEventCopy{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:15px;text-align:center}
+  .wsqParticipant{justify-content:center;gap:12px}
+  .wsqParticipantLogo{height:76px;width:76px}
+  .wsqParticipantName{font-size:clamp(28px,2.7vw,36px)}
+  .wsqEventDetails{align-items:center;gap:9px;text-align:center}
+  .wsqEventDetails strong{font-size:clamp(21px,2.05vw,27px);line-height:1.45}
+  .wsqEventDetails small{font-size:14px;line-height:1.8}
+  .wsqEventName{text-align:center}
+  .wsqEventCopy .wsqEventAction{align-self:center;width:min(100%,350px);max-width:100%;min-height:52px;margin-top:3px}
+}
+@media(min-width:761px) and (max-width:1023px){
+  .wsqHomeFeature{padding:18px 25px 14px}
+  .wsqEventCTA{width:min(100%,860px);padding:26px 30px;gap:18px}
+  .wsqEventLogo{width:min(100%,500px)}
+  .wsqEventCopy{gap:17px}
+  .wsqEventDetails strong{font-size:clamp(20px,2.7vw,25px)}
+  .wsqEventCopy .wsqEventAction{min-height:50px}
+}
+@media(max-width:760px){
+  .wsqEventLogo{width:min(100%,350px);max-width:100%}
+  .wsqEventCTA{min-height:0}
+  .wsqEventDetails strong{font-size:clamp(20px,5.1vw,24px);line-height:1.5}
+  .wsqEventDetails small{max-width:45ch;font-size:13px;line-height:1.8}
+  .wsqEventCopy .wsqEventAction{grid-column:auto;width:100%;min-height:52px}
+}
+@media(max-width:355px){
+  .wsqEventLogo{width:min(100%,320px)}
+  .wsqEventDetails strong{font-size:19px}
+  .wsqEventDetails small{font-size:12px}
+  .wsqParticipantLogo{width:58px;height:58px}
+  .wsqParticipantName{font-size:26px}
+}
