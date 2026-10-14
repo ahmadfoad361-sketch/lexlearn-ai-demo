@@ -31,6 +31,21 @@ assert.ok(read("assets/conference-pdf.js").includes('application/pdf'),"Arabic P
 assert.ok(ar.includes("conferencePromo")&&en.includes("conferencePromo"),"one promo strip on homepages");
 assert.ok(arLogic.includes("اكتشف LexLearn | Explore LexLearn")&&en.includes("اكتشف LexLearn | Explore LexLearn"),"discover CTA on home");
 assert.ok(!read("student.html").includes("conferencePromo")&&!read("student-en.html").includes("conferencePromo"),"no promo in training");
+
+assert.ok(html.includes('assets/lexlearn-navigation.js')&&html.includes('assets/lexlearn-navigation.css'),"conference route navigation must load");
+const nav=read("assets/lexlearn-navigation.js"),navCss=read("assets/lexlearn-navigation.css");
+for(const key of ["toStudent","toUniversity","toInvestor","Opening the student demo","جاري عرض خطة التعاون الجامعي","lexlearnBack","lexlearnTransition"])assert.ok(nav.includes(key),"visitor navigation missing "+key);
+assert.ok(nav.includes('!\\/go')||nav.includes('go\\/?'),"back navigation must avoid /go redirect loops");
+assert.ok(navCss.includes("prefers-reduced-motion")&&navCss.includes("safe-area-inset-top"),"accessibility and iPhone back controls required");
+assert.ok(js.includes('flow4:"نستخدم مهارتك الأقوى لتقوية المهارة الأضعف"'),"flow must explicitly build on the stronger skill in Arabic");
+assert.ok(js.includes('flow4:"Use your stronger skill to strengthen the weaker one"'),"flow must explicitly build on the stronger skill in English");
+assert.ok(html.includes('data-t="flow4">Use your stronger skill to strengthen the weaker one'),"English default must match dynamic copy");
+for(const page of ["showcase.html","showcase-en.html","program.html","program-en.html","student.html","student-en.html"]) {
+  assert.ok(read(page).includes("lexlearn-navigation.js"),"back arrow missing in "+page);
+}
+assert.ok(pub.includes('"lexlearn-navigation.js"')&&pub.includes('"lexlearn-navigation.css"'),"back navigation assets must ship");
+assert.ok(pub.includes('fs.writeFileSync(full,html)'),"build must include back navigation for subpages");
+
 assert.ok(fs.existsSync("showcase.html"),"demo link unchanged");
 
 /* Simulate language controls without external browser scripts or tracking. */
