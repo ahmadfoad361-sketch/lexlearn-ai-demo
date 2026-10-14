@@ -148,3 +148,31 @@
     max-width:calc(100% - 93px)!important;
   }
 }
+
+/* Participation announcement: roomy desktop card, stacked phone layout. */
+.wsqEventCTA{width:min(100%,960px);padding:28px 32px;gap:24px}
+.wsqEventLogo{width:min(100%,520px)}
+.wsqEventCopy{display:grid;grid-template-columns:minmax(220px,.8fr) minmax(0,1.2fr);gap:20px 28px;align-items:center}
+.wsqParticipant{display:flex;align-items:center;justify-content:center;gap:16px;min-width:0}
+.wsqParticipantLogo{display:block;width:88px;height:88px;object-fit:contain;flex:none}
+.wsqParticipantName{font:800 clamp(26px,3vw,36px)/1.2 Arial,sans-serif;color:#142B5F;white-space:nowrap}
+.wsqParticipantName>span{color:#8F1D3F}
+.wsqEventDetails{display:flex;flex-direction:column;align-items:center;gap:10px;min-width:0}
+.wsqEventCopy .wsqEventAction{grid-column:1 / -1;margin-top:0}
+@media(max-width:760px){
+  .wsqEventCTA{width:100%;padding:22px 18px;gap:20px}
+  .wsqEventLogo{width:min(100%,380px)}
+  .wsqEventCopy{grid-template-columns:minmax(0,1fr);gap:16px}
+  .wsqParticipant{gap:12px}
+  .wsqParticipantLogo{width:68px;height:68px}
+  .wsqParticipantName{font-size:30px}
+  .wsqEventDetails{gap:9px}
+  .wsqEventDetails strong{font-size:clamp(18px,4.8vw,23px)}
+  .wsqEventDetails small{font-size:13px;line-height:1.8}
+}
+@media(max-width:355px){
+  .wsqEventCTA{padding:18px 13px}
+  .wsqParticipantLogo{width:60px;height:60px}
+  .wsqParticipantName{font-size:27px}
+  .wsqEventName{font-size:11px;letter-spacing:.025em}
+}
