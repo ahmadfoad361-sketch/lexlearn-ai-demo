@@ -2,7 +2,7 @@
 "use strict";
 const AR={
  skip:"انتقل إلى المحتوى",home:"الموقع الرئيسي",
- promo:"LexLearn في Web Summit Qatar 2027 — اكتشف رؤيتنا. جرّب الديمو. تعرّف على التجربة الجامعية.",
+ promo:"LexLearn في Web Summit Qatar 2027 — اكتشف رؤيتنا. جرّب الديمو. تعرّف على التجربة الجامعية.",promoShort:"LexLearn · Web Summit Qatar 2027 · ALPHA",
  eyebrow:"التعلم القانوني التكيفي · البداية من قطر",
  heroTitle:"التفكير القانوني الأفضل يبدأ بتشخيص أدق.",
  heroSub:"اختر المسار المناسب لك للتعرف على LexLearn: نسخة تجريبية عاملة تستفيد من مهارات الطالب الأقوى لتطوير المهارات الأضعف.",
@@ -32,7 +32,7 @@ const AR={
  slide4Small:"الوضع الحالي",slide4H:"نسخة تجريبية عاملة",slide4P:"تحليل الإجابات التحريرية بالذكاء الاصطناعي: قيد التطوير. التحقق من الأثر التعليمي سيتم عبر التجربة المقترحة.",
  slide5Small:"التحقق الأكاديمي",slide5H:"30–60 طالبًا · 6–8 أسابيع",slide5P:"مقترح تجربة بإشراف أكاديمي مع قياس قبلي وبعدي.",
  slide6Small:"خريطة الطريق",slide6H:"قطر أولًا، ثم التوسع",slide6P:"نبدأ بكليات القانون القطرية، ثم نتحقق من الأثر قبل التوسع في المواد والأسواق.",
- deckNote:"هذه معاينة عامة مختصرة للموبايل وليست العرض الاستثماري السري الكامل. أعداد التجربة مقترحة وليست نتائج منفذة.",
+ deckNote:"هذه معاينة عامة مختصرة للموبايل وليست العرض الاستثماري السري الكامل. أعداد التجربة مقترحة وليست نتائج منفذة.",deckSwipeHint:"مرّر أفقيًا لاستعراض بقية الشرائح ↔",
  label05:"05 / التجربة الجامعية",pilotTitle:"تعاون أكاديمي قابل للقياس",
  pilotBody:"نقترح تجربة أكاديمية محددة بإشراف جامعي لقياس الأثر قبل التوسع",
  pilotStudents:"طالبًا مقترحًا",pilotWeeks:"أسابيع مقترحة",
@@ -49,7 +49,7 @@ const AR={
 };
 const EN={
  skip:"Skip to content",home:"Main site",
- promo:"LexLearn at Web Summit Qatar 2027 — Discover our vision. Try the demo. Explore a university pilot.",
+ promo:"LexLearn at Web Summit Qatar 2027 — Discover our vision. Try the demo. Explore a university pilot.",promoShort:"LexLearn · Web Summit Qatar 2027 · ALPHA",
  eyebrow:"ADAPTIVE LEGAL LEARNING · QATAR FIRST",
  heroTitle:"Better legal thinking starts with better diagnosis.",
  heroSub:"Choose your path to explore LexLearn. A working beta built to turn a student's stronger skill into a bridge for the weaker one.",
@@ -71,7 +71,7 @@ const EN={
  slide4Small:"CURRENT STATUS",slide4H:"Working beta",slide4P:"AI analysis of written answers: in progress. Learning impact not yet proven.",
  slide5Small:"ACADEMIC VALIDATION",slide5H:"30–60 students · 6–8 weeks",slide5P:"A proposed supervised pilot with pre/post tasks and measured evidence.",
  slide6Small:"QATAR-FIRST ROADMAP",slide6H:"Validate, then expand",slide6P:"Start with Qatari law faculties, validate impact, then consider broader disciplines and markets.",
- deckNote:"Public mobile summary rather than the full confidential investor presentation. Figures are a proposal, not completed pilot results.",
+ deckNote:"Public mobile summary rather than the full confidential investor presentation. Figures are a proposal, not completed pilot results.",deckSwipeHint:"Swipe sideways to see the other slides ↔",
  label05:"05 / UNIVERSITY PILOT",pilotTitle:"Measurable academic collaboration",pilotBody:"We propose a focused, faculty-supervised academic pilot to measure learning impact before expanding.",pilotStudents:"students proposed",pilotWeeks:"weeks proposed",
  pilot1:"Before: establish a baseline using skill-specific tasks.",pilot2:"During: deliver structured practice with faculty oversight and privacy safeguards.",pilot3:"After: review usability, scoring agreement and early learning indicators. Impact remains to be established.",pilotCTA:"Discuss an academic pilot ↗",
  label06:"06 / INVESTORS & PARTNERS",visionTitle:"Qatar first. Proof before scale.",visionLead:"The long-term vision is a diagnostic-first learning platform with explainable recommendations and meaningful faculty oversight.",
