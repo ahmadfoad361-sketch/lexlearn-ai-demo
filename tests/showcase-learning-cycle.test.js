@@ -22,7 +22,7 @@ const makeElement=(attrs={})=>{
   Object.defineProperty(node,"innerHTML",{get(){return htmlValue},set(value){
     htmlValue=String(value);
     // Browsers create children when innerHTML changes; model this in the test DOM.
-    for(const found of htmlValue.matchAll(/\\bid="([^"]+)"/g))els[found[1]]=makeElement();
+    for(const found of htmlValue.matchAll(/\bid="([^"]+)"/g))els[found[1]]=makeElement();
   }});
   return node;
 };
