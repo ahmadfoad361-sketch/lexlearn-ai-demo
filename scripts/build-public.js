@@ -14,7 +14,7 @@ const assets=[
   "lexlearn-logo.svg","lexlearn-x-transparent.svg","lexlearn-og.jpg","lexlearn-public-pitch-en.pdf","lexlearn-go-qr.svg","conference.css","conference.js","conference-pdf.js","lexlearn-navigation.css","lexlearn-navigation.js","lexlearn-learning-lines.js","lexlearn-investor-quotes.js","conference-promo.css","brand-intro.js","training-carousel.js",
   "v9-law.css","v9-law-content.js","v9-law.js",
   "adaptive-engine.js","learning-quality.js","pilot-learning.js","pilot-review.js","pilot-qa.js","quality.css",
-  "showcase-recall.js","showcase.css","showcase.js","showcase-en.js",
+  "showcase-recall.js","showcase.css","showcase-learning-cycle.css","showcase-learning-cycle.js","showcase.js","showcase-en.js",
   "program.css","program.js","program-en.js",
   "portal.css","register.css","auth-controls.js","student-register.js","student-login.js","student-login-en.js","admin-login-v2.js",
   "student.css","student.js","student-en.js",
@@ -57,7 +57,8 @@ for(const required of [
   "conference.html","go/index.html","assets/conference.js","assets/conference-pdf.js","assets/conference.css","assets/lexlearn-navigation.js","assets/lexlearn-navigation.css","assets/lexlearn-learning-lines.js","assets/lexlearn-investor-quotes.js","assets/lexlearn-go-qr.svg","assets/lexlearn-public-pitch-en.pdf",
   "student-register.html","student-register-en.html",
   "privacy-en.html","terms-en.html",
-  "assets/student-register.js","assets/register.css","assets/auth-controls.js","assets/student-report.js"
+  "assets/student-register.js","assets/register.css","assets/auth-controls.js","assets/student-report.js",
+  "assets/showcase-learning-cycle.js","assets/showcase-learning-cycle.css"
 ]) {
   if(!fs.existsSync(path.join(out,required)))
     throw new Error("Missing live registration or report asset: "+required);
