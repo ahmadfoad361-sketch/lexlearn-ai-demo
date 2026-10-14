@@ -48,7 +48,7 @@
   function internalHistory() {
     try {
       var prev = new URL(doc.referrer);
-      return prev.origin === loc.origin && prev.pathname !== loc.pathname && window.history.length > 1;
+      return prev.origin === loc.origin && prev.pathname !== loc.pathname && !/\/go\/?(?:index\.html)?$/.test(prev.pathname) && window.history.length > 1;
     } catch (_) { return false; }
   }
   back.addEventListener("click", function () {
