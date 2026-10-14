@@ -28,6 +28,8 @@ jobs:
           node --check assets/v9-law-content.js
           node --check assets/v9-law.js
           node --check assets/showcase.js
+          node --check assets/showcase-learning-cycle.js
+          node --check assets/showcase-en.js
           node --check assets/program.js
           node --check assets/cloud-data.js
           node --check assets/student-login.js
@@ -43,6 +45,7 @@ jobs:
           node tests/learning-quality.test.js
           node tests/diagnostic-evidence.test.js
           node tests/public-showcase.test.js
+          node tests/showcase-learning-cycle.test.js
           node tests/semantic-service.test.js
           node tests/review-bank.test.js
           node tests/pilot-learning.test.js
