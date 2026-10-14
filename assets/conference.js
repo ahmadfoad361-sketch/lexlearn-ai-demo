@@ -20,6 +20,7 @@ const AR={
  skill3:"التطبيق",skill3D:"تطبيق الحكم على وقائع جديدة.",
  skill4:"الدقة القانونية",skill4D:"استخدام المصطلحات والشروط الصحيحة.",
  skill5:"بناء الإجابة الامتحانية",skill5D:"صياغة إجابة قانونية مرتبة ومعللة.",
+ scienceEyebrow:"الأساس العلمي",scienceHeading:"مبادئ تعليمية مستندة إلى أبحاث علمية",scienceNote:"تلهم هذه الدراسات طرق التدريب على الاسترجاع والفهم. لكنها لا تثبت الأثر التعليمي لمنصة LexLearn؛ فهذا ما نهدف للتحقق منه في التجربة الجامعية المقترحة.",science1:"تدريب الاسترجاع والاحتفاظ طويل المدى",science2:"الاسترجاع قد يدعم الفهم المفاهيمي",science3:"الاختبارات التدريبية والمذاكرة المتباعدة",
  strengthTitle:"مثال لمبدأ التكيف",strengthBody:"حفظ قوي مع فهم أضعف ← تدريب على شرح عناصر القاعدة. فهم قوي مع حفظ أضعف ← بناء مفاتيح للتذكر انطلاقًا من الفكرة التي فهمها الطالب بالفعل.",
  label03:"03 / جرّب بنفسك",demoTitle:"عِش التجربة التفاعلية.",
  demoBody:"الديمو يعرض جزءًا من الفكرة، وتحديدًا الحفظ والفهم، مع تقييم محلي مبدئي. ولا يمثل تشخيصًا جامعيًا معتمدًا لجميع المهارات الخمس أو تجربة ميدانية مكتملة.",
@@ -41,7 +42,7 @@ const AR={
  label06:"06 / للمستثمرين والشركاء",visionTitle:"قطر أولًا. الدليل قبل التوسع.",
  visionLead:"رؤيتنا طويلة المدى منصة تعليمية تبدأ بالتشخيص وتقدم توصيات قابلة للفهم مع استمرار دور الأستاذ.",
  phase1:"نسخة تجريبية عاملة",phase1P:"تطوير واختبار تجربة الطالب وأدوات المشرف.",phase2:"تجربة أكاديمية في قطر",phase2P:"مقترح 30–60 طالبًا خلال 6–8 أسابيع لقياس النتائج الأولية.",phase3:"التحقق من المنتج",phase3P:"تحسين تحليل الإجابات التحريرية ومراجعة المحتوى وسير عمل المشرف.",phase4:"التوسع المدروس",phase4P:"النظر في مواد قانونية وتخصصات أخرى بعد قيام أدلة مناسبة.",
- honestyTitle:"أين وصلنا اليوم؟",status1:"نسخة تجريبية عاملة",status2:"تحليل الإجابات التحريرية بالذكاء الاصطناعي: قيد التطوير",status3:"التحقق من الأثر التعليمي سيتم عبر التجربة المقترحة",
+ honestyTitle:"أين وصلنا اليوم؟",status1:"نسخة تجريبية عاملة",status2:"تحليل الإجابات التحريرية بالذكاء الاصطناعي: قيد التطوير",status2Title:"تحليل الإجابات التحريرية بالذكاء الاصطناعي",status2State:"قيد التطوير والتحقق من الدقة",status3:"التحقق من الأثر التعليمي سيتم عبر التجربة المقترحة",
  label07:"07 / التواصل",contactTitle:"لنستكشف الخطوة التالية معًا.",contactText:"التجارب الجامعية، ودعم الاحتضان، والشراكات التقنية، ومناقشات الاستثمار الأولية.",
  emailCTA:"راسل المؤسس بالبريد ←",waCTA:"شارك الصفحة عبر واتساب ←",qrCTA:"تحميل رمز QR للطباعة ↓",waNote:"زر واتساب يشارك رابط الصفحة حاليًا؛ التواصل المباشر يحتاج إلى رقم منشور معتمد.",
  founderName:"د. أحمد فؤاد الفقي",founderRole:"المؤسس والرئيس التنفيذي",privacy:"الخصوصية",
@@ -61,6 +62,7 @@ const EN={
  solutionLabel:"THE LEXLEARN RESPONSE",solutionHeading:"Identify the gap. Build the weaker skill from the stronger one.",solutionBody:"Diagnosis guides targeted practice while students remain independent and academic supervisors keep control.",
  label02:"02 / HOW IT WORKS",howHeading:"Five precise skills. One adaptable path.",howNote:"The five-axis framework is the product vision; the public demo currently illustrates recall and understanding only.",
  skill1:"Recall",skill1D:"Retrieve the legal rule accurately.",skill2:"Understanding",skill2D:"Explain why the legal rule works.",skill3:"Application",skill3D:"Apply the rule to a new set of facts.",skill4:"Legal precision",skill4D:"Use accurate legal terms and conditions.",skill5:"Exam answer structure",skill5D:"Build a clear, supported legal answer.",
+ scienceEyebrow:"LEARNING SCIENCE",scienceHeading:"Informed by research on how people learn",scienceNote:"These studies inform how we think about recall and understanding. They do not establish LexLearn’s learning impact, which the proposed supervised pilot aims to evaluate.",science1:"Retrieval practice and long-term retention",science2:"Retrieval can support conceptual learning",science3:"Practice testing and spaced learning",
  strengthTitle:"Example of the adaptive principle",strengthBody:"Strong recall + weaker understanding → practise explaining each element of the rule. Strong understanding + weaker recall → create memory cues from the concept already understood.",
  label03:"03 / TRY IT YOURSELF",demoTitle:"Try the live experience.",demoBody:"The public demo shows part of the idea—recall and understanding, with provisional local evaluation. It does not represent a validated five-skill diagnosis or a completed university pilot.",demoButton:"Try the live demo ↗",
  flow1:"Read a legal rule",flow2:"Answer questions",flow3:"See a provisional analysis",flow4:"Strengthen the weaker skill using the stronger one",
@@ -76,7 +78,7 @@ const EN={
  pilot1:"Before: establish a baseline using skill-specific tasks.",pilot2:"During: deliver structured practice with faculty oversight and privacy safeguards.",pilot3:"After: review usability, scoring agreement and early learning indicators. Impact remains to be established.",pilotCTA:"Discuss an academic pilot ↗",
  label06:"06 / INVESTORS & PARTNERS",visionTitle:"Qatar first. Proof before scale.",visionLead:"The long-term vision is a diagnostic-first learning platform with explainable recommendations and meaningful faculty oversight.",
  phase1:"Working beta",phase1P:"Core student experience and supervisor tools under development and testing.",phase2:"Qatari academic pilot",phase2P:"Propose 30–60 students over 6–8 weeks; measure the first outcomes.",phase3:"Product validation",phase3P:"Refine AI analysis of written answers, legal review and scalable faculty workflows.",phase4:"Broader expansion",phase4P:"Consider additional legal subjects and then other disciplines only after evidence.",
- honestyTitle:"Where we stand today",status1:"Working beta",status2:"AI analysis of written answers: in progress",status3:"Learning impact not yet proven",
+ honestyTitle:"Where we stand today",status1:"Working beta",status2:"AI analysis of written answers: in progress",status2Title:"AI analysis of written answers",status2State:"In progress · validating reliability",status3:"Learning impact not yet proven",
  label07:"07 / CONTACT",contactTitle:"Let's explore what comes next.",contactText:"Academic pilots, incubation support, technical partnerships and early-stage conversations.",emailCTA:"Email the founder ↗",waCTA:"Share via WhatsApp ↗",qrCTA:"Print QR code ↓",waNote:"WhatsApp currently shares this page; direct WhatsApp contact will require a public contact number.",founderName:"Dr Ahmed Foad Elfeky",founderRole:"Founder & CEO",privacy:"Privacy",footerNote:"A working beta, not an accredited university assessment service."
 };
 const languageButtonEN=document.getElementById("langEN"),languageButtonAR=document.getElementById("langAR");
