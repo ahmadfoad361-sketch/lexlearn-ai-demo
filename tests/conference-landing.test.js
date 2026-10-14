@@ -231,7 +231,7 @@ for(const home of [ar,en]){
   assert.ok(!home.includes("homeUtilityBar"),"no bar above conference logo");
   assert.ok(!home.includes('class="conferencePromo"'),"no duplicate event strip");
   assert.ok(!home.includes("conferenceDiscoverCTA"),"no repeated Explore LexLearn button");
-  assert.ok(home.includes("assets/conference-promo.css?v=20261014.15"),"refresh mobile conference card styles");
+  assert.ok(home.includes("assets/conference-promo.css?v=20261014.16"),"refresh physical-left language alignment styles");
   assert.ok(home.includes('href="conference.html"'),"logo and card must open conference");
   assert.ok(home.includes("qatar.websummit.com/wp-media/2026/02/QAT27_positive-768x139.png"),"unchanged official Web Summit logo");
   assert.ok(home.includes('class="wsqEventName"'),"separate event/program line from the main heading to prevent RTL/LTR collisions");
@@ -273,5 +273,18 @@ assert.ok(arLogic.includes('<nav class="lexHomeLang"')&&arLogic.indexOf('<nav cl
 assert.ok(promoCss.includes(".v9-topin>.lexHomeLang")&&promoCss.includes(".en-topin>.lexHomeLang"),"small language control must anchor to LexLearn header row on both languages");
 
 
+
+
+/* User mobile screenshot: language control must be at physical x≈12 px,
+   NOT clustered beside the RTL LexLearn logo towards the centre. */
+assert.ok(promoCss.includes("Mobile placement fixed to the SCREEN's physical left edge"),"explicit physical-left mobile positioning required");
+assert.ok(promoCss.includes(".v9-topin,.en-topin{")&&promoCss.includes("position:relative!important"),"both header rails must be local positioning containers");
+assert.ok(promoCss.includes(".v9-topin>.lexHomeLang,.en-topin>.lexHomeLang{"),"both page language buttons must anchor to the header rail");
+assert.ok(promoCss.includes("left:calc(12px + env(safe-area-inset-left,0px))!important"),"button must use physical left, not RTL inline-start");
+assert.ok(promoCss.includes("right:auto!important")&&promoCss.includes("transform:translateY(-50%)!important"),"no conflicting right positioning");
+assert.ok(promoCss.includes("max-width:calc(100% - 106px)!important"),"reserve left-side space to avoid wordmark overlap");
+assert.ok(promoCss.includes(".v9-topin>.v9-topactions:empty{display:none!important}"),"empty app actions must not affect the language rail");
+assert.ok(arLogic.indexOf('<nav class="lexHomeLang"')>arLogic.indexOf("v9-topactions"),"Arabic language button must stay outside brand markup");
+assert.ok(en.indexOf('<div class="en-topin"><nav class="lexHomeLang"')>=0,"English language switch remains separately positioned within header rail");
 
 console.log("conference landing release test PASS");
