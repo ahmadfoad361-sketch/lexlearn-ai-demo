@@ -20,8 +20,8 @@
 
   function words() {
     return isArabic()
-      ? {back:"رجوع", toStudent:"جاري فتح تجربة الطالب…", toUniversity:"جاري عرض خطة التعاون الجامعي…", toInvestor:"جاري عرض الرؤية وخارطة الطريق…", science:"مستوحى من أبحاث التعلّم والاسترجاع", cancel:"إلغاء"}
-      : {back:"Back", toStudent:"Opening the student demo…", toUniversity:"Opening the university pilot…", toInvestor:"Opening the vision and roadmap…", science:"Inspired by research on learning and recall", cancel:"Cancel"};
+      ? {back:"رجوع", toStudent:"جاري فتح تجربة الطالب…", toUniversity:"جاري عرض خطة التعاون الجامعي…", toInvestor:"جاري عرض الرؤية وخارطة الطريق…", cancel:"إلغاء"}
+      : {back:"Back", toStudent:"Opening the student demo…", toUniversity:"Opening the university pilot…", toInvestor:"Opening the vision and roadmap…", cancel:"Cancel"};
   }
   function sync() {
     var w = words();
@@ -82,7 +82,7 @@
     '<div class="ll-transition-panel">' +
       '<div class="ll-transition-logo"><img src="assets/lexlearn-x-transparent.svg" alt="LexLearn" width="108" height="108"></div>' +
       '<b class="ll-transition-name">Lex<span>Learn</span></b>' +
-      '<p class="ll-transition-context"></p>' +
+      '<div class="ll-learning-quote"></div>' +
       '<p class="ll-transition-message"></p>' +
       '<span class="ll-transition-bar" aria-hidden="true"><i></i></span>' +
       '<button class="ll-transition-cancel" type="button"></button>' +
@@ -95,7 +95,8 @@
   var links = [
     {selector:".paths .path.student", message:"toStudent"},
     {selector:".paths .path.university", message:"toUniversity"},
-    {selector:".paths .path.investor", message:"toInvestor"}
+    {selector:".paths .path.investor", message:"toInvestor"},
+    {selector:"#demoLink", message:"toStudent"}
   ];
   links.forEach(function (config) {
     var link = doc.querySelector(config.selector);
@@ -108,7 +109,12 @@
       closeOverlay();
       var w = words();
       overlay.querySelector(".ll-transition-message").textContent = w[config.message];
-      overlay.querySelector(".ll-transition-context").textContent = w.science;
+      var quoteTarget = overlay.querySelector(".ll-learning-quote");
+      if (window.LEXLEARN_LEARNING_LINES) {
+        window.LEXLEARN_LEARNING_LINES.render(quoteTarget, isArabic() ? "ar" : "en");
+      } else {
+        quoteTarget.textContent = isArabic() ? "نفهم لنتذكّر، ونسترجع لنفهم أكثر." : "We understand to remember; we retrieve to understand more.";
+      }
       overlay.querySelector(".ll-transition-cancel").textContent = w.cancel;
       overlay.setAttribute("lang", isArabic() ? "ar" : "en");
       overlay.setAttribute("dir", isArabic() ? "rtl" : "ltr");
