@@ -13,6 +13,18 @@ for(const forbidden of ["Qatar University","Lusail University","HBKU","exam perf
 assert.ok(!html.includes("<form"),"no contact data form");
 assert.ok(!/<script[^>]+src="https?:/i.test(html),"no third party scripts");
 assert.ok(html.includes("mailto:ahmadfoad361@gmail.com"),"direct email contact required");
+
+assert.ok(html.includes('id="science"')&&html.includes('data-t="scienceHeading"'),"research foundation must be accessible on the page");
+for(const pmid of ["16507066","21252317","26173288"]){
+  assert.ok(html.includes("pubmed.ncbi.nlm.nih.gov/"+pmid+"/"),"missing real research citation "+pmid);
+}
+assert.ok(js.includes("لا تثبت الأثر التعليمي لمنصة LexLearn"),"research must not claim LexLearn is scientifically validated");
+assert.ok(html.includes('class="honestyAi"')&&html.includes('data-t="status2Title"')&&html.includes('data-t="status2State"'),"AI development status must be readable as two lines");
+assert.ok(js.includes('status2State:"قيد التطوير والتحقق من الدقة"'),"AI beta status must remain honest");
+const transitions=read("assets/lexlearn-navigation.js");
+for(const name of ["Test-Enhanced Learning","Karpicke &amp; Blunt","Dunlosky et al.","ll-paper-field","ll-transition-context"])assert.ok(transitions.includes(name),"missing research-inspired transition "+name);
+assert.ok(read("assets/lexlearn-navigation.css").includes(".ll-research-slip"),"journal paper visuals missing");
+
 assert.ok(html.includes("api.whatsapp.com/send?text"),"WhatsApp share button");
 assert.ok(html.includes("property=\"og:image\""),"OG preview required");
 assert.ok(html.includes("lexlearn-og.jpg")&&html.includes("lexlearn-x-transparent.svg"));
