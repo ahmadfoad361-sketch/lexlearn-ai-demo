@@ -76,3 +76,13 @@
 }
 @media(max-height:580px){.ll-research-slip{opacity:.2}.ll-paper-three{display:none}.ll-transition-panel{padding:18px 20px}.ll-transition-logo{height:90px;width:90px}.ll-transition-logo img{height:78px;width:78px}}
 @media(prefers-reduced-motion:reduce){.ll-research-slip{transform:none}}
+
+/* Short independent two-part quotations: readable in Arabic and English. */
+.ll-learning-quote{margin:12px auto 4px;max-width:300px;min-height:78px;text-align:center}
+.ll-learning-quote .ll-quote-main{font:800 clamp(17px,2.6vw,22px)/1.6 Tahoma,Arial,sans-serif;margin:0;color:#111D31;overflow-wrap:break-word}
+.ll-learning-quote .ll-quote-main span{display:block}
+.ll-learning-quote .ll-quote-main span+span{color:#8A1F39}
+.ll-learning-quote .ll-quote-source{display:block;margin:9px 0 2px;font:600 10px/1.5 Tahoma,Arial,sans-serif;color:#606a7b}
+.ll-transition-message{font-size:clamp(12px,1.7vw,14px);color:#5b6576;margin:15px auto 13px;min-height:auto}
+@media(max-width:690px){.ll-learning-quote{max-width:270px}.ll-learning-quote .ll-quote-main{font-size:18px;line-height:1.65}.ll-learning-quote .ll-quote-source{font-size:10px}.ll-transition-message{font-size:12px}}
+@media(max-height:580px){.ll-learning-quote{min-height:0;margin-top:6px}.ll-learning-quote .ll-quote-main{font-size:15px;line-height:1.35}.ll-learning-quote .ll-quote-source{margin-top:4px}.ll-transition-message{margin:8px auto}}
