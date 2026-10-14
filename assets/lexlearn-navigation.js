@@ -124,7 +124,7 @@
         } else {
           loc.assign(link.href);
         }
-      }, reduced ? 180 : 480);
+      }, reduced ? 180 : 720);
     });
   });
 })();
