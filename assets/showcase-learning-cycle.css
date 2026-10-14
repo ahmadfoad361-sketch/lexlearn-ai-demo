@@ -1,0 +1,54 @@
+/* LexLearn public demo: research-aligned practice extension, mobile first. */
+.learningCycle{max-width:880px;margin-inline:auto;min-width:0;overflow-wrap:anywhere}
+.learningCycle h2{margin:12px 0 14px;font-size:clamp(1.45rem,3.5vw,2.3rem);line-height:1.4}
+.learningCycle .cycleLead{font-size:clamp(1rem,1.5vw,1.17rem);line-height:1.85;margin:12px 0 20px;color:#334155}
+.learningCycle .cycleSmall{font-size:.92rem;line-height:1.85;color:#526078;background:#f0f3f9;border:1px solid #dfe5f0;padding:13px 16px;border-radius:14px;margin:19px 0}
+.learningCycle .cyclePath{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;margin:22px 0;padding:15px;border-radius:16px;background:#f6f0f2;color:#69223c;font-weight:700;font-size:.94rem}
+.learningCycle .cyclePath span:nth-child(even){color:#926978;font-weight:400;font-size:1.15rem}
+.learningCycle .cycleProgress{display:flex;align-items:center;gap:15px;margin-bottom:24px;color:#273851;font-size:.9rem;font-weight:700}
+.learningCycle .cycleProgress>span{white-space:nowrap}
+.learningCycle .cycleMeter{flex:1;min-width:50px;height:9px;background:#e4e9f3;border-radius:100px;overflow:hidden}
+.learningCycle .cycleMeter i{height:100%;display:block;border-radius:inherit;background:linear-gradient(90deg,#8f1d3f,#142b5f);transition:width .2s ease}
+.learningCycle .cycleChoices{margin:24px 0 0;gap:12px}
+.learningCycle .cycleChoices .choice{line-height:1.75;text-align:start;min-height:56px;white-space:normal;font-size:1rem;padding:13px 17px}
+.learningCycle .cycleChoices .choice:disabled{cursor:default;opacity:1}
+.learningCycle .cycleChoices .choice.good{border-color:#7cb69b;background:#e8f6ef;color:#165c42}
+.learningCycle .cycleChoices .choice.bad{border-color:#d6a0aa;background:#fbecef;color:#862842}
+.learningCycle .cycleInput{min-height:150px;margin:6px 0 2px;font-size:1.02rem;line-height:1.9}
+.learningCycle .cycleInput:disabled{background:#f6f8fc;color:#304057;opacity:1}
+.learningCycle .cycleHint{font-size:.86rem;margin:2px 0 15px;line-height:1.65}
+.learningCycle .cycleFeedback{margin-top:18px}
+.learningCycle .cycleFeedback:empty{display:none}
+.learningCycle .cycleNote{border:1px solid #cfdae9;background:#f5f8ff;border-radius:16px;padding:17px 19px;margin-bottom:16px}
+.learningCycle .cycleNoteOk{border-color:#b7daca;background:#f0f9f4}
+.learningCycle .cycleNoteReview{border-color:#e2c9aa;background:#fff8ee}
+.learningCycle .cycleLabel{display:block;color:#142b5f;font-size:1rem;font-weight:800;margin-bottom:7px}
+.learningCycle .cycleNote p{margin:0 0 8px;color:#263d58;font-size:1rem;line-height:1.85}
+.learningCycle .cycleNote small{display:block;color:#53647c;line-height:1.7;margin-top:7px}
+.learningCycle .cycleSummary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px;margin:24px 0}
+.learningCycle .cycleSummary>div{min-width:0;text-align:center;background:#f3f5fa;border:1px solid #dce3ef;border-radius:16px;padding:17px 12px}
+.learningCycle .cycleSummary b{display:block;color:#142b5f;font-size:clamp(1.3rem,4vw,1.8rem);font-variant-numeric:tabular-nums}
+.learningCycle .cycleSummary span{display:block;color:#4f5c72;font-size:.87rem;line-height:1.6;margin-top:5px}
+.learningCycle .cycleFinishIcon{display:grid;place-items:center;border-radius:100%;height:58px;width:58px;background:#e9f7ef;border:1px solid #b4dbc5;color:#176e4c;font-size:30px;font-weight:800;margin:22px 0}
+.learningCycle .demoActions{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px;align-items:center}
+.learningCycle .demoActions .btn{white-space:normal;max-width:100%;text-align:center}
+html[lang="en"] .learningCycle{text-align:left;direction:ltr}
+html[lang="en"] .learningCycle .cycleInput{text-align:left;direction:ltr}
+html[lang="en"] .learningCycle .cyclePath{direction:ltr}
+html[lang="en"] .learningCycle .cycleChoices .choice{text-align:left;direction:ltr}
+@media(max-width:600px){
+  .learningCycle{width:100%}
+  .learningCycle .cycleLead{font-size:1rem;line-height:1.8}
+  .learningCycle .cyclePath{padding:12px 9px;gap:6px;font-size:.76rem}
+  .learningCycle .cycleProgress{margin-bottom:18px}
+  .learningCycle .cycleChoices .choice{padding:14px;min-height:54px}
+  .learningCycle .cycleSummary{gap:9px}
+  .learningCycle .cycleSummary>div{padding:14px 8px}
+  .learningCycle .demoActions{flex-direction:column;align-items:stretch}
+  .learningCycle .demoActions .btn,
+  .learningCycle .demoActions a.btn,
+  .learningCycle>.btn{width:100%;min-height:46px;display:flex;justify-content:center;align-items:center}
+  .learningCycle #cycleCompare,
+  .learningCycle #cycleNext{width:100%;min-height:46px}
+}
+@media(prefers-reduced-motion:reduce){.learningCycle .cycleMeter i{transition:none}}
