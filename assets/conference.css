@@ -29,3 +29,22 @@ html[lang="ar"] .pilot > div:first-child h2{letter-spacing:0;line-height:1.52}
   .pilot > div:first-child p:not(.eyebrow){line-height:1.85}
   .honesty span{overflow-wrap:anywhere}
 }
+
+/* Compact source-linked learning-science evidence, without implying pilot validation. */
+.researchBasis{margin-top:22px;padding:25px 26px;border-radius:16px;background:rgba(255,255,255,.76);border:1px solid var(--line)}
+.researchIntro{max-width:795px}
+.researchIntro h3{font-size:clamp(18px,2.15vw,26px);line-height:1.45;margin:0 0 10px}
+.researchIntro>p:last-child{font-size:13px;line-height:1.8;color:var(--sub);margin:0 0 19px}
+.researchCards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.researchCard{position:relative;display:flex;flex-direction:column;gap:9px;min-width:0;text-decoration:none;background:#fffdfb;border:1px solid #e1d7cf;border-radius:12px;padding:19px 17px 16px;transition:border-color .16s,transform .16s}
+.researchCard:hover{transform:translateY(-2px);border-color:var(--burgundy)}
+.researchCard:focus-visible{outline:3px solid var(--burgundy);outline-offset:3px}
+.researchLabel{font:800 9px/1.5 Arial,sans-serif;letter-spacing:.07em;color:var(--burgundy);direction:ltr;text-align:start}
+.researchCard>b{font:bold 15px/1.35 Georgia,serif;direction:ltr;text-align:start;color:var(--navy)}
+.researchAuthors{font:600 11px/1.4 Arial,sans-serif;color:#536077;direction:ltr;text-align:start}
+.researchInsight{font-size:12px;line-height:1.7;color:#5a6272;padding-inline-end:19px}
+.researchVisit{position:absolute;inset-inline-end:15px;bottom:15px;font-size:18px;color:var(--burgundy)}
+.honesty .honestyAi{display:flex;flex-direction:column;gap:4px;min-width:205px;max-width:min(100%,330px);background:rgba(255,255,255,.09)}
+.honestyAi strong{font-size:13px;line-height:1.55;font-weight:750}
+.honestyAi small{font-size:11px;line-height:1.45;color:#ebced4}
+@media(max-width:760px){.researchCards{grid-template-columns:1fr}.researchBasis{padding:20px 17px}.researchCard{padding:16px}.honesty .honestyAi{min-width:0;max-width:100%}}
