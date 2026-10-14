@@ -156,7 +156,7 @@ assert.notEqual(ivBank.next().name,prevAuthor,"do not repeat business leader at 
 assert.ok(en.includes('class="wsqEventCTA"')&&ar.includes('class="wsqEventCTA"'),"Web Summit homepage needs a static dedicated conference entry in both languages");
 assert.ok(en.includes("qatar.websummit.com/wp-media/2026/02/QAT27_positive-768x139.png"),"home button must use the official unchanged 2027 logo");
 assert.ok(read("assets/conference-promo.css").includes(".wsqEventCTA"),"branded conference entry must have responsive styles");
-assert.ok(ar.includes("assets/v9-law.js?v=20261014.14"),"publish refreshed Arabic homepage");
+assert.ok(ar.includes("assets/v9-law.js?v=20261014.15"),"publish refreshed Arabic homepage");
 assert.ok(ar.includes("wsqHomeFeature")&&en.includes("wsqHomeFeature"),"2027 conference entry must be visible without waiting for dynamic app scripts");
 assert.ok(!arLogic.includes('class="wsqEventCTA"'),"conference button should not duplicate in the Arabic app");
 assert.ok(ar.includes("QAT27_positive-768x139.png")&&en.includes("QAT27_positive-768x139.png"),"both conference buttons need the official logo");
@@ -224,14 +224,14 @@ assert.equal(homeDestination,"index-en.html");
 const homeCss=read("assets/quality.css"), promoCss=read("assets/conference-promo.css");
 for(const home of [ar,en]){
   assert.equal((home.match(/class="wsqEventCTA"/g)||[]).length,1,"one coherent event card per homepage");
-  assert.ok(home.includes('class="wsqLogoLink"'),"official logo must itself link to conference");
+  assert.ok(home.includes('class="wsqEventLogo"'),"official conference logo must be inside the single card link");
   assert.ok(!home.includes('class="wsqLangSwitch"'),"language switch must no longer sit under the conference logo");
   assert.ok(home.includes('class="wsqEventAction"'),"conference entry needs clear action");
   assert.ok(!home.includes("wsqEventArrow"),"no arrow square");
   assert.ok(!home.includes("homeUtilityBar"),"no bar above conference logo");
   assert.ok(!home.includes('class="conferencePromo"'),"no duplicate event strip");
   assert.ok(!home.includes("conferenceDiscoverCTA"),"no repeated Explore LexLearn button");
-  assert.ok(home.includes("assets/conference-promo.css?v=20261014.14"),"refresh full-width event presentation");
+  assert.ok(home.includes("assets/conference-promo.css?v=20261014.15"),"refresh mobile conference card styles");
   assert.ok(home.includes('href="conference.html"'),"logo and card must open conference");
   assert.ok(home.includes("qatar.websummit.com/wp-media/2026/02/QAT27_positive-768x139.png"),"unchanged official Web Summit logo");
   assert.ok(home.includes('class="wsqEventName"'),"separate event/program line from the main heading to prevent RTL/LTR collisions");
@@ -242,9 +242,9 @@ assert.ok(enEvent>=0&&enHeader>enEvent,"Web Summit logo must precede all English
 assert.ok(arEvent>=0&&arApp>arEvent,"Web Summit logo must precede dynamically-rendered Arabic header");
 assert.ok(arLogic.includes("lexHomeLangCurrent")&&arLogic.includes("العربية")&&arLogic.includes("English"),"dynamic Arabic LexLearn header must provide both language choices");
 assert.ok(en.includes('title="العربية"')&&en.includes('title="English"'),"English LexLearn header must provide both language choices");
-assert.ok(promoCss.includes(".wsqEventBrand")&&promoCss.includes(".wsqLogoLink>img"),"event logo must own large top-row layout");
+assert.ok(promoCss.includes(".wsqEventLogo{")&&promoCss.includes("flex-direction:column"),"event logo must sit above the text within its card");
 assert.ok(promoCss.includes(".lexHomeLang{")&&!promoCss.includes(".wsqLangSwitch{"),"language switch must be beside LexLearn instead of event logo");
-assert.ok(promoCss.includes(".wsqEventCTA{")&&promoCss.includes("width:min(100%,650px)"),"mobile hero uses a single bordered event card");
+assert.ok(promoCss.includes(".wsqEventCTA{")&&promoCss.includes("width:min(100%,720px)"),"mobile hero uses one bordered event card");
 assert.ok(promoCss.includes("@media(max-width:760px)"),"full-width responsive event hero required");
 assert.ok(ar.includes("افتح صفحة المؤتمر")&&en.includes("Open conference page"),"conference CTA must be localized");
 assert.ok(homeCss.includes(".qualityHero .qualityActions,.en-hero .actions{display:grid!important;grid-template-columns:minmax(0,1fr)!important"),"functional actions must remain one-column on mobile");
@@ -252,14 +252,26 @@ assert.ok(homeCss.includes("width:100%!important;max-width:100%;min-width:0;min-
 assert.ok(arLogic.includes('class="qualityActions"')&&arLogic.includes('class="qualityDemoAction"'),"Arabic functional hero actions intact");
 assert.ok(en.includes('class="actions"')&&en.includes('class="qualityDemoAction"'),"English functional hero actions intact");
 assert.ok(!arLogic.includes("conferenceDiscoverCTA")&&!en.includes("conferenceDiscoverCTA"),"no duplicated navigation to conference");
-assert.ok(en.includes('<div class="en-brand"><nav class="lexHomeLang"'),"English small E/ع switch sits to physical left of LexLearn mark");
-assert.ok(arLogic.includes("lexHomeLang"),"Arabic E/ع switch is inside LexLearn brand row");
-assert.ok(arLogic.indexOf("lexHomeLang")<arLogic.indexOf("v9-topactions"),"Arabic language navigation must precede app action widgets");
-assert.ok(promoCss.includes(".wsqEventCTA{")&&promoCss.includes("border-top:4px solid #8A1F39"),"conference entry returns to a separate bordered first-style card");
+assert.ok(en.includes('<div class="en-topin"><nav class="lexHomeLang"'),"English small E/ع switch must be first, physically to the left of LexLearn brand");
+assert.ok(arLogic.includes("lexHomeLang"),"Arabic E/ع switch belongs in LexLearn header row");
+assert.ok(arLogic.indexOf("lexHomeLang")>arLogic.indexOf("v9-topactions"),"Arabic language navigation must be last, physically to the left of LexLearn brand");
+assert.ok(promoCss.includes(".wsqEventCTA{")&&promoCss.includes("border-top:5px solid #8A1F39"),"conference entry returns to the first-style bordered card");
 assert.ok(ar.includes('<strong>مشاركتنا في المؤتمر</strong>'),"Arabic conference heading must not interleave English words");
 assert.ok(ar.includes('class="wsqEventName" lang="en" dir="ltr"'),"isolate the LTR product/program name beneath Arabic title");
 assert.ok(ar.includes("خطة التعاون الجامعي")&&en.includes("proposed university pilot"),"keep conference project/pilot meaning in both languages");
-assert.ok(promoCss.includes(".wsqLogoLink>img")&&promoCss.includes(".wsqEventBrand"),"official logo still leads the homepage");
+assert.ok(promoCss.includes(".wsqEventLogo{")&&promoCss.includes(".wsqHomeFeature{"),"official Web Summit logo still leads the homepage inside the card");
+for(const home of [ar,en]){
+  const anchor=home.indexOf('<a class="wsqEventCTA"');
+  const img=home.indexOf('<img class="wsqEventLogo"',anchor);
+  const copy=home.indexOf('<span class="wsqEventCopy">',anchor);
+  const close=home.indexOf('</a>',anchor);
+  assert.ok(anchor>=0&&img>anchor&&copy>img&&close>copy,"the official logo, text and CTA must be inside the same clickable card");
+  assert.ok(home.indexOf('class="wsqHomeFeature"')<home.indexOf('class="wsqEventLogo"'),"event card is the first prominent home element");
+  assert.equal((home.match(/class="wsqEventLogo"/g)||[]).length,1,"the event logo must never be duplicated above the card");
+}
+assert.ok(arLogic.includes("'</div>'+")&&arLogic.includes("'<nav class=\\\"lexHomeLang\\\""),"Arabic left-side language pill must be a sibling, not inside the wordmark");
+assert.ok(promoCss.includes(".v9-topin>.lexHomeLang")&&promoCss.includes(".en-topin>.lexHomeLang"),"small language control must anchor to LexLearn header row on both languages");
+
 
 
 console.log("conference landing release test PASS");
