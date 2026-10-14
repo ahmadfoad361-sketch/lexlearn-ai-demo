@@ -19,3 +19,12 @@
 @keyframes lexlearn-route{from{transform:translateX(-55%)}to{transform:translateX(195%)}}
 @media(max-width:690px){.ll-back{top:calc(env(safe-area-inset-top,0px) + 84px);padding:8px 12px;font-size:12px}.ll-back-inline{top:auto;padding:7px 10px;font-size:12px;min-height:38px}.ll-transition-panel{padding:28px 20px 24px}.ll-transition-logo{height:110px;width:110px}.ll-transition-logo img{height:96px;width:96px}}
 @media(prefers-reduced-motion:reduce){.ll-transition-bar i{animation:none;width:100%}}
+
+/* On compact phone headers, keep the back arrow and language switch visible. */
+@media(max-width:520px){
+  .site-header .top-actions{gap:7px}
+  .site-header #homeLink{display:none}
+  .site-header .identity b{font-size:18px}
+  .ll-back-inline .ll-back-label{display:none}
+  .ll-back-inline{min-width:39px;padding:7px 10px}
+}
