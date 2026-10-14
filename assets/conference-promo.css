@@ -12,3 +12,8 @@
 @media(max-width:650px){.wsqEventCTA{padding:13px;gap:10px;min-height:91px;width:100%}.wsqEventCTA>img{flex-basis:112px;width:112px;max-width:33%}.wsqEventCopy strong{font-size:12px}.wsqEventCopy small{font-size:10px}.wsqEventArrow{font-size:17px}}
 @media(max-width:350px){.wsqEventCTA{gap:8px}.wsqEventCTA>img{width:90px;flex-basis:90px;max-width:28%}}
 @media(prefers-reduced-motion:reduce){.wsqEventCTA{transition:none}}
+
+/* Visible immediately without waiting for the LexLearn learning app scripts. */
+.wsqHomeFeature{max-width:1200px;margin:0 auto;padding:13px 20px 2px;display:flex;justify-content:center;align-items:center}
+.wsqHomeFeature .wsqEventCTA{max-width:610px}
+@media(max-width:650px){.wsqHomeFeature{padding:10px 13px 0}.wsqHomeFeature .wsqEventCTA{width:100%;max-width:none}}
