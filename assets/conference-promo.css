@@ -1,75 +1,77 @@
-/* Web Summit Qatar 2027: full-width first impression on phones.
-   No promo/header before official event logo. Original logo remains unmodified. */
-.wsqHomeFeature{
-  width:100%;max-width:none;margin:0;padding:0 12px 14px;
-  background:#F9F4EF;display:block;box-sizing:border-box
+/* LexLearn × Web Summit Qatar 2027.
+   Preserve the approved logo as the first visual on both homepages.
+   The event entry is a separate, familiar visitor card; the tiny language
+   toggle belongs to the LexLearn brand row, never the conference mark. */
+.wsqHomeFeature{width:100%;max-width:none;margin:0;padding:0 14px 20px;background:#F9F4EF;box-sizing:border-box}
+.wsqEventHero{box-sizing:border-box;max-width:1120px;margin:0 auto;padding:12px 26px 24px;min-width:0}
+.wsqEventBrand{display:flex;justify-content:center;align-items:center;min-width:0;margin:0 auto 18px}
+.wsqLogoLink{display:block;width:min(100%,720px);min-width:0;text-decoration:none}
+.wsqLogoLink>img{display:block;width:100%;height:auto;max-width:100%;aspect-ratio:768/139;object-fit:contain;background:#fff;border:0}
+.wsqLogoLink:focus-visible,.wsqEventCTA:focus-visible,.lexHomeLang a:focus-visible{outline:3px solid #8A1F39;outline-offset:3px;border-radius:10px}
+.wsqEventCTA{
+  box-sizing:border-box;display:block;width:min(100%,650px);max-width:100%;
+  margin:0 auto;padding:20px 22px 22px;min-width:0;
+  color:#111D31;text-decoration:none;background:#fffdfb;border:1px solid #e1d5d7;
+  border-top:4px solid #8A1F39;border-radius:20px;
+  box-shadow:0 13px 32px rgba(17,29,49,.085);
+  transition:box-shadow .16s ease,transform .16s ease
 }
-.wsqHomeFeature .wsqEventHero{
-  position:relative;box-sizing:border-box;width:100%;max-width:1100px;margin:0 auto;
-  background:#fffdfb;border:1px solid #e4dbe0;border-top:none;
-  border-radius:0 0 23px 23px;box-shadow:0 18px 44px rgba(17,29,49,.07);
-  overflow:hidden;padding:8px 26px 25px
-}
-.wsqEventBrand{
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  position:relative;max-width:100%;min-width:0;margin:0 auto;padding:13px 0 24px
-}
-.wsqLogoLink{display:block;width:min(100%,670px);max-width:100%;text-decoration:none}
-.wsqLogoLink:focus-visible{outline:3px solid #8A1F39;outline-offset:4px;border-radius:8px}
-.wsqLogoLink>img{
-  display:block;width:100%;height:auto;aspect-ratio:768 / 139;
-  object-fit:contain;background:#fff;max-width:100%;border:0
-}
-.wsqLangSwitch{
-  position:absolute;bottom:0;inset-inline-end:0;direction:ltr;
-  display:inline-flex;align-items:center;justify-content:center;gap:3px;
-  border:1px solid #dfd5d5;background:#fffdfb;border-radius:999px;padding:3px;
-  font:800 12px/1.1 Arial,Tahoma,sans-serif;box-shadow:0 3px 9px rgba(17,29,49,.05)
-}
-.wsqLangSwitch>a,.wsqLangSwitch>.wsqLangCurrent{
-  min-height:34px;min-width:34px;display:grid;place-items:center;
-  border-radius:50%;text-align:center;text-decoration:none;
-}
-.wsqLangSwitch .wsqLangCurrent{background:#111D31;color:#fff}
-.wsqLangSwitch a{background:transparent;color:#111D31}
-.wsqLangSwitch a:hover{background:#F9F4EF}
-.wsqLangSwitch a:focus-visible{outline:3px solid #8A1F39;outline-offset:3px}
-.wsqHomeFeature .wsqEventCTA{
-  display:block;box-sizing:border-box;max-width:760px;width:100%;
-  min-height:0;margin:11px auto 0;padding:8px 6px 0;
-  border:0;border-radius:0;box-shadow:none;background:transparent;
-  color:#111D31;text-decoration:none;transition:none
-}
-.wsqHomeFeature .wsqEventCTA:hover{transform:none;box-shadow:none}
-.wsqEventCopy{display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center}
-.wsqEventCopy strong{font:800 clamp(20px,2.7vw,28px)/1.55 Tahoma,Arial,sans-serif;color:#111D31}
-.wsqEventCopy small{font:500 clamp(13px,1.5vw,16px)/1.75 Tahoma,Arial,sans-serif;color:#576276}
+.wsqEventCTA:hover{box-shadow:0 17px 38px rgba(17,29,49,.12);transform:translateY(-2px)}
+.wsqEventCopy{display:flex;align-items:center;flex-direction:column;gap:9px;min-width:0;text-align:center}
+.wsqEventCopy strong{display:block;font:800 clamp(19px,2.5vw,24px)/1.5 Tahoma,Arial,sans-serif;max-width:100%;color:#111D31;overflow-wrap:break-word}
+.wsqEventName{display:block;max-width:100%;font:800 13px/1.4 Arial,sans-serif;letter-spacing:.07em;color:#8A1F39;unicode-bidi:isolate;text-align:center}
+.wsqEventCopy small{display:block;font:500 clamp(13px,1.6vw,15px)/1.85 Tahoma,Arial,sans-serif;max-width:100%;color:#586174;overflow-wrap:break-word}
 .wsqEventAction{
-  box-sizing:border-box;display:flex;align-items:center;justify-content:center;
-  align-self:stretch;min-height:49px;margin-top:6px;padding:12px 18px;
-  background:#8A1F39;color:#fff;border-radius:13px;text-align:center;
-  font:800 15px/1.4 Tahoma,Arial,sans-serif
+  display:flex;align-items:center;justify-content:center;box-sizing:border-box;align-self:stretch;
+  min-height:50px;max-width:100%;margin-top:7px;padding:12px 15px;
+  border-radius:13px;background:#8A1F39;color:#fff;
+  font:800 15px/1.5 Tahoma,Arial,sans-serif;text-align:center
 }
-.wsqHomeFeature .wsqEventCTA:focus-visible{outline:3px solid #8A1F39;outline-offset:3px;border-radius:12px}
+/* Compact language pill beside LexLearn's own logo and name. */
+.lexHomeLang{display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;gap:2px;direction:ltr;margin:0;padding:3px;border:1px solid #ded5cf;border-radius:999px;background:#fffdfb;line-height:1;box-shadow:0 4px 12px rgba(17,29,49,.05)}
+.lexHomeLang>a,.lexHomeLang>.lexHomeLangCurrent{display:grid;place-items:center;min-width:33px;min-height:36px;box-sizing:border-box;padding:0 3px;border-radius:999px;text-align:center;font:800 13px/1 Arial,Tahoma,sans-serif}
+.lexHomeLang>a{color:#111D31;text-decoration:none}
+.lexHomeLang>a:hover{background:#F9F4EF}
+.lexHomeLangCurrent{color:#fff;background:#111D31}
+.v9-brand{min-width:0;max-width:100%}
+.v9-brand .lexHomeLang{margin-inline-start:8px}
+.v9-brand>div:nth-child(2){min-width:0}
+.en-brand{min-width:0;max-width:100%}
+.en-brand .lexHomeLang{margin-inline-end:7px}
+.en-brand>div:last-child{min-width:0}
 @media(max-width:760px){
-  .wsqHomeFeature{padding:0 0 10px}
-  .wsqHomeFeature .wsqEventHero{
-    padding:5px clamp(16px,4vw,24px) 22px;border-inline:0;border-radius:0 0 21px 21px;
-    width:100%;box-shadow:0 10px 25px rgba(17,29,49,.07)
-  }
-  .wsqEventBrand{padding:8px 0 29px}
+  .wsqHomeFeature{padding:0 0 14px}
+  .wsqEventHero{padding:8px 14px 12px}
+  .wsqEventBrand{margin-bottom:16px}
   .wsqLogoLink{width:100%;max-width:100%}
-  .wsqLogoLink>img{width:100%;max-width:100%;height:auto}
-  .wsqLangSwitch{bottom:-1px;inset-inline-end:0;padding:2px}
-  .wsqLangSwitch>a,.wsqLangSwitch>.wsqLangCurrent{min-height:32px;min-width:32px;font-size:13px}
-  .wsqHomeFeature .wsqEventCTA{margin:10px auto 0;padding:5px 0 0;width:100%}
-  .wsqEventCopy{gap:9px}
-  .wsqEventCopy strong{font-size:clamp(18px,5vw,23px);line-height:1.6;overflow-wrap:break-word}
-  .wsqEventCopy small{font-size:14px;line-height:1.7;overflow-wrap:break-word}
-  .wsqEventAction{width:100%;min-height:51px;margin-top:8px;font-size:15px}
+  .wsqEventCTA{width:100%;padding:16px 16px 19px;border-radius:18px;border-top-width:4px}
+  .wsqEventCopy{gap:8px}
+  .wsqEventCopy strong{font-size:clamp(19px,5.1vw,23px);line-height:1.55}
+  .wsqEventName{font-size:12px;letter-spacing:.06em}
+  .wsqEventCopy small{font-size:14px;line-height:1.85}
+  .wsqEventAction{min-height:52px;margin-top:5px;font-size:15px}
+  .v9-topin{gap:7px;padding-inline:13px}
+  .v9-brand{gap:7px}
+  .v9-brand .lexHomeLang{margin-inline-start:5px}
+  .v9-brand small{font-size:10px!important}
+  .en-topin{gap:8px;padding-inline:13px}
+  .en-brand{gap:7px}
+  .en-brand .lexHomeLang{margin-inline-end:3px}
+  .lexHomeLang>a,.lexHomeLang>.lexHomeLangCurrent{min-width:30px;min-height:35px;font-size:13px}
 }
-@media(max-width:360px){
-  .wsqHomeFeature .wsqEventHero{padding-inline:14px}
+@media(max-width:430px){
+  .v9-brand small,.en-brand small{display:none!important}
+  .v9-mark{height:39px!important;width:39px!important}
+  .en-brand img{height:38px;width:38px}
+  .v9-brand b,.en-brand b{font-size:17px}
+  .wsqEventHero{padding-inline:13px}
+  .wsqEventCTA{padding-inline:14px}
+}
+@media(max-width:355px){
+  .v9-topin,.en-topin{padding-inline:10px}
+  .v9-brand,.en-brand{gap:5px}
+  .v9-brand b,.en-brand b{font-size:15px}
+  .lexHomeLang>a,.lexHomeLang>.lexHomeLangCurrent{min-width:29px;min-height:34px}
   .wsqEventCopy strong{font-size:18px}
   .wsqEventCopy small{font-size:13px}
 }
