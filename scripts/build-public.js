@@ -39,14 +39,14 @@ for(const page of pages){
   let html=fs.readFileSync(full,"utf8");
   if(!html.includes("lexlearn-navigation.css")){
     if(!html.includes("</head>"))throw new Error("Cannot inject back navigation styles into "+page);
-    html=html.replace("</head>",'<link rel="stylesheet" href="assets/lexlearn-navigation.css?v=20261014.4"></head>');
+    html=html.replace("</head>",'<link rel="stylesheet" href="assets/lexlearn-navigation.css?v=20261014.5"></head>');
   }
   if(!html.includes("lexlearn-navigation.js")){
     if(!html.includes("</body>"))throw new Error("Cannot inject back navigation control into "+page);
-    html=html.replace("</body>",'<script src="assets/lexlearn-navigation.js?v=20261014.4" defer></script></body>');
+    html=html.replace("</body>",'<script src="assets/lexlearn-navigation.js?v=20261014.5" defer></script></body>');
   }
-  html=html.replaceAll("lexlearn-navigation.css?v=20261014.3","lexlearn-navigation.css?v=20261014.4")
-           .replaceAll("lexlearn-navigation.js?v=20261014.3","lexlearn-navigation.js?v=20261014.4");
+  html=html.replaceAll("lexlearn-navigation.css?v=20261014.3","lexlearn-navigation.css?v=20261014.5")
+           .replaceAll("lexlearn-navigation.js?v=20261014.3","lexlearn-navigation.js?v=20261014.5");
   fs.writeFileSync(full,html);
 }
 
