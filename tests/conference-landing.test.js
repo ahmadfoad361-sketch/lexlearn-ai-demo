@@ -156,7 +156,7 @@ assert.notEqual(ivBank.next().name,prevAuthor,"do not repeat business leader at 
 assert.ok(en.includes('class="wsqEventCTA"')&&ar.includes('class="wsqEventCTA"'),"Web Summit homepage needs a static dedicated conference entry in both languages");
 assert.ok(en.includes("qatar.websummit.com/wp-media/2026/02/QAT27_positive-768x139.png"),"home button must use the official unchanged 2027 logo");
 assert.ok(read("assets/conference-promo.css").includes(".wsqEventCTA"),"branded conference entry must have responsive styles");
-assert.ok(ar.includes("assets/v9-law.js?v=20261014.13"),"publish refreshed Arabic homepage");
+assert.ok(ar.includes("assets/v9-law.js?v=20261014.14"),"publish refreshed Arabic homepage");
 assert.ok(ar.includes("wsqHomeFeature")&&en.includes("wsqHomeFeature"),"2027 conference entry must be visible without waiting for dynamic app scripts");
 assert.ok(!arLogic.includes('class="wsqEventCTA"'),"conference button should not duplicate in the Arabic app");
 assert.ok(ar.includes("QAT27_positive-768x139.png")&&en.includes("QAT27_positive-768x139.png"),"both conference buttons need the official logo");
@@ -225,25 +225,25 @@ const homeCss=read("assets/quality.css"), promoCss=read("assets/conference-promo
 for(const home of [ar,en]){
   assert.equal((home.match(/class="wsqEventCTA"/g)||[]).length,1,"one coherent event card per homepage");
   assert.ok(home.includes('class="wsqLogoLink"'),"official logo must itself link to conference");
-  assert.ok(home.includes('class="wsqLangSwitch"'),"compact ع/E switch must sit by the logo");
+  assert.ok(!home.includes('class="wsqLangSwitch"'),"language switch must no longer sit under the conference logo");
   assert.ok(home.includes('class="wsqEventAction"'),"conference entry needs clear action");
   assert.ok(!home.includes("wsqEventArrow"),"no arrow square");
   assert.ok(!home.includes("homeUtilityBar"),"no bar above conference logo");
   assert.ok(!home.includes('class="conferencePromo"'),"no duplicate event strip");
   assert.ok(!home.includes("conferenceDiscoverCTA"),"no repeated Explore LexLearn button");
-  assert.ok(home.includes("assets/conference-promo.css?v=20261014.13"),"refresh full-width event presentation");
+  assert.ok(home.includes("assets/conference-promo.css?v=20261014.14"),"refresh full-width event presentation");
   assert.ok(home.includes('href="conference.html"'),"logo and card must open conference");
   assert.ok(home.includes("qatar.websummit.com/wp-media/2026/02/QAT27_positive-768x139.png"),"unchanged official Web Summit logo");
-  assert.ok(home.includes('aria-current="page"')&&home.includes('hreflang="'),"accessible localized language toggle");
+  assert.ok(home.includes('class="wsqEventName"'),"separate event/program line from the main heading to prevent RTL/LTR collisions");
 }
 const enEvent=en.indexOf('<div class="wsqHomeFeature"'),enHeader=en.indexOf('<header class="en-top">');
 const arEvent=ar.indexOf('<div class="wsqHomeFeature"'),arApp=ar.indexOf('<div id="lawApp">');
 assert.ok(enEvent>=0&&enHeader>enEvent,"Web Summit logo must precede all English home branding");
 assert.ok(arEvent>=0&&arApp>arEvent,"Web Summit logo must precede dynamically-rendered Arabic header");
-assert.ok(ar.includes('title="العربية"')&&ar.includes('title="English"'),"Arabic page must have both short language choices");
-assert.ok(en.includes('title="العربية"')&&en.includes('title="English"'),"English page must have both short language choices");
+assert.ok(arLogic.includes('title="العربية"')&&arLogic.includes('title="English"'),"dynamic Arabic LexLearn header must provide both language choices");
+assert.ok(en.includes('title="العربية"')&&en.includes('title="English"'),"English LexLearn header must provide both language choices");
 assert.ok(promoCss.includes(".wsqEventBrand")&&promoCss.includes(".wsqLogoLink>img"),"event logo must own large top-row layout");
-assert.ok(promoCss.includes(".wsqLangSwitch{")&&promoCss.includes("position:absolute;bottom:0"),"language pill must not occupy an extra top row");
+assert.ok(promoCss.includes(".lexHomeLang{")&&!promoCss.includes(".wsqLangSwitch{"),"language switch must be beside LexLearn instead of event logo");
 assert.ok(promoCss.includes(".wsqHomeFeature .wsqEventCTA"),"mobile hero uses a single presentation structure");
 assert.ok(promoCss.includes("@media(max-width:760px)"),"full-width responsive event hero required");
 assert.ok(ar.includes("افتح صفحة المؤتمر")&&en.includes("Open conference page"),"conference CTA must be localized");
@@ -252,5 +252,14 @@ assert.ok(homeCss.includes("width:100%!important;max-width:100%;min-width:0;min-
 assert.ok(arLogic.includes('class="qualityActions"')&&arLogic.includes('class="qualityDemoAction"'),"Arabic functional hero actions intact");
 assert.ok(en.includes('class="actions"')&&en.includes('class="qualityDemoAction"'),"English functional hero actions intact");
 assert.ok(!arLogic.includes("conferenceDiscoverCTA")&&!en.includes("conferenceDiscoverCTA"),"no duplicated navigation to conference");
+assert.ok(en.includes('<div class="en-brand"><nav class="lexHomeLang"'),"English small E/ع switch sits to physical left of LexLearn mark");
+assert.ok(arLogic.includes('class="lexHomeLang"'),"Arabic E/ع switch is inside LexLearn brand row");
+assert.ok(arLogic.indexOf('class="lexHomeLang"')<arLogic.indexOf('class="v9-topactions"'),"Arabic language navigation must precede app action widgets");
+assert.ok(promoCss.includes(".wsqEventCTA{")&&promoCss.includes("border-top:4px solid #8A1F39"),"conference entry returns to a separate bordered first-style card");
+assert.ok(ar.includes('<strong>مشاركتنا في المؤتمر</strong>'),"Arabic conference heading must not interleave English words");
+assert.ok(ar.includes('class="wsqEventName" lang="en" dir="ltr"'),"isolate the LTR product/program name beneath Arabic title");
+assert.ok(ar.includes("خطة التعاون الجامعي")&&en.includes("proposed university pilot"),"keep conference project/pilot meaning in both languages");
+assert.ok(promoCss.includes(".wsqLogoLink>img")&&promoCss.includes(".wsqEventBrand"),"official logo still leads the homepage");
+
 
 console.log("conference landing release test PASS");
