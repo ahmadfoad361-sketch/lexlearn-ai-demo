@@ -283,7 +283,7 @@ assert.ok(promoCss.includes(".v9-topin>.lexHomeLang,.en-topin>.lexHomeLang{"),"b
 assert.ok(promoCss.includes("left:calc(12px + env(safe-area-inset-left,0px))!important"),"button must use physical left, not RTL inline-start");
 assert.ok(promoCss.includes("right:auto!important")&&promoCss.includes("transform:translateY(-50%)!important"),"no conflicting right positioning");
 assert.ok(!promoCss.includes("inset-inline-end:auto!important")&&!promoCss.includes("inset-inline-start:auto!important"),"logical inset overrides physical left in RTL and pulls the language switch toward the centre");
-const mobileLangRule=promoCss.slice(promoCss.lastIndexOf(".v9-topin>.lexHomeLang,.en-topin>.lexHomeLang{"));
+const mobileLangRule=promoCss.slice(promoCss.indexOf(".v9-topin>.lexHomeLang,.en-topin>.lexHomeLang{",promoCss.indexOf("Mobile placement fixed to the SCREEN")));
 assert.ok(mobileLangRule.includes("left:calc(12px + env(safe-area-inset-left,0px))!important"),"RTL safe left must be the final anchor");
 assert.ok(promoCss.includes("@media(max-width:355px)")&&promoCss.includes("left:calc(10px + env(safe-area-inset-left,0px))!important"),"small iPhone switch must remain against physical left edge");
 
