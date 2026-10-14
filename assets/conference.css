@@ -166,3 +166,16 @@ html[lang="ar"] .pilot > div:first-child h2{letter-spacing:0;line-height:1.52}
   .section,.first{scroll-margin-top:20px}
 }
 @media(prefers-reduced-motion:reduce){.slides{scroll-behavior:auto}}
+
+/* Final phone-safe adjustments for printed QR visitors. */
+.site-header #homeLink{display:none} /* Main site is the dedicated الرئيسية / Home control. */
+@media(max-width:760px){
+  body{overflow-x:clip}
+  .slides{max-width:100%}
+  .frame{min-width:0}
+  .section h2,.section h3,.heroSub,.deckNote{overflow-wrap:break-word}
+}
+@media(max-width:375px){
+  .topbar{padding-inline:12px}
+  .promoMobile{font-size:10px}
+}
