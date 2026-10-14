@@ -14,8 +14,10 @@
   display:flex;flex-direction:column;align-items:center;justify-content:center;
   position:relative;max-width:100%;min-width:0;margin:0 auto;padding:13px 0 24px
 }
-.wsqEventBrand>img{
-  display:block;width:min(100%,670px);height:auto;aspect-ratio:768 / 139;
+.wsqLogoLink{display:block;width:min(100%,670px);max-width:100%;text-decoration:none}
+.wsqLogoLink:focus-visible{outline:3px solid #8A1F39;outline-offset:4px;border-radius:8px}
+.wsqLogoLink>img{
+  display:block;width:100%;height:auto;aspect-ratio:768 / 139;
   object-fit:contain;background:#fff;max-width:100%;border:0
 }
 .wsqLangSwitch{
@@ -56,7 +58,8 @@
     width:100%;box-shadow:0 10px 25px rgba(17,29,49,.07)
   }
   .wsqEventBrand{padding:8px 0 29px}
-  .wsqEventBrand>img{width:100%;max-width:100%;height:auto}
+  .wsqLogoLink{width:100%;max-width:100%}
+  .wsqLogoLink>img{width:100%;max-width:100%;height:auto}
   .wsqLangSwitch{bottom:-1px;inset-inline-end:0;padding:2px}
   .wsqLangSwitch>a,.wsqLangSwitch>.wsqLangCurrent{min-height:32px;min-width:32px;font-size:13px}
   .wsqHomeFeature .wsqEventCTA{margin:10px auto 0;padding:5px 0 0;width:100%}
