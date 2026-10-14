@@ -244,7 +244,7 @@ assert.ok(arLogic.includes("lexHomeLangCurrent")&&arLogic.includes("العربي
 assert.ok(en.includes('title="العربية"')&&en.includes('title="English"'),"English LexLearn header must provide both language choices");
 assert.ok(promoCss.includes(".wsqEventBrand")&&promoCss.includes(".wsqLogoLink>img"),"event logo must own large top-row layout");
 assert.ok(promoCss.includes(".lexHomeLang{")&&!promoCss.includes(".wsqLangSwitch{"),"language switch must be beside LexLearn instead of event logo");
-assert.ok(promoCss.includes(".wsqHomeFeature .wsqEventCTA"),"mobile hero uses a single presentation structure");
+assert.ok(promoCss.includes(".wsqEventCTA{")&&promoCss.includes("width:min(100%,650px)"),"mobile hero uses a single bordered event card");
 assert.ok(promoCss.includes("@media(max-width:760px)"),"full-width responsive event hero required");
 assert.ok(ar.includes("افتح صفحة المؤتمر")&&en.includes("Open conference page"),"conference CTA must be localized");
 assert.ok(homeCss.includes(".qualityHero .qualityActions,.en-hero .actions{display:grid!important;grid-template-columns:minmax(0,1fr)!important"),"functional actions must remain one-column on mobile");
