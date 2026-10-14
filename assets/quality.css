@@ -70,3 +70,11 @@ body{font-size:1rem}button,a,input,textarea,summary{touch-action:manipulation}bu
 
 /* LexLearn brand tokens — shared across public, student, demo and supervisor views */
 :root{--quality-navy:#142B5F;--quality-burgundy:#8F1D3F}
+
+/* One thoughtful learning line in the original non-blocking home intro. */
+.lexIntroQuote{max-width:min(90vw,530px);min-height:69px;margin:0 auto;padding:0 12px;color:#fffaf4;text-align:center}
+.lexIntroQuote .ll-quote-main{margin:0;font:700 clamp(16px,3.8vw,23px)/1.6 Tahoma,Arial,sans-serif}
+.lexIntroQuote .ll-quote-main span{display:block}
+.lexIntroQuote .ll-quote-main span+span{color:#edbdc9}
+.lexIntroQuote .ll-quote-source{display:block;margin-top:7px;font:500 11px/1.5 Tahoma,Arial,sans-serif;color:#d7dce7}
+@media(max-width:520px){.lexIntro{gap:13px}.lexIntroQuote .ll-quote-main{font-size:17px}.lexIntroQuote .ll-quote-source{font-size:10px}}
