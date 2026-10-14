@@ -28,3 +28,23 @@
   .ll-back-inline .ll-back-label{display:none}
   .ll-back-inline{min-width:39px;padding:7px 10px}
 }
+
+/* Visible text instead of a lone arrow: Arabic «رجوع», English «Back». */
+.ll-back-icon{display:none}
+.ll-back{min-width:65px;padding-inline:14px}
+.ll-back-inline .ll-back-label{display:inline!important}
+@media(max-width:520px){
+  .site-header .topbar{gap:6px;padding-inline:12px}
+  .site-header .identity{gap:5px}
+  .site-header .identity img{width:34px;height:34px}
+  .site-header .identity b{font-size:16px}
+  .site-header .top-actions{gap:6px}
+  .site-header .lang-switch button{min-height:36px;padding:6px 8px;font-size:11px}
+  .ll-back-inline{min-width:60px;padding:7px 9px;font-size:12px}
+  .ll-back-inline .ll-back-label{display:inline!important}
+}
+@media(max-width:350px){
+  .site-header .identity b{font-size:14px}
+  .site-header .identity img{width:30px;height:30px}
+  .site-header .lang-switch button{padding-inline:7px}
+}
