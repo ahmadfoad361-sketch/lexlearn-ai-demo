@@ -111,6 +111,7 @@ function run(options) {
   options = options || {};
   if(typeof options.stage !== "function" || typeof options.goBack !== "function") return false;
   var ar = options.lang !== "en";
+  var flowArrow = pick(ar,"←","→");
   var weak = options.weak === "recall" || options.weak === "understanding" ? options.weak : "balanced";
   var tasks = plan(weak,options.lang), pos = 0, choiceScores = [];
   var description = weak === "recall" ?
@@ -132,7 +133,7 @@ function run(options) {
     stage('<span class="demoEyebrow">'+pick(ar,"بعد التشخيص · تطبيق عملي","After diagnosis · guided practice")+'</span>'+
       '<h2>'+pick(ar,"استخدم قوتك لتطوّر ما تحتاجه","Use your strength to build your next skill")+'</h2>'+
       '<p class="cycleLead">'+esc(description)+'</p>'+
-      '<div class="cyclePath"><span>'+pick(ar,"تشخيص","Diagnosis")+'</span><span aria-hidden="true">←</span><span>'+pick(ar,"تدريب مخصص","Targeted practice")+'</span><span aria-hidden="true">←</span><span>'+pick(ar,"واقعة جديدة","New case")+'</span></div>'+
+      '<div class="cyclePath"><span>'+pick(ar,"تشخيص","Diagnosis")+'</span><span aria-hidden="true">'+flowArrow+'</span><span>'+pick(ar,"تدريب مخصص","Targeted practice")+'</span><span aria-hidden="true">'+flowArrow+'</span><span>'+pick(ar,"واقعة جديدة","New case")+'</span></div>'+
       '<p class="cycleSmall">'+pick(ar,"أربع مهام قصيرة. تظهر الإجابة المرجعية بعد محاولتك. الكتابة الحرة تُقارن ذاتيًا ولا تُصحَّح آليًا هنا؛ هذه معاينة تعليمية لا اختبار إتقان.","Four short activities with reference feedback. Free text is for self-comparison, not automatic essay grading; this illustrates the learning path.")+'</p>'+
       '<div class="demoActions"><button type="button" class="btn primary" id="cycleStart">'+pick(ar,"ابدأ التدريب المخصص","Start targeted practice")+'</button>'+backButton()+'</div>');
     document.getElementById("cycleStart").onclick=render;
