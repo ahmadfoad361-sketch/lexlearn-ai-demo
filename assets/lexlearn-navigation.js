@@ -110,7 +110,11 @@
       var w = words();
       overlay.querySelector(".ll-transition-message").textContent = w[config.message];
       var quoteTarget = overlay.querySelector(".ll-learning-quote");
-      if (window.LEXLEARN_LEARNING_LINES) {
+      var investorMode = config.message === "toInvestor";
+      overlay.classList.toggle("ll-investor-mode", investorMode);
+      if (investorMode && window.LEXLEARN_INVESTOR_QUOTES) {
+        window.LEXLEARN_INVESTOR_QUOTES.render(quoteTarget, isArabic() ? "ar" : "en");
+      } else if (window.LEXLEARN_LEARNING_LINES) {
         window.LEXLEARN_LEARNING_LINES.render(quoteTarget, isArabic() ? "ar" : "en");
       } else {
         quoteTarget.textContent = isArabic() ? "نفهم لنتذكّر، ونسترجع لنفهم أكثر." : "We understand to remember; we retrieve to understand more.";
@@ -130,7 +134,7 @@
         } else {
           loc.assign(link.href);
         }
-      }, reduced ? 180 : 720);
+      }, reduced ? 180 : investorMode ? 1800 : 720);
     });
   });
 })();
