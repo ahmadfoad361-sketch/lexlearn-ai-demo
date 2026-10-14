@@ -231,7 +231,7 @@ for(const home of [ar,en]){
   assert.ok(!home.includes("homeUtilityBar"),"no bar above conference logo");
   assert.ok(!home.includes('class="conferencePromo"'),"no duplicate event strip");
   assert.ok(!home.includes("conferenceDiscoverCTA"),"no repeated Explore LexLearn button");
-  assert.ok(home.includes("assets/conference-promo.css?v=20261014.17"),"refresh fixed RTL-safe left-alignment stylesheet");
+  assert.ok(home.includes("assets/conference-promo.css?v=20261014.18"),"refresh fixed RTL-safe left-alignment stylesheet");
   assert.ok(home.includes('href="conference.html"'),"logo and card must open conference");
   assert.ok(home.includes("qatar.websummit.com/wp-media/2026/02/QAT27_positive-768x139.png"),"unchanged official Web Summit logo");
   assert.ok(home.includes('class="wsqEventName"'),"separate event/program line from the main heading to prevent RTL/LTR collisions");
@@ -277,13 +277,13 @@ assert.ok(promoCss.includes(".v9-topin>.lexHomeLang")&&promoCss.includes(".en-to
 
 /* User mobile screenshot: language control must be at physical x≈12 px,
    NOT clustered beside the RTL LexLearn logo towards the centre. */
-assert.ok(promoCss.includes("Mobile placement fixed to the SCREEN's physical left edge"),"explicit physical-left mobile positioning required");
+assert.ok(promoCss.includes("All-screen placement fixed to the SCREEN's physical left edge"),"explicit physical-left mobile positioning required");
 assert.ok(promoCss.includes(".v9-topin,.en-topin{")&&promoCss.includes("position:relative!important"),"both header rails must be local positioning containers");
 assert.ok(promoCss.includes(".v9-topin>.lexHomeLang,.en-topin>.lexHomeLang{"),"both page language buttons must anchor to the header rail");
 assert.ok(promoCss.includes("left:calc(12px + env(safe-area-inset-left,0px))!important"),"button must use physical left, not RTL inline-start");
 assert.ok(promoCss.includes("right:auto!important")&&promoCss.includes("transform:translateY(-50%)!important"),"no conflicting right positioning");
 assert.ok(!promoCss.includes("inset-inline-end:auto!important")&&!promoCss.includes("inset-inline-start:auto!important"),"logical inset overrides physical left in RTL and pulls the language switch toward the centre");
-const mobileLangRule=promoCss.slice(promoCss.indexOf(".v9-topin>.lexHomeLang,.en-topin>.lexHomeLang{",promoCss.indexOf("Mobile placement fixed to the SCREEN")));
+const mobileLangRule=promoCss.slice(promoCss.indexOf(".v9-topin>.lexHomeLang,.en-topin>.lexHomeLang{",promoCss.indexOf("All-screen placement fixed to the SCREEN")));
 assert.ok(mobileLangRule.includes("left:calc(12px + env(safe-area-inset-left,0px))!important"),"RTL safe left must be the final anchor");
 assert.ok(promoCss.includes("@media(max-width:355px)")&&promoCss.includes("left:calc(10px + env(safe-area-inset-left,0px))!important"),"small iPhone switch must remain against physical left edge");
 

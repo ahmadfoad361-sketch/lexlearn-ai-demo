@@ -105,10 +105,9 @@
 }
 @media(prefers-reduced-motion:reduce){.wsqEventCTA{transition:none}}
 
-/* Mobile placement fixed to the SCREEN's physical left edge, never near
+/* All-screen placement fixed to the SCREEN's physical left edge, never near
    the RTL LexLearn logo. This override deliberately avoids inline-start
    and flex auto-margins (they resolve differently in RTL layouts). */
-@media(max-width:760px){
   .v9-topin,.en-topin{
     position:relative!important;
     box-sizing:border-box;
@@ -141,7 +140,6 @@
     min-width:0;
     flex-wrap:wrap;
   }
-}
 @media(max-width:355px){
   .v9-topin>.lexHomeLang,.en-topin>.lexHomeLang{
     left:calc(10px + env(safe-area-inset-left,0px))!important;
