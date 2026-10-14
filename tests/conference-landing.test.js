@@ -156,7 +156,7 @@ assert.notEqual(ivBank.next().name,prevAuthor,"do not repeat business leader at 
 assert.ok(en.includes('class="wsqEventCTA"')&&ar.includes('class="wsqEventCTA"'),"Web Summit homepage needs a static dedicated conference entry in both languages");
 assert.ok(en.includes("qatar.websummit.com/wp-media/2026/02/QAT27_positive-768x139.png"),"home button must use the official unchanged 2027 logo");
 assert.ok(read("assets/conference-promo.css").includes(".wsqEventCTA"),"branded conference entry must have responsive styles");
-assert.ok(ar.includes("assets/v9-law.js?v=20261014.9"),"publish refreshed Arabic homepage");
+assert.ok(ar.includes("assets/v9-law.js?v=20261014.12"),"publish refreshed Arabic homepage");
 assert.ok(ar.includes("wsqHomeFeature")&&en.includes("wsqHomeFeature"),"2027 conference entry must be visible without waiting for dynamic app scripts");
 assert.ok(!arLogic.includes('class="wsqEventCTA"'),"conference button should not duplicate in the Arabic app");
 assert.ok(ar.includes("QAT27_positive-768x139.png")&&en.includes("QAT27_positive-768x139.png"),"both conference buttons need the official logo");
