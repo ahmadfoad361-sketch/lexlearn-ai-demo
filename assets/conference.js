@@ -43,7 +43,7 @@ const AR={
  phase1:"نسخة تجريبية عاملة",phase1P:"تطوير واختبار تجربة الطالب وأدوات المشرف.",phase2:"تجربة أكاديمية في قطر",phase2P:"مقترح 30–60 طالبًا خلال 6–8 أسابيع لقياس النتائج الأولية.",phase3:"التحقق من المنتج",phase3P:"تحسين تحليل الإجابات التحريرية ومراجعة المحتوى وسير عمل المشرف.",phase4:"التوسع المدروس",phase4P:"النظر في مواد قانونية وتخصصات أخرى بعد قيام أدلة مناسبة.",
  honestyTitle:"أين وصلنا اليوم؟",status1:"نسخة تجريبية عاملة",status2:"تحليل الإجابات التحريرية بالذكاء الاصطناعي: قيد التطوير",status3:"الأثر التعليمي لم يثبت بعد",
  label07:"07 / التواصل",contactTitle:"لنستكشف الخطوة التالية معًا.",contactText:"التجارب الجامعية، ودعم الاحتضان، والشراكات التقنية، ومناقشات الاستثمار الأولية.",
- emailCTA:"راسل المؤسس بالبريد ←",waCTA:"شارك الصفحة عبر واتساب ←",waNote:"زر واتساب يشارك رابط الصفحة حاليًا؛ التواصل المباشر يحتاج إلى رقم منشور معتمد.",
+ emailCTA:"راسل المؤسس بالبريد ←",waCTA:"شارك الصفحة عبر واتساب ←",qrCTA:"تحميل رمز QR للطباعة ↓",waNote:"زر واتساب يشارك رابط الصفحة حاليًا؛ التواصل المباشر يحتاج إلى رقم منشور معتمد.",
  founderName:"د. أحمد فؤاد الفقي",founderRole:"المؤسس والرئيس التنفيذي",privacy:"الخصوصية",
  footerNote:"نسخة تجريبية عاملة، وليست خدمة تقييم جامعي معتمدة."
 };
@@ -77,7 +77,7 @@ const EN={
  label06:"06 / INVESTORS & PARTNERS",visionTitle:"Qatar first. Proof before scale.",visionLead:"The long-term vision is a diagnostic-first learning platform with explainable recommendations and meaningful faculty oversight.",
  phase1:"Working beta",phase1P:"Core student experience and supervisor tools under development and testing.",phase2:"Qatari academic pilot",phase2P:"Propose 30–60 students over 6–8 weeks; measure the first outcomes.",phase3:"Product validation",phase3P:"Refine AI analysis of written answers, legal review and scalable faculty workflows.",phase4:"Broader expansion",phase4P:"Consider additional legal subjects and then other disciplines only after evidence.",
  honestyTitle:"Where we stand today",status1:"Working beta",status2:"AI analysis of written answers: in progress",status3:"Learning impact not yet proven",
- label07:"07 / CONTACT",contactTitle:"Let's explore what comes next.",contactText:"Academic pilots, incubation support, technical partnerships and early-stage conversations.",emailCTA:"Email the founder ↗",waCTA:"Share via WhatsApp ↗",waNote:"WhatsApp currently shares this page; direct WhatsApp contact will require a public contact number.",founderName:"Dr Ahmed Foad Elfeky",founderRole:"Founder & CEO",privacy:"Privacy",footerNote:"A working beta, not an accredited university assessment service."
+ label07:"07 / CONTACT",contactTitle:"Let's explore what comes next.",contactText:"Academic pilots, incubation support, technical partnerships and early-stage conversations.",emailCTA:"Email the founder ↗",waCTA:"Share via WhatsApp ↗",qrCTA:"Print QR code ↓",waNote:"WhatsApp currently shares this page; direct WhatsApp contact will require a public contact number.",founderName:"Dr Ahmed Foad Elfeky",founderRole:"Founder & CEO",privacy:"Privacy",footerNote:"A working beta, not an accredited university assessment service."
 };
 const languageButtonEN=document.getElementById("langEN"),languageButtonAR=document.getElementById("langAR");
 const student=document.getElementById("studentCard"),demo=document.getElementById("demoLink"),
@@ -104,17 +104,10 @@ function setLang(next){
  try{localStorage.setItem("lexlearn_conference_language",active);}catch(_){}
 }
 function printArabicDeck(){
- // Native browser PDF printing gives correct Arabic glyph shaping and RTL.
- const slides=Array.from(document.querySelectorAll(".slideCard"));
- const popup=window.open("","_blank");
- if(!popup){alert("Allow a popup to save the Arabic slides as PDF.");return;}
- const rows=slides.map(function(slide){
-  const safe=slide.cloneNode(true);
-  return '<section class="page">'+safe.outerHTML+'</section>';
- }).join("");
- const html='<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>LexLearn — ملخص المشروع</title><style>@page{size:A4 landscape;margin:15mm}body{margin:0;font-family:Tahoma,Arial,sans-serif;color:#111D31;background:#F9F4EF}.page{page-break-after:always;min-height:165mm;display:flex;align-items:center;justify-content:center}.slideCard{width:90%;height:150mm;background:#fff;border:2px solid #111D31;border-radius:13px;overflow:hidden}.slideMeta{direction:ltr;display:flex;justify-content:space-between;background:#111D31;color:#fff;padding:13px 20px}.slideBody{display:flex;flex-direction:column;justify-content:center;min-height:120mm;text-align:right;padding:35px}.slideBody small{color:#8A1F39;font-size:17px;font-weight:bold}.slideBody h3{font-size:38px;margin:14px 0}.slideBody p{font-size:23px;line-height:1.8;color:#44506b}</style></head><body>'+rows+'</body></html>';
- popup.document.open();popup.document.write(html);popup.document.close();popup.focus();popup.print();
+ if(typeof window.lexlearnDownloadPublicDeck==="function") window.lexlearnDownloadPublicDeck("ar");
+ else alert("The download is unavailable. Please reload the page.");
 }
+
 languageButtonEN.addEventListener("click",function(){setLang("en");});
 languageButtonAR.addEventListener("click",function(){setLang("ar");});
 deck.addEventListener("click",function(event){if(active==="ar"){event.preventDefault();printArabicDeck();}});
