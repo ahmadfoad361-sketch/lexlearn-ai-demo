@@ -128,4 +128,36 @@ assert.equal(seen.size,27,"do not repeat until all quotes appear");
 assert.equal(categories.size,3,"include understanding, retrieval and combined skills");
 assert.notEqual(bank.next().ar.join(" / "),lastPhrase,"do not repeat the immediate previous phrase");
 
+
+/* Investor-only attributed ideas, official 2027 conference mark and mobile entry. */
+assert.ok(html.includes('id="investorQuote"')&&html.includes("assets/lexlearn-investor-quotes.js"),"investor quote must be visible with source in investor section");
+assert.ok(html.indexOf("assets/lexlearn-investor-quotes.js")<html.indexOf("assets/lexlearn-navigation.js"),"investor quote bank must load first");
+assert.ok(nav.includes('config.message === "toInvestor"')&&nav.includes("LEXLEARN_INVESTOR_QUOTES.render"),"only investor path gets investor copy");
+assert.ok(nav.includes("investorQuotePanel")&&nav.includes("activeInvestorQuote"),"investor page must preserve the selected quote");
+assert.ok(nav.includes("investorMode ? 1800 : 720"),"investor-only transition should permit reading without slowing student demo");
+const investorCode=read("assets/lexlearn-investor-quotes.js");
+assert.ok(pub.includes('"lexlearn-investor-quotes.js"'),"investor code must ship in public build");
+assert.ok(investorCode.includes("Source · adapted insight")&&investorCode.includes("المصدر الأصلي · صياغة بالمعنى"),"must distinguish summaries from literal statements");
+const ivStorage=new Map(), ivContext={sessionStorage:{getItem:k=>ivStorage.get(k)||null,setItem:(k,v)=>ivStorage.set(k,v)}};
+vm.runInNewContext(investorCode,{window:ivContext});
+const ivBank=ivContext.LEXLEARN_INVESTOR_QUOTES;
+assert.equal(ivBank.count,10,"ten source-backed investor quotes required");
+let prevAuthor=null;
+const seenInvestor=new Set(),authorsInvestor=new Set();
+for(let i=0;i<ivBank.count;i++){
+  const q=ivBank.next();
+  assert.equal(q.en.length,2);assert.equal(q.ar.length,2);
+  assert.ok(q.en.every(Boolean)&&q.ar.every(Boolean));
+  assert.ok(q.source.startsWith("https://"),"verify each investor saying links to an original source");
+  assert.notEqual(q.name,prevAuthor,"avoid same investor on consecutive quotes");
+  seenInvestor.add(q.en.join(" / "));authorsInvestor.add(q.name);prevAuthor=q.name;
+}
+assert.equal(seenInvestor.size,10,"investor quotes must rotate without repeats");
+assert.ok(authorsInvestor.size>=6,"perspectives must come from varied business leaders");
+assert.notEqual(ivBank.next().name,prevAuthor,"do not repeat business leader at deck boundary");
+assert.ok(en.includes('class="wsqEventCTA"')&&arLogic.includes('class="wsqEventCTA"'),"Web Summit homepage needs a dedicated conference entry in both languages");
+assert.ok(en.includes("qatar.websummit.com/wp-media/2026/02/QAT27_positive-768x139.png"),"home button must use the official unchanged 2027 logo");
+assert.ok(read("assets/conference-promo.css").includes(".wsqEventCTA"),"branded conference entry must have responsive styles");
+assert.ok(ar.includes("assets/v9-law.js?v=20261014.7"),"publish refreshed Arabic homepage");
+
 console.log("conference landing release test PASS");
