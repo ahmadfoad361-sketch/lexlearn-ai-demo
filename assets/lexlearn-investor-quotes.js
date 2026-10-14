@@ -10,7 +10,7 @@
     if(deck.length>1 && deck[deck.length-1]===last){var t=deck[0];deck[0]=deck[deck.length-1];deck[deck.length-1]=t;}
   }
   try{var obj=JSON.parse(root.sessionStorage.getItem(key)||"null");if(obj&&Array.isArray(obj.deck)&&obj.deck.length<=quotes.length&&obj.deck.every(function(i){return Number.isInteger(i)&&i>=0&&i<quotes.length;})&&Number.isInteger(obj.last)){deck=obj.deck;last=obj.last;}}catch(_){}
-  function next(){if(!deck.length)reorder();var id=deck.pop();last=id;try{root.sessionStorage.setItem(key,JSON.stringify({last:last,deck:deck}));}catch(_){}return quotes[id];}
+  function next(){if(!deck.length)reorder();if(last>=0&&deck.length>1&&quotes[deck[deck.length-1]].name===quotes[last].name){var found=deck.findIndex(function(id){return quotes[id].name!==quotes[last].name;});if(found>=0){var swap=deck[found];deck[found]=deck[deck.length-1];deck[deck.length-1]=swap;}}var id=deck.pop();last=id;try{root.sessionStorage.setItem(key,JSON.stringify({last:last,deck:deck}));}catch(_){}return quotes[id];}
   function render(target,lang,quote){
     if(!target)return null;
     var data=quote||next(),arabic=lang==="ar";
@@ -22,9 +22,9 @@
     var name=root.document.createElement("strong");name.className="ll-investor-author";name.textContent=arabic?data.nameAr:data.name;
     var role=root.document.createElement("small");role.className="ll-investor-role";role.textContent=arabic?data.roleAr:data.roleEn;
     var link=root.document.createElement("a");link.className="ll-investor-source";link.href=data.source;link.target="_blank";link.rel="noopener noreferrer";
-    link.textContent=arabic?"المصدر الأصلي · ترجمة للمعنى ↗":"Read source ↗";
+    link.textContent=arabic?(data.kind==="quote"?"المصدر الأصلي · ترجمة عربية ↗":"المصدر الأصلي · صياغة بالمعنى ↗"):(data.kind==="quote"?"Original source ↗":"Source · adapted insight ↗");
     target.appendChild(type);target.appendChild(para);target.appendChild(name);target.appendChild(role);target.appendChild(link);
     return data;
   }
-  root.LEXLEARN_INVESTOR_QUOTES={next:next,render:render,count:quotes.length};
+  root.LEXLEARN_INVESTOR_QUOTES={next:next,render:render,current:function(){return last<0?null:quotes[last];},count:quotes.length};
 })(window);
