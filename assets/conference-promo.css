@@ -104,3 +104,49 @@
   .lexHomeLang>a,.lexHomeLang>.lexHomeLangCurrent{min-width:29px;min-height:34px}
 }
 @media(prefers-reduced-motion:reduce){.wsqEventCTA{transition:none}}
+
+/* Mobile placement fixed to the SCREEN's physical left edge, never near
+   the RTL LexLearn logo. This override deliberately avoids inline-start
+   and flex auto-margins (they resolve differently in RTL layouts). */
+@media(max-width:760px){
+  .v9-topin,.en-topin{
+    position:relative!important;
+    box-sizing:border-box;
+    width:100%!important;
+    max-width:100%!important;
+    min-height:66px;
+    padding-left:calc(12px + env(safe-area-inset-left,0px))!important;
+    padding-right:calc(12px + env(safe-area-inset-right,0px))!important;
+  }
+  .v9-topin>.lexHomeLang,.en-topin>.lexHomeLang{
+    position:absolute!important;
+    left:calc(12px + env(safe-area-inset-left,0px))!important;
+    right:auto!important;
+    top:50%!important;
+    transform:translateY(-50%)!important;
+    margin:0!important;
+    inset-inline-start:auto!important;
+    inset-inline-end:auto!important;
+    z-index:3;
+  }
+  .v9-topin>.v9-brand,.en-topin>.en-brand{
+    margin-right:0!important;
+    margin-left:auto!important;
+    max-width:calc(100% - 106px)!important;
+    min-width:0;
+  }
+  .v9-topin>.v9-topactions:empty{display:none!important}
+  .v9-topin>.v9-topactions:not(:empty){
+    margin-left:94px!important;
+    min-width:0;
+    flex-wrap:wrap;
+  }
+}
+@media(max-width:355px){
+  .v9-topin>.lexHomeLang,.en-topin>.lexHomeLang{
+    left:calc(10px + env(safe-area-inset-left,0px))!important;
+  }
+  .v9-topin>.v9-brand,.en-topin>.en-brand{
+    max-width:calc(100% - 93px)!important;
+  }
+}
