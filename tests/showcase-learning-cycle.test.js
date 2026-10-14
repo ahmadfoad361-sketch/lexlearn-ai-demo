@@ -15,11 +15,17 @@ for(const lang of ["ar","en"]){
   }
 }
 let markup="",els={};
-const makeElement=(attrs={})=>({
-  attrs,onclick:null,disabled:false,innerHTML:"",textContent:"",value:"",classList:{classes:[],add(x){this.classes.push(x)}},
-  getAttribute(key){return this.attrs[key]},
-  focus(){}
-});
+const makeElement=(attrs={})=>{
+  const node={attrs,onclick:null,disabled:false,textContent:"",value:"",classList:{classes:[],add(x){this.classes.push(x)}},
+    getAttribute(key){return this.attrs[key]},focus(){}};
+  let htmlValue="";
+  Object.defineProperty(node,"innerHTML",{get(){return htmlValue},set(value){
+    htmlValue=String(value);
+    // Browsers create children when innerHTML changes; model this in the test DOM.
+    for(const found of htmlValue.matchAll(/\\bid="([^"]+)"/g))els[found[1]]=makeElement();
+  }});
+  return node;
+};
 global.document={
   getElementById(id){return els[id]||null},
   querySelectorAll(sel){return sel==="[data-cycle-choice]"?(els._choices||[]):[]}
