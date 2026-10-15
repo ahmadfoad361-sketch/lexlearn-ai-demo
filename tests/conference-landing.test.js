@@ -305,4 +305,29 @@ assert.ok(promoCss.includes("@media(max-width:760px)")&&promoCss.includes(".wsqE
 assert.ok(promoCss.includes("@media(max-width:355px)")&&promoCss.includes(".wsqParticipantName{font-size:26px}"),"small phone brand must not overflow");
 assert.ok(promoCss.includes(".wsqEventDetails strong{overflow-wrap:break-word"),"bilingual participation headline must wrap rather than overlap");
 
+
+/* 2027 conference QR first-fold usability requirements. */
+assert.ok(html.includes('data-t="eyebrow">LEXLEARN · LEGAL LEARNING FOR STUDENTS'),"first fold must identify the product as education for law students");
+assert.ok(html.includes("Assess your legal learning skills. Build on your strengths."),"default English title must immediately describe what LexLearn does");
+assert.ok(js.includes('heroTitle:"قيّم مهاراتك القانونية… وطوّرها انطلاقًا من نقاط قوتك"'),"Arabic heading should explain student benefit in five seconds");
+assert.ok(js.includes('eyebrow:"ليكس ليرن · منصة تعليمية لطلاب القانون"'),"Arabic eyebrow must identify education and avoid Latin punctuation");
+assert.ok(js.includes('heroSub:"نشخّص نقاط قوتك في التعلّم القانوني'),"Arabic subhead must explain strength-based training");
+assert.equal((html.match(/class="pathNo"/g)||[]).length,3,"three numbered visitor choices required");
+assert.ok(!html.includes('data-t="visitor"')&&!js.includes('visitor:"زائر"')&&!js.includes('visitor:"VISITOR"'),"remove redundant visitor label");
+assert.equal((html.match(/<svg viewBox="0 0 24 24"/g)||[]).length,3,"replace all three emoji top arrows with accessible decorative SVG");
+assert.ok(!html.includes('aria-hidden="true">↗</span>')&&!html.includes('aria-hidden="true">→</span>'),"no iPhone emoji arrows in visitor choices");
+for(const key of ['studentCTA','univCTA','invCTA']){
+  assert.ok(html.includes('class="pathCTA"><span data-t="'+key+'">'),"visitor CTA must be distinct from its SVG icon");
+}
+assert.ok(css.includes("Web Summit Qatar 2027 / ALPHA: first-screen visitor choice redesign"),"compact first-fold CSS required");
+assert.ok(css.includes('grid-template-areas:"num title glyph" "num desc glyph" "num cta glyph"'),"cards must use mobile three-line compact grid");
+assert.ok(css.includes('@media(max-height:700px) and (max-width:760px)'),"short phones need compact vertical spacing");
+assert.ok(css.includes('.paths .pathGlyph svg{width:18px;height:18px'),"SVG arrows must use branded colour and constrained size");
+assert.ok(nav.includes('back.hidden = true')&&nav.includes('back.setAttribute("aria-hidden", "true")'),"redundant conference Home button must be hidden from display and accessibility tree");
+assert.ok(css.includes('.site-header #lexlearnBack[hidden]{display:none!important}'),"Home button must remain hidden despite shared styling");
+assert.ok(js.includes('promoShort:"ليكس ليرن · ويب ساميت قطر ٢٠٢٧ · برنامج ألفا"'),"Arabic conference banner must be translated");
+assert.ok(js.includes('promoShort:"LexLearn · Web Summit Qatar 2027 · ALPHA"'),"English banner retains official event identity");
+assert.ok(html.includes('title="Web Summit Qatar 2027 · ALPHA"')&&html.includes('href="assets/lexlearn-go-qr.svg"'),"translated strip and unchanged official Qatar 2027 QR target");
+assert.ok(html.includes("assets/conference.css?v=20261015.1")&&html.includes("assets/conference.js?v=20261015.1"),"invalidate mobile first-fold UI cache");
+
 console.log("conference landing release test PASS");
