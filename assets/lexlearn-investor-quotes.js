@@ -1,36 +1,28 @@
-/* Investor-only microquotes. English represents short excerpts or editorial paraphrases with source URLs.
-   Arabic is a faithful translation of meaning; not an independently recorded spoken quote.
-   No investment guarantees, endorsements or analytics. */
+/* Original editorial micro-messages developed for LexLearn.
+   No third-party person's name, title, endorsement or implied consent. */
 (function(root){"use strict";
-  var quotes=[{"en":["The best investments—and ideas—","are often the ones smart people dismiss as foolish."],"ar":["قد تكون أفضل الاستثمارات والأفكار","تلك التي يستبعدها الأذكياء في البداية."],"name":"Reid Hoffman","nameAr":"ريد هوفمان","roleEn":"LinkedIn co-founder · investor","roleAr":"الشريك المؤسس لـ LinkedIn · مستثمر","source":"https://www.linkedin.com/posts/reidhoffman_an-audience-question-led-me-to-reflect-on-activity-7292594892671762432-_R0V","kind":"meaning"},{"en":["Sometimes, the real investment loss","is saying no to a great opportunity."],"ar":["قد تكون أكبر خسارة استثمارية","هي رفض فرصة كان يمكن أن تنجح."],"name":"Reid Hoffman","nameAr":"ريد هوفمان","roleEn":"LinkedIn co-founder · investor","roleAr":"الشريك المؤسس لـ LinkedIn · مستثمر","source":"https://www.linkedin.com/posts/reidhoffman_some-of-my-worst-investments-arent-the-activity-7283520691121876992-oCQs","kind":"paraphrase"},{"en":["Ideas are easy.","Execution is everything."],"ar":["الأفكار سهلة،","لكن التنفيذ هو كل شيء."],"name":"John Doerr","nameAr":"جون دوير","roleEn":"Venture investor · Kleiner Perkins","roleAr":"مستثمر رأس مال جريء · Kleiner Perkins","source":"https://www.gsb.stanford.edu/insights/john-doerr-best-entrepreneurs-attempt-impossible","kind":"quote"},{"en":["Anything worth doing","takes a team to win."],"ar":["كل عمل يستحق الإنجاز","يحتاج فريقًا ينجح به."],"name":"John Doerr","nameAr":"جون دوير","roleEn":"Venture investor · Kleiner Perkins","roleAr":"مستثمر رأس مال جريء · Kleiner Perkins","source":"https://www.gsb.stanford.edu/insights/john-doerr-best-entrepreneurs-attempt-impossible","kind":"quote"},{"en":["Make something","people want."],"ar":["اصنع شيئًا","يريده الناس فعلًا."],"name":"Paul Graham","nameAr":"بول جراهام","roleEn":"Y Combinator co-founder","roleAr":"الشريك المؤسس لـ Y Combinator","source":"https://paulgraham.com/good.html","kind":"quote"},{"en":["Be relentlessly","resourceful."],"ar":["لا تتوقف عن البحث","عن الوسائل والحلول."],"name":"Paul Graham","nameAr":"بول جراهام","roleEn":"Y Combinator co-founder","roleAr":"الشريك المؤسس لـ Y Combinator","source":"https://www.paulgraham.com/relres.html","kind":"quote"},{"en":["To invent","you have to experiment."],"ar":["لكي تبتكر،","عليك أن تجرّب."],"name":"Jeff Bezos","nameAr":"جيف بيزوس","roleEn":"Amazon founder","roleAr":"مؤسس Amazon","source":"https://www.aboutamazon.com/policy/statement-by-jeff-bezos-to-the-u-s-house-committee-on-the-judiciary","kind":"quote"},{"en":["Big returns can come","from challenging conventional wisdom."],"ar":["قد تأتي العوائد الكبيرة","من مخالفة الأفكار السائدة."],"name":"Jeff Bezos","nameAr":"جيف بيزوس","roleEn":"Amazon founder","roleAr":"مؤسس Amazon","source":"https://www.aboutamazon.com/policy/statement-by-jeff-bezos-to-the-u-s-house-committee-on-the-judiciary","kind":"paraphrase"},{"en":["What important truth","do very few people agree with you on?"],"ar":["ما الحقيقة المهمة","التي لا يوافقك عليها إلا القليل؟"],"name":"Peter Thiel","nameAr":"بيتر ثيل","roleEn":"PayPal co-founder · investor","roleAr":"الشريك المؤسس لـ PayPal · مستثمر","source":"https://fortune.com/2014/09/04/peter-thiels-the-challenge-of-the-future/","kind":"quote"},{"en":["Pain + Reflection","= Progress."],"ar":["التحديات + التأمل فيها","= تقدّم."],"name":"Ray Dalio","nameAr":"راي داليو","roleEn":"Bridgewater founder · investor","roleAr":"مؤسس Bridgewater · مستثمر","source":"https://www.principles.com/principles/7e57c357-74bb-4e5b-ab4a-598f54b36f54/","kind":"quote"}];
-  var key="lexlearn_investor_quote_deck_v2",deck=[],last=-1;
-  function reorder(){
-    // Ten items from six leaders: reshuffle until neither the author nor
-    // the exact quote repeats at the cycle boundary or consecutively.
-    for(var attempt=0;attempt<200;attempt++){
-      deck=quotes.map(function(_,i){return i;});
-      for(var i=deck.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),k=deck[i];deck[i]=deck[j];deck[j]=k;}
-      var ok=last<0||quotes[deck[deck.length-1]].name!==quotes[last].name;
-      for(var n=1;n<deck.length&&ok;n++)if(quotes[deck[n]].name===quotes[deck[n-1]].name)ok=false;
-      if(ok)return;
-    }
+  var quotes=[{"ar":["الأفكار الجديدة تستحق التجربة","قبل أن تُحكم عليها بالأرقام."],"en":["New ideas deserve a trial","before they are judged by numbers."]},{"ar":["الاستثمار المبكر يبدأ بسؤال","ما المشكلة الحقيقية التي نحلّها؟"],"en":["Early investing starts with one question:","What real problem does this solve?"]},{"ar":["الابتكار يحتاج شجاعة الاختبار","لا وعودًا بنتائج لم تتحقق."],"en":["Innovation calls for testing courage,","not promises of unproven results."]},{"ar":["أفضل خطوة بعد الفكرة","اختبارها مع من سيستخدمها."],"en":["The best next step after an idea","is testing it with real users."]},{"ar":["لا تجعل الفكرة أكبر من أدلتها","واجعل أدلتها تنمو بالتجربة."],"en":["Don't let a claim outgrow the evidence;","let evidence grow through experiments."]},{"ar":["القيمة تبدأ من احتياج واضح","وتتأكد عندما يقيسها المستخدم."],"en":["Value begins with a clear need","and becomes clearer when users test it."]},{"ar":["الفكرة الطموحة تحتاج شريكًا","يرى قيمة التعلّم قبل التوسع."],"en":["An ambitious idea needs a partner","who values learning before scaling."]},{"ar":["الاستثمار في التعليم","استثمار في قدرة الإنسان على التفكير."],"en":["Investing in education","means investing in human thinking."]},{"ar":["اجعل كل تجربة تعلّمنا شيئًا","قبل أن نقرر الخطوة التالية."],"en":["Let each pilot teach us something","before choosing the next step."]},{"ar":["النمو المستدام يبدأ بالتحقق","ثم يأتي التوسع على أساس واضح."],"en":["Sustainable growth starts with validation;","scaling should rest on a clear foundation."]}];
+  var key="lexlearn_investor_original_v1",deck=[],last=-1;
+  function shuffle(){
+    deck=quotes.map(function(_,i){return i;});
+    for(var i=deck.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),t=deck[i];deck[i]=deck[j];deck[j]=t;}
+    if(deck.length>1&&deck[deck.length-1]===last){var z=deck[0];deck[0]=deck[deck.length-1];deck[deck.length-1]=z;}
   }
-  try{var obj=JSON.parse(root.sessionStorage.getItem(key)||"null");if(obj&&Array.isArray(obj.deck)&&obj.deck.length<=quotes.length&&obj.deck.every(function(i){return Number.isInteger(i)&&i>=0&&i<quotes.length;})&&Number.isInteger(obj.last)){deck=obj.deck;last=obj.last;}}catch(_){}
-  function next(){if(!deck.length)reorder();var id=deck.pop();last=id;try{root.sessionStorage.setItem(key,JSON.stringify({last:last,deck:deck}));}catch(_){}return quotes[id];}
-  function render(target,lang,quote){
+  try{var v=JSON.parse(root.sessionStorage.getItem(key)||"null");if(v&&Array.isArray(v.deck)&&v.deck.every(function(i){return Number.isInteger(i)&&i>=0&&i<quotes.length;})&&Number.isInteger(v.last)){deck=v.deck;last=v.last;}}catch(_){}
+  function next(){if(!deck.length)shuffle();var id=deck.pop();last=id;try{root.sessionStorage.setItem(key,JSON.stringify({deck:deck,last:last}));}catch(_){}return quotes[id];}
+  function render(target,lang,phrase){
     if(!target)return null;
-    var data=quote||next(),arabic=lang==="ar";
-    target.setAttribute("lang",arabic?"ar":"en");target.setAttribute("dir",arabic?"rtl":"ltr");
+    var item=phrase||next(),ar=lang==="ar";
+    target.setAttribute("lang",ar?"ar":"en");target.setAttribute("dir",ar?"rtl":"ltr");
     while(target.firstChild)target.removeChild(target.firstChild);
-    var type=root.document.createElement("span");type.className="ll-investor-eyebrow";type.textContent=arabic?"فكرة تستحق التفكير":"AN IDEA WORTH THINKING ABOUT";
-    var para=root.document.createElement("p");para.className="ll-quote-main";
-    (arabic?data.ar:data.en).forEach(function(t){var line=root.document.createElement("span");line.textContent=t;para.appendChild(line);});
-    var name=root.document.createElement("strong");name.className="ll-investor-author";name.textContent=arabic?data.nameAr:data.name;
-    var role=root.document.createElement("small");role.className="ll-investor-role";role.textContent=arabic?data.roleAr:data.roleEn;
-    var link=root.document.createElement("a");link.className="ll-investor-source";link.href=data.source;link.target="_blank";link.rel="noopener noreferrer";
-    link.textContent=arabic?(data.kind==="quote"?"المصدر الأصلي · ترجمة عربية ↗":"المصدر الأصلي · صياغة بالمعنى ↗"):(data.kind==="quote"?"Original source ↗":"Source · adapted insight ↗");
-    target.appendChild(type);target.appendChild(para);target.appendChild(name);target.appendChild(role);target.appendChild(link);
-    return data;
+    var heading=root.document.createElement("span");heading.className="ll-investor-eyebrow";
+    heading.textContent=ar?"من رؤية LexLearn":"A LEXLEARN PERSPECTIVE";
+    var body=root.document.createElement("p");body.className="ll-quote-main";
+    (ar?item.ar:item.en).forEach(function(line){var span=root.document.createElement("span");span.textContent=line;body.appendChild(span);});
+    var byline=root.document.createElement("small");byline.className="ll-investor-role";
+    byline.textContent=ar?"عبارة أصلية من المشروع · ليست تأييدًا من مستثمر":"Original project message · not an investor endorsement";
+    target.appendChild(heading);target.appendChild(body);target.appendChild(byline);
+    return item;
   }
-  root.LEXLEARN_INVESTOR_QUOTES={next:next,render:render,current:function(){return last<0?null:quotes[last];},count:quotes.length};
+  root.LEXLEARN_INVESTOR_QUOTES={count:quotes.length,next:next,render:render};
 })(window);
