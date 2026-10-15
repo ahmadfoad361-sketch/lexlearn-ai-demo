@@ -224,3 +224,15 @@ html[lang=en] .demoTopIn,html[lang=en] .demoBrand{direction:ltr}
 html[lang=en] .demoIntro .stageCard,
 html[lang=en] .demoIntro .demoIntroLead,
 html[lang=en] .demoIntro .demoPrivacy{text-align:center}
+
+/* Web Summit demo navigation and clear three-step wayfinding. */
+.demoLangGroup{display:inline-flex;direction:ltr;align-items:center;gap:3px;background:#fffdfb;border-radius:999px;padding:3px;border:1px solid #d7c7ce;color:#111D31}
+.demoLangGroup>span{font-size:11px;color:#897e84}
+.demoLang{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;min-width:40px;min-height:36px;border-radius:999px;font:800 12px/1.4 Tahoma,Arial,sans-serif;color:#111D31;padding:5px 7px}
+.demoLang[aria-current=page]{background:#111D31;color:white}
+.demoLang:focus-visible{outline:3px solid #8A1F39;outline-offset:2px}
+.stageProgressText{font-size:12px;line-height:1.55;font-weight:800;color:#8A1F39;margin:0 0 8px}
+.demoStage>.stageProgressText{text-align:start;color:#111D31;margin:0 0 7px}
+.demoIntro .stageProgressText{text-align:center;margin:0 0 10px}
+.stageProgressText bdi{direction:ltr;unicode-bidi:isolate}
+@media(max-width:600px){.demoMeta{gap:5px}.demoLangGroup{gap:2px}.demoLang{font-size:11px;min-width:34px;min-height:36px;padding:4px 5px}.demoMeta>.demoBack{padding:6px 9px;min-height:43px}.stageProgressText{font-size:11px}}
