@@ -5,7 +5,7 @@ const AR={
  promo:"\u2066LexLearn\u2069 في مؤتمر \u2066Web Summit Qatar 2027\u2069 — اكتشف الرؤية وجرّب المنصة وتعرّف على التجربة الجامعية.",promoShort:"\u2066LexLearn\u2069 · \u2066Web Summit Qatar 2027\u2069 · برنامج \u2066ALPHA\u2069",
  eyebrow:"ليكس ليرن · منصة تعليمية لطلاب القانون",
  heroTitle:"قيّم مهاراتك القانونية… وطوّرها انطلاقًا من نقاط قوتك",
- heroSub:"بيشخّص نقاط قوتك في التفكير القانوني، ويبني مسارك لتقوية نقاط ضعفك.",
+ heroSubBefore:"يشخّص",heroSub:"نقاط قوتك في التفكير القانوني، ويبني مسارك لتقوية نقاط ضعفك.",
  studentTitle:"طالب",studentDesc:"جرّب تقييم الحفظ والفهم.",studentCTA:"افتح التجربة",
  univTitle:"جامعة أو مؤسسة تعليمية",univDesc:"تعرّف على التجربة الجامعية المقترحة.",univCTA:"خطة التجربة",
  invTitle:"مستثمر أو شريك",invDesc:"الرؤية وخارطة الطريق بدءًا من قطر.",invCTA:"اطّلع على الرؤية",
@@ -41,7 +41,7 @@ const AR={
  label06:"06 / للمستثمرين والشركاء",visionTitle:"قطر أولًا. الدليل قبل التوسع.",
  visionLead:"رؤيتنا طويلة المدى منصة تعليمية تبدأ بالتشخيص وتقدم توصيات قابلة للفهم مع استمرار دور الأستاذ.",
  phase1:"نسخة تجريبية عاملة",phase1P:"تطوير واختبار تجربة الطالب وأدوات المشرف.",phase2:"تجربة أكاديمية في قطر",phase2P:"مقترح 30–60 طالبًا خلال 6–8 أسابيع لقياس النتائج الأولية.",phase3:"التحقق من المنتج",phase3P:"تحسين تحليل الإجابات التحريرية ومراجعة المحتوى وسير عمل المشرف.",phase4:"التوسع المدروس",phase4P:"النظر في مواد قانونية وتخصصات أخرى بعد قيام أدلة مناسبة.",
- honestyTitle:"أين وصلنا اليوم؟",status1:"نسخة تجريبية عاملة",status2:"تحليل الإجابات التحريرية بالذكاء الاصطناعي: قيد التطوير",status2Title:"تحليل الإجابات التحريرية بالذكاء الاصطناعي",status2State:"قيد التطوير والتحقق من الدقة",status3:"التحقق من الأثر التعليمي سيتم عبر التجربة المقترحة",
+ evidenceNote:"الأثر التعليمي لم يُثبت بعد؛ وسنقيسه من خلال التجربة الجامعية المقترحة.",honestyTitle:"أين وصلنا اليوم؟",status1:"نسخة تجريبية عاملة",status2:"تحليل الإجابات التحريرية بالذكاء الاصطناعي: قيد التطوير",status2Title:"تحليل الإجابات التحريرية بالذكاء الاصطناعي",status2State:"قيد التطوير والتحقق من الدقة",status3:"التحقق من الأثر التعليمي سيتم عبر التجربة المقترحة",
  label07:"07 / التواصل",contactTitle:"لنستكشف الخطوة التالية معًا.",contactText:"التجارب الجامعية، ودعم الاحتضان، والشراكات التقنية، ومناقشات الاستثمار الأولية.",
  emailCTA:"راسل المؤسس بالبريد ←",waCTA:"شارك الصفحة عبر واتساب ←",qrCTA:"تحميل رمز QR للطباعة ↓",waNote:"زر واتساب يشارك رابط الصفحة حاليًا؛ التواصل المباشر يحتاج إلى رقم منشور معتمد.",
  founderName:"د. أحمد فؤاد الفقي",founderRole:"المؤسس والرئيس التنفيذي",privacy:"الخصوصية",
@@ -52,7 +52,7 @@ const EN={
  promo:"LexLearn at Web Summit Qatar 2027 — Discover our vision. Try the demo. Explore a university pilot.",promoShort:"LexLearn · Web Summit Qatar 2027 · ALPHA",
  eyebrow:"LEXLEARN · LEGAL LEARNING FOR STUDENTS",
  heroTitle:"Assess your legal learning skills. Build on your strengths.",
- heroSub:"diagnoses your strengths in legal thinking and builds your learning path to strengthen weaker skills.",
+ heroSubBefore:"",heroSub:"diagnoses your strengths in legal thinking and builds your learning path to strengthen weaker skills.",
  studentTitle:"Student",studentDesc:"Try the live legal-learning demo.",studentCTA:"Open live demo",
  univTitle:"University or institution",univDesc:"Explore a proposed supervised university pilot.",univCTA:"Explore the pilot",
  invTitle:"Investor or partner",invDesc:"See the vision and Qatar-first roadmap.",invCTA:"View roadmap",
@@ -76,7 +76,7 @@ const EN={
  pilot1:"Before: establish a baseline using skill-specific tasks.",pilot2:"During: deliver structured practice with faculty oversight and privacy safeguards.",pilot3:"After: review usability, scoring agreement and early learning indicators. Impact remains to be established.",pilotCTA:"Discuss an academic pilot ↗",
  label06:"06 / INVESTORS & PARTNERS",visionTitle:"Qatar first. Proof before scale.",visionLead:"The long-term vision is a diagnostic-first learning platform with explainable recommendations and meaningful faculty oversight.",
  phase1:"Working beta",phase1P:"Core student experience and supervisor tools under development and testing.",phase2:"Qatari academic pilot",phase2P:"Propose 30–60 students over 6–8 weeks; measure the first outcomes.",phase3:"Product validation",phase3P:"Refine AI analysis of written answers, legal review and scalable faculty workflows.",phase4:"Broader expansion",phase4P:"Consider additional legal subjects and then other disciplines only after evidence.",
- honestyTitle:"Where we stand today",status1:"Working beta",status2:"AI analysis of written answers: in progress",status2Title:"AI analysis of written answers",status2State:"In progress · validating reliability",status3:"Learning impact not yet proven",
+ evidenceNote:"Learning impact has not yet been demonstrated; we will evaluate it through the proposed academic pilot.",honestyTitle:"Where we stand today",status1:"Working beta",status2:"AI analysis of written answers: in progress",status2Title:"AI analysis of written answers",status2State:"In progress · validating reliability",status3:"Learning impact not yet proven",
  label07:"07 / CONTACT",contactTitle:"Let's explore what comes next.",contactText:"Academic pilots, incubation support, technical partnerships and early-stage conversations.",emailCTA:"Email the founder ↗",waCTA:"Share via WhatsApp ↗",qrCTA:"Print QR code ↓",waNote:"WhatsApp currently shares this page; direct WhatsApp contact will require a public contact number.",founderName:"Dr Ahmed Foad Elfeky",founderRole:"Founder & CEO",privacy:"Privacy",footerNote:"A working beta, not an accredited university assessment service."
 };
 const languageButtonEN=document.getElementById("langEN"),languageButtonAR=document.getElementById("langAR");
@@ -132,6 +132,8 @@ let active="en";
 function setLang(next){
  active=next==="ar"?"ar":"en";
  const t=active==="ar"?AR:EN;
+ const subBefore=document.querySelector("[data-t=heroSubBefore]");
+ if(subBefore)subBefore.hidden=active!=="ar";
  document.documentElement.lang=active;
  document.documentElement.dir=active==="ar"?"rtl":"ltr";
  if(carousel)carousel.dir=active==="ar"?"rtl":"ltr";
