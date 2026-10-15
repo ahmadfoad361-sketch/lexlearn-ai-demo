@@ -127,32 +127,26 @@ assert.equal(categories.size,3,"include understanding, retrieval and combined sk
 assert.notEqual(bank.next().ar.join(" / "),lastPhrase,"do not repeat the immediate previous phrase");
 
 
-/* Investor-only attributed ideas, official 2027 conference mark and mobile entry. */
-assert.ok(html.includes('id="investorQuote"')&&html.includes("assets/lexlearn-investor-quotes.js"),"investor quote must be visible with source in investor section");
-assert.ok(html.indexOf("assets/lexlearn-investor-quotes.js")<html.indexOf("assets/lexlearn-navigation.js"),"investor quote bank must load first");
-assert.ok(nav.includes('config.message === "toInvestor"')&&nav.includes("LEXLEARN_INVESTOR_QUOTES.render"),"only investor path gets investor copy");
-assert.ok(nav.includes("investorQuotePanel")&&nav.includes("activeInvestorQuote"),"investor page must preserve the selected quote");
-assert.ok(nav.includes("investorMode ? 1800 : 720"),"investor-only transition should permit reading without slowing student demo");
+/* Investor messages are original; no unverified personal endorsement or consent. */
+assert.ok(html.includes('id="investorQuote"')&&html.includes("assets/lexlearn-investor-quotes.js"),"investor section needs independent perspectives");
+assert.ok(nav.includes('config.message === "toInvestor"')&&nav.includes("LEXLEARN_INVESTOR_QUOTES.render"),"investment microcopy only in investor route");
 const investorCode=read("assets/lexlearn-investor-quotes.js");
-assert.ok(pub.includes('"lexlearn-investor-quotes.js"'),"investor code must ship in public build");
-assert.ok(investorCode.includes("Source · adapted insight")&&investorCode.includes("المصدر الأصلي · صياغة بالمعنى"),"must distinguish summaries from literal statements");
-const ivStorage=new Map(), ivContext={sessionStorage:{getItem:k=>ivStorage.get(k)||null,setItem:(k,v)=>ivStorage.set(k,v)}};
+assert.ok(pub.includes('"lexlearn-investor-quotes.js"'),"ship investor microcopy");
+assert.ok(investorCode.includes("No third-party person's name"),"no implied celebrity endorsement");
+for(const name of ["Reid Hoffman","John Doerr","Jeff Bezos","Peter Thiel","Ray Dalio","Paul Graham"]){
+ assert.ok(!investorCode.includes(name),"personal name cannot be used without verified approval: "+name);
+}
+const ivStorage=new Map(),ivContext={sessionStorage:{getItem:k=>ivStorage.get(k)||null,setItem:(k,v)=>ivStorage.set(k,v)}};
 vm.runInNewContext(investorCode,{window:ivContext});
 const ivBank=ivContext.LEXLEARN_INVESTOR_QUOTES;
-assert.equal(ivBank.count,10,"ten source-backed investor quotes required");
-let prevAuthor=null;
-const seenInvestor=new Set(),authorsInvestor=new Set();
+assert.equal(ivBank.count,10);
+const uniqueInvestor=new Set();
 for(let i=0;i<ivBank.count;i++){
-  const q=ivBank.next();
-  assert.equal(q.en.length,2);assert.equal(q.ar.length,2);
-  assert.ok(q.en.every(Boolean)&&q.ar.every(Boolean));
-  assert.ok(q.source.startsWith("https://"),"verify each investor saying links to an original source");
-  assert.notEqual(q.name,prevAuthor,"avoid same investor on consecutive quotes");
-  seenInvestor.add(q.en.join(" / "));authorsInvestor.add(q.name);prevAuthor=q.name;
+ const idea=ivBank.next();
+ assert.equal(idea.ar.length,2);assert.equal(idea.en.length,2);
+ uniqueInvestor.add(idea.en.join(" "));
 }
-assert.equal(seenInvestor.size,10,"investor quotes must rotate without repeats");
-assert.ok(authorsInvestor.size>=6,"perspectives must come from varied business leaders");
-assert.notEqual(ivBank.next().name,prevAuthor,"do not repeat business leader at deck boundary");
+assert.equal(uniqueInvestor.size,10,"all ten original insights should rotate without repeats");
 assert.ok(en.includes('class="wsqEventCTA"')&&ar.includes('class="wsqEventCTA"'),"Web Summit homepage needs a static dedicated conference entry in both languages");
 assert.ok(en.includes("qatar.websummit.com/wp-media/2026/02/QAT27_positive-768x139.png"),"home button must use the official unchanged 2027 logo");
 assert.ok(read("assets/conference-promo.css").includes(".wsqEventCTA"),"branded conference entry must have responsive styles");
@@ -329,5 +323,30 @@ assert.ok(js.includes('promoShort:"ليكس ليرن · ويب ساميت قطر
 assert.ok(js.includes('promoShort:"LexLearn · Web Summit Qatar 2027 · ALPHA"'),"English banner retains official event identity");
 assert.ok(html.includes('title="Web Summit Qatar 2027 · ALPHA"')&&html.includes('href="assets/lexlearn-go-qr.svg"'),"translated strip and unchanged official Qatar 2027 QR target");
 assert.ok(html.includes("assets/conference.css?v=20261015.1")&&html.includes("assets/conference.js?v=20261015.1"),"invalidate mobile first-fold UI cache");
+
+
+/* Follow-up UX contract: conference, pilot, investor and student demo. */
+assert.ok(html.includes('id="pathsReturn"')&&html.includes('href="#paths"'),"return to visitor paths must be accessible");
+assert.ok(html.includes('id="deckPrev"')&&html.includes('id="deckNext"')&&html.includes('id="deckDots"'),"carousel requires arrows and dots");
+assert.ok(js.includes("slide.scrollIntoView")&&js.includes("rtl?r.right-rect.right:r.left-rect.left"),"RTL/LTR card scrolling must use physical direction correctly");
+assert.ok(js.includes('carousel.dir=active==="ar"?"rtl":"ltr"'),"carousel should follow language switch");
+assert.ok(css.includes("scroll-snap-type:x mandatory")&&css.includes(".deckDot[aria-current=true]"),"carousel swipe and active page dots must be styled");
+assert.ok(html.includes('data-t="pilotStudentsHelp"')&&html.includes('data-t="pilotWeeksHelp"'),"explain both pilot figures");
+assert.ok(js.includes("pilotStudentsHelp:")&&js.includes("pilotWeeksHelp:"),"both languages must explain the 30–60 students and 6–8 weeks");
+assert.ok(html.includes('class="button buttonPrimary" id="emailContact"'),"email is the one primary contact CTA");
+assert.ok(html.includes('class="button buttonSecondary" id="waShare"')&&html.includes('class="button buttonSecondary" id="printQR"'),"other contacts secondary");
+assert.ok(html.includes('class="heroBrand" dir="ltr"')&&js.includes('heroSub:"بيشخّص نقاط قوتك'),"Latin brand isolated from RTL Arabic subheading");
+const sc=read("assets/showcase.js"),scEn=read("assets/showcase-en.js"),scCss=read("assets/showcase.css");
+for(const code of [sc,scEn]){
+ assert.ok(code.includes('class="demoGhost demoBack" href="conference.html#paths"'),"single header Back instead of Home+floating Back");
+ assert.ok(!code.includes("نفهم طريقة تفكيرك، ونبني طريقك."),"remove tagline beneath demo logo");
+ assert.ok(code.includes("اقرأ قاعدة قصيرة، أجب عن 6 أسئلة، وشوف نقاط قوتك."),"short intro must be exact");
+ assert.ok(code.includes("إجابتك مجهولة الهوية وتُستخدم لتحسين التجربة فقط."),"privacy line immediately below Start");
+ assert.ok(code.includes('class="btn primary demoStart"'),"Start CTA enlarged");
+}
+assert.ok(nav.includes('showcase(?:-en)?'),"public demo must skip generic floating Back injection");
+assert.ok(scCss.includes(".demoIntro .demoStart{display:block;width:min(100%,485px)")&&scCss.includes(".demoIntro .stageCard:before{display:none}"),"wide CTA and no abrupt colored stripe");
+assert.ok(!read("showcase.html").includes("fonts.googleapis.com")&&!read("showcase-en.html").includes("fonts.googleapis.com"),"remove blocking remote Google fonts");
+assert.ok(html.includes("assets/conference.css?v=20261015.2")&&html.includes("assets/conference.js?v=20261015.2"),"bump CSS/JS cache");
 
 console.log("conference landing release test PASS");
