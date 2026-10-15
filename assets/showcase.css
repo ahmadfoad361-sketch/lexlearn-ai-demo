@@ -218,3 +218,9 @@ html[lang="en"],html[lang="en"] body,html[lang="en"] .demoStage,html[lang="en"] 
 }
 @media(max-width:355px){.demoBrand b{font-size:14px}.demoMeta>.demoGhost{padding:7px 8px;font-size:11px}.demoLogo{width:30px;height:30px}.demoTopIn{padding-inline:9px}}
 @media(prefers-reduced-motion:reduce){.btn:hover{transform:none}}
+
+/* Preserve natural heading and control order in the English public demo. */
+html[lang=en] .demoTopIn,html[lang=en] .demoBrand{direction:ltr}
+html[lang=en] .demoIntro .stageCard,
+html[lang=en] .demoIntro .demoIntroLead,
+html[lang=en] .demoIntro .demoPrivacy{text-align:center}
