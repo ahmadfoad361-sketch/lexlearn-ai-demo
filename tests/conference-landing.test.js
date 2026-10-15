@@ -400,9 +400,11 @@ assert.ok(visionHTML.indexOf('class="roadmapStatus statusProgress"')<visionHTML.
 assert.ok(!visionHTML.includes('class="honesty"')&&visionHTML.includes('data-t="evidenceNote"'),"remove duplicate today panel while retaining empirical caveat");
 assert.ok(js.includes('evidenceNote:"الأثر التعليمي لم يُثبت بعد؛ وسنقيسه'),"Arabic uncertainty must remain honest");
 assert.ok(js.includes('evidenceNote:"Learning impact has not yet been demonstrated'),"English uncertainty must remain honest");
-assert.ok(css.includes('.roadmap .roadmapProgress .roadmapMarker{')&&css.includes('conic-gradient('),"in-progress node should be half-filled");
-assert.ok(css.includes('.roadmap .roadmapUpcoming .roadmapMarker{background:#fffdfb'),"upcoming nodes should be hollow");
-assert.ok(css.includes('.roadmap .roadmapReady .roadmapMarker{background:var(--burgundy)'),"ready node must be solid");
+assert.ok(css.includes('.roadmap li.roadmapProgress .roadmapMarker{')&&css.includes('conic-gradient('),"in-progress node should be half-filled");
+assert.ok(css.indexOf(".roadmap li.roadmapProgress .roadmapMarker{")>css.indexOf(".roadmap li:nth-child(2) .roadmapMarker"),"new progress state overrides legacy nth-child background colors");
+
+assert.ok(css.includes('.roadmap li.roadmapUpcoming .roadmapMarker{background:#fffdfb'),"upcoming nodes should be hollow");
+assert.ok(css.includes('.roadmap li.roadmapReady .roadmapMarker{background:var(--burgundy)'),"ready node must be solid");
 assert.ok(css.includes('prefers-reduced-motion:reduce')&&css.includes('.roadmap .roadmapProgress .roadmapMarker::after{animation:none'),"respect reduced motion for gentle pulse");
 assert.ok(css.includes('.paths .pathCTA>span{text-decoration:underline'),"card CTA underline only spans text");
 assert.ok(css.includes('.section.frame{scroll-margin-top:88px')&&css.includes('.section.frame{scroll-margin-top:76px'),"all section anchors share consistent desktop/mobile offsets");
