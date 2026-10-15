@@ -412,12 +412,12 @@ html[dir=rtl] .roadmap{padding-inline-start:68px;padding-inline-end:0}
 .roadmap::before{inset-inline-start:31px;top:24px;bottom:24px;background:#d9bdc7}
 .roadmap .roadmapMarker{inset-inline-start:-45px;width:17px;height:17px;top:18px;
  border:3px solid var(--cream);background:var(--burgundy);box-shadow:0 0 0 1px #a17586}
-.roadmap .roadmapReady .roadmapMarker{background:var(--burgundy)}
-.roadmap .roadmapProgress .roadmapMarker{
+.roadmap li.roadmapReady .roadmapMarker{background:var(--burgundy)}
+.roadmap li.roadmapProgress .roadmapMarker{
  background:conic-gradient(var(--burgundy) 0deg 180deg,#fffdfb 180deg 360deg);
  border:3px solid var(--cream);box-shadow:0 0 0 2px var(--burgundy);
 }
-.roadmap .roadmapUpcoming .roadmapMarker{background:#fffdfb;border:4px solid var(--cream);box-shadow:0 0 0 2px #a5959d}
+.roadmap li.roadmapUpcoming .roadmapMarker{background:#fffdfb;border:4px solid var(--cream);box-shadow:0 0 0 2px #a5959d}
 .roadmap .roadmapUpcoming .roadmapMarker::before,.roadmap .roadmapProgress .roadmapMarker::before{content:none}
 .roadmap .roadmapProgress .roadmapMarker::after{content:"";position:absolute;inset:-6px;border:1px solid rgba(138,31,57,.42);border-radius:50%;animation:lexRoadmapPulse 3.4s ease-out infinite}
 @keyframes lexRoadmapPulse{0%{opacity:.55;transform:scale(.78)}65%,100%{opacity:0;transform:scale(1.35)}}
