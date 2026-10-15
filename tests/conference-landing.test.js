@@ -169,7 +169,7 @@ assert.ok(nav.includes('isConference?"الرئيسية":"رجوع"')&&nav.includ
 assert.ok(nav.includes('loc.assign(isArabic() ? "index.html" : "index-en.html")'),"conference Home always opens language-matched home");
 assert.ok(!nav.includes("if (isConference && loc.hash)"),"Home must not merely scroll to visitor cards");
 assert.ok(navCss.includes("Keep quote transitions usable on small and short iPhones"),"mobile transition must not clip quotations");
-assert.ok(pub.includes("20261014.11"),"public build must invalidate old navigation styles across routes");
+assert.ok(pub.includes("20261015.3"),"public build must invalidate old navigation styles across routes");
 
 /* Verify conference Home action after arriving via /go, in both languages. */
 const navMockButtons=Object.create(null);
