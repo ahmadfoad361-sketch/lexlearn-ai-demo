@@ -59,6 +59,12 @@ var dict={
  shareTitle:"Share conference page",returnPaths:"Back to paths"
  }
 };
+function normalizeContact(value){
+ return String(value||"").trim().replace(/[\u0660-\u0669\u06f0-\u06f9]/g,function(ch){
+   var n=ch.charCodeAt(0);
+   return String(n>=0x6f0?n-0x6f0:n-0x660);
+ });
+}
 function language(){return document.documentElement.lang==="ar"?"ar":"en";}
 function translate(){
  var x=dict[language()];
@@ -106,7 +112,7 @@ form.addEventListener("submit",async function(event){
   organization:field.organization.value.trim(),
   faculty:field.faculty.value.trim(),
   audience:field.audience.value,
-  contact:field.contact.value.trim(),
+  contact:normalizeContact(field.contact.value),
   website:field.website.value,
   consent:field.consent.checked
  };
