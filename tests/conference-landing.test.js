@@ -356,7 +356,7 @@ assert.ok(html.includes("assets/conference.css?v=20261015.5")&&html.includes("as
 const leadsJS=read("assets/conference-leads.js");
 assert.doesNotThrow(()=>new vm.Script(leadsJS,{filename:"assets/conference-leads.js"}),"lead form JavaScript must parse");
 assert.ok(pub.includes('"conference-leads.js"')&&pub.includes('"assets/conference-leads.js"'),"contact capture JS must ship with the public release");
-assert.ok(html.includes("assets/conference-leads.js?v=20261015.6"),"conference must load the active consent-based lead capture client");
+assert.ok(html.includes("assets/conference-leads.js?v=20261015.7"),"conference must load the active consent-based lead capture client");
 assert.ok(html.includes('id="leadForm"')&&html.includes('id="facultyField"')&&html.includes('id="leadStatus"'),"real contact form, university field and live status required");
 assert.ok(html.includes('name="audience"')&&html.includes('name="contact"')&&html.includes('name="organization"'),"visitor data inputs must be present");
 assert.ok(leadsJS.includes('fetch(endpoint')&&leadsJS.includes('conference-lead')&&leadsJS.includes('authorization'),"lead capture must POST securely to LexLearn's Supabase Edge Function");
