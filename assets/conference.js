@@ -120,13 +120,23 @@ if(carousel && carousel.children && carousel.children.length && deckDots && type
  refreshSlides();
 }
 if(backToPaths && typeof window.addEventListener==="function"){
+ var hasUserScrolled=false;
  function refreshBackPaths(){
-  var first=document.getElementById("paths"),threshold=first&&first.getBoundingClientRect?first.getBoundingClientRect().bottom:120;
-  backToPaths.classList.toggle("isVisible",threshold<110);
+  var first=document.getElementById("paths");
+  var contact=document.getElementById("contact"),footer=document.querySelector("footer.foot");
+  var firstBottom=first&&first.getBoundingClientRect?first.getBoundingClientRect().bottom:120;
+  var contactTop=contact&&contact.getBoundingClientRect?contact.getBoundingClientRect().top:Infinity;
+  var footerTop=footer&&footer.getBoundingClientRect?footer.getBoundingClientRect().top:Infinity;
+  var viewport=window.innerHeight||700,depth=window.scrollY||0;
+  var show=hasUserScrolled && depth>140 && firstBottom<110 && contactTop>viewport*.82 && footerTop>viewport;
+  backToPaths.classList.toggle("isVisible",show);
+  backToPaths.setAttribute("aria-hidden",show?"false":"true");
+  backToPaths.tabIndex=show?0:-1;
  }
- window.addEventListener("scroll",refreshBackPaths,{passive:true});
+ window.addEventListener("scroll",function(){hasUserScrolled=true;refreshBackPaths();},{passive:true});
  window.addEventListener("resize",refreshBackPaths,{passive:true});
- refreshBackPaths();
+ backToPaths.setAttribute("aria-hidden","true");
+ backToPaths.tabIndex=-1;
 }
 let active="en";
 function setLang(next){
