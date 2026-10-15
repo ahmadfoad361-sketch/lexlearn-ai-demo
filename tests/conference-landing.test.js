@@ -357,7 +357,7 @@ for(const code of [sc,scEn]){
 assert.ok(nav.includes('showcase(?:-en)?'),"public demo must skip generic floating Back injection");
 assert.ok(scCss.includes(".demoIntro .demoStart{display:block;width:min(100%,485px)")&&scCss.includes(".demoIntro .stageCard:before{display:none}"),"wide CTA and no abrupt colored stripe");
 assert.ok(!read("showcase.html").includes("fonts.googleapis.com")&&!read("showcase-en.html").includes("fonts.googleapis.com"),"remove blocking remote Google fonts");
-assert.ok(html.includes("assets/conference.css?v=20261015.5")&&html.includes("assets/conference.js?v=20261015.5"),"bump CSS/JS cache");
+assert.ok(html.includes("assets/conference.css?v=20261015.5")&&html.includes("assets/conference.js?v=20261015.8"),"bump CSS/JS cache");
 
 
 /* Conversion UX and privacy-safe lead capture for Web Summit Qatar 2027. */
