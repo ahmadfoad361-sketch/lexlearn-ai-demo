@@ -5,7 +5,7 @@ const AR={
  promo:"ليكس ليرن في مؤتمر ويب ساميت قطر ٢٠٢٧ — اكتشف الرؤية وجرّب المنصة وتعرّف على التجربة الجامعية.",promoShort:"ليكس ليرن · ويب ساميت قطر ٢٠٢٧ · برنامج ألفا",
  eyebrow:"ليكس ليرن · منصة تعليمية لطلاب القانون",
  heroTitle:"قيّم مهاراتك القانونية… وطوّرها انطلاقًا من نقاط قوتك",
- heroSub:"نشخّص نقاط قوتك في التعلّم القانوني، ونبني عليها تدريبًا يساعدك على تقوية المهارات التي تحتاج إلى تطوير.",
+ heroSub:"بيشخّص نقاط قوتك في التفكير القانوني، ويبني مسارك لتقوية نقاط ضعفك.",
  studentTitle:"طالب",studentDesc:"جرّب تقييم الحفظ والفهم.",studentCTA:"افتح التجربة",
  univTitle:"جامعة أو مؤسسة تعليمية",univDesc:"تعرّف على التجربة الجامعية المقترحة.",univCTA:"خطة التجربة",
  invTitle:"مستثمر أو شريك",invDesc:"الرؤية وخارطة الطريق بدءًا من قطر.",invCTA:"اطّلع على الرؤية",
@@ -32,10 +32,10 @@ const AR={
  slide4Small:"الوضع الحالي",slide4H:"نسخة تجريبية عاملة",slide4P:"تحليل الإجابات التحريرية بالذكاء الاصطناعي: قيد التطوير. التحقق من الأثر التعليمي سيتم عبر التجربة المقترحة.",
  slide5Small:"التحقق الأكاديمي",slide5H:"30–60 طالبًا · 6–8 أسابيع",slide5P:"مقترح تجربة بإشراف أكاديمي مع قياس قبلي وبعدي.",
  slide6Small:"خريطة الطريق",slide6H:"قطر أولًا، ثم التوسع",slide6P:"نبدأ بكليات القانون القطرية، ثم نتحقق من الأثر قبل التوسع في المواد والأسواق.",
- deckNote:"هذه معاينة عامة مختصرة للموبايل وليست العرض الاستثماري السري الكامل. أعداد التجربة مقترحة وليست نتائج منفذة.",deckSwipeHint:"مرّر أفقيًا لاستعراض بقية الشرائح ↔",
+ deckNote:"هذه معاينة عامة مختصرة للموبايل وليست العرض الاستثماري السري الكامل. أعداد التجربة مقترحة وليست نتائج منفذة.",deckSwipeHint:"مرّر أفقيًا لاستعراض بقية الشرائح ↔",returnPaths:"رجوع للمسارات",
  label05:"05 / التجربة الجامعية",pilotTitle:"تعاون أكاديمي قابل للقياس",
  pilotBody:"نقترح تجربة أكاديمية محددة بإشراف جامعي لقياس الأثر قبل التوسع",
- pilotStudents:"طالبًا مقترحًا",pilotWeeks:"أسابيع مقترحة",
+ pilotStudents:"طالبًا مقترحًا",pilotStudentsHelp:"عدد طلاب القانون المقترح مشاركتهم في التجربة.",pilotWeeks:"أسابيع مقترحة",pilotWeeksHelp:"مدة التدريب والقياس القبلي والبعدي المقترحة.",
  pilot1:"قبل التجربة: تشخيص أولي لكل مهارة.",pilot2:"أثناء التجربة: تدريبات مستهدفة بإشراف أكاديمي وضوابط للخصوصية.",pilot3:"بعد التجربة: قياس مؤشرات التعلم الأولية، ومراجعة موثوقية التصحيح وسهولة الاستخدام تحت إشراف أكاديمي.",
  pilotCTA:"ناقش تجربة جامعية ←",
  label06:"06 / للمستثمرين والشركاء",visionTitle:"قطر أولًا. الدليل قبل التوسع.",
@@ -52,7 +52,7 @@ const EN={
  promo:"LexLearn at Web Summit Qatar 2027 — Discover our vision. Try the demo. Explore a university pilot.",promoShort:"LexLearn · Web Summit Qatar 2027 · ALPHA",
  eyebrow:"LEXLEARN · LEGAL LEARNING FOR STUDENTS",
  heroTitle:"Assess your legal learning skills. Build on your strengths.",
- heroSub:"A learning platform for law students: identify what you do well and use it to develop the skills that need more practice.",
+ heroSub:"diagnoses your strengths in legal thinking and builds your learning path to strengthen weaker skills.",
  studentTitle:"Student",studentDesc:"Try the live legal-learning demo.",studentCTA:"Open live demo",
  univTitle:"University or institution",univDesc:"Explore a proposed supervised university pilot.",univCTA:"Explore the pilot",
  invTitle:"Investor or partner",invDesc:"See the vision and Qatar-first roadmap.",invCTA:"View roadmap",
@@ -71,8 +71,8 @@ const EN={
  slide4Small:"CURRENT STATUS",slide4H:"Working beta",slide4P:"AI analysis of written answers: in progress. Learning impact not yet proven.",
  slide5Small:"ACADEMIC VALIDATION",slide5H:"30–60 students · 6–8 weeks",slide5P:"A proposed supervised pilot with pre/post tasks and measured evidence.",
  slide6Small:"QATAR-FIRST ROADMAP",slide6H:"Validate, then expand",slide6P:"Start with Qatari law faculties, validate impact, then consider broader disciplines and markets.",
- deckNote:"Public mobile summary rather than the full confidential investor presentation. Figures are a proposal, not completed pilot results.",deckSwipeHint:"Swipe sideways to see the other slides ↔",
- label05:"05 / UNIVERSITY PILOT",pilotTitle:"Measurable academic collaboration",pilotBody:"We propose a focused, faculty-supervised academic pilot to measure learning impact before expanding.",pilotStudents:"students proposed",pilotWeeks:"weeks proposed",
+ deckNote:"Public mobile summary rather than the full confidential investor presentation. Figures are a proposal, not completed pilot results.",deckSwipeHint:"Swipe sideways to see the other slides ↔",returnPaths:"Back to paths",
+ label05:"05 / UNIVERSITY PILOT",pilotTitle:"Measurable academic collaboration",pilotBody:"We propose a focused, faculty-supervised academic pilot to measure learning impact before expanding.",pilotStudents:"students proposed",pilotStudentsHelp:"Proposed number of law students in the pilot.",pilotWeeks:"weeks proposed",pilotWeeksHelp:"Proposed duration for practice and before/after assessment.",
  pilot1:"Before: establish a baseline using skill-specific tasks.",pilot2:"During: deliver structured practice with faculty oversight and privacy safeguards.",pilot3:"After: review usability, scoring agreement and early learning indicators. Impact remains to be established.",pilotCTA:"Discuss an academic pilot ↗",
  label06:"06 / INVESTORS & PARTNERS",visionTitle:"Qatar first. Proof before scale.",visionLead:"The long-term vision is a diagnostic-first learning platform with explainable recommendations and meaningful faculty oversight.",
  phase1:"Working beta",phase1P:"Core student experience and supervisor tools under development and testing.",phase2:"Qatari academic pilot",phase2P:"Propose 30–60 students over 6–8 weeks; measure the first outcomes.",phase3:"Product validation",phase3P:"Refine AI analysis of written answers, legal review and scalable faculty workflows.",phase4:"Broader expansion",phase4P:"Consider additional legal subjects and then other disciplines only after evidence.",
@@ -83,12 +83,59 @@ const languageButtonEN=document.getElementById("langEN"),languageButtonAR=docume
 const student=document.getElementById("studentCard"),demo=document.getElementById("demoLink"),
  home=document.getElementById("homeLink"),homeBrand=document.getElementById("homeBrand"),footHome=document.getElementById("footHome"),
  privacy=document.getElementById("privacyLink"),deck=document.getElementById("downloadDeck"),waShare=document.getElementById("waShare");
+const carousel=document.getElementById("deckSlides"),deckDots=document.getElementById("deckDots");
+const deckPrev=document.getElementById("deckPrev"),deckNext=document.getElementById("deckNext");
+const backToPaths=document.getElementById("pathsReturn");
+let selectedSlide=0,dotButtons=[];
+function goSlide(index){
+ if(!carousel || !carousel.children || !carousel.children.length)return;
+ selectedSlide=Math.max(0,Math.min(carousel.children.length-1,index));
+ var slide=carousel.children[selectedSlide];
+ if(typeof slide.scrollIntoView==="function")slide.scrollIntoView({behavior:"smooth",block:"nearest",inline:"start"});
+ refreshSlides();
+}
+function refreshSlides(){
+ dotButtons.forEach(function(b,i){b.setAttribute("aria-current",i===selectedSlide?"true":"false");});
+ if(deckPrev)deckPrev.disabled=selectedSlide===0;
+ if(deckNext)deckNext.disabled=!carousel||!carousel.children||selectedSlide>=carousel.children.length-1;
+}
+if(carousel && carousel.children && carousel.children.length && deckDots && typeof document.createElement==="function"){
+ Array.from(carousel.children).forEach(function(_slide,i){
+  var b=document.createElement("button");b.type="button";b.className="deckDot";
+  b.setAttribute("aria-label","Slide "+(i+1));b.setAttribute("aria-current",i===0?"true":"false");
+  b.addEventListener("click",function(){goSlide(i);});
+  deckDots.appendChild(b);dotButtons.push(b);
+ });
+ deckPrev.addEventListener("click",function(){goSlide(selectedSlide-1);});
+ deckNext.addEventListener("click",function(){goSlide(selectedSlide+1);});
+ carousel.addEventListener("scroll",function(){
+  var rect=carousel.getBoundingClientRect(),rtl=document.documentElement.dir==="rtl",best=Infinity;
+  Array.from(carousel.children).forEach(function(slide,i){
+   var r=slide.getBoundingClientRect();
+   var distance=Math.abs(rtl?r.right-rect.right:r.left-rect.left);
+   if(distance<best){best=distance;selectedSlide=i;}
+  });
+  refreshSlides();
+ },{passive:true});
+ refreshSlides();
+}
+if(backToPaths && typeof window.addEventListener==="function"){
+ function refreshBackPaths(){
+  var first=document.getElementById("paths"),threshold=first&&first.getBoundingClientRect?first.getBoundingClientRect().bottom:120;
+  backToPaths.classList.toggle("isVisible",threshold<110);
+ }
+ window.addEventListener("scroll",refreshBackPaths,{passive:true});
+ window.addEventListener("resize",refreshBackPaths,{passive:true});
+ refreshBackPaths();
+}
 let active="en";
 function setLang(next){
  active=next==="ar"?"ar":"en";
  const t=active==="ar"?AR:EN;
  document.documentElement.lang=active;
  document.documentElement.dir=active==="ar"?"rtl":"ltr";
+ if(carousel)carousel.dir=active==="ar"?"rtl":"ltr";
+ dotButtons.forEach(function(b,i){b.setAttribute("aria-label",(active==="ar"?"الشريحة ":"Slide ")+(i+1));});
  document.title=active==="ar"?"LexLearn | اكتشف رؤيتنا — مؤتمر قطر 2027":"LexLearn | Explore the Vision — Web Summit Qatar 2027";
  document.querySelectorAll("[data-t]").forEach(function(el){const k=el.getAttribute("data-t");if(k in t)el.textContent=t[k];});
  languageButtonEN.setAttribute("aria-pressed",String(active==="en"));languageButtonAR.setAttribute("aria-pressed",String(active==="ar"));
