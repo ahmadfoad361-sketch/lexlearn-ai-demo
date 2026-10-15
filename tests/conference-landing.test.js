@@ -321,7 +321,7 @@ assert.ok(nav.includes('back.hidden = true')&&nav.includes('back.setAttribute("a
 assert.ok(css.includes('.site-header #lexlearnBack[hidden]{display:none!important}'),"Home button must remain hidden despite shared styling");
 assert.ok(js.includes('promoShort:"ليكس ليرن · ويب ساميت قطر ٢٠٢٧ · برنامج ألفا"'),"Arabic conference banner must be translated");
 assert.ok(js.includes('promoShort:"LexLearn · Web Summit Qatar 2027 · ALPHA"'),"English banner retains official event identity");
-assert.ok(html.includes('title="Web Summit Qatar 2027 · ALPHA"')&&html.includes('href="assets/lexlearn-go-qr.svg"'),"translated strip and unchanged official Qatar 2027 QR target");
+assert.ok(html.includes('title="Web Summit Qatar 2027 · ALPHA"')&&pub.includes('"go/index.html"')&&pub.includes('"lexlearn-go-qr.svg"'),"translated strip and permanent printed QR retained without visitor download");
 assert.ok(html.includes("assets/conference.css?v=20261015.5")&&html.includes("assets/conference.js?v=20261015.5"),"invalidate mobile first-fold UI cache");
 
 
