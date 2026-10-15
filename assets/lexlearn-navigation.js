@@ -3,6 +3,8 @@
   "use strict";
   var doc = document, loc = window.location;
   var isConference = /(?:^|\/)conference\.html$/.test(loc.pathname);
+  // Public demo renders its own responsive Back control inside its header.
+  if (/(?:^|\/)showcase(?:-en)?\.html$/.test(loc.pathname)) return;
   var isArabic = function () { return doc.documentElement.lang === "ar"; };
   var back = doc.createElement("button");
   back.type = "button";
