@@ -10,7 +10,7 @@ for(const skill of ["Recall","Understanding","Application","Legal precision","Ex
 for(const skill of ["الحفظ","الفهم","التطبيق","الدقة القانونية","بناء الإجابة الامتحانية"])assert.ok(js.includes(skill),"missing exact Arabic skill "+skill);
 for(const phrase of ["Working beta","AI analysis of written answers: in progress","Learning impact not yet proven","30–60","6–8","Dr Ahmed Foad Elfeky","Founder & CEO","Qatari law faculties"])assert.ok(js.includes(phrase)||html.includes(phrase),"required public copy: "+phrase);
 for(const forbidden of ["Qatar University","Lusail University","HBKU","exam performance","QAR","USD","$49","Google Ads","gtag(","fbq(","pixel","<video"])assert.ok(!html.includes(forbidden)&&!js.includes(forbidden),"forbidden public item: "+forbidden);
-assert.ok(!html.includes("<form"),"no contact data form");
+assert.ok(html.includes('id="leadForm"')&&html.includes('name="consent" required'),"contact form must obtain explicit consent before collecting private lead data");
 assert.ok(!/<script[^>]+src="https?:/i.test(html),"no third party scripts");
 assert.ok(html.includes("mailto:ahmadfoad361@gmail.com"),"direct email contact required");
 
@@ -40,7 +40,7 @@ assert.ok(read("assets/conference.css").includes(".pilot > div:first-child h2"),
 assert.ok(go.includes("../conference.html")&&go.includes("window.location.replace("),"permanent QR redirect required");
 assert.ok(pub.includes('"go/index.html"')&&pub.includes('"conference.html"'),"release artifact must include routes");
 assert.ok(pub.includes('"lexlearn-go-qr.svg"')&&pub.includes('"conference-pdf.js"'),"release must ship PDF and QR assets");
-assert.ok(html.includes('id="printQR"')&&html.includes('assets/lexlearn-go-qr.svg'),"printable /go QR link missing");
+assert.ok(!html.includes('id="printQR"')&&pub.includes('"lexlearn-go-qr.svg"'),"visitor page must not show owner-only QR download, but published QR asset stays available");
 assert.ok(html.includes('assets/conference-pdf.js')&&js.includes('lexlearnDownloadPublicDeck("ar")'),"direct Arabic PDF download missing");
 assert.ok(read("assets/conference-pdf.js").includes('application/pdf'),"Arabic PDF generator not included");
 
@@ -322,7 +322,7 @@ assert.ok(css.includes('.site-header #lexlearnBack[hidden]{display:none!importan
 assert.ok(js.includes('promoShort:"ليكس ليرن · ويب ساميت قطر ٢٠٢٧ · برنامج ألفا"'),"Arabic conference banner must be translated");
 assert.ok(js.includes('promoShort:"LexLearn · Web Summit Qatar 2027 · ALPHA"'),"English banner retains official event identity");
 assert.ok(html.includes('title="Web Summit Qatar 2027 · ALPHA"')&&html.includes('href="assets/lexlearn-go-qr.svg"'),"translated strip and unchanged official Qatar 2027 QR target");
-assert.ok(html.includes("assets/conference.css?v=20261015.2")&&html.includes("assets/conference.js?v=20261015.2"),"invalidate mobile first-fold UI cache");
+assert.ok(html.includes("assets/conference.css?v=20261015.5")&&html.includes("assets/conference.js?v=20261015.5"),"invalidate mobile first-fold UI cache");
 
 
 /* Follow-up UX contract: conference, pilot, investor and student demo. */
@@ -333,8 +333,8 @@ assert.ok(js.includes('carousel.dir=active==="ar"?"rtl":"ltr"'),"carousel should
 assert.ok(css.includes("scroll-snap-type:x mandatory")&&css.includes(".deckDot[aria-current=true]"),"carousel swipe and active page dots must be styled");
 assert.ok(html.includes('data-t="pilotStudentsHelp"')&&html.includes('data-t="pilotWeeksHelp"'),"explain both pilot figures");
 assert.ok(js.includes("pilotStudentsHelp:")&&js.includes("pilotWeeksHelp:"),"both languages must explain the 30–60 students and 6–8 weeks");
-assert.ok(html.includes('class="button buttonPrimary" id="emailContact"'),"email is the one primary contact CTA");
-assert.ok(html.includes('class="button buttonSecondary" id="waShare"')&&html.includes('class="button buttonSecondary" id="printQR"'),"other contacts secondary");
+assert.ok(html.includes('class="button buttonPrimary" id="formCTA"'),"the working contact form is primary until a verified WhatsApp number is supplied");
+assert.ok(html.includes('class="button buttonSecondary" id="emailContact"')&&html.includes('class="shareIcon" id="waShare"'),"email secondary and link-sharing a compact icon");
 assert.ok(html.includes('class="heroBrand" dir="ltr"')&&js.includes('heroSub:"بيشخّص نقاط قوتك'),"Latin brand isolated from RTL Arabic subheading");
 const sc=read("assets/showcase.js"),scEn=read("assets/showcase-en.js"),scCss=read("assets/showcase.css");
 for(const code of [sc,scEn]){
@@ -347,6 +347,28 @@ for(const code of [sc,scEn]){
 assert.ok(nav.includes('showcase(?:-en)?'),"public demo must skip generic floating Back injection");
 assert.ok(scCss.includes(".demoIntro .demoStart{display:block;width:min(100%,485px)")&&scCss.includes(".demoIntro .stageCard:before{display:none}"),"wide CTA and no abrupt colored stripe");
 assert.ok(!read("showcase.html").includes("fonts.googleapis.com")&&!read("showcase-en.html").includes("fonts.googleapis.com"),"remove blocking remote Google fonts");
-assert.ok(html.includes("assets/conference.css?v=20261015.2")&&html.includes("assets/conference.js?v=20261015.2"),"bump CSS/JS cache");
+assert.ok(html.includes("assets/conference.css?v=20261015.5")&&html.includes("assets/conference.js?v=20261015.5"),"bump CSS/JS cache");
+
+
+/* Conversion UX and privacy-safe lead capture for Web Summit Qatar 2027. */
+const leadsJS=read("assets/conference-leads.js");
+assert.ok(pub.includes('"conference-leads.js"')&&pub.includes('"assets/conference-leads.js"'),"contact capture JS must ship with the public release");
+assert.ok(html.includes("assets/conference-leads.js?v=20261015.5"),"conference must load the active consent-based lead capture client");
+assert.ok(html.includes('id="leadForm"')&&html.includes('id="facultyField"')&&html.includes('id="leadStatus"'),"real contact form, university field and live status required");
+assert.ok(html.includes('name="audience"')&&html.includes('name="contact"')&&html.includes('name="organization"'),"visitor data inputs must be present");
+assert.ok(leadsJS.includes('fetch(endpoint')&&leadsJS.includes('conference-lead')&&leadsJS.includes('authorization'),"lead capture must POST securely to LexLearn's Supabase Edge Function");
+assert.ok(leadsJS.includes("businessNumber=\"\""),"do not invent LexLearn's WhatsApp Business number");
+assert.ok(!html.includes("زر واتساب يشارك رابط الصفحة حاليًا"),"obsolete WhatsApp disclaimer removed");
+assert.ok(html.includes('id="waBusiness" hidden'),"direct business CTA remains hidden until number is verified");
+assert.ok(html.includes('class="founderPhoto"'),"founder card portrait slot present");
+assert.ok(read("privacy.html").includes("طلبات التواصل في المؤتمر")&&read("privacy-en.html").includes("Conference contact inquiries"),"bilingual privacy policies disclose captured visitor details");
+assert.ok(html.includes('<bdi dir="ltr">30–60</bdi>')&&html.includes('<bdi dir="ltr">6–8</bdi>'),"LTR number range isolation in university and investor sections");
+assert.ok(html.includes('class="roadmapStatus statusReady"')&&html.includes('class="roadmapStatus statusProgress"')&&html.includes('class="roadmapStatus statusUpcoming"'),"roadmap stages need status markings");
+assert.ok(html.includes('data-lead-role="investor"')&&html.includes('data-lead-role="university"'),"partner and university CTAs must select correct lead form role");
+assert.ok(css.includes(".roadmap::before")&&css.includes(".roadmapMarker"),"roadmap should be vertical timeline with markers");
+assert.ok(css.includes(".pathsReturn{width:44px")&&leadsJS.includes("footerVisible"),"floating return control must be compact and hide near the footer");
+assert.ok(html.includes('data-t="pilotNeedsTitle"')&&html.includes('data-t="pilotValueTitle"')&&html.includes('data-t="pilotEthics"'),"university pilot should describe inputs, outputs and ethical safeguards");
+assert.ok(sc.includes('class="demoLangGroup"')&&sc.includes('stageProgressText'),"public student demo must have EN/AR switch and progress indicator");
+assert.ok(scCss.includes(".demoLangGroup"),"mobile demo language controls must be styled");
 
 console.log("conference landing release test PASS");
