@@ -18,6 +18,14 @@
     doc.body.appendChild(back);
   }
 
+  // On the conference landing itself the three routes are the primary UI;
+  // avoid a redundant Home button. Subpages still retain their Back control.
+  if (isConference) {
+    back.hidden = true;
+    back.setAttribute("aria-hidden", "true");
+    back.tabIndex = -1;
+  }
+
   function words() {
     return isArabic()
       ? {back:isConference?"الرئيسية":"رجوع", toStudent:"جاري فتح تجربة الطالب…", toUniversity:"جاري عرض خطة التعاون الجامعي…", toInvestor:"جاري عرض الرؤية وخارطة الطريق…", cancel:"إلغاء"}
