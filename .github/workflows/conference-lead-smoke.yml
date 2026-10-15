@@ -1,0 +1,50 @@
+name: LexLearn conference lead one-time smoke test
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/conference-lead-smoke.yml']
+permissions:
+  contents: read
+jobs:
+  submit-fake-lead:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify Web Summit inquiry endpoint (fake QA details only)
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const js = fs.readFileSync('assets/conference-leads.js', 'utf8');
+          const m = js.match(/var publicAnonJwt="([^"]+)"/);
+          if (!m) throw new Error('Public access token missing from test client');
+          const fake = {
+            visitor_name: 'LexLearn QA Test',
+            organization: 'LexLearn Internal QA',
+            audience: 'investor',
+            contact: 'lexlearn-qa@example.invalid',
+            faculty: '',
+            consent: true,
+            website: ''
+          };
+          (async () => {
+            const res = await fetch('https://emxiuwcuxyljfynnzpnh.supabase.co/functions/v1/conference-lead', {
+              method: 'POST',
+              headers: {
+                origin: 'https://ahmadfoad361-sketch.github.io',
+                'content-type': 'application/json',
+                apikey: m[1],
+                authorization: 'Bearer ' + m[1]
+              },
+              body: JSON.stringify(fake),
+              signal: AbortSignal.timeout(15000)
+            });
+            const data = await res.json().catch(() => ({}));
+            console.log('QA form HTTP response:', res.status, 'stored:', data.ok === true);
+            if (res.status !== 201 || data.ok !== true) {
+              throw new Error('Conference lead smoke test failed: ' + String(data.error || 'no status'));
+            }
+            console.log('PASS: Supabase received fake opt-in lead. Remove QA record next.');
+          })().catch(error => { console.error(error.message); process.exitCode = 1; });
+          NODE
