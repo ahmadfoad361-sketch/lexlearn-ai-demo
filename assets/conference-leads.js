@@ -4,7 +4,7 @@
 "use strict";
 var endpoint="https://emxiuwcuxyljfynnzpnh.supabase.co/functions/v1/conference-lead";
 var publicAnonJwt="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVteGl1d2N1eHlsamZ5bm56cG5oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEyNDk2NzEsImV4cCI6MjEwNjgyNTY3MX0.4om41WoeatrOixmPjhcyahBNdEQF_N6PLMiGIz6bDoQ";
-var businessNumber=""; // international digits, no +: set only after the owner verifies the number
+var businessNumber="201014408788"; // User-confirmed +20 101 440 8788, E.164 digits for wa.me
 var form=document.getElementById("leadForm"),status=document.getElementById("leadStatus");
 if(!form||!status)return;
 var submit=form.querySelector("[type=submit]"),audience=form.elements.audience,faculty=form.elements.faculty;
@@ -25,7 +25,7 @@ var dict={
  investorCTA:"اطلب العرض التفصيلي",
  phase2PStart:"تجربة مقترحة تشمل",phase2PMid:"طالبًا خلال",phase2PEnd:"أسابيع لقياس النتائج الأولية.",
  statusReady:"جاهزة",statusUpcoming:"قادمة",statusProgress:"قيد التنفيذ",
- formCTA:"تواصل معنا",businessCTA:"تواصل عبر واتساب بزنس",emailCTA:"البريد الإلكتروني",
+ formCTA:"اترك بياناتك",businessCTA:"تواصل معنا عبر واتساب",emailCTA:"البريد الإلكتروني",
  formTitle:"خلّينا نتواصل",formIntro:"اترك بياناتك علشان نقدر نتواصل معاك بخصوص LexLearn.",
  fieldName:"الاسم",fieldOrg:"الجامعة أو الجهة",fieldAudience:"أنا",fieldFaculty:"الكلية أو القسم",fieldContact:"رقم الهاتف أو البريد الإلكتروني",
  roleStudent:"طالب",roleInvestor:"مستثمر أو شريك",roleUniversity:"جامعة أو مؤسسة",
@@ -48,7 +48,7 @@ var dict={
  investorCTA:"Request the detailed pitch",
  phase2PStart:"Proposed pilot for",phase2PMid:"students over",phase2PEnd:"weeks to measure early outcomes.",
  statusReady:"Ready",statusUpcoming:"Upcoming",statusProgress:"In progress",
- formCTA:"Contact LexLearn",businessCTA:"WhatsApp Business",emailCTA:"Email",
+ formCTA:"Leave your details",businessCTA:"Chat on WhatsApp",emailCTA:"Email",
  formTitle:"Let's connect",formIntro:"Share a few details so we can follow up about your interest in LexLearn.",
  fieldName:"Your name",fieldOrg:"University or organization",fieldAudience:"I am a",fieldFaculty:"Faculty or department",fieldContact:"Phone number or email",
  roleStudent:"Student",roleInvestor:"Investor or partner",roleUniversity:"University or institution",
@@ -71,6 +71,10 @@ function translate(){
  document.querySelectorAll("[data-t]").forEach(function(el){var key=el.getAttribute("data-t");if(key in x)el.textContent=x[key];});
  document.getElementById("formPrivacy").href=language()==="ar"?"privacy.html":"privacy-en.html";
  share.setAttribute("aria-label",x.shareTitle);share.title=x.shareTitle;
+ if(/^[1-9][0-9]{7,14}$/.test(businessNumber)){
+  var introduction=language()==="ar"?"مرحبًا، تعرفت على LexLearn في Web Summit Qatar 2027 وأرغب في معرفة المزيد عن المشروع.":"Hello, I discovered LexLearn at Web Summit Qatar 2027 and would like to learn more about the project.";
+  wa.href="https://wa.me/"+businessNumber+"?text="+encodeURIComponent(introduction);
+ }
  if(paths){
   paths.innerHTML='<svg viewBox="0 0 24 24" width="19" height="19" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5m0 0-6 6m6-6 6 6"/></svg>';
   paths.setAttribute("aria-label",x.returnPaths);paths.title=x.returnPaths;
@@ -89,9 +93,10 @@ document.querySelectorAll("[data-lead-role]").forEach(function(a){a.addEventList
 audience.addEventListener("change",changeRole);
 ["langAR","langEN"].forEach(function(id){var b=document.getElementById(id);if(b)b.addEventListener("click",translate);});
 if(/^[1-9][0-9]{7,14}$/.test(businessNumber)){
- wa.href="https://wa.me/"+businessNumber+"?text="+encodeURIComponent("LexLearn · Web Summit Qatar 2027");
  wa.hidden=false;
- primary.classList.replace("buttonPrimary","buttonSecondary");
+ wa.classList.add("buttonPrimary");
+ primary.classList.remove("buttonPrimary");
+ primary.classList.add("buttonSecondary");
 }
 if(paths){
  function trackScroll(){
