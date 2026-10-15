@@ -72,7 +72,7 @@ function node(id){if(!nodes.has(id))nodes.set(id,{id,href:"",attrs:{},handlers:{
  setAttribute(key,val){this.attrs[key]=val;},
  removeAttribute(key){delete this.attrs[key];}
 });return nodes.get(id);}
-const translatable=["heroTitle","skill1","skill2","skill3","skill4","skill5","founderName","download"]
+const translatable=["heroTitle","skill1","skill2","skill3","skill4","skill5","founderName","download","promo","promoShort"]
  .map(k=>({key:k,textContent:"",getAttribute(){return this.key;}}));
 const language={lang:"en",dir:"ltr"},doc={
  documentElement:language,title:"",
@@ -91,6 +91,12 @@ assert.equal(translatable.find(x=>x.key==="skill5").textContent,"بناء الإ
 assert.equal(translatable.find(x=>x.key==="founderName").textContent,"د. أحمد فؤاد الفقي");
 assert.ok(node("studentCard").href.startsWith("showcase.html"));
 assert.equal(store.get("lexlearn_conference_language"),"ar");
+
+const arPromo=translatable.find(x=>x.key==="promo");
+const arPromoShort=translatable.find(x=>x.key==="promoShort");
+assert.equal(arPromo.textContent,"\u2066LexLearn\u2069 في مؤتمر \u2066Web Summit Qatar 2027\u2069 — اكتشف الرؤية وجرّب المنصة وتعرّف على التجربة الجامعية.");
+assert.equal(arPromoShort.textContent,"\u2066LexLearn\u2069 · \u2066Web Summit Qatar 2027\u2069 · برنامج \u2066ALPHA\u2069");
+
 node("langEN").handlers.click();
 assert.equal(language.lang,"en");assert.equal(language.dir,"ltr");
 assert.ok(node("studentCard").href.startsWith("showcase-en.html"));
@@ -319,10 +325,12 @@ assert.ok(css.includes('@media(max-height:700px) and (max-width:760px)'),"short 
 assert.ok(css.includes('.paths .pathGlyph svg{width:18px;height:18px'),"SVG arrows must use branded colour and constrained size");
 assert.ok(nav.includes('back.hidden = true')&&nav.includes('back.setAttribute("aria-hidden", "true")'),"redundant conference Home button must be hidden from display and accessibility tree");
 assert.ok(css.includes('.site-header #lexlearnBack[hidden]{display:none!important}'),"Home button must remain hidden despite shared styling");
-assert.ok(js.includes('promoShort:"ليكس ليرن · ويب ساميت قطر ٢٠٢٧ · برنامج ألفا"'),"Arabic conference banner must be translated");
+assert.ok(js.includes('promoShort:"\\u2066LexLearn\\u2069 · \\u2066Web Summit Qatar 2027\\u2069 · برنامج \\u2066ALPHA\\u2069"'),"Arabic mobile strip must preserve official Latin brands and translate only connective text");
+assert.ok(js.includes('promo:"\\u2066LexLearn\\u2069 في مؤتمر \\u2066Web Summit Qatar 2027\\u2069 — اكتشف الرؤية وجرّب المنصة وتعرّف على التجربة الجامعية."'),"Arabic desktop promo must retain official English names and readable RTL isolates");
+assert.ok(!js.includes("ويب ساميت قطر ٢٠٢٧")&&!js.includes("ليكس ليرن · ويب ساميت"),"do not localize the event or project brand names in event strip");
 assert.ok(js.includes('promoShort:"LexLearn · Web Summit Qatar 2027 · ALPHA"'),"English banner retains official event identity");
 assert.ok(html.includes('title="Web Summit Qatar 2027 · ALPHA"')&&pub.includes('"go/index.html"')&&pub.includes('"lexlearn-go-qr.svg"'),"translated strip and permanent printed QR retained without visitor download");
-assert.ok(html.includes("assets/conference.css?v=20261015.5")&&html.includes("assets/conference.js?v=20261015.5"),"invalidate mobile first-fold UI cache");
+assert.ok(html.includes("assets/conference.css?v=20261015.5")&&html.includes("assets/conference.js?v=20261015.8"),"invalidate mobile first-fold UI cache");
 
 
 /* Follow-up UX contract: conference, pilot, investor and student demo. */
