@@ -180,3 +180,41 @@ html[lang="en"],html[lang="en"] body,html[lang="en"] .demoStage,html[lang="en"] 
 
 /* LexLearn brand tokens — shared across public, student, demo and supervisor views */
 :root{--maroon:#8F1D3F;--maroon-2:#6E1531;--navy:#142B5F}
+
+/* LexLearn Web Summit public student entry: a compact, single-nav mobile header */
+.demoTop{background:#111D31}
+.demoTopIn{min-height:62px;padding:9px 18px;gap:12px}
+.demoBrand{min-width:0;gap:8px}
+.demoBrand b{font-size:clamp(16px,3.2vw,20px);white-space:nowrap;line-height:1.2}
+.demoBrand small{display:none!important}
+.demoLogo{width:42px;height:42px;flex:none;overflow:hidden;border-radius:9px!important;background:transparent!important;box-shadow:none!important}
+.demoLogo img{width:100%;height:100%;object-fit:contain;display:block}
+.demoMeta{display:flex;flex-wrap:nowrap;gap:8px;flex:none;align-items:center}
+.demoMeta>.demoGhost{min-height:44px;display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;padding:8px 13px;font-size:13px;font-weight:750;border-radius:12px}
+.demoMeta>.demoBack{border-color:#b4a1ac;background:#fffdfb;color:#111D31}
+.demoIntro{margin-top:0!important}
+.demoWrap{padding-top:clamp(12px,3vw,26px);padding-bottom:35px}
+.demoIntro .stageCard{max-width:650px;margin:auto;padding:clamp(19px,4vw,33px);border-radius:20px}
+.demoIntro .stageCard:before{display:none}
+.demoIntro .demoEyebrow{margin-bottom:12px}
+.demoIntro h2{font-size:clamp(25px,5vw,36px);line-height:1.35;margin-bottom:8px}
+.demoIntro .demoIntroLead{font-size:clamp(15px,2.5vw,18px);line-height:1.7;margin:0 auto 21px;max-width:46ch}
+.demoIntro .demoStart{display:block;width:min(100%,485px);min-height:56px;margin:0 auto 10px;font-size:19px;border-radius:13px;padding:14px 18px}
+.demoIntro .demoPrivacy{font-size:12px!important;color:#536073!important;line-height:1.65!important;margin:8px auto 0!important;max-width:52ch}
+.demoIntro .demoExtraTask{display:block;color:#667285;font-size:11px;line-height:1.5;margin-top:8px}
+.demoFooter{padding:10px 15px}
+@media(max-width:600px){
+ .demoTopIn{min-height:54px;padding:7px 12px;gap:7px}
+ .demoLogo{width:34px;height:34px}
+ .demoBrand b{font-size:16px}
+ .demoMeta{gap:6px}
+ .demoMeta>.demoGhost{min-height:42px;padding:7px 10px;font-size:12px}
+ .demoWrap{padding:12px 12px 28px}
+ .demoStage{margin:10px auto}
+ .stageCard{border-radius:18px;padding:19px 15px}
+ .demoIntro .stageCard{padding:23px 18px;border-radius:18px}
+ .demoIntro .demoStart{width:100%}
+ .demoIntro .demoIntroLead{font-size:15px}
+}
+@media(max-width:355px){.demoBrand b{font-size:14px}.demoMeta>.demoGhost{padding:7px 8px;font-size:11px}.demoLogo{width:30px;height:30px}.demoTopIn{padding-inline:9px}}
+@media(prefers-reduced-motion:reduce){.btn:hover{transform:none}}
