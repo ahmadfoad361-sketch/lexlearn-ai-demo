@@ -12,7 +12,7 @@ for(const phrase of ["Working beta","AI analysis of written answers: in progress
 for(const forbidden of ["Qatar University","Lusail University","HBKU","exam performance","QAR","USD","$49","Google Ads","gtag(","fbq(","pixel","<video"])assert.ok(!html.includes(forbidden)&&!js.includes(forbidden),"forbidden public item: "+forbidden);
 assert.ok(html.includes('id="leadForm"')&&html.includes('name="consent" required'),"contact form must obtain explicit consent before collecting private lead data");
 assert.ok(!/<script[^>]+src="https?:/i.test(html),"no third party scripts");
-assert.ok(html.includes("mailto:ahmadfoad361@gmail.com"),"direct email contact required");
+assert.ok(html.includes("mailto:Ahmadfoad361@gmail.com"),"confirmed email must be a working mailto link");
 
 assert.ok(!html.includes('id="science"')&&!html.includes("researchBasis")&&!html.includes("researchCards"),"scientific sources should appear in transition quotes, not as a standalone presentation section");
 assert.ok(!js.includes("scienceEyebrow:")&&!js.includes("scienceHeading:"),"unused research-section translations should be removed");
@@ -333,7 +333,7 @@ assert.ok(js.includes('carousel.dir=active==="ar"?"rtl":"ltr"'),"carousel should
 assert.ok(css.includes("scroll-snap-type:x mandatory")&&css.includes(".deckDot[aria-current=true]"),"carousel swipe and active page dots must be styled");
 assert.ok(html.includes('data-t="pilotStudentsHelp"')&&html.includes('data-t="pilotWeeksHelp"'),"explain both pilot figures");
 assert.ok(js.includes("pilotStudentsHelp:")&&js.includes("pilotWeeksHelp:"),"both languages must explain the 30–60 students and 6–8 weeks");
-assert.ok(html.includes('class="button buttonPrimary" id="formCTA"'),"the working contact form is primary until a verified WhatsApp number is supplied");
+assert.ok(html.includes('class="button buttonSecondary" id="formCTA"'),"the contact form stays available as a secondary option");
 assert.ok(html.includes('class="button buttonSecondary" id="emailContact"')&&html.includes('class="shareIcon" id="waShare"'),"email secondary and link-sharing a compact icon");
 assert.ok(html.includes('class="heroBrand" dir="ltr"')&&js.includes('heroSub:"بيشخّص نقاط قوتك'),"Latin brand isolated from RTL Arabic subheading");
 const sc=read("assets/showcase.js"),scEn=read("assets/showcase-en.js"),scCss=read("assets/showcase.css");
@@ -360,11 +360,15 @@ assert.ok(html.includes("assets/conference-leads.js?v=20261015.6"),"conference m
 assert.ok(html.includes('id="leadForm"')&&html.includes('id="facultyField"')&&html.includes('id="leadStatus"'),"real contact form, university field and live status required");
 assert.ok(html.includes('name="audience"')&&html.includes('name="contact"')&&html.includes('name="organization"'),"visitor data inputs must be present");
 assert.ok(leadsJS.includes('fetch(endpoint')&&leadsJS.includes('conference-lead')&&leadsJS.includes('authorization'),"lead capture must POST securely to LexLearn's Supabase Edge Function");
-assert.ok(leadsJS.includes("businessNumber=\"\""),"do not invent LexLearn's WhatsApp Business number");
+assert.ok(leadsJS.includes('businessNumber="201014408788"'),"use the founder-confirmed international WhatsApp number, without a plus sign");
 assert.ok(leadsJS.includes("function normalizeContact(value)")&&leadsJS.includes("contact:normalizeContact(field.contact.value)"),"phone form normalizes Arabic and Persian numbers");
 assert.ok(html.includes('name="contact" maxlength="180" required inputmode="text"'),"phone/email input avoids email-only mobile keyboard");
 assert.ok(!html.includes("زر واتساب يشارك رابط الصفحة حاليًا"),"obsolete WhatsApp disclaimer removed");
-assert.ok(html.includes('id="waBusiness" hidden'),"direct business CTA remains hidden until number is verified");
+assert.ok(html.includes('class="button buttonPrimary" id="waBusiness"')&&html.includes("https://wa.me/201014408788"),"show the verified WhatsApp number as the leading primary CTA");
+assert.ok(html.indexOf('id="waBusiness"')<html.indexOf('id="formCTA"'),"WhatsApp must be first contact action");
+assert.ok(html.includes('href="mailto:Ahmadfoad361@gmail.com"'),"founder display mail must match confirmed email");
+assert.ok(leadsJS.includes("introduction=language()")&&leadsJS.includes('encodeURIComponent(introduction)'),"WhatsApp should open with bilingual prefilled greetings");
+assert.ok(leadsJS.includes('wa.classList.add("buttonPrimary")')&&leadsJS.includes('primary.classList.add("buttonSecondary")'),"do not display two competing primary CTAs");
 assert.ok(html.includes('class="founderPhoto"'),"founder card portrait slot present");
 assert.ok(read("privacy.html").includes("طلبات التواصل في المؤتمر")&&read("privacy-en.html").includes("Conference contact inquiries"),"bilingual privacy policies disclose captured visitor details");
 assert.ok(html.includes('<bdi dir="ltr">30–60</bdi>')&&html.includes('<bdi dir="ltr">6–8</bdi>'),"LTR number range isolation in university and investor sections");
