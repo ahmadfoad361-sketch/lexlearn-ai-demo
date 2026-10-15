@@ -387,3 +387,69 @@ html[dir=rtl] .roadmap{padding:3px 36px 2px 0}
 }
 @media(max-width:365px){.contact h2{font-size:23px}.leadFields input,.leadFields select{font-size:14px}}
 @media print{.leadForm,.pathsReturn,.investorAction,.pilotAction{display:none!important}}
+
+
+/* Web Summit Qatar 2027 — investor timeline, mobile safe areas and balanced chapter rhythm (v20261015.9) */
+
+/* Same heading offset for every chapter; do not let different grids alter its visual start. */
+.section.frame{scroll-margin-top:88px;padding-top:42px;padding-bottom:48px}
+.section.frame.pilot,.section.frame.vision{align-content:start;align-items:start}
+.section.frame.pilot>div:first-child{align-self:start}
+.section.frame.pilot .eyebrow,.section.frame.vision .eyebrow{margin-top:0}
+.section.frame.pilot h2,.section.frame.vision h2{margin-top:0}
+.section.frame.pilot>div:first-child h2{margin-bottom:9px}
+.section.frame.pilot>div:first-child p:not(.eyebrow){line-height:1.68;margin-top:0}
+.section.frame.vision .sectionhead{margin-bottom:17px}
+.section.frame.vision .visionInvestorQuote{margin-top:0}
+
+/* Underline only the link words, not the full span or card width. */
+.paths .pathCTA{border:0!important;padding:0!important;display:inline-flex!important;width:max-content!important;max-width:100%;justify-self:start;align-self:start;line-height:1.5}
+.paths .pathCTA>span{text-decoration:underline;text-decoration-color:currentColor;text-decoration-thickness:1px;text-underline-offset:4px}
+
+/* A precise visual status system: solid=ready, split ring=in progress, hollow=upcoming. */
+.roadmap,.roadmap[aria-label]{padding-inline-start:68px;padding-inline-end:0}
+html[dir=rtl] .roadmap{padding-inline-start:68px;padding-inline-end:0}
+.roadmap::before{inset-inline-start:31px;top:24px;bottom:24px;background:#d9bdc7}
+.roadmap .roadmapMarker{inset-inline-start:-45px;width:17px;height:17px;top:18px;
+ border:3px solid var(--cream);background:var(--burgundy);box-shadow:0 0 0 1px #a17586}
+.roadmap .roadmapReady .roadmapMarker{background:var(--burgundy)}
+.roadmap .roadmapProgress .roadmapMarker{
+ background:conic-gradient(var(--burgundy) 0deg 180deg,#fffdfb 180deg 360deg);
+ border:3px solid var(--cream);box-shadow:0 0 0 2px var(--burgundy);
+}
+.roadmap .roadmapUpcoming .roadmapMarker{background:#fffdfb;border:4px solid var(--cream);box-shadow:0 0 0 2px #a5959d}
+.roadmap .roadmapUpcoming .roadmapMarker::before,.roadmap .roadmapProgress .roadmapMarker::before{content:none}
+.roadmap .roadmapProgress .roadmapMarker::after{content:"";position:absolute;inset:-6px;border:1px solid rgba(138,31,57,.42);border-radius:50%;animation:lexRoadmapPulse 3.4s ease-out infinite}
+@keyframes lexRoadmapPulse{0%{opacity:.55;transform:scale(.78)}65%,100%{opacity:0;transform:scale(1.35)}}
+.roadmap li{overflow:visible;min-width:0}
+.roadmap .pilotNumbers{line-height:1.9;overflow:visible;word-break:normal;overflow-wrap:break-word}
+.roadmap .pilotNumbers bdi{display:inline-block;direction:ltr;unicode-bidi:isolate;white-space:nowrap;vertical-align:baseline;font-variant-numeric:tabular-nums;font-weight:800;padding-inline:2px;color:var(--burgundy);line-height:1.4}
+.vision .evidenceNote{font-size:12px;line-height:1.8;color:#5b6577;border-inline-start:3px solid #bb9da8;padding:8px 13px;margin:2px 0 22px;max-width:820px;background:#fffaf7;border-radius:3px}
+
+/* Deliberately unobtrusive scroll-to-paths. Never cover the contact form or footer. */
+.pathsReturn,.pathsReturn.isVisible{width:39px;height:39px;min-height:39px;max-width:39px;opacity:0;transform:translateY(8px);bottom:calc(16px + env(safe-area-inset-bottom,0px));inset-inline-end:calc(12px + env(safe-area-inset-right,0px));background:rgba(17,29,49,.82);box-shadow:0 5px 14px rgba(17,29,49,.16);border:1px solid rgba(255,255,255,.35)}
+.pathsReturn.isVisible{opacity:.76;transform:translateY(0);pointer-events:auto}
+.pathsReturn.isVisible:hover,.pathsReturn.isVisible:focus-visible{opacity:1}
+.pathsReturn:not(.isVisible){pointer-events:none}
+
+@media(max-width:760px){
+ .section.frame{scroll-margin-top:76px;padding-top:27px;padding-bottom:32px}
+ .section.frame.vision .sectionhead{margin-bottom:13px}
+ .section.frame.pilot{row-gap:13px}
+ .roadmap,html[dir=rtl] .roadmap{padding-inline-start:52px;padding-inline-end:0}
+ .roadmap::before{inset-inline-start:20px;top:23px}
+ .roadmap .roadmapMarker{inset-inline-start:-40px}
+ .roadmap li{padding:14px 13px 18px}
+ .roadmap .pilotNumbers{font-size:13px;line-height:1.95;padding-bottom:3px}
+ .pathsReturn,.pathsReturn.isVisible{width:37px;height:37px;min-height:37px;max-width:37px;bottom:calc(12px + env(safe-area-inset-bottom,0px));inset-inline-end:calc(8px + env(safe-area-inset-right,0px))}
+}
+@media(max-width:390px){
+ .roadmap,html[dir=rtl] .roadmap{padding-inline-start:50px}
+ .roadmap::before{inset-inline-start:19px}
+ .roadmap .roadmapMarker{inset-inline-start:-39px}
+ .roadmap .pilotNumbers{line-height:2.05}
+}
+@media(prefers-reduced-motion:reduce){
+ .roadmap .roadmapProgress .roadmapMarker::after{animation:none;opacity:.25;transform:none}
+ .pathsReturn{transition:none}
+}
