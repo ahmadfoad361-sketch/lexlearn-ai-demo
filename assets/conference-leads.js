@@ -1,0 +1,138 @@
+/* LexLearn 2027 conference: consent-based leads. No analytics or marketing tracking.
+   WA Business number is intentionally empty until the founder confirms it. */
+(function(){
+"use strict";
+var endpoint="https://emxiuwcuxyljfynnzpnh.supabase.co/functions/v1/conference-lead";
+var publicAnonJwt="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVteGl1d2N1eHlsamZ5bm56cG5oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEyNDk2NzEsImV4cCI6MjEwNjgyNTY3MX0.4om41WoeatrOixmPjhcyahBNdEQF_N6PLMiGIz6bDoQ";
+var businessNumber=""; // international digits, no +: set only after the owner verifies the number
+var form=document.getElementById("leadForm"),status=document.getElementById("leadStatus");
+if(!form||!status)return;
+var submit=form.querySelector("[type=submit]"),audience=form.elements.audience,faculty=form.elements.faculty;
+var facultyField=document.getElementById("facultyField"),wa=document.getElementById("waBusiness");
+var primary=document.getElementById("formCTA"),share=document.getElementById("waShare");
+var paths=document.getElementById("pathsReturn"),contact=document.getElementById("contact"),footer=document.querySelector("footer.foot");
+var dict={
+ ar:{
+ pilotBody:"نقترح تجربة أكاديمية محددة بإشراف جامعي لقياس الأثر قبل أي توسع أكبر.",
+ pilotBefore:"قبل التجربة",pilotDuring:"أثناء التجربة",pilotAfter:"بعد التجربة",
+ pilot1:"تشخيص أولي لكل مهارة.",pilot2:"تدريبات مستهدفة بإشراف أكاديمي وضوابط الخصوصية.",pilot3:"مراجعة مؤشرات التعلم الأولية وموثوقية التصحيح وسهولة الاستخدام.",
+ pilotNeedsTitle:"المطلوب من الجامعة",pilotNeeds:"مشرف أكاديمي، ومجموعة طلاب، وقاعة ووقت للجلسات.",
+ pilotValueTitle:"ما تحصل عليه الجامعة",pilotValue:"تقرير قياس أثر وتقرير نتائج وملاحظات المشرف.",
+ pilotEthics:"نتائج الطلاب مجهولة الهوية وتُعرض في تقارير مجمّعة فقط، مع الحصول على الموافقات الأكاديمية اللازمة.",
+ pilotCTA:"ناقش تجربة جامعية",
+ visionLead:"رؤيتنا طويلة المدى: منصة تعليمية تبدأ بالتشخيص، وتقدّم توصيات واضحة، مع بقاء دور الأستاذ.",
+ investorAsk:"نبحث عن شراكات للتجربة الأكاديمية ودعم استراتيجي ومناقشات تمويل مبكر. تفاصيل الاستثمار تُناقش في العرض التفصيلي.",
+ investorCTA:"اطلب العرض التفصيلي",
+ phase2PStart:"تجربة مقترحة تشمل",phase2PMid:"طالبًا خلال",phase2PEnd:"أسابيع لقياس النتائج الأولية.",
+ statusReady:"جاهزة",statusUpcoming:"قادمة",statusProgress:"قيد التنفيذ",
+ formCTA:"تواصل معنا",businessCTA:"تواصل عبر واتساب بزنس",emailCTA:"البريد الإلكتروني",
+ formTitle:"خلّينا نتواصل",formIntro:"اترك بياناتك علشان نقدر نتواصل معاك بخصوص LexLearn.",
+ fieldName:"الاسم",fieldOrg:"الجامعة أو الجهة",fieldAudience:"أنا",fieldFaculty:"الكلية أو القسم",fieldContact:"رقم الهاتف أو البريد الإلكتروني",
+ roleStudent:"طالب",roleInvestor:"مستثمر أو شريك",roleUniversity:"جامعة أو مؤسسة",
+ formConsent:"أوافق على استخدام بيانات التواصل للرد على طلبي فقط.",formPrivacy:"سياسة الخصوصية",
+ formSubmit:"إرسال الطلب",sendBusy:"جاري الإرسال…",success:"تم استلام طلبك بنجاح. هنتواصل معاك ببيانات التواصل اللي كتبتها.",
+ invalid:"اكتب اسمك وجهتك ورقمًا أو بريدًا صحيحًا، ووافق على سياسة استخدام بيانات التواصل.",
+ error:"تعذّر إرسال الطلب. جرّب مرة أخرى أو استخدم البريد.",rate:"طلبات كثيرة من نفس الشبكة. جرّب لاحقًا أو استخدم البريد.",
+ shareTitle:"شارك صفحة المؤتمر",returnPaths:"رجوع للمسارات"
+ },
+ en:{
+ pilotBody:"We propose a focused, faculty-supervised academic pilot to measure learning impact before any wider expansion.",
+ pilotBefore:"Before",pilotDuring:"During",pilotAfter:"After",
+ pilot1:"Establish a baseline for each skill.",pilot2:"Targeted exercises under faculty oversight with privacy safeguards.",pilot3:"Review early learning indicators, scoring reliability and usability.",
+ pilotNeedsTitle:"What we need from the university",pilotNeeds:"An academic supervisor, a student group, and a room and time for sessions.",
+ pilotValueTitle:"What the university receives",pilotValue:"An impact-measurement report, a results report and faculty observations.",
+ pilotEthics:"Student results will be de-identified and shared only in aggregated reports, subject to academic consent and safeguards.",
+ pilotCTA:"Discuss a university pilot",
+ visionLead:"Our long-term vision: a learning platform that starts with diagnosis, offers clear recommendations and preserves the professor's role.",
+ investorAsk:"We seek academic pilot partnerships, strategic support and early-stage investment conversations. Detailed figures are available on request.",
+ investorCTA:"Request the detailed pitch",
+ phase2PStart:"Proposed pilot for",phase2PMid:"students over",phase2PEnd:"weeks to measure early outcomes.",
+ statusReady:"Ready",statusUpcoming:"Upcoming",statusProgress:"In progress",
+ formCTA:"Contact LexLearn",businessCTA:"WhatsApp Business",emailCTA:"Email",
+ formTitle:"Let's connect",formIntro:"Share a few details so we can follow up about your interest in LexLearn.",
+ fieldName:"Your name",fieldOrg:"University or organization",fieldAudience:"I am a",fieldFaculty:"Faculty or department",fieldContact:"Phone number or email",
+ roleStudent:"Student",roleInvestor:"Investor or partner",roleUniversity:"University or institution",
+ formConsent:"I agree to the use of my contact details only to reply to my inquiry.",formPrivacy:"Privacy policy",
+ formSubmit:"Send request",sendBusy:"Sending…",success:"Your request was received successfully. We'll follow up using the contact information provided.",
+ invalid:"Enter your name, organization and a valid phone number or email, and agree to the data-use policy.",
+ error:"Unable to submit right now. Please retry or email us.",rate:"Too many requests from this network. Please try again later or email us.",
+ shareTitle:"Share conference page",returnPaths:"Back to paths"
+ }
+};
+function language(){return document.documentElement.lang==="ar"?"ar":"en";}
+function translate(){
+ var x=dict[language()];
+ document.querySelectorAll("[data-t]").forEach(function(el){var key=el.getAttribute("data-t");if(key in x)el.textContent=x[key];});
+ document.getElementById("formPrivacy").href=language()==="ar"?"privacy.html":"privacy-en.html";
+ share.setAttribute("aria-label",x.shareTitle);share.title=x.shareTitle;
+ if(paths){
+  paths.innerHTML='<svg viewBox="0 0 24 24" width="19" height="19" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5m0 0-6 6m6-6 6 6"/></svg>';
+  paths.setAttribute("aria-label",x.returnPaths);paths.title=x.returnPaths;
+ }
+}
+function changeRole(){
+ var uni=audience.value==="university";
+ facultyField.hidden=!uni;faculty.required=uni;
+}
+function chooseRole(role){
+ if(!["student","investor","university"].includes(role))return;
+ audience.value=role;changeRole();
+ status.textContent="";
+}
+document.querySelectorAll("[data-lead-role]").forEach(function(a){a.addEventListener("click",function(){chooseRole(a.getAttribute("data-lead-role"));});});
+audience.addEventListener("change",changeRole);
+["langAR","langEN"].forEach(function(id){var b=document.getElementById(id);if(b)b.addEventListener("click",translate);});
+if(/^[1-9][0-9]{7,14}$/.test(businessNumber)){
+ wa.href="https://wa.me/"+businessNumber+"?text="+encodeURIComponent("LexLearn · Web Summit Qatar 2027");
+ wa.hidden=false;
+ primary.classList.replace("buttonPrimary","buttonSecondary");
+}
+if(paths){
+ function trackScroll(){
+  var contactVisible=contact && contact.getBoundingClientRect().top<window.innerHeight*0.88;
+  var footerVisible=footer && footer.getBoundingClientRect().top<window.innerHeight;
+  if(contactVisible||footerVisible)paths.classList.remove("isVisible");
+ }
+ window.addEventListener("scroll",trackScroll,{passive:true});
+ window.addEventListener("resize",trackScroll,{passive:true});
+ trackScroll();
+}
+form.addEventListener("submit",async function(event){
+ event.preventDefault();
+ var x=dict[language()];
+ var field=form.elements;
+ var payload={
+  visitor_name:field.visitor_name.value.trim(),
+  organization:field.organization.value.trim(),
+  faculty:field.faculty.value.trim(),
+  audience:field.audience.value,
+  contact:field.contact.value.trim(),
+  website:field.website.value,
+  consent:field.consent.checked
+ };
+ var validContact=/^(?:[^\s@]+@[^\s@]+\.[^\s@]+|[+0-9][0-9\s().-]{5,24})$/.test(payload.contact);
+ if(payload.visitor_name.length<2||payload.organization.length<2||!validContact||
+    (payload.audience==="university"&&payload.faculty.length<2)||!payload.consent){
+  status.textContent=x.invalid;status.dataset.state="error";form.reportValidity();return;
+ }
+ submit.disabled=true;submit.textContent=x.sendBusy;status.textContent="";delete status.dataset.state;
+ try{
+  var controller=new AbortController();var timeout=setTimeout(function(){controller.abort();},12000);
+  var response;
+  try{
+   response=await fetch(endpoint,{
+    method:"POST",mode:"cors",cache:"no-store",signal:controller.signal,
+    headers:{"content-type":"application/json","apikey":publicAnonJwt,"authorization":"Bearer "+publicAnonJwt},
+    body:JSON.stringify(payload)
+   });
+  }finally{clearTimeout(timeout);}
+  var result=await response.json().catch(function(){return {};});
+  if(!response.ok||result.ok!==true)throw new Error(result.error||"unknown");
+  status.textContent=x.success;status.dataset.state="success";
+  var prior=audience.value;form.reset();audience.value=prior;changeRole();
+ }catch(err){
+  status.textContent=err.message==="rate_limit"?x.rate:x.error;status.dataset.state="error";
+ }finally{submit.disabled=false;submit.textContent=x.formSubmit;}
+});
+translate();changeRole();
+})();
