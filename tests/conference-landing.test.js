@@ -17,7 +17,7 @@ assert.ok(html.includes("mailto:Ahmadfoad361@gmail.com"),"confirmed email must b
 assert.ok(!html.includes('id="science"')&&!html.includes("researchBasis")&&!html.includes("researchCards"),"scientific sources should appear in transition quotes, not as a standalone presentation section");
 assert.ok(!js.includes("scienceEyebrow:")&&!js.includes("scienceHeading:"),"unused research-section translations should be removed");
 assert.ok(!css.includes(".researchCards")&&!css.includes(".researchBasis"),"no obsolete research-card styling in main page");
-assert.ok(html.includes('class="honestyAi"')&&html.includes('data-t="status2Title"')&&html.includes('data-t="status2State"'),"AI development status must be readable as two lines");
+assert.ok(!html.includes('class="honesty"')&&html.includes('class="evidenceNote"'),"avoid duplicate investor status panel but keep clear learning-impact uncertainty");
 assert.ok(js.includes('status2State:"قيد التطوير والتحقق من الدقة"'),"AI beta status must remain honest");
 const transitions=read("assets/lexlearn-navigation.js");
 for(const name of ["Test-Enhanced Learning","Karpicke &amp; Blunt","Dunlosky et al.","ll-paper-field","ll-learning-quote"])assert.ok(transitions.includes(name),"missing research-inspired transition "+name);
@@ -311,7 +311,7 @@ assert.ok(html.includes('data-t="eyebrow">LEXLEARN · LEGAL LEARNING FOR STUDENT
 assert.ok(html.includes("Assess your legal learning skills. Build on your strengths."),"default English title must immediately describe what LexLearn does");
 assert.ok(js.includes('heroTitle:"قيّم مهاراتك القانونية… وطوّرها انطلاقًا من نقاط قوتك"'),"Arabic heading should explain student benefit in five seconds");
 assert.ok(js.includes('eyebrow:"ليكس ليرن · منصة تعليمية لطلاب القانون"'),"Arabic eyebrow must identify education and avoid Latin punctuation");
-assert.ok(js.includes('heroSub:"بيشخّص نقاط قوتك في التفكير القانوني'),"Arabic subhead must explain strength-based training");
+assert.ok(js.includes('heroSubBefore:"يشخّص",heroSub:"نقاط قوتك في التفكير القانوني، ويبني مسارك لتقوية نقاط ضعفك."'),"Arabic subhead must use Modern Standard Arabic with brand isolated");
 assert.equal((html.match(/class="pathNo"/g)||[]).length,3,"three numbered visitor choices required");
 assert.ok(!html.includes('data-t="visitor"')&&!js.includes('visitor:"زائر"')&&!js.includes('visitor:"VISITOR"'),"remove redundant visitor label");
 assert.equal((html.match(/class="pathGlyph" aria-hidden="true"><svg viewBox=/g)||[]).length,3,"replace each visitor emoji with a branded SVG (carousel arrows are separate)");
@@ -330,7 +330,7 @@ assert.ok(js.includes('promo:"\\u2066LexLearn\\u2069 في مؤتمر \\u2066Web 
 assert.ok(!js.includes("ويب ساميت قطر ٢٠٢٧")&&!js.includes("ليكس ليرن · ويب ساميت"),"do not localize the event or project brand names in event strip");
 assert.ok(js.includes('promoShort:"LexLearn · Web Summit Qatar 2027 · ALPHA"'),"English banner retains official event identity");
 assert.ok(html.includes('title="Web Summit Qatar 2027 · ALPHA"')&&pub.includes('"go/index.html"')&&pub.includes('"lexlearn-go-qr.svg"'),"translated strip and permanent printed QR retained without visitor download");
-assert.ok(html.includes("assets/conference.css?v=20261015.5")&&html.includes("assets/conference.js?v=20261015.8"),"invalidate mobile first-fold UI cache");
+assert.ok(html.includes("assets/conference.css?v=20261015.9")&&html.includes("assets/conference.js?v=20261015.9"),"invalidate mobile first-fold UI cache");
 
 
 /* Follow-up UX contract: conference, pilot, investor and student demo. */
@@ -343,7 +343,7 @@ assert.ok(html.includes('data-t="pilotStudentsHelp"')&&html.includes('data-t="pi
 assert.ok(js.includes("pilotStudentsHelp:")&&js.includes("pilotWeeksHelp:"),"both languages must explain the 30–60 students and 6–8 weeks");
 assert.ok(html.includes('class="button buttonSecondary" id="formCTA"'),"the contact form stays available as a secondary option");
 assert.ok(html.includes('class="button buttonSecondary" id="emailContact"')&&html.includes('class="shareIcon" id="waShare"'),"email secondary and link-sharing a compact icon");
-assert.ok(html.includes('class="heroBrand" dir="ltr"')&&js.includes('heroSub:"بيشخّص نقاط قوتك'),"Latin brand isolated from RTL Arabic subheading");
+assert.ok(html.includes('class="heroBrand" dir="ltr"')&&html.includes('id="heroSubLead"')&&js.includes('heroSubBefore:"يشخّص"'),"RTL headline displays formal verb before isolated LexLearn mark");
 const sc=read("assets/showcase.js"),scEn=read("assets/showcase-en.js"),scCss=read("assets/showcase.css");
 assert.doesNotThrow(()=>new vm.Script(sc,{filename:"assets/showcase.js"}),"Arabic demo JS must parse");
 assert.doesNotThrow(()=>new vm.Script(scEn,{filename:"assets/showcase-en.js"}),"English demo JS must parse");
@@ -357,7 +357,7 @@ for(const code of [sc,scEn]){
 assert.ok(nav.includes('showcase(?:-en)?'),"public demo must skip generic floating Back injection");
 assert.ok(scCss.includes(".demoIntro .demoStart{display:block;width:min(100%,485px)")&&scCss.includes(".demoIntro .stageCard:before{display:none}"),"wide CTA and no abrupt colored stripe");
 assert.ok(!read("showcase.html").includes("fonts.googleapis.com")&&!read("showcase-en.html").includes("fonts.googleapis.com"),"remove blocking remote Google fonts");
-assert.ok(html.includes("assets/conference.css?v=20261015.5")&&html.includes("assets/conference.js?v=20261015.8"),"bump CSS/JS cache");
+assert.ok(html.includes("assets/conference.css?v=20261015.9")&&html.includes("assets/conference.js?v=20261015.9"),"bump CSS/JS cache");
 
 
 /* Conversion UX and privacy-safe lead capture for Web Summit Qatar 2027. */
@@ -387,5 +387,30 @@ assert.ok(css.includes(".pathsReturn{width:44px")&&leadsJS.includes("footerVisib
 assert.ok(html.includes('data-t="pilotNeedsTitle"')&&html.includes('data-t="pilotValueTitle"')&&html.includes('data-t="pilotEthics"'),"university pilot should describe inputs, outputs and ethical safeguards");
 assert.ok(sc.includes('class="demoLangGroup"')&&sc.includes('stageProgressText'),"public student demo must have EN/AR switch and progress indicator");
 assert.ok(scCss.includes(".demoLangGroup"),"mobile demo language controls must be styled");
+
+
+/* Investor timeline chronology, honest status indicators, RTL Safari readability. */
+const visionHTML=html.slice(html.indexOf('<section id="vision"'),html.indexOf('<section id="contact"'));
+assert.ok(visionHTML.includes('class="roadmapReady"')&&visionHTML.includes('class="roadmapProgress"'),"timeline has ready and in-progress states");
+assert.equal((visionHTML.match(/class="roadmapUpcoming"/g)||[]).length,2,"the pilot and expansion must remain upcoming");
+const roadmapOrder=[visionHTML.indexOf('data-t="phase1"'),visionHTML.indexOf('data-t="phase3"'),visionHTML.indexOf('data-t="phase2"'),visionHTML.indexOf('data-t="phase4"')];
+assert.ok(roadmapOrder.every((pos,i)=>pos>=0&&(i===0||pos>roadmapOrder[i-1])),"timeline must read Ready → Validation in progress → Qatar pilot upcoming → Expansion upcoming");
+assert.ok(visionHTML.indexOf('class="roadmapStatus statusReady"')<visionHTML.indexOf('class="roadmapStatus statusProgress"'),"ready comes before in-progress");
+assert.ok(visionHTML.indexOf('class="roadmapStatus statusProgress"')<visionHTML.indexOf('class="roadmapStatus statusUpcoming"'),"in-progress comes before upcoming");
+assert.ok(!visionHTML.includes('class="honesty"')&&visionHTML.includes('data-t="evidenceNote"'),"remove duplicate today panel while retaining empirical caveat");
+assert.ok(js.includes('evidenceNote:"الأثر التعليمي لم يُثبت بعد؛ وسنقيسه'),"Arabic uncertainty must remain honest");
+assert.ok(js.includes('evidenceNote:"Learning impact has not yet been demonstrated'),"English uncertainty must remain honest");
+assert.ok(css.includes('.roadmap .roadmapProgress .roadmapMarker{')&&css.includes('conic-gradient('),"in-progress node should be half-filled");
+assert.ok(css.includes('.roadmap .roadmapUpcoming .roadmapMarker{background:#fffdfb'),"upcoming nodes should be hollow");
+assert.ok(css.includes('.roadmap .roadmapReady .roadmapMarker{background:var(--burgundy)'),"ready node must be solid");
+assert.ok(css.includes('prefers-reduced-motion:reduce')&&css.includes('.roadmap .roadmapProgress .roadmapMarker::after{animation:none'),"respect reduced motion for gentle pulse");
+assert.ok(css.includes('.paths .pathCTA>span{text-decoration:underline'),"card CTA underline only spans text");
+assert.ok(css.includes('.section.frame{scroll-margin-top:88px')&&css.includes('.section.frame{scroll-margin-top:76px'),"all section anchors share consistent desktop/mobile offsets");
+assert.ok(css.includes('.roadmap::before{inset-inline-start:31px')&&css.includes('.roadmap::before{inset-inline-start:20px'),"timeline line is offset from viewport edge on desktop and mobile");
+assert.ok(visionHTML.includes('class="pilotNumbers"')&&visionHTML.includes('<bdi dir="ltr">30–60</bdi>')&&visionHTML.includes('<bdi dir="ltr">6–8</bdi>'),"Qatar pilot range remains LTR isolated");
+assert.ok(css.includes('.roadmap .pilotNumbers bdi{display:inline-block')&&css.includes('font-variant-numeric:tabular-nums'),"Safari pilot numbers do not break across lines");
+assert.ok(js.includes('hasUserScrolled && depth>140')&&js.includes('contactTop>viewport*.82')&&js.includes('footerTop>viewport'),"floating return appears only after scroll and hides above contact/footer");
+assert.ok(js.includes('backToPaths.tabIndex=show?0:-1'),"invisible floating control must not be focusable");
+assert.ok(css.includes('.pathsReturn.isVisible{opacity:.76'),"subtle return control opacity avoids obscuring copy");
 
 console.log("conference landing release test PASS");
