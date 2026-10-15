@@ -337,6 +337,8 @@ assert.ok(html.includes('class="button buttonPrimary" id="formCTA"'),"the workin
 assert.ok(html.includes('class="button buttonSecondary" id="emailContact"')&&html.includes('class="shareIcon" id="waShare"'),"email secondary and link-sharing a compact icon");
 assert.ok(html.includes('class="heroBrand" dir="ltr"')&&js.includes('heroSub:"بيشخّص نقاط قوتك'),"Latin brand isolated from RTL Arabic subheading");
 const sc=read("assets/showcase.js"),scEn=read("assets/showcase-en.js"),scCss=read("assets/showcase.css");
+assert.doesNotThrow(()=>new vm.Script(sc,{filename:"assets/showcase.js"}),"Arabic demo JS must parse");
+assert.doesNotThrow(()=>new vm.Script(scEn,{filename:"assets/showcase-en.js"}),"English demo JS must parse");
 for(const code of [sc,scEn]){
  assert.ok(code.includes('class="demoGhost demoBack" href="conference.html#paths"'),"single header Back instead of Home+floating Back");
  assert.ok(!code.includes("نفهم طريقة تفكيرك، ونبني طريقك."),"remove tagline beneath demo logo");
@@ -352,6 +354,7 @@ assert.ok(html.includes("assets/conference.css?v=20261015.5")&&html.includes("as
 
 /* Conversion UX and privacy-safe lead capture for Web Summit Qatar 2027. */
 const leadsJS=read("assets/conference-leads.js");
+assert.doesNotThrow(()=>new vm.Script(leadsJS,{filename:"assets/conference-leads.js"}),"lead form JavaScript must parse");
 assert.ok(pub.includes('"conference-leads.js"')&&pub.includes('"assets/conference-leads.js"'),"contact capture JS must ship with the public release");
 assert.ok(html.includes("assets/conference-leads.js?v=20261015.5"),"conference must load the active consent-based lead capture client");
 assert.ok(html.includes('id="leadForm"')&&html.includes('id="facultyField"')&&html.includes('id="leadStatus"'),"real contact form, university field and live status required");
