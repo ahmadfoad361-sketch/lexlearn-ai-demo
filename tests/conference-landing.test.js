@@ -308,7 +308,7 @@ assert.ok(js.includes('eyebrow:"ليكس ليرن · منصة تعليمية ل�
 assert.ok(js.includes('heroSub:"بيشخّص نقاط قوتك في التفكير القانوني'),"Arabic subhead must explain strength-based training");
 assert.equal((html.match(/class="pathNo"/g)||[]).length,3,"three numbered visitor choices required");
 assert.ok(!html.includes('data-t="visitor"')&&!js.includes('visitor:"زائر"')&&!js.includes('visitor:"VISITOR"'),"remove redundant visitor label");
-assert.equal((html.match(/<svg viewBox="0 0 24 24"/g)||[]).length,3,"replace all three emoji top arrows with accessible decorative SVG");
+assert.equal((html.match(/class="pathGlyph" aria-hidden="true"><svg viewBox=/g)||[]).length,3,"replace each visitor emoji with a branded SVG (carousel arrows are separate)");
 assert.ok(!html.includes('aria-hidden="true">↗</span>')&&!html.includes('aria-hidden="true">→</span>'),"no iPhone emoji arrows in visitor choices");
 for(const key of ['studentCTA','univCTA','invCTA']){
   assert.ok(html.includes('class="pathCTA"><span data-t="'+key+'">'),"visitor CTA must be distinct from its SVG icon");
