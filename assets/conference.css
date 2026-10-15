@@ -263,3 +263,37 @@ html[dir=rtl] .paths .pathGlyph svg{transform:scaleX(-1)}
  .paths .path{padding-block:8px}
  .paths .path p{line-height:1.35}
 }
+
+/* Conference pathways, mobile-first carousel and academic pilot details — v20261015.3 */
+.heroBrand{display:inline-block;direction:ltr;unicode-bidi:isolate;color:var(--burgundy);font-weight:850;white-space:nowrap}
+.deckNav{display:flex;align-items:center;justify-content:center;gap:14px;margin:10px 0 15px}
+.deckArrow{width:44px;height:44px;display:grid;place-items:center;flex:none;cursor:pointer;border:1px solid #d8c9c5;border-radius:50%;background:#fffdfb;color:#8A1F39}
+.deckArrow svg{width:21px;height:21px;display:block}
+.deckArrow:disabled{opacity:.3;cursor:default}
+.deckArrow:not(:disabled):hover{background:#f3e8eb}
+.deckDots{display:flex;align-items:center;gap:10px;justify-content:center}
+.deckDot{width:10px;height:10px;border-radius:999px;border:0;background:#b7aab0;cursor:pointer;padding:0;transition:width .15s ease,background .15s ease}
+.deckDot[aria-current=true]{width:28px;background:var(--burgundy)}
+.deckDot:focus-visible,.deckArrow:focus-visible{outline:3px solid var(--burgundy);outline-offset:3px}
+.slides{display:flex!important;grid-template-columns:none!important;gap:14px;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scroll-padding-inline:4px;scroll-behavior:smooth;overscroll-behavior-inline:contain;-webkit-overflow-scrolling:touch;scrollbar-width:thin;padding:4px 4px 17px}
+.slides>.slideCard{flex:0 0 calc((100% - 28px)/3);min-width:0;scroll-snap-align:start;aspect-ratio:auto;min-height:235px}
+.pilotStats>div small{font-size:11px;line-height:1.6;color:#e0e4ee;margin-top:9px;font-weight:400;max-width:28ch;align-self:center}
+.contactButtons>.button{min-height:50px;min-width:min(100%,200px);padding:13px 18px;line-height:1.5}
+.contactButtons>.button.buttonSecondary{border:1px solid #c6b6bc;background:transparent;color:var(--burgundy)}
+.pathsReturn{position:fixed;z-index:65;bottom:calc(18px + env(safe-area-inset-bottom,0px));inset-inline-end:clamp(15px,3vw,34px);max-width:min(260px,calc(100vw - 30px));display:inline-flex;align-items:center;justify-content:center;padding:12px 17px;min-height:46px;border-radius:999px;background:var(--navy);color:white;text-decoration:none;box-shadow:0 9px 28px #111d3140;font-weight:800;font-size:13px;opacity:0;transform:translateY(12px);pointer-events:none;transition:opacity .18s ease,transform .18s ease}
+.pathsReturn.isVisible{opacity:1;transform:translateY(0);pointer-events:auto}
+.pathsReturn:focus-visible{outline:3px solid var(--burgundy);outline-offset:3px}
+@media(min-width:761px) and (max-width:1100px){.slides>.slideCard{flex-basis:calc((100% - 14px)/2)}}
+@media(max-width:760px){
+ .deckNav{gap:15px;margin:10px 0 12px}
+ .slides>.slideCard{flex:0 0 min(87%,365px);min-height:252px;scroll-snap-align:start}
+ .deckDot{width:9px;height:9px}
+ .deckDot[aria-current=true]{width:24px}
+ .pilotStats>div{padding:14px 8px}
+ .pilotStats>div small{font-size:10.5px}
+ .pathsReturn{bottom:calc(13px + env(safe-area-inset-bottom,0px));font-size:12px;padding:10px 14px;min-height:44px}
+ .contactButtons>.button{width:100%;min-width:0}
+}
+@media(max-width:370px){.slides>.slideCard{flex-basis:94%;min-height:250px}.deckNav{gap:10px}}
+@media(prefers-reduced-motion:reduce){.slides{scroll-behavior:auto}.pathsReturn,.deckDot{transition:none}}
+@media print{.deckNav,.pathsReturn{display:none!important}.slides{display:grid!important;grid-template-columns:repeat(2,1fr)!important;overflow:visible!important}.slides>.slideCard{min-height:0}}
