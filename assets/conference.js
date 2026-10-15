@@ -132,7 +132,7 @@ let active="en";
 function setLang(next){
  active=next==="ar"?"ar":"en";
  const t=active==="ar"?AR:EN;
- const subBefore=document.querySelector("[data-t=heroSubBefore]");
+ const subBefore=document.getElementById("heroSubLead");
  if(subBefore)subBefore.hidden=active!=="ar";
  document.documentElement.lang=active;
  document.documentElement.dir=active==="ar"?"rtl":"ltr";
