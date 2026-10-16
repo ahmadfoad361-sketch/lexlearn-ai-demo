@@ -392,10 +392,16 @@
       if(ruGap>=12){bridgeStrong="recall";bridgeWeak="understanding";}
       else if(ruGap<=-12){bridgeStrong="understanding";bridgeWeak="recall";}
     }
-    var bridge=bridgeStrategy(bridgeStrong,bridgeWeak);
-    bridge.from=bridgeStrong;bridge.to=bridgeWeak;
+    // Foundational support applies when neither recall nor understanding is an established strength.
+    // These are provisional task indicators, not fixed learner types.
+    var foundation=!!(rAxis&&uAxis&&rAxis.evidence>0&&uAxis.evidence>0&&rAxis.value<45&&uAxis.value<45);
+    var bridge=foundation?
+      {mode:"foundational_rebuild",label:"الحفظ والفهم يحتاجان تأسيسًا معًا: ابدأ بقاعدة مبسطة ومثال محلول، ثم استرجع واشرح وطبّق دون مساعدة."}:
+      bridgeStrategy(bridgeStrong,bridgeWeak);
+    bridge.from=foundation?null:bridgeStrong;bridge.to=foundation?null:bridgeWeak;
     return {
       version:"adaptive-v9",
+      foundation:{active:foundation,reason:foundation?"recall_and_understanding_below_45":"not_indicated"},
       axes:axes,
       weakest:weak,
       strongest:strong,

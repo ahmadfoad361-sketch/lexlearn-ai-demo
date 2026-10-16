@@ -90,6 +90,19 @@ function promptHtml(task,escapeHtml){
 function choice(t,lang,applied){var ar=lang==="ar";return {kind:"core",mode:"mcq",skill:"person",title:t[lang],q:t[(applied?"scenario_":"q_")+lang],opts:t[(applied?"applied_":"opts_")+lang],a:0,dimension:applied?"application":"legal_precision",difficulty:applied?3:2,why:t["rule_"+lang],showText:false};}
 function queue(n,lang,weak,strong,context){
  var t=topic(n),recall=makeEssay(t,lang,"recall"),understanding=makeEssay(t,lang,"understanding"),application=choice(t,lang,true),precision=choice(t,lang,false);
+ if(weak==="foundation"){
+  // Do not pretend that one of two weak skills is an established strength.
+  // The worked example is unscored; only subsequent unaided responses yield evidence.
+  var ar=lang==="ar",pilot=root.LEX_PILOT&&root.LEX_PILOT.content&&root.LEX_PILOT.content[n];
+  var p=pilot&&pilot[lang],rule=p&&p.rule||t["rule_"+lang],facts=p&&p.facts||t["scenario_"+lang];
+  var guided={mode:"study",kind:"foundation",dimension:null,title:ar?"ابدأ من الأساس: قاعدة ومثال محلول":"Start from the basics: rule and worked example",q:ar?"اقرأ القاعدة ومثالها لفهم معناها؛ هذه خطوة شرح وليست اختبارًا.":"Read the rule and its example. This is instruction, not a test.",articleText:rule,showText:true,example:facts,explanation:p&&p.solution?p.solution.join(" — "):t["rule_"+lang],topicSession:n,difficulty:1};
+  var supported=variedChoice(t,lang,false,1,0);supported.dimension="legal_precision";supported.kind="foundation";
+  recall.difficulty=1;understanding.difficulty=1;application.difficulty=2;
+  var finalEssay=examTask(n,lang);finalEssay.showText=false;finalEssay.text=null;finalEssay.articleText=null;
+  var foundationTasks=[guided,supported,recall,understanding,application,finalEssay];
+  foundationTasks.forEach(function(x){x.topicSession=n;x.adaptationReason="foundation_dual_weakness";});
+  return foundationTasks;
+ }
  // Every bridge requires the learner to perform the skill, rather than select advice about it.
  var result=weak==="recall"?[understanding,recall,precision,application]:weak==="understanding"?[recall,understanding,application,precision]:[precision,application,recall,understanding];
  result.push(examTask(n,lang));result.forEach(function(x){x.topicSession=t.session;});
