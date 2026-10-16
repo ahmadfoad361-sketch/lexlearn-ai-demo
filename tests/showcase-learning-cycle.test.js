@@ -15,6 +15,21 @@ for(const lang of ["ar","en"]){
     assert(tasks.filter(t=>t.type==="free").every(t=>t.comparison&&t.lesson));
   }
 }
+
+for(const [recall,understanding,expected] of [
+  [null,80,"balanced"],[80,null,"balanced"],[0,0,"balanced"],
+  [44,44,"balanced"],[60,70,"balanced"],[90,80,"balanced"],
+  [35,80,"recall"],[85,40,"understanding"],[-1,90,"balanced"],
+  [NaN,90,"balanced"]
+]){
+  assert.equal(Cycle.route(recall,understanding),expected,"Diagnostic routing must avoid overinterpretation");
+}
+const demos=["assets/showcase.js","assets/showcase-en.js"];
+for(const demoPath of demos){
+  const demo=fs.readFileSync(demoPath,"utf8");
+  assert(demo.includes("LEX_SHOWCASE_CYCLE.route(g.recall_score,understanding)"));
+  assert(demo.includes("LEX_SHOWCASE_CYCLE.route(r.recall_score,r.choice_indicators"));
+}
 let markup="",els={};
 const makeElement=(attrs={})=>{
   const node={attrs,onclick:null,disabled:false,textContent:"",value:"",classList:{classes:[],add(x){this.classes.push(x)}},
