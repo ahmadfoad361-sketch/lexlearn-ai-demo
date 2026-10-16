@@ -98,7 +98,8 @@ function queue(n,lang,weak,strong,context){
   var guided={mode:"study",kind:"foundation",dimension:null,title:ar?"ابدأ من الأساس: قاعدة ومثال محلول":"Start from the basics: rule and worked example",q:ar?"اقرأ القاعدة ومثالها لفهم معناها؛ هذه خطوة شرح وليست اختبارًا.":"Read the rule and its example. This is instruction, not a test.",articleText:rule,showText:true,example:facts,explanation:p&&p.solution?p.solution.join(" — "):t["rule_"+lang],topicSession:n,difficulty:1};
   var supported=variedChoice(t,lang,false,1,0);supported.dimension="legal_precision";supported.kind="foundation";
   recall.difficulty=1;understanding.difficulty=1;application.difficulty=2;
-  var foundationTasks=[guided,supported,recall,understanding,application,examTask(n,lang)];
+  var finalEssay=examTask(n,lang);finalEssay.showText=false;finalEssay.text=null;finalEssay.articleText=null;
+  var foundationTasks=[guided,supported,recall,understanding,application,finalEssay];
   foundationTasks.forEach(function(x){x.topicSession=n;x.adaptationReason="foundation_dual_weakness";});
   return foundationTasks;
  }
