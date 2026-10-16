@@ -10,7 +10,7 @@ function esc(value) {
   });
 }
 function plan(weak, lang) {
-  var ar = lang !== "en", mode = weak === "recall" || weak === "understanding" ? weak : "balanced";
+  var ar = lang !== "en", mode = ["recall","understanding","foundation"].indexOf(weak)>=0 ? weak : "balanced";
   var recall = {
     type:"free",
     title:pick(ar,"ابدأ بما تتذكره","Begin with what you recall"),
@@ -103,6 +103,23 @@ function plan(weak, lang) {
     correct:0,
     feedback:pick(ar,"النتيجة تتغير بتغير شرط قانوني حاسم؛ لا يكفي تكرار نص المادة دون ملاحظة أثر هذا الشرط.","The outcome changes when a decisive legal condition changes. Repeating a provision alone is not enough.")
   };
+  var worked = {
+    type:"choice",
+    title:pick(ar,"ابدأ بمثال قانوني محلول","Begin with a worked legal example"),
+    prompt:pick(ar,"مثال محلول: وُلد طفل حيًا ثم توفي بعد ساعة؛ بدأت شخصيته القانونية بالولادة الحية وانتهت بالوفاة. ما الذي يفسر النتيجة؟","Worked example: A child was born alive and died an hour later. Legal personality began at live birth and ended at death. What explains this?"),
+    options:ar ? [
+      "بدء الشخصية وانتهاؤها يرتبطان بواقعتين مختلفتين: الولادة حية والوفاة.",
+      "لا تبدأ الشخصية إلا إذا عاش الطفل سنوات طويلة.",
+      "تبدأ الشخصية عند الوفاة."
+    ] : [
+      "Beginning and ending legal personality depend on different events: live birth and death.",
+      "Personality requires survival for many years.",
+      "Personality begins on death."
+    ],
+    correct:0,
+    feedback:pick(ar,"نلاحظ الشرط أولًا، ثم نربطه بالأثر القانوني. هذه خطوة دعم تدريبي، وليست دليلًا على الإتقان.","Identify the condition, then its legal consequence. This is guided instruction, not proof of mastery.")
+  };
+  if(mode === "foundation") return [worked,capacity,reconstruct,noBirth];
   if(mode === "recall") return [capacity,memoryCues,reconstruct,transfer];
   if(mode === "understanding") return [recall,meaning,explain,noBirth];
   return [recall,meaning,memoryCues,transfer];
@@ -112,12 +129,14 @@ function run(options) {
   if(typeof options.stage !== "function" || typeof options.goBack !== "function") return false;
   var ar = options.lang !== "en";
   var flowArrow = pick(ar,"←","→");
-  var weak = options.weak === "recall" || options.weak === "understanding" ? options.weak : "balanced";
+  var weak = ["recall","understanding","foundation"].indexOf(options.weak)>=0 ? options.weak : "balanced";
   var tasks = plan(weak,options.lang), pos = 0, choiceScores = [];
   var description = weak === "recall" ?
     pick(ar,"ظهر الفهم أقوى من الاسترجاع في هذه المحاولة؛ سنبدأ من المعنى لنُثبّت عناصر القاعدة في الذاكرة.","Understanding appeared stronger than recall in this attempt; use meaning to strengthen recall.") :
     weak === "understanding" ?
     pick(ar,"ظهر الاسترجاع أقوى من الفهم في هذه المحاولة؛ سنستخدم القاعدة التي تتذكرها لتفسير الشروط وتطبيقها.","Recall appeared stronger than understanding in this attempt; use the recalled rule to explain and apply it.") :
+    weak === "foundation" ?
+    pick(ar,"كانت مؤشرات الحفظ والفهم منخفضة في هذه المحاولة القصيرة. سنبدأ بمثال محلول ثم نتدرّب تدريجيًا دون افتراض وجود مهارة قوية ثابتة.","Both short-task indicators were low. Begin with a worked example and gradually practise independently; no permanent skill label is inferred.") :
     pick(ar,"لا تسمح هذه المحاولة بتحديد مهارة أضعف بثقة. سنجمع الاسترجاع والشرح والتطبيق في مسار متوازن.","This attempt does not establish a weaker skill with confidence; follow a balanced practice path.");
   function stage(html) {
     options.stage(100,'<div class="learningCycle">'+html+'</div>');
@@ -192,7 +211,18 @@ function run(options) {
   intro();
   return true;
 }
-var api={plan:plan,run:run};
+function recommend(recall,understanding){
+  // Tentative task indicators, not a psychometric diagnosis or a validated cutoff.
+  if(recall==null||understanding==null)return "balanced";
+  if(typeof recall!=="number"||typeof understanding!=="number"||
+      !Number.isFinite(recall)||!Number.isFinite(understanding)||
+      recall<0||recall>100||understanding<0||understanding>100)return "balanced";
+  if(recall<45&&understanding<45)return "foundation";
+  if(recall<understanding)return "recall";
+  if(understanding<recall)return "understanding";
+  return "balanced";
+}
+var api={plan:plan,run:run,recommend:recommend};
 root.LEX_SHOWCASE_CYCLE=api;
 if(typeof module!=="undefined" && module.exports)module.exports=api;
 })(typeof window!=="undefined"?window:globalThis);

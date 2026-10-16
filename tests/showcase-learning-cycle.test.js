@@ -4,7 +4,7 @@ const Cycle = require("../assets/showcase-learning-cycle.js");
 const asHtml=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 
 for(const lang of ["ar","en"]){
-  for(const mode of ["recall","understanding","balanced"]){
+  for(const mode of ["recall","understanding","foundation","balanced"]){
     const tasks = Cycle.plan(mode,lang);
     assert.equal(tasks.length,4);
     assert(tasks.every(t=>t.title&&t.prompt&&(t.type==="choice"||t.type==="free")));
@@ -40,7 +40,7 @@ function stage(percent,html){
   els._choices=[...html.matchAll(/data-cycle-choice="(\d+)"/g)].map(x=>makeElement({"data-cycle-choice":x[1]}));
 }
 for(const lang of ["ar","en"]){
-  for(const mode of ["recall","understanding","balanced"]){
+  for(const mode of ["recall","understanding","foundation","balanced"]){
     let tasks=Cycle.plan(mode,lang);
     const did=Cycle.run({lang,weak:mode,stage,goBack(){backCalls++}});
     assert.equal(did,true);
@@ -72,7 +72,12 @@ for(const lang of ["ar","en"]){
     assert(els.cycleStart,"Restart must reset the training cycle");
   }
 }
-assert.equal(backCalls,6);
+assert.equal(backCalls,8);
+for (const [recall,understanding,expected] of [
+  [20,25,"foundation"],[0,0,"foundation"],[40,80,"recall"],
+  [90,30,"understanding"],[75,75,"balanced"],[null,30,"balanced"],
+  [30,null,"balanced"],[NaN,30,"balanced"],[-5,30,"balanced"],[150,30,"balanced"]
+]) assert.equal(Cycle.recommend(recall,understanding),expected);
 const build=fs.readFileSync("scripts/build-public.js","utf8");
 for(const asset of ["showcase-learning-cycle.js","showcase-learning-cycle.css"])assert(build.includes(asset));
 for(const page of ["showcase.html","showcase-en.html"]){

@@ -97,14 +97,14 @@ async function result(){
  var deadline;try{receipt=await Promise.race([sendDemo(),new Promise(function(_,reject){deadline=setTimeout(function(){reject(new Error('send_not_confirmed'));},18000);})]);}catch(e){receipt={received:false,error:String(e&&e.message||'send_not_confirmed')};}
  clearTimeout(deadline);var g=receipt.received?receipt:local;
  var understanding=receipt.received?receipt.choice_indicators.understanding:pct('understanding');
- lastDemo={receipt:receipt,grade:g,summary:{metrics:{recall:g.recall_score,understanding:understanding},weak:g.recall_score===null?null:g.recall_score<understanding?'recall':g.recall_score>understanding?'understanding':null}};
+ lastDemo={receipt:receipt,grade:g,summary:{metrics:{recall:g.recall_score,understanding:understanding},weak:window.LEX_SHOWCASE_CYCLE.recommend(g.recall_score,understanding)}};
  busy=false;persist();resultScreen();
 }
 hero();
 var saved=restore();
 if(saved&&saved.requestId&&Array.isArray(saved.answers)){
  var resume=document.createElement('button');resume.className='btn secondary';resume.textContent=tr('استكمال المحاولة المحفوظة في هذا التبويب','Resume the attempt saved in this tab');
- resume.onclick=function(){requestId=saved.requestId;answers=saved.answers;free=saved.free||'';step=saved.step||0;makeQuestions();if(saved.receipt&&saved.receipt.received){var r=saved.receipt;lastDemo={receipt:r,grade:r,summary:{metrics:{recall:r.recall_score,understanding:r.choice_indicators.understanding},weak:null}};resultScreen();}else if(step>=6)recall();else if(step>0)quiz();else read();};
+ resume.onclick=function(){requestId=saved.requestId;answers=saved.answers;free=saved.free||'';step=saved.step||0;makeQuestions();if(saved.receipt&&saved.receipt.received){var r=saved.receipt;lastDemo={receipt:r,grade:r,summary:{metrics:{recall:r.recall_score,understanding:r.choice_indicators.understanding},weak:window.LEX_SHOWCASE_CYCLE.recommend(r.recall_score,r.choice_indicators.understanding)}};resultScreen();}else if(step>=6)recall();else if(step>0)quiz();else read();};
  document.getElementById('startDemo').parentNode.appendChild(resume);
 }
 })();
