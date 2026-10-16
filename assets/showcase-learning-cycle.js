@@ -9,6 +9,15 @@ function esc(value) {
     return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
   });
 }
+// A conservative engineering routing heuristic, NOT a validated learner-type diagnosis.
+// Small differences, unmeasured dimensions and dual weakness use balanced practice.
+function route(recall, understanding) {
+  if (recall === null || understanding === null || recall === undefined || understanding === undefined) return "balanced";
+  var r=Number(recall),u=Number(understanding);
+  if (!isFinite(r) || !isFinite(u) || r<0 || r>100 || u<0 || u>100) return "balanced";
+  if ((r<45 && u<45) || Math.abs(r-u)<25) return "balanced";
+  return r<u ? "recall" : "understanding";
+}
 function plan(weak, lang) {
   var ar = lang !== "en", mode = weak === "recall" || weak === "understanding" ? weak : "balanced";
   var recall = {
@@ -192,7 +201,7 @@ function run(options) {
   intro();
   return true;
 }
-var api={plan:plan,run:run};
+var api={route:route,plan:plan,run:run};
 root.LEX_SHOWCASE_CYCLE=api;
 if(typeof module!=="undefined" && module.exports)module.exports=api;
 })(typeof window!=="undefined"?window:globalThis);
