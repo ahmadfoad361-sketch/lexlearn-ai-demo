@@ -509,6 +509,7 @@ function loadCourse(){
     c.errors=Array.isArray(c.errors)?c.errors:[];
     c.evidence=Array.isArray(c.evidence)?c.evidence:[];
     if(c.repairRequired==null)c.repairRequired=false;
+     if(!c.learningKeys||typeof c.learningKeys!=="object")c.learningKeys={};
     c.session=Math.max(1,Math.min(30,Number(c.session)||1));
     if(c.completedProgram==null)c.completedProgram=passedWeekResult(c.weekResults[6]);
     if(c.completedProgram&&!c.completedAt)c.completedAt=Date.now();
@@ -527,7 +528,10 @@ function adaptiveTeachingPlan(model){
   var axes=model.axes||{},weak=model.weakest||"application",strong=model.strongest||"recall";
   var topError=(state.course.errors||[]).slice().sort(function(a,b){return (b.count||0)-(a.count||0);})[0]||null;
   var bridge=model.bridge||{},method="",tasks=[];
-  if(bridge.mode==="explain_from_memory"||strong==="recall"&&weak==="understanding"){
+  if(model.foundation&&model.foundation.active){
+     method="ابدأ من الأساس لأن الحفظ والفهم ضعيفان معًا: شرح قانوني موجز ومثال محلول، ثم استرجاع دون نص وشرح وتطبيق. لا تفترض وجود مهارة قوية.";
+     tasks=["قاعدة ومثال محلول","قرار مدعوم","استرجاع دون مساعدة","تفسير وتطبيق"];
+   }else if(bridge.mode==="explain_from_memory"||strong==="recall"&&weak==="understanding"){
     method="استخدم ما يحفظه الطالب ليشرح وظيفة كل عنصر ولماذا يغيّر الحكم، ثم اختبره بواقعة جديدة.";
     tasks=["شرح من الذاكرة","لماذا؟","تغيير واقعة واحدة"];
   }else if(bridge.mode==="memory_keys"||strong==="understanding"&&weak==="recall"){
@@ -553,7 +557,8 @@ function adaptiveTeachingPlan(model){
   return {weakest:weak,strongest:strong,bridge_mode:bridge.mode||"evidence_bridge",method:method,tasks:tasks,error:topError?topError.label:null,updatedAt:Date.now()};
 }
 function save(){
-  if(window.LEX_ENGINE){
+   if(window.LEX_KEYS)LEX_KEYS.ingestPilot(state.course);
+   if(window.LEX_ENGINE){
     var m=(state.diag&&state.diag.metrics)||{},model=LEX_ENGINE.learnerModel({metrics:m,events:state.course.evidence||[]});
     state.course.adaptiveModel=model;
     state.course.teachingPlan=adaptiveTeachingPlan(model);
@@ -663,7 +668,11 @@ function contextualizeTask(t,meta){
   return t;
 }
 function buildTrainingQueue(){
-  if(COUNTRY==="qa"&&window.LEX_QUALITY)return LEX_QUALITY.queue(state.course.session,"ar",weakestDimension(),null,LEX_QUALITY.learnerContext(state.course,(state.diag&&state.diag.metrics)||{}));
+  if(COUNTRY==="qa"&&window.LEX_QUALITY){
+    var fm=recomputeAdaptiveModel()||state.course.adaptiveModel;
+    var mode=fm&&fm.foundation&&fm.foundation.active?"foundation":weakestDimension();
+    return LEX_QUALITY.queue(state.course.session,"ar",mode,null,LEX_QUALITY.learnerContext(state.course,(state.diag&&state.diag.metrics)||{}));
+  }
   var dim=weakestDimension(),err=strongestErrorSkill(),bridge=learningBridge(),meta=sessionMeta(state.course.session);
   var model=recomputeAdaptiveModel()||state.course.adaptiveModel||{},teaching=adaptiveTeachingPlan(model);
   state.course.teachingPlan=teaching;
@@ -738,12 +747,15 @@ function syncNote(error){var el=document.getElementById("qualitySync");if(el)el.
 function chrome(inner){
   APP.innerHTML='<div class="courseShell"><header class="courseTop"><div class="courseTopIn">'+
     '<div class="brand"><div class="mark"><img src="assets/lexlearn-logo.svg" alt="LexLearn"></div><div><b>Lex<span class="brandLearn">Learn</span></b><small>'+countryLabel()+' • نظرية الحق • نفهم طريقة تفكيرك، ونبني طريقك.</small></div></div>'+
-    '<div class="topActions"><a class="topBtn" href="program-en.html?country=qa&subject=rights'+(DEMO?'&demo=1':'')+'">English</a><a class="topBtn" href="showcase.html?country='+COUNTRY+'">الديمو التشخيصي</a><a class="topBtn" href="index.html">الرئيسية</a></div>'+
+    '<div class="topActions">'+(['home','sessionResult','achievement','weekSummary','completion','notebook'].indexOf(state.view)>=0?'<button class="topBtn" type="button" id="openLearningKeys">نوتة المفاتيح</button>':'')+'<a class="topBtn" href="program-en.html?country=qa&subject=rights'+(DEMO?'&demo=1':'')+'">English</a><a class="topBtn" href="showcase.html?country='+COUNTRY+'">الديمو التشخيصي</a><a class="topBtn" href="index.html">الرئيسية</a></div>'+
   '</div></header><main class="courseWrap">'+inner+(STUDENT_SESSION&&STUDENT_SESSION.cloud?'<p id="qualitySync" role="status">التقدم المحلي محفوظ؛ الحفظ المركزي يُؤكد بعد إتمام المزامنة.</p>':'')+'</main></div>';
-  if(window.LEX_PILOT&&['home','sessionResult','completion'].indexOf(state.view)>=0)LEX_PILOT.dashboard(document.querySelector('.courseWrap'),state.course,'ar',save,function(){state.view='home';render();},!!(STUDENT_SESSION&&STUDENT_SESSION.cloud));
+  var keysNav=document.getElementById("openLearningKeys");
+   if(keysNav)keysNav.onclick=function(){state.view="notebook";render();};
+   if(window.LEX_PILOT&&['home','sessionResult','completion'].indexOf(state.view)>=0)LEX_PILOT.dashboard(document.querySelector('.courseWrap'),state.course,'ar',save,function(){state.view='home';render();},!!(STUDENT_SESSION&&STUDENT_SESSION.cloud));
 }
 function render(){
-  if(state.view==="home")return home();
+   if(state.view==="notebook")return notebookPage();
+   if(state.view==="home")return home();
   if(state.view==="train")return train();
   if(state.view==="sessionResult")return sessionResult();
   if(state.view==="assessment")return assessment();
@@ -752,6 +764,11 @@ function render(){
   if(state.view==="repairAssessment")return repairAssessment();
   if(state.view==="weekSummary")return weekSummary();
   if(state.view==="completion")return completion();
+}
+function notebookPage(){
+  if(!window.LEX_KEYS){state.view="home";return home();}
+  chrome(LEX_KEYS.render(state.course));
+  LEX_KEYS.bind(state.course,save,function(){state.view="home";render();});
 }
 function currentStudentMetrics(){
   var base=(state.diag&&state.diag.metrics)||{};
@@ -799,9 +816,11 @@ function home(){
     '<div class="simpleSectionTitle"><div><h2>مستواك بسرعة</h2><p>خمس مهارات؛ يظهر تقدير فقط لما اختبرته. النسب مؤشرات أداء أولية تتغير مع المحاولات.</p></div></div>'+
     studentSnapshot(metrics)+
     '<section class="studentTip"><span>✨</span><div><b>لماذا هذا التدريب؟</b><p>نبدأ من الأداء الذي ظهر في محاولاتك؛ نختار الصعوبة حسب أدائك، وننوّع بين التطبيق ونقد الاستنتاج والمقارنة، ونراجع موضوعًا سبق أن أخطأت فيه. '+esc(shortStudentTip(metrics))+'</p></div></section>'+
-    weekBar(m.week)
-  );
-  document.getElementById("startSession").onclick=function(){
+    '<section class="studentTip keysTeaser"><span>✎</span><div><b>نوتة المفاتيح</b><p>احتفظ بالمفاتيح المرتبطة بمعاني القواعد، وراجعها بين الجلسات. لا تظهر أثناء الاختبار.</p><button class="secondary" type="button" id="openNotesHome">افتح نوتة المفاتيح</button></div></section>'+
+     weekBar(m.week)
+   );
+  document.getElementById("openNotesHome").onclick=function(){state.view="notebook";render();};
+   document.getElementById("startSession").onclick=function(){
     state.answers=[];state.assessmentAnswers=[];state.task=0;state.queue=buildTrainingQueue();
     state.view=m.kind==="assessment"?"assessment":"train";render();
   };
@@ -920,8 +939,13 @@ function orderedOptions(t,salt){return LEX_QUALITY.shuffleOptions(t);}
 function train(){
   if(window.LEX_PILOT&&LEX_PILOT.isReleased(state.course.session)){LEX_PILOT.mount(APP,state.course.session,'ar',{course:state.course,onSave:save,onComplete:function(pilot){state.answers=[1,2,3,4,5].map(function(step){var a=pilot.attempts.filter(function(x){return x.step===step;}).slice(-1)[0];return {dimension:step===4?'recall':'application',score:a&&a.score,correct:!!(a&&a.score===1)};});finishTraining();},onExit:function(){state.view='home';render();}});return;}
   var q=state.queue.length?state.queue:buildTrainingQueue(),t=q[state.task%q.length],meta=sessionMeta(state.course.session);
-  state.taskStartedAt=Date.now();
-  var ordered=t.mode==="free"?[]:orderedOptions(t,0);
+  if(t.mode==="study"){
+    chrome('<section class="stage"><div class="taskCard foundationStudy"><span class="kicker">مسار تأسيسي: الحفظ والفهم معًا</span><h2>'+esc(t.title)+'</h2><p>'+esc(t.q)+'</p><div class="legalBox"><b>القاعدة المرجعية</b><p>'+esc(t.articleText||"")+'</p></div><div class="legalBox"><b>مثال للتدريب</b><p>'+esc(t.example||"")+'</p><p>'+esc(t.explanation||"")+'</p></div><p class="keysWarning">قراءة المثال لا تُحتسب نجاحًا. الأسئلة التالية تختبر الاسترجاع والفهم دون إظهار المساعدة.</p><button class="primary" id="nextFoundation" type="button">انتقل لتجربة الحل</button></div></section>');
+    document.getElementById("nextFoundation").onclick=function(){state.task=Math.min(q.length-1,state.task+1);render();};
+    return;
+   }
+   state.taskStartedAt=Date.now();
+   var ordered=t.mode==="free"?[]:orderedOptions(t,0);
   var input=t.mode==="free"?
     '<textarea class="textarea" id="freeAnswer" placeholder="اكتب إجابتك بطريقتك..."></textarea><div class="choiceRow"><button class="primary" id="checkFree">حلّل إجابتي</button></div>':
     '<div class="options">'+ordered.map(function(o){return '<button class="option" data-orig="'+o.orig+'">'+esc(o.text)+'</button>';}).join("")+'</div>';
@@ -1025,7 +1049,11 @@ function addError(skill,label){
 }
 function pushUnique(arr,val){if(arr.indexOf(val)===-1)arr.push(val);}
 function buildRepairQueue(){
-  if(COUNTRY==="qa"&&window.LEX_QUALITY)return LEX_QUALITY.queue(state.course.session,"ar",weakestDimension(),null,LEX_QUALITY.learnerContext(state.course,(state.diag&&state.diag.metrics)||{}));
+  if(COUNTRY==="qa"&&window.LEX_QUALITY){
+    var fm=recomputeAdaptiveModel()||state.course.adaptiveModel;
+    var mode=fm&&fm.foundation&&fm.foundation.active?"foundation":weakestDimension();
+    return LEX_QUALITY.queue(state.course.session,"ar",mode,null,LEX_QUALITY.learnerContext(state.course,(state.diag&&state.diag.metrics)||{}));
+  }
   var meta=sessionMeta(state.course.session),w=state.course.repairWeek||meta.week,pool=(weekTasks[w]||weekTasks[1]).slice(),weak=weakestDimension();
   var targeted=weak==="application"?taskBank.apply:weak==="understanding"?taskBank.understanding:weak==="recall"?taskBank.recall:weak==="retention"?taskBank.retention:taskBank.exam;
   return [targeted,pool[0],pool[1],learningBridge().primary,pool[2]].filter(Boolean).map(function(t){return contextualizeTask(t,meta);});
@@ -1046,12 +1074,13 @@ function sessionResult(){
   chrome('<section class="stage"><div class="taskCard"><span class="kicker">جلسة مكتملة</span><h2>خلصت جلسة اليوم</h2>'+
     '<div class="resultGrid"><div class="metric"><span>أداء الجلسة</span><b>'+sessionDesc+'</b><small>'+p+'% من مهام الجلسة</small></div><div class="metric"><span>عدد المهام</span><b>'+total+'</b></div><div class="metric"><span>الجلسة القادمة</span><b>'+state.course.session+'</b></div></div>'+
     '<div class="notice">حُفظ التقدم على هذا الجهاز؛ حالة الحفظ المركزي تظهر أسفل الصفحة. لن تفتح المرحلة التالية قبل اجتياز تقييم نهاية المرحلة الحالية.</div>'+
-    '<div class="choiceRow"><button class="primary" id="nextSession">'+nextLabel+'</button><button class="secondary" id="backHome">العودة للبرنامج</button></div></div></section>');
+    '<div class="choiceRow"><button class="primary" id="nextSession">'+nextLabel+'</button><button class="secondary" id="openNotesAfterSession">راجع نوتة المفاتيح</button><button class="secondary" id="backHome">العودة للبرنامج</button></div></div></section>');
   document.getElementById("nextSession").onclick=function(){
     state.answers=[];state.assessmentAnswers=[];state.task=0;state.queue=buildTrainingQueue();
     state.view=next.kind==="assessment"?"assessment":"train";render();
   };
-  document.getElementById("backHome").onclick=function(){state.view="home";render();};
+  document.getElementById("openNotesAfterSession").onclick=function(){state.view="notebook";render();};
+   document.getElementById("backHome").onclick=function(){state.view="home";render();};
 }
 function recordAssessmentEvidence(q,correct,confidence,repair){
   var dim=q.dimension||taskDimension(q),score=correct?1:0,latency=Math.max(0,Date.now()-(state.taskStartedAt||Date.now()));
