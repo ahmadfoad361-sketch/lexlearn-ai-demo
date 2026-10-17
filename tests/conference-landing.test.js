@@ -31,7 +31,7 @@ assert.ok(read("assets/lexlearn-x-transparent.svg").includes("clear-paper"));
 assert.ok(read("assets/lexlearn-public-pitch-en.pdf").startsWith("%PDF-1.4"),"downloadable public PDF required");
 assert.ok(js.includes('localStorage.setItem("lexlearn_conference_language"'),"remember language");
 assert.ok(css.includes("max-width:690px"),"mobile breakpoint required");
-for(const phrase of ["تعاون أكاديمي قابل للقياس","تقود LexLearn التجربة الجامعية المقترحة وتشرف على تنفيذها ومتابعتها علميًا","التحقق من الأثر التعليمي سيتم عبر التجربة المقترحة"]){
+for(const phrase of ["تعاون أكاديمي قابل للقياس","تُنفَّذ التجربة بالتعاون مع الجامعة، وتتولى LexLearn متابعتها وتقييم نتائجها.","التحقق من الأثر التعليمي سيتم عبر التجربة المقترحة"]){
   assert.ok(js.includes(phrase),"accurate Arabic conference copy missing: "+phrase);
 }
 assert.ok(read("assets/lexlearn-navigation.css").includes(".ll-back-inline .ll-back-label{display:inline!important}"),"mobile back control must show visible label");
@@ -330,7 +330,7 @@ assert.ok(js.includes('promo:"\\u2066LexLearn\\u2069 في مؤتمر \\u2066Web 
 assert.ok(!js.includes("ويب ساميت قطر ٢٠٢٧")&&!js.includes("ليكس ليرن · ويب ساميت"),"do not localize the event or project brand names in event strip");
 assert.ok(js.includes('promoShort:"LexLearn · Web Summit Qatar 2027 · ALPHA"'),"English banner retains official event identity");
 assert.ok(html.includes('title="Web Summit Qatar 2027 · ALPHA"')&&pub.includes('"go/index.html"')&&pub.includes('"lexlearn-go-qr.svg"'),"translated strip and permanent printed QR retained without visitor download");
-assert.ok(html.includes("assets/conference.css?v=20261017.1")&&html.includes("assets/conference.js?v=20261017.1"),"invalidate mobile first-fold UI cache");
+assert.ok(html.includes("assets/conference.css?v=20261017.1")&&html.includes("assets/conference.js?v=20261017.2"),"invalidate mobile first-fold UI cache");
 
 
 /* Follow-up UX contract: conference, pilot, investor and student demo. */
@@ -357,14 +357,14 @@ for(const code of [sc,scEn]){
 assert.ok(nav.includes('showcase(?:-en)?'),"public demo must skip generic floating Back injection");
 assert.ok(scCss.includes(".demoIntro .demoStart{display:block;width:min(100%,485px)")&&scCss.includes(".demoIntro .stageCard:before{display:none}"),"wide CTA and no abrupt colored stripe");
 assert.ok(!read("showcase.html").includes("fonts.googleapis.com")&&!read("showcase-en.html").includes("fonts.googleapis.com"),"remove blocking remote Google fonts");
-assert.ok(html.includes("assets/conference.css?v=20261017.1")&&html.includes("assets/conference.js?v=20261017.1"),"bump CSS/JS cache");
+assert.ok(html.includes("assets/conference.css?v=20261017.1")&&html.includes("assets/conference.js?v=20261017.2"),"bump CSS/JS cache");
 
 
 /* Conversion UX and privacy-safe lead capture for Web Summit Qatar 2027. */
 const leadsJS=read("assets/conference-leads.js");
 assert.doesNotThrow(()=>new vm.Script(leadsJS,{filename:"assets/conference-leads.js"}),"lead form JavaScript must parse");
 assert.ok(pub.includes('"conference-leads.js"')&&pub.includes('"assets/conference-leads.js"'),"contact capture JS must ship with the public release");
-assert.ok(html.includes("assets/conference-leads.js?v=20261017.1"),"conference must load the active consent-based lead capture client");
+assert.ok(html.includes("assets/conference-leads.js?v=20261017.2"),"conference must load the active consent-based lead capture client");
 assert.ok(html.includes('id="leadForm"')&&html.includes('id="facultyField"')&&html.includes('id="leadStatus"'),"real contact form, university field and live status required");
 assert.ok(html.includes('name="audience"')&&html.includes('name="contact"')&&html.includes('name="organization"'),"visitor data inputs must be present");
 assert.ok(leadsJS.includes('fetch(endpoint')&&leadsJS.includes('conference-lead')&&leadsJS.includes('authorization'),"lead capture must POST securely to LexLearn's Supabase Edge Function");
