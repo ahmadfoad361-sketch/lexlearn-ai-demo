@@ -88,7 +88,7 @@ function previewTraining(){
 }
 function receiptScreen(){
  var r=lastDemo.receipt;
- stage(100,'<div class="receiptScreen"><div class="receiptLogoWrap"><img src="assets/lexlearn-logo.svg" alt="LexLearn"></div><h2>'+(r.received?tr('انتهى الديمو وتم حفظ المحاولة','Demo complete — attempt saved'):tr('انتهى الاختبار ولم يتأكد الحفظ','Test complete — saving not confirmed'))+'</h2><p>'+(r.received?tr('إجابتك ونتيجتها المبدئية متاحتان لمراجعة المشرف الأكاديمي.','Your answer and provisional assessment are available for supervisor review.'):esc(errorLabel(r.error)))+'</p>'+(r.received?'<code>'+esc(r.submission_id)+'</code>':'')+'<div class="demoActions"><button class="btn primary" id="receiptReturn">'+tr('العودة للنتيجة','Back to results')+'</button><a class="btn secondary" href="'+(ar?'index.html':'index-en.html')+'">'+tr('الرئيسية','Home')+'</a></div></div>');
+ stage(100,'<div class="receiptScreen"><div class="receiptLogoWrap"><img src="assets/lexlearn-logo.svg" alt="LexLearn"></div><h2>'+(r.received?tr('اكتملت التجربة التفاعلية وحُفظت المحاولة','Interactive experience complete — attempt saved'):tr('انتهى الاختبار ولم يتأكد الحفظ','Test complete — saving not confirmed'))+'</h2><p>'+(r.received?tr('إجابتك ونتيجتها المبدئية متاحتان لمراجعة المشرف الأكاديمي.','Your answer and provisional assessment are available for supervisor review.'):esc(errorLabel(r.error)))+'</p>'+(r.received?'<code>'+esc(r.submission_id)+'</code>':'')+'<div class="demoActions"><button class="btn primary" id="receiptReturn">'+tr('العودة للنتيجة','Back to results')+'</button><a class="btn secondary" href="'+(ar?'index.html':'index-en.html')+'">'+tr('الرئيسية','Home')+'</a></div></div>');
  document.getElementById('receiptReturn').onclick=resultScreen;
 }
 async function result(){
