@@ -55,6 +55,7 @@ jobs:
           node tests/showcase-learning-cycle.test.js
           node tests/showcase-recall.test.js
           node tests/showcase-delivery.test.js
+          node tests/showcase-semantic.test.mjs
       - name: Conference registration smoke tests
         run: node tests/conference-signup.test.js
       - name: Conference landing release checks
