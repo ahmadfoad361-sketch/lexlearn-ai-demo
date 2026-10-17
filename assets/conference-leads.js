@@ -13,11 +13,11 @@ var primary=document.getElementById("formCTA"),share=document.getElementById("wa
 var paths=document.getElementById("pathsReturn"),contact=document.getElementById("contact"),footer=document.querySelector("footer.foot");
 var dict={
  ar:{
- pilotBody:"نقترح تجربة أكاديمية محددة بإشراف جامعي لقياس الأثر قبل أي توسع أكبر.",
+ pilotBody:"تقود LexLearn التجربة الجامعية المقترحة وتشرف على تنفيذها ومتابعتها علميًا، بقيادة مؤسسها الحاصل على الدكتوراه في القانون المدني، وبالتنسيق مع الجامعة.",
  pilotBefore:"قبل التجربة",pilotDuring:"أثناء التجربة",pilotAfter:"بعد التجربة",
- pilot1:"تشخيص أولي لكل مهارة.",pilot2:"تدريبات مستهدفة بإشراف أكاديمي وضوابط الخصوصية.",pilot3:"مراجعة مؤشرات التعلم الأولية وموثوقية التصحيح وسهولة الاستخدام.",
- pilotNeedsTitle:"المطلوب من الجامعة",pilotNeeds:"مشرف أكاديمي، ومجموعة طلاب، وقاعة ووقت للجلسات.",
- pilotValueTitle:"ما تحصل عليه الجامعة",pilotValue:"تقرير قياس أثر وتقرير نتائج وملاحظات المشرف.",
+ pilot1:"تجري LexLearn تشخيصًا أوليًا لكل مهارة.",pilot2:"تشرف LexLearn على التدريب وتتابع تقدّم الطلاب مع مراعاة الخصوصية.",pilot3:"تحلل LexLearn النتائج الأولية وتراجع موثوقية التصحيح وسهولة الاستخدام.",
+ pilotLexLearnTitle:"دور LexLearn: الإشراف العلمي والمتابعة",pilotLexLearnRole:"تتولى LexLearn، بقيادة مؤسسها الحاصل على الدكتوراه في القانون المدني، تصميم التقييم، والإشراف على التدريب، ومتابعة تقدّم الطلاب، وتحليل النتائج.",pilotNeedsTitle:"المطلوب من الجامعة",pilotNeeds:"مجموعة طلاب متطوعين، ومسؤول اتصال لتنسيق الموافقات والمواعيد، والاتفاق على جلسات حضورية أو عن بُعد.",
+ pilotValueTitle:"ما تحصل عليه الجامعة",pilotValue:"تقرير أولي مجمّع لمؤشرات التعلم والنتائج، مع إمكان مراجعة الجامعة للنتائج وتقييمها بشكل مستقل.",
  pilotEthics:"نتائج الطلاب مجهولة الهوية وتُعرض في تقارير مجمّعة فقط، مع الحصول على الموافقات الأكاديمية اللازمة.",
  pilotCTA:"ناقش تجربة جامعية",
  visionLead:"رؤيتنا طويلة المدى: منصة تعليمية تبدأ بالتشخيص، وتقدّم توصيات واضحة، مع بقاء دور الأستاذ.",
@@ -36,11 +36,11 @@ var dict={
  shareTitle:"شارك صفحة المؤتمر",returnPaths:"رجوع للمسارات"
  },
  en:{
- pilotBody:"We propose a focused, faculty-supervised academic pilot to measure learning impact before any wider expansion.",
+ pilotBody:"LexLearn will lead and supervise the proposed pilot, directed by its founder, who holds a PhD in Civil Law, in coordination with the partner university.",
  pilotBefore:"Before",pilotDuring:"During",pilotAfter:"After",
- pilot1:"Establish a baseline for each skill.",pilot2:"Targeted exercises under faculty oversight with privacy safeguards.",pilot3:"Review early learning indicators, scoring reliability and usability.",
- pilotNeedsTitle:"What we need from the university",pilotNeeds:"An academic supervisor, a student group, and a room and time for sessions.",
- pilotValueTitle:"What the university receives",pilotValue:"An impact-measurement report, a results report and faculty observations.",
+ pilot1:"LexLearn establishes a baseline for each skill.",pilot2:"LexLearn supervises the practice and follows student progress with privacy safeguards.",pilot3:"LexLearn reviews initial results, scoring reliability and usability.",
+ pilotLexLearnTitle:"LexLearn’s role: scientific supervision and follow-up",pilotLexLearnRole:"LexLearn, led by its founder with a PhD in Civil Law, designs the assessment, supervises practice, monitors student progress and analyzes the results.",pilotNeedsTitle:"What we need from the university",pilotNeeds:"A volunteer student group, a university contact to coordinate approvals and schedules, and agreed in-person or online sessions.",
+ pilotValueTitle:"What the university receives",pilotValue:"An aggregated preliminary learning-impact report and results summary. The university can independently review and assess the findings.",
  pilotEthics:"Student results will be de-identified and shared only in aggregated reports, subject to academic consent and safeguards.",
  pilotCTA:"Discuss a university pilot",
  visionLead:"Our long-term vision: a learning platform that starts with diagnosis, offers clear recommendations and preserves the professor's role.",
