@@ -540,3 +540,21 @@ html[dir=rtl] .roadmap{padding-inline-start:68px;padding-inline-end:0}
 .leadStatus:empty{display:none}
 .leadStatus[data-state="success"]{color:#237049;font-weight:750}
 .leadStatus[data-state="error"]{color:#92213c;font-weight:700}
+
+
+/* Secure lead form is the main conference conversion; secondary channels follow it. */
+.contact .leadForm{margin-block:17px 0;box-shadow:0 8px 28px #111d310d}
+.contact .leadActions .button{width:100%;min-height:54px;font-size:16px;font-weight:800}
+.contact .leadActions .button:disabled{opacity:.62;cursor:not-allowed}
+.contactFallback{margin-top:20px;border-top:1px solid var(--line);padding-top:18px}
+.contactFallback>p{color:var(--sub);margin:0 0 8px;font-size:14px;font-weight:700}
+.contactFallback .contactButtons{margin:0;justify-content:flex-start;gap:9px}
+.contactFallback .contactButtons>.button{min-width:0;min-height:45px;font-size:14px;background:transparent;color:var(--burgundy);border-color:#ceb8c0}
+.contactFallback .contactButtons>.button:hover{background:#fffdfb}
+.contactFallback .contactButtons>.shareIcon{width:45px;height:45px;border-radius:10px}
+.leadStatus[data-state="info"]{color:#465574;font-weight:600}
+@media(max-width:760px){
+ .contactFallback .contactButtons{display:grid;grid-template-columns:minmax(0,1fr) 45px;align-items:stretch}
+ .contactFallback .contactButtons>.button{grid-column:1;width:100%}
+ .contactFallback .contactButtons>.shareIcon{grid-row:1;grid-column:2;width:45px;height:45px}
+}
