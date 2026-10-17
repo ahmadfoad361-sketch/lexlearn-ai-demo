@@ -507,7 +507,7 @@ html[dir=rtl] .roadmap{padding-inline-start:68px;padding-inline-end:0}
 .visionInvestorQuote .ll-investor-role{display:none!important}
 .pilotStats>div span{font-size:15px}
 .pilotStats>div small{font-size:13px}
-.leadForm{margin-top:27px;max-width:100%;border:1px solid var(--line);border-radius:17px;padding:clamp(18px,3vw,28px);background:var(--paper);text-align:start}
+.leadForm{scroll-margin-top:110px;margin-top:27px;max-width:100%;border:1px solid var(--line);border-radius:17px;padding:clamp(18px,3vw,28px);background:var(--paper);text-align:start}
 .leadForm h3{font-size:23px;line-height:1.4;margin:0 0 7px;color:var(--navy)}
 .leadForm>p{margin:0 0 18px;color:var(--sub);font-size:15px;line-height:1.7}
 .leadFields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}
