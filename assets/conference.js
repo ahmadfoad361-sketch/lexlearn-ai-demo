@@ -244,8 +244,8 @@ if(leadForm){
  });
  function validateContact(){
   const raw=String(contactInput.value||"").trim();
-  const email=/^[^\\s@]+@[^\\s@]+\\.[^\\s@]{2,}$/.test(raw)&&raw.length<=120;
-  const phone=/^\\+?[0-9]{7,15}$/.test(raw.replace(/[\\s().\\-]/g,""));
+  const email=/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(raw)&&raw.length<=120;
+  const phone=/^\+?[0-9]{7,15}$/.test(raw.replace(/[\s().\-]/g,""));
   if(typeof contactInput.setCustomValidity==="function")
    contactInput.setCustomValidity(email||phone?"":tr("leadInvalidContact"));
   return email||phone;
