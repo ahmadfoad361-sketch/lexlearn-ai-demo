@@ -31,7 +31,7 @@ assert.ok(read("assets/lexlearn-x-transparent.svg").includes("clear-paper"));
 assert.ok(read("assets/lexlearn-public-pitch-en.pdf").startsWith("%PDF-1.4"),"downloadable public PDF required");
 assert.ok(js.includes('localStorage.setItem("lexlearn_conference_language"'),"remember language");
 assert.ok(css.includes("max-width:690px"),"mobile breakpoint required");
-for(const phrase of ["تعاون أكاديمي قابل للقياس","تُنفَّذ التجربة بالتعاون مع الجامعة، وتتولى LexLearn متابعتها وتقييم نتائجها.","التحقق من الأثر التعليمي سيتم عبر التجربة المقترحة"]){
+for(const phrase of ["تعاون أكاديمي قابل للقياس","تُنفَّذ التجربة بالتعاون مع الجامعة، ويُحدَّد تصميم القياس بالتشاور معها، وتتولى LexLearn المتابعة وإعداد التقرير.","التحقق من الأثر التعليمي سيتم عبر التجربة المقترحة"]){
   assert.ok(js.includes(phrase),"accurate Arabic conference copy missing: "+phrase);
 }
 assert.ok(read("assets/lexlearn-navigation.css").includes(".ll-back-inline .ll-back-label{display:inline!important}"),"mobile back control must show visible label");
