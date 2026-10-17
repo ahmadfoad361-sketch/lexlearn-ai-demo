@@ -31,8 +31,8 @@ assert.ok(read("assets/lexlearn-x-transparent.svg").includes("clear-paper"));
 assert.ok(read("assets/lexlearn-public-pitch-en.pdf").startsWith("%PDF-1.4"),"downloadable public PDF required");
 assert.ok(js.includes('localStorage.setItem("lexlearn_conference_language"'),"remember language");
 assert.ok(css.includes("max-width:690px"),"mobile breakpoint required");
-for(const phrase of ["تعاون أكاديمي قابل للقياس","نقترح تجربة أكاديمية محددة بإشراف جامعي لقياس الأثر قبل التوسع","التحقق من الأثر التعليمي سيتم عبر التجربة المقترحة"]){
-  assert.ok(js.includes(phrase),"approved Arabic conference copy missing: "+phrase);
+for(const phrase of ["تعاون أكاديمي قابل للقياس","تقود LexLearn التجربة الجامعية المقترحة وتشرف على تنفيذها ومتابعتها علميًا","التحقق من الأثر التعليمي سيتم عبر التجربة المقترحة"]){
+  assert.ok(js.includes(phrase),"accurate Arabic conference copy missing: "+phrase);
 }
 assert.ok(read("assets/lexlearn-navigation.css").includes(".ll-back-inline .ll-back-label{display:inline!important}"),"mobile back control must show visible label");
 assert.ok(read("assets/conference.css").includes(".pilot > div:first-child h2"),"pilot heading responsive treatment missing");
@@ -414,5 +414,24 @@ assert.ok(css.includes('.roadmap .pilotNumbers bdi{display:inline-block')&&css.i
 assert.ok(js.includes('hasUserScrolled && depth>140')&&js.includes('contactTop>viewport*.82')&&js.includes('footerTop>viewport'),"floating return appears only after scroll and hides above contact/footer");
 assert.ok(js.includes('backToPaths.tabIndex=show?0:-1'),"invisible floating control must not be focusable");
 assert.ok(css.includes('.pathsReturn.isVisible{opacity:.76'),"subtle return control opacity avoids obscuring copy");
+
+
+/* The university is a research partner, not LexLearn's operational supervisor. */
+const leadsUpdates=read("assets/conference-leads.js");
+const pilotText=html.slice(html.indexOf('<section id="pilot"'),html.indexOf('<section id="vision"'));
+for(const key of ["pilotLexLearnTitle","pilotLexLearnRole","pilotNeedsTitle","pilotValueTitle","pilotEthics"]){
+ assert.ok(pilotText.includes('data-t="'+key+'"'),"pilot collaboration roles should explicitly label "+key);
+}
+assert.ok(pilotText.includes("PhD in Civil Law"),"public English pilot should substantiate scientific supervision with founder's civil-law doctorate");
+assert.ok(js.includes("الدكتوراه في القانون المدني")&&js.includes("PhD in Civil Law"),"main bilingual content must identify founder's relevant doctorate");
+assert.ok(leadsUpdates.includes('pilotLexLearnTitle:"دور LexLearn: الإشراف العلمي والمتابعة"'),"visible Arabic pilot must make LexLearn's supervision explicit");
+assert.ok(leadsUpdates.includes('pilotLexLearnTitle:"LexLearn’s role: scientific supervision and follow-up"'),"English pilot must make founder-led role clear");
+assert.ok(leadsUpdates.includes("متطوعين، ومسؤول اتصال لتنسيق الموافقات والمواعيد"),"university contributes students and scheduling, not mandatory supervision or premises");
+assert.ok(leadsUpdates.includes("volunteer student group, a university contact"),"English institution coordination request must be equivalent");
+assert.ok(!leadsUpdates.includes("مشرف أكاديمي، ومجموعة طلاب")&&!leadsUpdates.includes("An academic supervisor, a student group"),"outdated university-led pilot requirement cannot recur");
+assert.ok(js.includes('slide5P:"تجربة مقترحة بإشراف LexLearn'),"Arabic summary slide must agree with leadership model");
+assert.ok(css.includes('.pilotExchange{grid-template-columns:repeat(3,minmax(0,1fr))'),"three pilot responsibility cards on desktop");
+assert.ok(css.includes('@media(max-width:760px){.pilotExchange{grid-template-columns:minmax(0,1fr)}'),"pilot role cards stack cleanly on phones");
+assert.ok(html.includes("assets/conference.js?v=20261017.1")&&html.includes("assets/conference-leads.js?v=20261017.1")&&html.includes("assets/conference.css?v=20261017.1"),"publish all three synchronized copies and styles without stale cache");
 
 console.log("conference landing release test PASS");
