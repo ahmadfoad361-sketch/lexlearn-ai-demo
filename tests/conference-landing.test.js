@@ -330,7 +330,7 @@ assert.ok(html.includes('data-t="eyebrow">LEXLEARN · LEGAL LEARNING FOR STUDENT
 assert.ok(html.includes("Assess your legal learning skills. Build on your strengths."),"default English title must immediately describe what LexLearn does");
 assert.ok(js.includes('heroTitle:"قيّم مهاراتك القانونية، وطوّرها انطلاقًا من نقاط قوتك."'),"Arabic heading should explain student benefit in five seconds");
 assert.ok(js.includes('eyebrow:"ليكس ليرن · منصة تعليمية لطلاب القانون"'),"Arabic eyebrow must identify education and avoid Latin punctuation");
-assert.ok(js.includes('heroSubBefore:"يشخّص",heroSub:"نقاط قوتك في التفكير القانوني، ويبني مسارك لتقوية نقاط ضعفك."'),"Arabic subhead must use Modern Standard Arabic with brand isolated");
+assert.ok(js.includes('heroSubBefore:"يشخّص",heroSub:"نقاط قوتك في التفكير القانوني، ويبني مسارك لتقوية المهارات الأضعف."'),"Arabic subhead must use Modern Standard Arabic with brand isolated");
 assert.equal((html.match(/class="pathNo"/g)||[]).length,3,"three numbered visitor choices required");
 assert.ok(!html.includes('data-t="visitor"')&&!js.includes('visitor:"زائر"')&&!js.includes('visitor:"VISITOR"'),"remove redundant visitor label");
 assert.equal((html.match(/class="pathGlyph" aria-hidden="true"><svg viewBox=/g)||[]).length,3,"replace each visitor emoji with a branded SVG (carousel arrows are separate)");
@@ -344,7 +344,7 @@ assert.ok(css.includes('@media(max-height:700px) and (max-width:760px)'),"short 
 assert.ok(css.includes('.paths .pathGlyph svg{width:18px;height:18px'),"SVG arrows must use branded colour and constrained size");
 assert.ok(nav.includes('back.hidden = true')&&nav.includes('back.setAttribute("aria-hidden", "true")'),"redundant conference Home button must be hidden from display and accessibility tree");
 assert.ok(css.includes('.site-header #lexlearnBack[hidden]{display:none!important}'),"Home button must remain hidden despite shared styling");
-assert.ok(js.includes('promoShort:"\\u2066LexLearn\\u2069 · \\u2066Web Summit Qatar 2027\\u2069 · برنامج \\u2066ALPHA\\u2069"'),"Arabic mobile strip must preserve official Latin brands and translate only connective text");
+assert.ok(js.includes('promoShort:"\\u2066LexLearn\\u2069 · \\u2066Web Summit Qatar 2027\\u2069 · نسخة \\u2066ALPHA\\u2069"'),"Arabic mobile strip must preserve official Latin brands and translate only connective text");
 assert.ok(js.includes('promo:"\\u2066LexLearn\\u2069 في مؤتمر \\u2066Web Summit Qatar 2027\\u2069 — اكتشف الرؤية وجرّب المنصة وتعرّف على التجربة الجامعية."'),"Arabic desktop promo must retain official English names and readable RTL isolates");
 assert.ok(!js.includes("ويب ساميت قطر ٢٠٢٧")&&!js.includes("ليكس ليرن · ويب ساميت"),"do not localize the event or project brand names in event strip");
 assert.ok(js.includes('promoShort:"LexLearn · Web Summit Qatar 2027 · ALPHA"'),"English banner retains official event identity");
