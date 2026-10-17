@@ -54,7 +54,9 @@ const AR={
  leadFailure:"تعذر حفظ طلبك الآن. حاول مرة أخرى، أو تواصل عبر واتساب أو البريد.",
  leadRateLimit:"طلبات كثيرة في وقت قصير؛ حاول بعد قليل.",
  leadCaptchaRequired:"يرجى إكمال التحقق الأمني قبل الإرسال.",
- leadLivePrivacy:"يُحفظ طلبك بعد موافقتك والتحقق الأمني، ويمكنك طلب حذفه عبر البريد الموضح في سياسة الخصوصية."
+ leadLivePrivacy:"لا يُحفظ طلبك إلا بعد موافقتك وتأكيد التحقق الأمني. ويمكنك طلب حذف بياناتك وفق سياسة الخصوصية.",
+ leadChecking:"جارٍ التحقق من توفر نموذج التواصل الآمن…",leadUnavailable:"التسجيل المباشر غير متاح حاليًا. يمكنك التواصل الآن عبر واتساب أو البريد أسفل النموذج.",
+ contactOtherWays:"وسائل تواصل بديلة",leadInvalidContact:"أدخل بريدًا إلكترونيًا صحيحًا أو رقم هاتف دوليًا صالحًا."
 };
 const EN={
  skip:"Skip to content",home:"Main site",
@@ -95,7 +97,9 @@ const EN={
  leadFailure:"We couldn't save your request. Please retry, or use WhatsApp or email.",
  leadRateLimit:"Too many requests in a short time. Please try again shortly.",
  leadCaptchaRequired:"Please complete the security check before submitting.",
- leadLivePrivacy:"With your consent, your inquiry is saved securely after verification. You can request deletion using the email in our privacy policy."
+ leadLivePrivacy:"Your inquiry is saved only after consent and successful security verification. You can request deletion under our privacy policy.",
+ leadChecking:"Checking secure contact form availability…",leadUnavailable:"Secure form submission is temporarily unavailable. You can contact us via WhatsApp or email below.",
+ contactOtherWays:"Other ways to contact us",leadInvalidContact:"Enter a valid email address or international phone number."
 };
 const languageButtonEN=document.getElementById("langEN"),languageButtonAR=document.getElementById("langAR");
 const student=document.getElementById("studentCard"),demo=document.getElementById("demoLink"),
@@ -181,9 +185,9 @@ function setLang(next){
  const leadPrivacyLink=document.getElementById("leadPrivacyLink");
  if(leadPrivacyLink)leadPrivacyLink.href=privacy.href;
  const leadSaveButton=document.getElementById("leadSubmit");
- if(leadSaveButton)leadSaveButton.textContent=leadMode==="save"?t.leadSaveSubmit:t.leadSubmit;
+ if(leadSaveButton)leadSaveButton.textContent=t.leadSaveSubmit;
  const leadNote=typeof document.querySelector==="function"?document.querySelector(".leadForm .leadPrivacy"):null;
- if(leadNote)leadNote.textContent=leadMode==="save"?t.leadLivePrivacy:t.leadPrivacy;
+ if(leadNote)leadNote.textContent=t.leadLivePrivacy;
  deck.removeAttribute("download");
  deck.href=active==="ar"?"#deck":"assets/lexlearn-public-pitch-en.pdf";
  if(active==="en")deck.setAttribute("download","LexLearn-Public-Pitch-EN.pdf");
@@ -207,107 +211,113 @@ function printArabicDeck(){
 languageButtonEN.addEventListener("click",function(){setLang("en");});
 languageButtonAR.addEventListener("click",function(){setLang("ar");});
 deck.addEventListener("click",function(event){if(active==="ar"){event.preventDefault();printArabicDeck();}});
-// Conference opt-in storage: never claim delivery before the server confirms an insert.
-// When Turnstile is unconfigured, retain the existing direct WhatsApp/email draft actions.
+// Conference inquiry: only confirmed server storage counts as a submitted request.
+// If verification is not configured, the form is disabled and direct links remain available.
 const leadForm=document.getElementById("leadForm");
 if(leadForm){
  const endpoint="https://emxiuwcuxyljfynnzpnh.supabase.co/functions/v1/conference-lead";
- const roleSelect=document.getElementById("leadRole"),emailButton=document.getElementById("leadEmail");
- const submitButton=document.getElementById("leadSubmit"),consentGroup=document.getElementById("leadConsentGroup");
- const consentCheck=document.getElementById("leadConsent"),captchaMount=document.getElementById("leadTurnstile");
- const statusEl=document.getElementById("leadStatus"),privacyNote=typeof leadForm.querySelector==="function"?leadForm.querySelector(".leadPrivacy"):null;
+ const roleSelect=document.getElementById("leadRole"),submitButton=document.getElementById("leadSubmit");
+ const consentGroup=document.getElementById("leadConsentGroup"),consentCheck=document.getElementById("leadConsent");
+ const captchaMount=document.getElementById("leadTurnstile"),statusEl=document.getElementById("leadStatus");
+ const contactInput=document.getElementById("leadContact");
  let captchaToken="",widgetId=null,isBusy=false;
  function tr(key){return (active==="ar"?AR:EN)[key]||key;}
  function status(message,state){
-  statusEl.textContent=message;statusEl.dataset.state=state||"";
+  if(!statusEl)return;
+  statusEl.textContent=message;statusEl.setAttribute("data-state",state||"");
  }
  function setMode(next){
   leadMode=next;
-  const enabled=next==="save";
-  consentGroup.hidden=!enabled;consentCheck.required=enabled;captchaMount.hidden=!enabled;
-  submitButton.textContent=tr(enabled?"leadSaveSubmit":"leadSubmit");
-  if(privacyNote)privacyNote.textContent=tr(enabled?"leadLivePrivacy":"leadPrivacy");
+  const ready=next==="save";
+  if(consentGroup)consentGroup.hidden=false;
+  if(consentCheck)consentCheck.required=true;
+  if(captchaMount)captchaMount.hidden=!ready;
+  submitButton.disabled=!ready;
+  submitButton.textContent=tr("leadSaveSubmit");
+  if(next==="unavailable")status(tr("leadUnavailable"),"error");
+  if(next==="checking")status(tr("leadChecking"),"info");
  }
  document.querySelectorAll("[data-role]").forEach(function(link){
-  link.addEventListener("click",function(){roleSelect.value=link.getAttribute("data-role")||"student";status("","");});
+  link.addEventListener("click",function(){
+   roleSelect.value=link.getAttribute("data-role")||"student";
+  });
  });
- function leadMessage(){
-  const ar=active==="ar",role=roleSelect.value,roleLabel=tr("leadRole"+role.charAt(0).toUpperCase()+role.slice(1));
-  const name=document.getElementById("leadName").value.trim();
-  const org=document.getElementById("leadOrg").value.trim();
-  const contact=document.getElementById("leadContact").value.trim();
-  const context=role==="investor"?(ar?"طلب العرض التفصيلي":"Request detailed pitch"):role==="university"?(ar?"مناقشة التجربة الجامعية":"Discuss university pilot"):(ar?"التعرف على LexLearn":"Learn about LexLearn");
-  return ["LexLearn — Web Summit Qatar 2027",context,(ar?"الاسم: ":"Name: ")+name,
-   (ar?"الجهة: ":"Organisation: ")+(org||"—"),(ar?"الصفة: ":"Role: ")+roleLabel,
-   (ar?"وسيلة التواصل: ":"Contact: ")+contact].join("\n");
+ function validateContact(){
+  const raw=String(contactInput.value||"").trim();
+  const email=/^[^\\s@]+@[^\\s@]+\\.[^\\s@]{2,}$/.test(raw)&&raw.length<=120;
+  const phone=/^\\+?[0-9]{7,15}$/.test(raw.replace(/[\\s().\\-]/g,""));
+  if(typeof contactInput.setCustomValidity==="function")
+   contactInput.setCustomValidity(email||phone?"":tr("leadInvalidContact"));
+  return email||phone;
  }
- function draftValid(){
-  const previous=consentCheck.required;consentCheck.required=false;
-  const valid=leadForm.reportValidity();consentCheck.required=previous;
-  return valid;
- }
+ if(contactInput&&typeof contactInput.addEventListener==="function")
+  contactInput.addEventListener("input",validateContact);
  function resetCaptcha(){
   captchaToken="";
-  if(widgetId!==null&&window.turnstile&&typeof window.turnstile.reset==="function")window.turnstile.reset(widgetId);
+  if(widgetId!==null&&window.turnstile&&typeof window.turnstile.reset==="function"){
+   try{window.turnstile.reset(widgetId);}catch(_){}
+  }
  }
  async function sendStoredLead(){
+  validateContact();
   if(!leadForm.reportValidity())return;
   if(!captchaToken){status(tr("leadCaptchaRequired"),"error");return;}
-  isBusy=true;submitButton.disabled=true;emailButton.disabled=true;
-  submitButton.textContent=tr("leadSaving");status("","");
+  isBusy=true;submitButton.disabled=true;submitButton.textContent=tr("leadSaving");status("","");
   const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),20000);
   try{
    const response=await fetch(endpoint,{method:"POST",headers:{"Content-Type":"application/json"},
     signal:controller.signal,body:JSON.stringify({
      name:document.getElementById("leadName").value.trim(),
      organization:document.getElementById("leadOrg").value.trim(),
-     role:roleSelect.value,contact:document.getElementById("leadContact").value.trim(),
+     role:roleSelect.value,contact:contactInput.value.trim(),
      consent:consentCheck.checked,privacyNoticeVersion:"2026-10-17",
      turnstileToken:captchaToken,website:document.getElementById("leadWebsite").value
     })});
-   let responseData={};try{responseData=await response.json();}catch(_){}
-   if(response.ok&&responseData.ok===true){
-    const lastRole=roleSelect.value;leadForm.reset();roleSelect.value=lastRole;
+   let result={};try{result=await response.json();}catch(_){}
+   if(response.ok&&result.ok===true){
+    const role=roleSelect.value;leadForm.reset();roleSelect.value=role;
+    if(typeof contactInput.setCustomValidity==="function")contactInput.setCustomValidity("");
     status(tr("leadSuccess"),"success");
-   }else status(tr(response.status===429?"leadRateLimit":"leadFailure"),"error");
+   }else status(tr(response.status===429?"leadRateLimit":response.status===403?"leadCaptchaRequired":"leadFailure"),"error");
   }catch(_){status(tr("leadFailure"),"error");}
-  finally{clearTimeout(timer);resetCaptcha();isBusy=false;submitButton.disabled=false;emailButton.disabled=false;submitButton.textContent=tr("leadSaveSubmit");}
+  finally{
+   clearTimeout(timer);resetCaptcha();isBusy=false;
+   submitButton.disabled=leadMode!=="save";submitButton.textContent=tr("leadSaveSubmit");
+  }
  }
  leadForm.addEventListener("submit",function(event){
-  event.preventDefault();if(isBusy)return;
-  if(leadMode==="save"){void sendStoredLead();return;}
-  if(!draftValid())return;
-  window.location.href="https://wa.me/201014408788?text="+encodeURIComponent(leadMessage());
- });
- emailButton.addEventListener("click",function(){
-  if(isBusy||!draftValid())return;
-  const subject=active==="ar"?"LexLearn — طلب تواصل من صفحة المؤتمر":"LexLearn — Conference contact request";
-  window.location.href="mailto:ahmadfoad361@gmail.com?subject="+encodeURIComponent(subject)+"&body="+encodeURIComponent(leadMessage());
+  event.preventDefault();if(isBusy||leadMode!=="save")return;
+  void sendStoredLead();
  });
  async function setupSecureIntake(){
-  if(typeof fetch!=="function"||typeof AbortController!=="function")return;
+  if(typeof fetch!=="function"||typeof AbortController!=="function"){setMode("unavailable");return;}
   const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),8000);
   try{
-   const res=await fetch(endpoint,{method:"GET",signal:controller.signal,cache:"no-store"});
-   if(!res.ok)return;
-   const config=await res.json();
-   if(!config.enabled||!/^[-_a-zA-Z0-9]{5,100}$/.test(config.siteKey||""))return;
-   const script=document.createElement("script");script.src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";script.async=true;
-   await new Promise(function(resolve,reject){
-    script.onload=resolve;script.onerror=reject;document.head.appendChild(script);
+   const response=await fetch(endpoint,{method:"GET",signal:controller.signal,cache:"no-store"});
+   if(!response.ok){setMode("unavailable");return;}
+   const config=await response.json();
+   if(config.enabled!==true||!/^[-_a-zA-Z0-9]{5,100}$/.test(config.siteKey||"")){setMode("unavailable");return;}
+   const script=document.createElement("script");
+   script.src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";script.async=true;
+   const loaded=await new Promise(function(resolve){
+    const loadingTimer=setTimeout(()=>resolve(false),10000);
+    script.onload=function(){clearTimeout(loadingTimer);resolve(true);};
+    script.onerror=function(){clearTimeout(loadingTimer);resolve(false);};
+    document.head.appendChild(script);
    });
-   if(!window.turnstile||typeof window.turnstile.render!=="function")return;
+   if(!loaded||!window.turnstile||typeof window.turnstile.render!=="function"){setMode("unavailable");return;}
    captchaMount.hidden=false;
-   widgetId=window.turnstile.render(captchaMount,{sitekey:config.siteKey,theme:"auto",
+   widgetId=window.turnstile.render(captchaMount,{
+    sitekey:config.siteKey,theme:"auto",
     callback:function(token){captchaToken=token;status("","");},
     "expired-callback":function(){captchaToken="";},
     "error-callback":function(){captchaToken="";status(tr("leadCaptchaRequired"),"error");}
    });
-   setMode("save");
-  }catch(_){setMode("draft");}
+   setMode("save");status("","");
+  }catch(_){setMode("unavailable");}
   finally{clearTimeout(timer);}
  }
- setMode("draft");
+ setMode("checking");
  void setupSecureIntake();
 }
 let saved="en";try{saved=localStorage.getItem("lexlearn_conference_language")==="ar"?"ar":"en";}catch(_){}
