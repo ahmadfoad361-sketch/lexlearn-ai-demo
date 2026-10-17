@@ -349,7 +349,7 @@ assert.ok(js.includes('promo:"\\u2066LexLearn\\u2069 في مؤتمر \\u2066Web 
 assert.ok(!js.includes("ويب ساميت قطر ٢٠٢٧")&&!js.includes("ليكس ليرن · ويب ساميت"),"do not localize the event or project brand names in event strip");
 assert.ok(js.includes('promoShort:"LexLearn · Web Summit Qatar 2027 · ALPHA"'),"English banner retains official event identity");
 assert.ok(html.includes('title="Web Summit Qatar 2027 · ALPHA"')&&pub.includes('"go/index.html"')&&pub.includes('"lexlearn-go-qr.svg"'),"translated strip and permanent printed QR retained without visitor download");
-assert.ok(html.includes("assets/conference.css?v=20261017.10")&&html.includes("assets/conference.js?v=20261017.10"),"invalidate mobile first-fold UI cache");
+assert.ok(html.includes("assets/conference.css?v=20261017.11")&&html.includes("assets/conference.js?v=20261017.11"),"invalidate mobile first-fold UI cache");
 
 
 /* Follow-up UX contract: conference, pilot, investor and student demo. */
@@ -378,7 +378,7 @@ for(const code of [sc,scEn]){
 assert.ok(nav.includes('showcase(?:-en)?'),"public demo must skip generic floating Back injection");
 assert.ok(scCss.includes(".demoIntro .demoStart{display:block;width:min(100%,485px)")&&scCss.includes(".demoIntro .stageCard:before{display:none}"),"wide CTA and no abrupt colored stripe");
 assert.ok(!read("showcase.html").includes("fonts.googleapis.com")&&!read("showcase-en.html").includes("fonts.googleapis.com"),"remove blocking remote Google fonts");
-assert.ok(html.includes("assets/conference.css?v=20261017.10")&&html.includes("assets/conference.js?v=20261017.10"),"bump CSS/JS cache");
+assert.ok(html.includes("assets/conference.css?v=20261017.11")&&html.includes("assets/conference.js?v=20261017.11"),"bump CSS/JS cache");
 
 
 /* Conversion UX: direct email and WhatsApp, without any visitor data collection. */
@@ -386,9 +386,14 @@ assert.ok(pub.includes('"conference.js"')&&!pub.includes('"conference-leads.js"'
 assert.ok(!html.includes("conference-leads.js")&&!html.includes("conference-contact.js"),"a single language JS handles both conference languages");
 assert.ok(html.includes('<form id="leadForm"')&&!js.includes("localStorage.setItem(\"lexlearn_lead\""),"contact form is present but no contact data is stored locally");
 assert.ok(html.includes('id="leadConsent"')&&html.includes('id="leadTurnstile"')&&html.includes('id="leadStatus"'),"conference form visibly mounts opt-in consent, bot protection and delivery feedback");
-assert.ok(js.includes('leadMode==="save"')&&js.includes("response.ok&&responseData.ok===true"),"success only after confirmed server reply");
+assert.ok(html.indexOf('<form id="leadForm"')<html.indexOf('id="waBusiness"'),"lead form must be primary, above WhatsApp and email alternatives");
+assert.ok(html.includes('id="leadSubmit" class="button buttonPrimary" data-t="leadSaveSubmit" disabled'),"no misleading direct-send button before secure intake is configured");
+assert.ok(js.includes('setMode("unavailable")')&&js.includes('submitButton.disabled=!ready'),"unavailable security must disable the submit action, not misrepresent a WhatsApp draft as saved");
+assert.ok(!js.includes('window.location.href="https://wa.me'),"form does not silently redirect to WhatsApp");
+
+assert.ok(js.includes('leadMode==="save"')&&js.includes("response.ok&&result.ok===true"),"success only after confirmed server reply");
 assert.ok(js.includes("functions/v1/conference-lead")&&js.includes("sendStoredLead")&&js.includes("turnstileToken"),"conference lead form uses secure server intake after Turnstile verification");
-assert.ok(html.includes('class="button buttonPrimary" id="waBusiness"')&&html.includes("https://wa.me/201014408788"),"verified WhatsApp stays primary for general contact");
+assert.ok(html.includes('class="button buttonSecondary" id="waBusiness"')&&html.includes("https://wa.me/201014408788"),"verified WhatsApp remains an alternative to the secure contact form");
 assert.ok(html.includes('class="button buttonSecondary" id="emailContact"')&&html.includes('class="shareIcon" id="waShare"'),"email and share icon still available");
 assert.ok(html.includes('href="mailto:Ahmadfoad361@gmail.com"'),"founder email is unchanged");
 assert.ok(html.includes('class="founderPhoto"'),"founder card image slot remains");
@@ -449,7 +454,7 @@ assert.ok(pilotText.includes('30–60')&&pilotText.includes('6–8')&&pilotText.
 assert.ok(css.includes(".pilotExchange>div{background:#fffdfb!important"),"all three role cards must have identical background and border");
 assert.ok(css.includes(".pilotOffer{display:inline-block"),"free pilot line receives visible highlighting");
 assert.ok(css.includes(".pilotActions{grid-column:1/-1;display:grid"),"two direct-contact pilot buttons align responsively");
-assert.ok(html.includes("assets/conference.js?v=20261017.10")&&html.includes("assets/conference.css?v=20261017.10"),"invalidate conference client cache");
+assert.ok(html.includes("assets/conference.js?v=20261017.11")&&html.includes("assets/conference.css?v=20261017.11"),"invalidate conference client cache");
 assert.ok(js.includes('id="pilotWhatsApp"')===false,"pilot WhatsApp IDs belong in HTML, not generated markup");
 
 console.log("conference landing release test PASS");
