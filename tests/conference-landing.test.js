@@ -349,11 +349,13 @@ assert.ok(js.includes('promo:"\\u2066LexLearn\\u2069 في مؤتمر \\u2066Web 
 assert.ok(!js.includes("ويب ساميت قطر ٢٠٢٧")&&!js.includes("ليكس ليرن · ويب ساميت"),"do not localize the event or project brand names in event strip");
 assert.ok(js.includes('promoShort:"LexLearn · Web Summit Qatar 2027 · ALPHA"'),"English banner retains official event identity");
 assert.ok(html.includes('title="Web Summit Qatar 2027 · ALPHA"')&&pub.includes('"go/index.html"')&&pub.includes('"lexlearn-go-qr.svg"'),"translated strip and permanent printed QR retained without visitor download");
-assert.ok(html.includes("assets/conference.css?v=20261017.8")&&html.includes("assets/conference.js?v=20261017.8"),"invalidate mobile first-fold UI cache");
+assert.ok(html.includes("assets/conference.css?v=20261017.8")&&html.includes("assets/conference.js?v=20261017.9"),"invalidate mobile first-fold UI cache");
 
 
 /* Follow-up UX contract: conference, pilot, investor and student demo. */
 assert.ok(html.includes('id="pathsReturn"')&&html.includes('href="#paths"'),"return to visitor paths must be accessible");
+assert.ok(/<a class="pathsReturn"[^>]+aria-label="Back to paths"[^>]*><svg[\s\S]*?<\/svg><\/a>/.test(html),"floating return must be a single icon-only arrow, not visible text");
+assert.ok(js.includes('backToPaths.setAttribute("aria-label",t.returnPaths)'),"return arrow accessible label must localize to Arabic and English");
 assert.ok(html.includes('id="deckPrev"')&&html.includes('id="deckNext"')&&html.includes('id="deckDots"'),"carousel requires arrows and dots");
 assert.ok(js.includes("slide.scrollIntoView")&&js.includes("rtl?r.right-rect.right:r.left-rect.left"),"RTL/LTR card scrolling must use physical direction correctly");
 assert.ok(js.includes('carousel.dir=active==="ar"?"rtl":"ltr"'),"carousel should follow language switch");
@@ -376,7 +378,7 @@ for(const code of [sc,scEn]){
 assert.ok(nav.includes('showcase(?:-en)?'),"public demo must skip generic floating Back injection");
 assert.ok(scCss.includes(".demoIntro .demoStart{display:block;width:min(100%,485px)")&&scCss.includes(".demoIntro .stageCard:before{display:none}"),"wide CTA and no abrupt colored stripe");
 assert.ok(!read("showcase.html").includes("fonts.googleapis.com")&&!read("showcase-en.html").includes("fonts.googleapis.com"),"remove blocking remote Google fonts");
-assert.ok(html.includes("assets/conference.css?v=20261017.8")&&html.includes("assets/conference.js?v=20261017.8"),"bump CSS/JS cache");
+assert.ok(html.includes("assets/conference.css?v=20261017.8")&&html.includes("assets/conference.js?v=20261017.9"),"bump CSS/JS cache");
 
 
 /* Conversion UX: direct email and WhatsApp, without any visitor data collection. */
@@ -445,7 +447,7 @@ assert.ok(pilotText.includes('30–60')&&pilotText.includes('6–8')&&pilotText.
 assert.ok(css.includes(".pilotExchange>div{background:#fffdfb!important"),"all three role cards must have identical background and border");
 assert.ok(css.includes(".pilotOffer{display:inline-block"),"free pilot line receives visible highlighting");
 assert.ok(css.includes(".pilotActions{grid-column:1/-1;display:grid"),"two direct-contact pilot buttons align responsively");
-assert.ok(html.includes("assets/conference.js?v=20261017.8")&&html.includes("assets/conference.css?v=20261017.8"),"invalidate conference client cache");
+assert.ok(html.includes("assets/conference.js?v=20261017.9")&&html.includes("assets/conference.css?v=20261017.8"),"invalidate conference client cache");
 assert.ok(js.includes('id="pilotWhatsApp"')===false,"pilot WhatsApp IDs belong in HTML, not generated markup");
 
 console.log("conference landing release test PASS");
