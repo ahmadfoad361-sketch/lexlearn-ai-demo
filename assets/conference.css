@@ -453,3 +453,13 @@ html[dir=rtl] .roadmap{padding-inline-start:68px;padding-inline-end:0}
  .roadmap .roadmapProgress .roadmapMarker::after{animation:none;opacity:.25;transform:none}
  .pathsReturn{transition:none}
 }
+
+
+/* University collaboration: LexLearn leads research supervision, institution facilitates the pilot. */
+.pilotExchange{grid-template-columns:repeat(3,minmax(0,1fr));align-items:stretch}
+.pilotExchange>div{height:100%;min-width:0}
+.pilotExchange>div:first-child{border-top:3px solid var(--burgundy);background:#fff9f7}
+.pilotExchange>div:first-child h3{color:var(--navy)}
+.pilotExchange>div p{overflow-wrap:break-word;line-height:1.72}
+@media(max-width:940px) and (min-width:761px){.pilotExchange{grid-template-columns:repeat(2,minmax(0,1fr))}.pilotExchange>div:first-child{grid-column:1/-1}}
+@media(max-width:760px){.pilotExchange{grid-template-columns:minmax(0,1fr)}.pilotExchange>div:first-child{grid-column:auto}}
