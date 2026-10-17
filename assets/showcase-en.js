@@ -99,7 +99,7 @@ async function result(){
  var deadline;try{receipt=await Promise.race([sendDemo(),new Promise(function(_,reject){deadline=setTimeout(function(){reject(new Error('send_not_confirmed'));},18000);})]);}catch(e){receipt={received:false,error:String(e&&e.message||'send_not_confirmed')};}
  clearTimeout(deadline);var g=receipt.received?receipt:local;
  var understanding=receipt.received?receipt.choice_indicators.understanding:pct('understanding');
- lastDemo={receipt:receipt,grade:g,summary:{metrics:{recall:g.recall_score,understanding:understanding},weak:window.LEX_SHOWCASE_CYCLE.recommend(g.recall_score,understanding)}};
+ lastDemo={receipt:receipt,grade:g,summary:{metrics:{recall:receipt.received?g.recall_score:null,understanding:understanding},weak:window.LEX_SHOWCASE_CYCLE.recommend(receipt.received?g.recall_score:null,understanding)}};
  busy=false;persist();resultScreen();
 }
 hero();
