@@ -34,11 +34,12 @@ const AR={
  slide6Small:"خريطة الطريق",slide6H:"قطر أولًا، ثم التوسع",slide6P:"نبدأ بكليات القانون القطرية، ثم نتحقق من الأثر قبل التوسع في المواد والأسواق.",
  deckNote:"هذه معاينة عامة مختصرة للموبايل وليست العرض الاستثماري السري الكامل. أعداد التجربة مقترحة وليست نتائج منفذة.",deckSwipeHint:"مرّر أفقيًا لاستعراض بقية الشرائح ↔",returnPaths:"رجوع للمسارات",
  label05:"05 / التجربة الجامعية",pilotTitle:"تعاون أكاديمي قابل للقياس",
- pilotBody:"تُنفَّذ التجربة بالتعاون مع الجامعة، وتتولى LexLearn متابعتها وتقييم نتائجها.",
+ pilotOffer:"تجربة مجانية محدودة المدة، بلا التزام بالشراء.",pilotBody:"تُنفَّذ التجربة بالتعاون مع الجامعة، ويُحدَّد تصميم القياس بالتشاور معها، وتتولى LexLearn المتابعة وإعداد التقرير.",
  pilotLexLearnTitle:"دور LexLearn",pilotLexLearnRole:"تتولى LexLearn متابعة التجربة وتقييم نتائجها.",
+ pilotNeedsTitle:"المطلوب من الجامعة",pilotNeeds:"مجموعة طلاب متطوعين، ومسؤول اتصال لتنسيق الموافقات والمواعيد، والاتفاق على جلسات حضورية أو عن بُعد.",pilotValueTitle:"ما تحصل عليه الجامعة",pilotValue:"تقرير أولي مجمّع لمؤشرات التعلم والنتائج، مع إمكان مراجعة الجامعة للنتائج وتقييمها بشكل مستقل.",pilotEthics:"التقارير المسلَّمة للجامعة مجمّعة ومجهولة الهوية؛ ومتابعة الأستاذ للطلاب تتم وفق الموافقات الأكاديمية اللازمة.",
  pilotStudents:"طالبًا مقترحًا",pilotStudentsHelp:"عدد طلاب القانون المقترح مشاركتهم في التجربة.",pilotWeeks:"أسابيع مقترحة",pilotWeeksHelp:"مدة التدريب والقياس القبلي والبعدي المقترحة.",
- pilot1:"قبل التجربة: تجري LexLearn تشخيصًا أوليًا لكل مهارة.",pilot2:"أثناء التجربة: تشرف LexLearn على التدريبات وتتابع تقدّم الطلاب مع مراعاة الخصوصية.",pilot3:"بعد التجربة: تحلل LexLearn النتائج الأولية وتراجع موثوقية التصحيح وسهولة الاستخدام.",
- pilotCTA:"ناقش تجربة جامعية ←",
+ pilotBefore:"قبل التجربة",pilotDuring:"أثناء التجربة",pilotAfter:"بعد التجربة",pilot1:"تجري LexLearn تشخيصًا أوليًا لكل مهارة.",pilot2:"تتابع LexLearn التدريب وتقدّم الطلاب.",pilot3:"تراجع LexLearn نتائج التجربة ومؤشرات التعلّم الأولية.",
+ pilotCTA:"ناقش تجربة جامعية",pilotWhatsApp:"واتساب",investorCTA:"اطلب العرض التفصيلي",investorAsk:"نبحث عن شراكات للتجربة الأكاديمية ودعم استراتيجي ومناقشات تمويل مبكر؛ التفاصيل في العرض التفصيلي.",statusReady:"جاهزة",statusProgress:"قيد التنفيذ",statusUpcoming:"قادمة",businessCTA:"تواصل معنا عبر واتساب",shareTitle:"شارك صفحة المؤتمر",phase2PStart:"تجربة مقترحة تشمل",phase2PMid:"طالبًا خلال",phase2PEnd:"أسابيع لقياس النتائج الأولية.",
  label06:"06 / للمستثمرين والشركاء",visionTitle:"قطر أولًا. الدليل قبل التوسع.",
  visionLead:"رؤيتنا طويلة المدى منصة تعليمية تبدأ بالتشخيص وتقدم توصيات قابلة للفهم مع استمرار دور الأستاذ.",
  phase1:"نسخة تجريبية عاملة",phase1P:"تطوير واختبار تجربة الطالب وأدوات المشرف.",phase2:"تجربة أكاديمية في قطر",phase2P:"مقترح 30–60 طالبًا خلال 6–8 أسابيع لقياس النتائج الأولية.",phase3:"التحقق من المنتج",phase3P:"تحسين تحليل الإجابات التحريرية ومراجعة المحتوى وسير عمل المشرف.",phase4:"التوسع المدروس",phase4P:"النظر في مواد قانونية وتخصصات أخرى بعد قيام أدلة مناسبة.",
@@ -73,9 +74,10 @@ const EN={
  slide5Small:"ACADEMIC VALIDATION",slide5H:"30–60 students · 6–8 weeks",slide5P:"A proposed LexLearn-led pilot with baseline and follow-up assessments.",
  slide6Small:"QATAR-FIRST ROADMAP",slide6H:"Validate, then expand",slide6P:"Start with Qatari law faculties, validate impact, then consider broader disciplines and markets.",
  deckNote:"Public mobile summary rather than the full confidential investor presentation. Figures are a proposal, not completed pilot results.",deckSwipeHint:"Swipe sideways to see the other slides ↔",returnPaths:"Back to paths",
- label05:"05 / UNIVERSITY PILOT",pilotTitle:"Measurable academic collaboration",pilotBody:"The pilot will run in collaboration with the university, with LexLearn following progress and evaluating the results.",
- pilotLexLearnTitle:"LexLearn's role",pilotLexLearnRole:"LexLearn follows the pilot and evaluates its results.",pilotStudents:"students proposed",pilotStudentsHelp:"Proposed number of law students in the pilot.",pilotWeeks:"weeks proposed",pilotWeeksHelp:"Proposed duration for practice and before/after assessment.",
- pilot1:"Before: LexLearn establishes a skill-specific baseline.",pilot2:"During: LexLearn supervises practice and follows student progress with privacy safeguards.",pilot3:"After: LexLearn reviews initial results, scoring reliability and usability; impact remains to be established.",pilotCTA:"Discuss an academic pilot ↗",
+ label05:"05 / UNIVERSITY PILOT",pilotTitle:"Measurable academic collaboration",pilotOffer:"A free, limited-duration pilot with no purchase commitment.",pilotBody:"The pilot is run in collaboration with the university. The measurement design is agreed jointly, and LexLearn handles follow-up and the report.",
+ pilotLexLearnTitle:"LexLearn's role",pilotLexLearnRole:"LexLearn follows the pilot and evaluates its results.",
+ pilotNeedsTitle:"What we need from the university",pilotNeeds:"A volunteer student group, a university contact to coordinate approvals and schedules, and agreed in-person or online sessions.",pilotValueTitle:"What the university receives",pilotValue:"An aggregated preliminary learning-impact report and results summary. The university can independently review and assess the findings.",pilotEthics:"Reports delivered to the university are aggregated and anonymised; instructor follow-up of individual students takes place only under the required academic approvals.",pilotStudents:"students proposed",pilotStudentsHelp:"Proposed number of law students in the pilot.",pilotWeeks:"weeks proposed",pilotWeeksHelp:"Proposed duration for practice and before/after assessment.",
+ pilotBefore:"Before",pilotDuring:"During",pilotAfter:"After",pilot1:"LexLearn establishes a baseline for each skill.",pilot2:"LexLearn follows the practice and student progress.",pilot3:"LexLearn reviews the pilot results and early learning indicators.",pilotCTA:"Discuss a university pilot",pilotWhatsApp:"WhatsApp",investorCTA:"Request the detailed pitch",investorAsk:"We seek academic pilot partners, strategic support and early-stage funding discussions. Details are available in the full pitch.",statusReady:"Ready",statusProgress:"In progress",statusUpcoming:"Upcoming",businessCTA:"Chat on WhatsApp",shareTitle:"Share the conference page",phase2PStart:"Proposed pilot for",phase2PMid:"students over",phase2PEnd:"weeks to measure early outcomes.",
  label06:"06 / INVESTORS & PARTNERS",visionTitle:"Qatar first. Proof before scale.",visionLead:"The long-term vision is a diagnostic-first learning platform with explainable recommendations and meaningful faculty oversight.",
  phase1:"Working beta",phase1P:"Core student experience and supervisor tools under development and testing.",phase2:"Qatari academic pilot",phase2P:"Propose 30–60 students over 6–8 weeks; measure the first outcomes.",phase3:"Product validation",phase3P:"Refine AI analysis of written answers, legal review and scalable faculty workflows.",phase4:"Broader expansion",phase4P:"Consider additional legal subjects and then other disciplines only after evidence.",
  evidenceNote:"Learning impact has not yet been demonstrated; we will evaluate it through the proposed academic pilot.",honestyTitle:"Where we stand today",status1:"Working beta",status2:"AI analysis of written answers: in progress",status2Title:"AI analysis of written answers",status2State:"In progress · validating reliability",status3:"Learning impact not yet proven",
@@ -162,6 +164,13 @@ function setLang(next){
  deck.href=active==="ar"?"#deck":"assets/lexlearn-public-pitch-en.pdf";
  if(active==="en")deck.setAttribute("download","LexLearn-Public-Pitch-EN.pdf");
  waShare.href="https://api.whatsapp.com/send?text="+encodeURIComponent("LexLearn — https://ahmadfoad361-sketch.github.io/lexlearn-ai-demo/go/");
+ const business=document.getElementById("waBusiness"),pilotWA=document.getElementById("pilotWhatsApp");
+ const greeting=active==="ar"?"مرحبًا، تعرفت على LexLearn في Web Summit Qatar 2027 وأرغب في معرفة المزيد.":"Hello, I discovered LexLearn at Web Summit Qatar 2027 and would like to learn more.";
+ const pilotMessage=active==="ar"?"مرحبًا، أرغب في مناقشة التجربة الجامعية المقترحة لـLexLearn.":"Hello, I'd like to discuss the proposed LexLearn university pilot.";
+ if(business)business.href="https://wa.me/201014408788?text="+encodeURIComponent(greeting);
+ if(pilotWA)pilotWA.href="https://wa.me/201014408788?text="+encodeURIComponent(pilotMessage);
+ if(waShare){waShare.title=t.shareTitle;waShare.setAttribute("aria-label",t.shareTitle);}
+
  try{localStorage.setItem("lexlearn_conference_language",active);}catch(_){}
 }
 function printArabicDeck(){
