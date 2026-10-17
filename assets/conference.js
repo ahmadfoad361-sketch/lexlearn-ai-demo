@@ -154,6 +154,7 @@ function setLang(next){
  dotButtons.forEach(function(b,i){b.setAttribute("aria-label",(active==="ar"?"الشريحة ":"Slide ")+(i+1));});
  document.title=active==="ar"?"LexLearn | اكتشف رؤيتنا — مؤتمر قطر 2027":"LexLearn | Explore the Vision — Web Summit Qatar 2027";
  document.querySelectorAll("[data-t]").forEach(function(el){const k=el.getAttribute("data-t");if(k in t)el.textContent=t[k];});
+ if(backToPaths)backToPaths.setAttribute("aria-label",t.returnPaths);
  languageButtonEN.setAttribute("aria-pressed",String(active==="en"));languageButtonAR.setAttribute("aria-pressed",String(active==="ar"));
  const prefix=active==="ar"?"":"-en";
  student.href="showcase"+prefix+".html?country=qa&subject=rights";
