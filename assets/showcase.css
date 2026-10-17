@@ -236,3 +236,6 @@ html[lang=en] .demoIntro .demoPrivacy{text-align:center}
 .demoIntro .stageProgressText{text-align:center;margin:0 0 10px}
 .stageProgressText bdi{direction:ltr;unicode-bidi:isolate}
 @media(max-width:600px){.demoMeta{gap:5px}.demoLangGroup{gap:2px}.demoLang{font-size:11px;min-width:34px;min-height:36px;padding:4px 5px}.demoMeta>.demoBack{padding:6px 9px;min-height:43px}.stageProgressText{font-size:11px}}
+
+/* Conference first-step CTA: use the full readable card width on desktop and mobile. */
+.demoIntro .demoStart{width:100%;max-width:100%;margin-inline:0}
