@@ -173,5 +173,8 @@ languageButtonEN.addEventListener("click",function(){setLang("en");});
 languageButtonAR.addEventListener("click",function(){setLang("ar");});
 deck.addEventListener("click",function(event){if(active==="ar"){event.preventDefault();printArabicDeck();}});
 let saved="en";try{saved=localStorage.getItem("lexlearn_conference_language")==="ar"?"ar":"en";}catch(_){}
-setLang(saved);
+// Respect an explicit language on fresh conference URLs.
+var query=window.location&&typeof window.location.search==="string"?window.location.search:"";
+var explicitLanguage=/(?:^\?|&)lang=(ar|en)(?:&|$)/.exec(query);
+setLang(explicitLanguage?explicitLanguage[1]:saved);
 })();
