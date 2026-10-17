@@ -74,7 +74,9 @@ async function deliverNotification(db:ReturnType<typeof adminClient>,id:string,d
   let sent=false;
   try{
     const response=await fetch("https://api.resend.com/emails",{
-      method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+token},
+      method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+token,
+        "Idempotency-Key":"lexlearn-conference-"+id},
+      signal:AbortSignal.timeout(6000),
       body:JSON.stringify({from:sender,to:[recipient],subject:"LexLearn — New conference inquiry",
         text:["New conference inquiry","Name: "+data.name,"Role: "+data.role,
         "Organization: "+(data.organization||"—"),"Contact: "+data.contact,"Received via the LexLearn conference page."].join("\n")})
