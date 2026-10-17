@@ -19,10 +19,10 @@
 <meta name="twitter:image" content="https://ahmadfoad361-sketch.github.io/lexlearn-ai-demo/assets/lexlearn-og.jpg">
 <link rel="icon" type="image/svg+xml" href="assets/lexlearn-x-transparent.svg">
 <link rel="canonical" href="https://ahmadfoad361-sketch.github.io/lexlearn-ai-demo/conference.html">
-<link rel="stylesheet" href="assets/conference.css?v=20261017.10">
+<link rel="stylesheet" href="assets/conference.css?v=20261017.11">
 <link rel="stylesheet" href="assets/lexlearn-navigation.css?v=20261014.11">
 <script src="assets/conference-pdf.js?v=20261014.2" defer></script>
-<script src="assets/conference.js?v=20261017.10" defer></script>
+<script src="assets/conference.js?v=20261017.11" defer></script>
 <script src="assets/lexlearn-learning-lines.js?v=20261014.6" defer></script>
 <script src="assets/lexlearn-investor-quotes.js?v=20261017.7" defer></script>
 <script src="assets/lexlearn-navigation.js?v=20261015.2" defer></script>
@@ -136,12 +136,6 @@
  <p class="eyebrow" data-t="label07">07 / CONTACT</p>
  <h2 data-t="contactTitle">Let's explore what comes next.</h2>
  <p data-t="contactText">Academic pilots, incubation support, technical partnerships and early-stage conversations.</p>
- <div class="contactButtons">
-  <a class="button buttonPrimary" id="waBusiness" target="_blank" rel="noopener noreferrer" href="https://wa.me/201014408788?text=Hello%2C%20I%20discovered%20LexLearn%20at%20Web%20Summit%20Qatar%202027%20and%20would%20like%20to%20know%20more." data-t="businessCTA">Chat on WhatsApp</a>
-  <a class="button buttonSecondary" id="emailContact" href="mailto:ahmadfoad361@gmail.com?subject=LexLearn%20%E2%80%94%20Web%20Summit%20Qatar%202027" data-t="emailCTA">Contact the founder</a>
-  <a class="shareIcon" id="waShare" href="https://api.whatsapp.com/send?text=LexLearn" target="_blank" rel="noopener noreferrer" aria-label="Share this page" title="Share this page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.7 10.7 6.6-4.3m-6.6 6.9 6.6 4.3"/></svg></a>
- </div>
-
  <form id="leadForm" class="leadForm" action="#leadForm" method="post" autocomplete="on" onsubmit="return false" aria-labelledby="leadFormTitle">
 <h3 id="leadFormTitle" data-t="contactFormTitle">Leave your contact details</h3>
 <p data-t="contactFormDesc">Select your role and share a way to reach you about the pitch or academic pilot.</p>
@@ -152,12 +146,21 @@
 <label><span data-t="leadContact">WhatsApp number or email</span><input id="leadContact" name="contact" autocomplete="off" maxlength="120" required></label>
 </div>
 <label class="honeypot" aria-hidden="true">Website<input id="leadWebsite" name="website" tabindex="-1" autocomplete="off"></label>
-<div class="leadConsentGroup" id="leadConsentGroup" hidden><label class="leadConsent"><input type="checkbox" id="leadConsent"><span data-t="leadConsentLabel">I agree to the use of my details to contact me about LexLearn, under the privacy policy.</span></label><a href="privacy-en.html" id="leadPrivacyLink" data-t="leadPrivacyLink">Read the privacy policy</a></div>
+<div class="leadConsentGroup" id="leadConsentGroup"><label class="leadConsent"><input type="checkbox" id="leadConsent" required><span data-t="leadConsentLabel">I agree to the use of my details to contact me about LexLearn, under the privacy policy.</span></label><a href="privacy-en.html" id="leadPrivacyLink" data-t="leadPrivacyLink">Read the privacy policy</a></div>
 <div id="leadTurnstile" class="leadCaptcha" hidden aria-label="Bot protection"></div>
-<div class="leadActions"><button type="submit" id="leadSubmit" class="button buttonPrimary" data-t="leadSubmit">Continue on WhatsApp</button><button type="button" class="button buttonSecondary" id="leadEmail" data-t="leadEmail">Send by email</button></div>
-<p class="leadPrivacy" data-t="leadPrivacy">This page does not store your details. WhatsApp or email opens a draft; nothing is sent until you confirm.</p>
-<p id="leadStatus" class="leadStatus" role="status" aria-live="polite"></p>
+<div class="leadActions"><button type="submit" id="leadSubmit" class="button buttonPrimary" data-t="leadSaveSubmit" disabled>Send contact request</button></div>
+<p class="leadPrivacy" data-t="leadLivePrivacy">Your request is saved only after an active secure verification and your consent.</p>
+<p id="leadStatus" class="leadStatus" role="status" aria-live="polite" data-state="info" data-t="leadChecking">Checking secure form availability…</p>
 </form>
+ <div class="contactFallback" id="contactFallback"><p data-t="contactOtherWays">Other ways to reach us</p>
+<div class="contactButtons">
+  <a class="button buttonSecondary" id="waBusiness" target="_blank" rel="noopener noreferrer" href="https://wa.me/201014408788?text=Hello%2C%20I%20discovered%20LexLearn%20at%20Web%20Summit%20Qatar%202027%20and%20would%20like%20to%20know%20more." data-t="businessCTA">Chat on WhatsApp</a>
+  <a class="button buttonSecondary" id="emailContact" href="mailto:ahmadfoad361@gmail.com?subject=LexLearn%20%E2%80%94%20Web%20Summit%20Qatar%202027" data-t="emailCTA">Contact the founder</a>
+  <a class="shareIcon" id="waShare" href="https://api.whatsapp.com/send?text=LexLearn" target="_blank" rel="noopener noreferrer" aria-label="Share this page" title="Share this page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.7 10.7 6.6-4.3m-6.6 6.9 6.6 4.3"/></svg></a>
+ </div>
+
+</div>
+
   <div class="founder">
   <div class="founderPhoto" role="img" aria-label="Founder portrait pending approved photo"><img src="assets/lexlearn-x-transparent.svg" width="56" height="56" alt="LexLearn"></div>
   <div><strong data-t="founderName">Dr Ahmed Foad Elfeky</strong><span data-t="founderRole">Founder &amp; CEO</span><a class="founderEmail" href="mailto:Ahmadfoad361@gmail.com">Ahmadfoad361@gmail.com</a></div>
