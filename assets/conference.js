@@ -47,7 +47,14 @@ const AR={
  label07:"07 / التواصل",contactTitle:"لنستكشف الخطوة التالية معًا.",contactText:"التجارب الجامعية، ودعم الاحتضان، والشراكات التقنية، ومناقشات الاستثمار الأولية.",
  emailCTA:"تواصل مع المؤسس",waCTA:"شارك الصفحة عبر واتساب ←",qrCTA:"تحميل رمز QR للطباعة ↓",waNote:"",
  founderName:"د. أحمد فؤاد الفقي",founderRole:"المؤسس والرئيس التنفيذي",privacy:"الخصوصية",
- footerNote:"نسخة تجريبية عاملة، وليست خدمة تقييم جامعي معتمدة.",contactFormTitle:"اترك بيانات التواصل",contactFormDesc:"اختر صفتك واترك وسيلة تواصل لنناقش العرض أو التجربة الجامعية.",leadName:"الاسم",leadOrg:"الجهة (اختياري)",leadRole:"أنا",leadContact:"رقم واتساب أو بريد إلكتروني",leadRoleStudent:"طالب",leadRoleInvestor:"مستثمر أو شريك",leadRoleUniversity:"جامعة أو مؤسسة",leadSubmit:"تابع الإرسال عبر واتساب",leadEmail:"أرسل عبر البريد",leadPrivacy:"لا تُخزَّن بياناتك على هذه الصفحة؛ يُفتح واتساب أو البريد برسالة جاهزة ولن تُرسل إلا بعد تأكيدك.",pitchNote:"اترك بياناتك وسنرسل لك العرض.",phase1Link:"جرّب التجربة التفاعلية"
+ footerNote:"نسخة تجريبية عاملة، وليست خدمة تقييم جامعي معتمدة.",contactFormTitle:"اترك بيانات التواصل",contactFormDesc:"اختر صفتك واترك وسيلة تواصل لنناقش العرض أو التجربة الجامعية.",leadName:"الاسم",leadOrg:"الجهة (اختياري)",leadRole:"أنا",leadContact:"رقم واتساب أو بريد إلكتروني",leadRoleStudent:"طالب",leadRoleInvestor:"مستثمر أو شريك",leadRoleUniversity:"جامعة أو مؤسسة",leadSubmit:"تابع الإرسال عبر واتساب",leadEmail:"أرسل عبر البريد",leadPrivacy:"لا تُخزَّن بياناتك على هذه الصفحة؛ يُفتح واتساب أو البريد برسالة جاهزة ولن تُرسل إلا بعد تأكيدك.",pitchNote:"اترك بياناتك وسنرسل لك العرض.",phase1Link:"جرّب التجربة التفاعلية",
+ leadConsentLabel:"أوافق على استخدام بياناتي للتواصل معي بشأن LexLearn وفق سياسة الخصوصية.",leadPrivacyLink:"اقرأ سياسة الخصوصية",
+ leadSaveSubmit:"أرسل طلب التواصل",leadSaving:"جارٍ تسجيل طلبك...",
+ leadSuccess:"تم استلام طلبك بنجاح، وسنتواصل معك عبر الوسيلة التي حددتها.",
+ leadFailure:"تعذر حفظ طلبك الآن. حاول مرة أخرى، أو تواصل عبر واتساب أو البريد.",
+ leadRateLimit:"طلبات كثيرة في وقت قصير؛ حاول بعد قليل.",
+ leadCaptchaRequired:"يرجى إكمال التحقق الأمني قبل الإرسال.",
+ leadLivePrivacy:"يُحفظ طلبك بعد موافقتك والتحقق الأمني، ويمكنك طلب حذفه عبر البريد الموضح في سياسة الخصوصية."
 };
 const EN={
  skip:"Skip to content",home:"Main site",
@@ -81,7 +88,14 @@ const EN={
  label06:"06 / INVESTORS & PARTNERS",visionTitle:"Qatar first. Proof before scale.",visionLead:"The long-term vision is a diagnostic-first learning platform with explainable recommendations and meaningful faculty oversight.",
  phase1:"Working beta",phase1P:"Core student experience and supervisor tools under development and testing.",phase2:"Qatari academic pilot",phase2P:"Propose 30–60 students over 6–8 weeks; measure the first outcomes.",phase3:"Product validation",phase3P:"Improve essay-answer analysis accuracy, review content and prepare academic supervisor tools for the pilot.",phase4:"Broader expansion",phase4P:"Consider other legal subjects and disciplines once sufficient pilot evidence is available.",
  evidenceNote:"Learning impact has not yet been demonstrated; we will evaluate it through the proposed academic pilot.",honestyTitle:"Where we stand today",status1:"Working beta",status2:"AI analysis of written answers: in progress",status2Title:"AI analysis of written answers",status2State:"In progress · validating reliability",status3:"Learning impact not yet proven",
- label07:"07 / CONTACT",contactTitle:"Let's explore what comes next.",contactText:"Academic pilots, incubation support, technical partnerships and early-stage conversations.",emailCTA:"Contact the founder",waCTA:"Share via WhatsApp ↗",qrCTA:"Print QR code ↓",waNote:"",founderName:"Dr Ahmed Foad Elfeky",founderRole:"Founder & CEO",privacy:"Privacy",footerNote:"A working beta, not an accredited university assessment service.",contactFormTitle:"Leave your contact details",contactFormDesc:"Select your role and share a way to reach you about the pitch or academic pilot.",leadName:"Name",leadOrg:"Organisation (optional)",leadRole:"I am a",leadContact:"WhatsApp number or email",leadRoleStudent:"Student",leadRoleInvestor:"Investor or partner",leadRoleUniversity:"University or institution",leadSubmit:"Continue on WhatsApp",leadEmail:"Send by email",leadPrivacy:"This page does not store your details. WhatsApp or email opens a draft; nothing is sent until you confirm.",pitchNote:"Leave your contact details and we will send you the pitch.",phase1Link:"Try the interactive experience"
+ label07:"07 / CONTACT",contactTitle:"Let's explore what comes next.",contactText:"Academic pilots, incubation support, technical partnerships and early-stage conversations.",emailCTA:"Contact the founder",waCTA:"Share via WhatsApp ↗",qrCTA:"Print QR code ↓",waNote:"",founderName:"Dr Ahmed Foad Elfeky",founderRole:"Founder & CEO",privacy:"Privacy",footerNote:"A working beta, not an accredited university assessment service.",contactFormTitle:"Leave your contact details",contactFormDesc:"Select your role and share a way to reach you about the pitch or academic pilot.",leadName:"Name",leadOrg:"Organisation (optional)",leadRole:"I am a",leadContact:"WhatsApp number or email",leadRoleStudent:"Student",leadRoleInvestor:"Investor or partner",leadRoleUniversity:"University or institution",leadSubmit:"Continue on WhatsApp",leadEmail:"Send by email",leadPrivacy:"This page does not store your details. WhatsApp or email opens a draft; nothing is sent until you confirm.",pitchNote:"Leave your contact details and we will send you the pitch.",phase1Link:"Try the interactive experience",
+ leadConsentLabel:"I agree that LexLearn may use my details to contact me about my inquiry, under its privacy policy.",leadPrivacyLink:"Read the privacy policy",
+ leadSaveSubmit:"Send contact request",leadSaving:"Saving your request...",
+ leadSuccess:"Your request was received successfully. We will contact you using your chosen details.",
+ leadFailure:"We couldn't save your request. Please retry, or use WhatsApp or email.",
+ leadRateLimit:"Too many requests in a short time. Please try again shortly.",
+ leadCaptchaRequired:"Please complete the security check before submitting.",
+ leadLivePrivacy:"With your consent, your inquiry is saved securely after verification. You can request deletion using the email in our privacy policy."
 };
 const languageButtonEN=document.getElementById("langEN"),languageButtonAR=document.getElementById("langAR");
 const student=document.getElementById("studentCard"),demo=document.getElementById("demoLink"),
@@ -143,6 +157,7 @@ if(backToPaths && typeof window.addEventListener==="function"){
  backToPaths.tabIndex=-1;
 }
 let active="en";
+let leadMode="draft";
 function setLang(next){
  active=next==="ar"?"ar":"en";
  const t=active==="ar"?AR:EN;
@@ -163,6 +178,12 @@ function setLang(next){
  if(roadmapDemo)roadmapDemo.href=student.href;
  home.href=homeBrand.href=footHome.href=active==="ar"?"index.html":"index-en.html";
  privacy.href=active==="ar"?"privacy.html":"privacy-en.html";
+ const leadPrivacyLink=document.getElementById("leadPrivacyLink");
+ if(leadPrivacyLink)leadPrivacyLink.href=privacy.href;
+ const leadSaveButton=document.getElementById("leadSubmit");
+ if(leadSaveButton)leadSaveButton.textContent=leadMode==="save"?t.leadSaveSubmit:t.leadSubmit;
+ const leadNote=document.querySelector(".leadForm .leadPrivacy");
+ if(leadNote)leadNote.textContent=leadMode==="save"?t.leadLivePrivacy:t.leadPrivacy;
  deck.removeAttribute("download");
  deck.href=active==="ar"?"#deck":"assets/lexlearn-public-pitch-en.pdf";
  if(active==="en")deck.setAttribute("download","LexLearn-Public-Pitch-EN.pdf");
@@ -186,32 +207,107 @@ function printArabicDeck(){
 languageButtonEN.addEventListener("click",function(){setLang("en");});
 languageButtonAR.addEventListener("click",function(){setLang("ar");});
 deck.addEventListener("click",function(event){if(active==="ar"){event.preventDefault();printArabicDeck();}});
-// Lead details stay in the browser until the visitor explicitly confirms a WhatsApp or email draft.
+// Conference opt-in storage: never claim delivery before the server confirms an insert.
+// When Turnstile is unconfigured, retain the existing direct WhatsApp/email draft actions.
 const leadForm=document.getElementById("leadForm");
 if(leadForm){
+ const endpoint="https://emxiuwcuxyljfynnzpnh.supabase.co/functions/v1/conference-lead";
  const roleSelect=document.getElementById("leadRole"),emailButton=document.getElementById("leadEmail");
+ const submitButton=document.getElementById("leadSubmit"),consentGroup=document.getElementById("leadConsentGroup");
+ const consentCheck=document.getElementById("leadConsent"),captchaMount=document.getElementById("leadTurnstile");
+ const statusEl=document.getElementById("leadStatus"),privacyNote=leadForm.querySelector(".leadPrivacy");
+ let captchaToken="",widgetId=null,isBusy=false;
+ function tr(key){return (active==="ar"?AR:EN)[key]||key;}
+ function status(message,state){
+  statusEl.textContent=message;statusEl.dataset.state=state||"";
+ }
+ function setMode(next){
+  leadMode=next;
+  const enabled=next==="save";
+  consentGroup.hidden=!enabled;consentCheck.required=enabled;captchaMount.hidden=!enabled;
+  submitButton.textContent=tr(enabled?"leadSaveSubmit":"leadSubmit");
+  privacyNote.textContent=tr(enabled?"leadLivePrivacy":"leadPrivacy");
+ }
  document.querySelectorAll("[data-role]").forEach(function(link){
-  link.addEventListener("click",function(){roleSelect.value=link.getAttribute("data-role")||"student";});
+  link.addEventListener("click",function(){roleSelect.value=link.getAttribute("data-role")||"student";status("","");});
  });
  function leadMessage(){
-  const ar=active==="ar",role=roleSelect.value,roleLabel=(ar?AR:EN)["leadRole"+role.charAt(0).toUpperCase()+role.slice(1)]||role;
+  const ar=active==="ar",role=roleSelect.value,roleLabel=tr("leadRole"+role.charAt(0).toUpperCase()+role.slice(1));
   const name=document.getElementById("leadName").value.trim();
   const org=document.getElementById("leadOrg").value.trim();
   const contact=document.getElementById("leadContact").value.trim();
   const context=role==="investor"?(ar?"طلب العرض التفصيلي":"Request detailed pitch"):role==="university"?(ar?"مناقشة التجربة الجامعية":"Discuss university pilot"):(ar?"التعرف على LexLearn":"Learn about LexLearn");
-  return ["LexLearn — Web Summit Qatar 2027",context,(ar?"الاسم: ":"Name: ")+name,(ar?"الجهة: ":"Organisation: ")+(org||"—"),(ar?"الصفة: ":"Role: ")+roleLabel,(ar?"وسيلة التواصل: ":"Contact: ")+contact].join("\n");
+  return ["LexLearn — Web Summit Qatar 2027",context,(ar?"الاسم: ":"Name: ")+name,
+   (ar?"الجهة: ":"Organisation: ")+(org||"—"),(ar?"الصفة: ":"Role: ")+roleLabel,
+   (ar?"وسيلة التواصل: ":"Contact: ")+contact].join("\n");
  }
- function valid(){return leadForm.reportValidity();}
- leadForm.addEventListener("submit",function(ev){
-  ev.preventDefault();
-  if(!valid())return;
+ function draftValid(){
+  const previous=consentCheck.required;consentCheck.required=false;
+  const valid=leadForm.reportValidity();consentCheck.required=previous;
+  return valid;
+ }
+ function resetCaptcha(){
+  captchaToken="";
+  if(widgetId!==null&&window.turnstile&&typeof window.turnstile.reset==="function")window.turnstile.reset(widgetId);
+ }
+ async function sendStoredLead(){
+  if(!leadForm.reportValidity())return;
+  if(!captchaToken){status(tr("leadCaptchaRequired"),"error");return;}
+  isBusy=true;submitButton.disabled=true;emailButton.disabled=true;
+  submitButton.textContent=tr("leadSaving");status("","");
+  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),20000);
+  try{
+   const response=await fetch(endpoint,{method:"POST",headers:{"Content-Type":"application/json"},
+    signal:controller.signal,body:JSON.stringify({
+     name:document.getElementById("leadName").value.trim(),
+     organization:document.getElementById("leadOrg").value.trim(),
+     role:roleSelect.value,contact:document.getElementById("leadContact").value.trim(),
+     consent:consentCheck.checked,privacyNoticeVersion:"2026-10-17",
+     turnstileToken:captchaToken,website:document.getElementById("leadWebsite").value
+    })});
+   let responseData={};try{responseData=await response.json();}catch(_){}
+   if(response.ok&&responseData.ok===true){
+    const lastRole=roleSelect.value;leadForm.reset();roleSelect.value=lastRole;
+    status(tr("leadSuccess"),"success");
+   }else status(tr(response.status===429?"leadRateLimit":"leadFailure"),"error");
+  }catch(_){status(tr("leadFailure"),"error");}
+  finally{clearTimeout(timer);resetCaptcha();isBusy=false;submitButton.disabled=false;emailButton.disabled=false;submitButton.textContent=tr("leadSaveSubmit");}
+ }
+ leadForm.addEventListener("submit",function(event){
+  event.preventDefault();if(isBusy)return;
+  if(leadMode==="save"){void sendStoredLead();return;}
+  if(!draftValid())return;
   window.location.href="https://wa.me/201014408788?text="+encodeURIComponent(leadMessage());
  });
  emailButton.addEventListener("click",function(){
-  if(!valid())return;
+  if(isBusy||!draftValid())return;
   const subject=active==="ar"?"LexLearn — طلب تواصل من صفحة المؤتمر":"LexLearn — Conference contact request";
   window.location.href="mailto:ahmadfoad361@gmail.com?subject="+encodeURIComponent(subject)+"&body="+encodeURIComponent(leadMessage());
  });
+ async function setupSecureIntake(){
+  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),8000);
+  try{
+   const res=await fetch(endpoint,{method:"GET",signal:controller.signal,cache:"no-store"});
+   if(!res.ok)return;
+   const config=await res.json();
+   if(!config.enabled||!/^[-_a-zA-Z0-9]{5,100}$/.test(config.siteKey||""))return;
+   const script=document.createElement("script");script.src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";script.async=true;
+   await new Promise(function(resolve,reject){
+    script.onload=resolve;script.onerror=reject;document.head.appendChild(script);
+   });
+   if(!window.turnstile||typeof window.turnstile.render!=="function")return;
+   captchaMount.hidden=false;
+   widgetId=window.turnstile.render(captchaMount,{sitekey:config.siteKey,theme:"auto",
+    callback:function(token){captchaToken=token;status("","");},
+    "expired-callback":function(){captchaToken="";},
+    "error-callback":function(){captchaToken="";status(tr("leadCaptchaRequired"),"error");}
+   });
+   setMode("save");
+  }catch(_){setMode("draft");}
+  finally{clearTimeout(timer);}
+ }
+ setMode("draft");
+ void setupSecureIntake();
 }
 let saved="en";try{saved=localStorage.getItem("lexlearn_conference_language")==="ar"?"ar":"en";}catch(_){}
 // Respect an explicit language on fresh conference URLs.
