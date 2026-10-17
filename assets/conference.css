@@ -455,21 +455,18 @@ html[dir=rtl] .roadmap{padding-inline-start:68px;padding-inline-end:0}
 }
 
 
-/* University collaboration: LexLearn leads research supervision, institution facilitates the pilot. */
+/* University pilot cards: equal visual treatment and consistent widths at every breakpoint. */
 .pilotExchange{grid-template-columns:repeat(3,minmax(0,1fr));align-items:stretch}
 .pilotExchange>div{height:100%;min-width:0}
-.pilotExchange>div:first-child{border-top:3px solid var(--burgundy);background:#fff9f7}
-.pilotExchange>div:first-child h3{color:var(--navy)}
 .pilotExchange>div p{overflow-wrap:break-word;line-height:1.72}
-@media(max-width:940px) and (min-width:761px){.pilotExchange{grid-template-columns:repeat(2,minmax(0,1fr))}.pilotExchange>div:first-child{grid-column:1/-1}}
-@media(max-width:760px){.pilotExchange{grid-template-columns:minmax(0,1fr)}.pilotExchange>div:first-child{grid-column:auto}}
+@media(max-width:940px){.pilotExchange{grid-template-columns:minmax(0,1fr)}}
 
 
 /* Conference university pilot — consistent cards; highlighted no-obligation offer */
 .pilotOffer{display:inline-block!important;width:fit-content;max-width:100%;background:#f6e9ed;border-inline-start:3px solid var(--burgundy);border-radius:9px;color:var(--burgundy)!important;font-weight:850;font-size:clamp(13px,1.6vw,16px)!important;line-height:1.65!important;margin:5px 0 10px!important;padding:8px 13px!important}
-.pilotExchange>div,.pilotExchange>div:first-child{background:#fffdfb!important;border:1px solid var(--line)!important;border-radius:13px!important;border-top:1px solid var(--line)!important;padding:15px 18px!important;box-shadow:none!important}
-.pilotExchange>div h3,.pilotExchange>div:first-child h3{color:var(--burgundy)!important;font-weight:800}
+.pilotExchange>div{background:#fffdfb!important;border:1px solid var(--line)!important;border-radius:13px!important;border-top:1px solid var(--line)!important;padding:15px 18px!important;box-shadow:none!important}
+.pilotExchange>div h3{color:var(--burgundy)!important;font-weight:800}
 .pilotActions{grid-column:1/-1;display:grid;grid-template-columns:minmax(0,3fr) minmax(140px,1fr);gap:11px;align-items:stretch}
 .pilotActions .pilotAction,.pilotActions .pilotWhatsApp{display:flex!important;align-items:center;justify-content:center;width:100%;max-width:none;min-height:50px;padding:12px 17px;line-height:1.5;border-radius:12px;white-space:normal;text-align:center}
 .pilotActions .pilotWhatsApp{border:1px solid #c5b4bb;background:transparent;color:var(--burgundy)}
-@media(max-width:760px){.pilotOffer{margin:6px 0 8px!important;padding:7px 11px!important}.pilotActions{grid-template-columns:minmax(0,1fr);gap:9px}.pilotExchange>div,.pilotExchange>div:first-child{padding:13px 15px!important}}
+@media(max-width:760px){.pilotOffer{margin:6px 0 8px!important;padding:7px 11px!important}.pilotActions{grid-template-columns:minmax(0,1fr);gap:9px}.pilotExchange>div{padding:13px 15px!important}}
