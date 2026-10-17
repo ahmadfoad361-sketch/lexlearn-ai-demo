@@ -13,6 +13,18 @@ payload.request_id='00000000-0000-4000-8000-000000000002';failed=true;response=a
 payload.request_id='00000000-0000-4000-8000-000000000003';quota=true;assert.equal((await send()).status,429);quota=false;
 sourceFail=true;r=await(await send()).json();assert(r.received);assert.equal(r.recall_score,null);assert.equal(r.details.reason,'legal_sources_not_ready');
 const crashing=createHandler({createClient:()=>db,env:()=> 'test',assess:()=>{throw new Error('engine crash')}});sourceFail=false;payload.request_id='00000000-0000-4000-8000-000000000004';r=await(await crashing(new Request('https://example.com',{method:'POST',headers:{authorization:'Bearer test'},body:JSON.stringify(payload)}))).json();assert(r.received);assert.equal(r.recall_score,null);assert.equal(r.details.reason,'local_engine_error');
+const aiHandler=createHandler({createClient:()=>db,env:(name)=>name.startsWith('OPENAI_')?undefined:'test',assess:R.assess,
+ semanticGrade:async()=>({status:'scored',grade:{
+  grade_status:'ai_assessed',recall_score:100,
+  feedback:'Model mock found all approved legal elements in the answer.',
+  details:{engine:'grounded-semantic-v1',provider:'openai',provisional:true,points:7,max_points:7,
+   source_ids:['qa-civil-2004-art39','qa-civil-2004-art40'],criteria:[]}
+ }})});
+payload.request_id='00000000-0000-4000-8000-000000000005';
+const aiReceipt=await(await aiHandler(new Request('https://example.com',{method:'POST',headers:{authorization:'Bearer test'},body:JSON.stringify(payload)}))).json();
+assert.equal(aiReceipt.grade_status,'ai_assessed','Automated AI-grade provenance must persist for supervisor access');
+assert.equal(aiReceipt.recall_score,100,'Semantic model score must be visible in student receipt');
+assert.equal(aiReceipt.details.provider,'openai');
 assert.equal((await handler(new Request('https://example.com',{method:'POST'}))).status,401);
 global.fetch=oldFetch;console.log('Delivery: provider exhaustion isolation, retry, quota, source failure, engine failure, auth PASS');
 })().catch(e=>{console.error(e);process.exit(1)});
