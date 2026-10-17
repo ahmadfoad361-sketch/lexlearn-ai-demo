@@ -158,6 +158,8 @@ function setLang(next){
  const prefix=active==="ar"?"":"-en";
  student.href="showcase"+prefix+".html?country=qa&subject=rights";
  demo.href=student.href;
+ const roadmapDemo=document.querySelector(".roadmapDemoLink");
+ if(roadmapDemo)roadmapDemo.href=student.href;
  home.href=homeBrand.href=footHome.href=active==="ar"?"index.html":"index-en.html";
  privacy.href=active==="ar"?"privacy.html":"privacy-en.html";
  deck.removeAttribute("download");
@@ -170,6 +172,8 @@ function setLang(next){
  if(business)business.href="https://wa.me/201014408788?text="+encodeURIComponent(greeting);
  if(pilotWA)pilotWA.href="https://wa.me/201014408788?text="+encodeURIComponent(pilotMessage);
  if(waShare){waShare.title=t.shareTitle;waShare.setAttribute("aria-label",t.shareTitle);}
+ const investorQuote=document.getElementById("investorQuote");
+ if(investorQuote&&window.LEXLEARN_INVESTOR_QUOTES&&investorQuote.children.length)window.LEXLEARN_INVESTOR_QUOTES.render(investorQuote,active);
 
  try{localStorage.setItem("lexlearn_conference_language",active);}catch(_){}
 }
@@ -181,6 +185,33 @@ function printArabicDeck(){
 languageButtonEN.addEventListener("click",function(){setLang("en");});
 languageButtonAR.addEventListener("click",function(){setLang("ar");});
 deck.addEventListener("click",function(event){if(active==="ar"){event.preventDefault();printArabicDeck();}});
+// Lead details stay in the browser until the visitor explicitly confirms a WhatsApp or email draft.
+const leadForm=document.getElementById("leadForm");
+if(leadForm){
+ const roleSelect=document.getElementById("leadRole"),emailButton=document.getElementById("leadEmail");
+ document.querySelectorAll("[data-role]").forEach(function(link){
+  link.addEventListener("click",function(){roleSelect.value=link.getAttribute("data-role")||"student";});
+ });
+ function leadMessage(){
+  const ar=active==="ar",role=roleSelect.value,roleLabel=(ar?AR:EN)["leadRole"+role.charAt(0).toUpperCase()+role.slice(1)]||role;
+  const name=document.getElementById("leadName").value.trim();
+  const org=document.getElementById("leadOrg").value.trim();
+  const contact=document.getElementById("leadContact").value.trim();
+  const context=role==="investor"?(ar?"طلب العرض التفصيلي":"Request detailed pitch"):role==="university"?(ar?"مناقشة التجربة الجامعية":"Discuss university pilot"):(ar?"التعرف على LexLearn":"Learn about LexLearn");
+  return ["LexLearn — Web Summit Qatar 2027",context,(ar?"الاسم: ":"Name: ")+name,(ar?"الجهة: ":"Organisation: ")+(org||"—"),(ar?"الصفة: ":"Role: ")+roleLabel,(ar?"وسيلة التواصل: ":"Contact: ")+contact].join("\n");
+ }
+ function valid(){return leadForm.reportValidity();}
+ leadForm.addEventListener("submit",function(ev){
+  ev.preventDefault();
+  if(!valid())return;
+  window.location.href="https://wa.me/201014408788?text="+encodeURIComponent(leadMessage());
+ });
+ emailButton.addEventListener("click",function(){
+  if(!valid())return;
+  const subject=active==="ar"?"LexLearn — طلب تواصل من صفحة المؤتمر":"LexLearn — Conference contact request";
+  window.location.href="mailto:ahmadfoad361@gmail.com?subject="+encodeURIComponent(subject)+"&body="+encodeURIComponent(leadMessage());
+ });
+}
 let saved="en";try{saved=localStorage.getItem("lexlearn_conference_language")==="ar"?"ar":"en";}catch(_){}
 // Respect an explicit language on fresh conference URLs.
 var query=window.location&&typeof window.location.search==="string"?window.location.search:"";
