@@ -158,7 +158,7 @@ function setLang(next){
  const prefix=active==="ar"?"":"-en";
  student.href="showcase"+prefix+".html?country=qa&subject=rights";
  demo.href=student.href;
- const roadmapDemo=document.querySelector(".roadmapDemoLink");
+ const roadmapDemo=typeof document.querySelector==="function"?document.querySelector(".roadmapDemoLink"):null;
  if(roadmapDemo)roadmapDemo.href=student.href;
  home.href=homeBrand.href=footHome.href=active==="ar"?"index.html":"index-en.html";
  privacy.href=active==="ar"?"privacy.html":"privacy-en.html";
@@ -173,7 +173,7 @@ function setLang(next){
  if(pilotWA)pilotWA.href="https://wa.me/201014408788?text="+encodeURIComponent(pilotMessage);
  if(waShare){waShare.title=t.shareTitle;waShare.setAttribute("aria-label",t.shareTitle);}
  const investorQuote=document.getElementById("investorQuote");
- if(investorQuote&&window.LEXLEARN_INVESTOR_QUOTES&&investorQuote.children.length)window.LEXLEARN_INVESTOR_QUOTES.render(investorQuote,active);
+ if(investorQuote&&window.LEXLEARN_INVESTOR_QUOTES&&investorQuote.children&&investorQuote.children.length)window.LEXLEARN_INVESTOR_QUOTES.render(investorQuote,active);
 
  try{localStorage.setItem("lexlearn_conference_language",active);}catch(_){}
 }
