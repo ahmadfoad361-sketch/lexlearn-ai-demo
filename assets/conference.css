@@ -526,3 +526,17 @@ html[dir=rtl] .roadmap{padding-inline-start:68px;padding-inline-end:0}
  .pilotStats>div span{font-size:13px}
  .pilotStats>div small{font-size:11px}
 }
+
+
+/* Consent-based conference inquiry submission, progressively activated after security configuration. */
+.leadConsentGroup{margin:16px 0 12px;display:flex;flex-direction:column;align-items:flex-start;gap:5px}
+.leadConsentGroup[hidden],.leadCaptcha[hidden]{display:none!important}
+.leadConsent{display:flex;flex-direction:row;align-items:flex-start;gap:10px;cursor:pointer;font-size:14px;line-height:1.7;color:var(--ink)}
+.leadConsent input{width:19px;height:19px;margin-top:3px;flex:none;accent-color:var(--burgundy)}
+.leadConsentGroup>a{font-size:13px;color:var(--burgundy);text-underline-offset:3px}
+.leadCaptcha{margin:15px 0 11px;min-height:60px}
+.leadActions .button:disabled{cursor:wait;opacity:.64}
+.leadStatus{font-size:14px;line-height:1.7;margin:12px 0 0}
+.leadStatus:empty{display:none}
+.leadStatus[data-state="success"]{color:#237049;font-weight:750}
+.leadStatus[data-state="error"]{color:#92213c;font-weight:700}
