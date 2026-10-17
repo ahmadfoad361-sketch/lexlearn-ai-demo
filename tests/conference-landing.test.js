@@ -391,7 +391,7 @@ assert.ok(html.includes('id="leadSubmit" class="button buttonPrimary" data-t="le
 assert.ok(js.includes('setMode("unavailable")')&&js.includes('submitButton.disabled=!ready'),"unavailable security must disable the submit action, not misrepresent a WhatsApp draft as saved");
 assert.ok(!js.includes('window.location.href="https://wa.me'),"form does not silently redirect to WhatsApp");
 
-assert.ok(js.includes('leadMode==="save"')&&js.includes("response.ok&&result.ok===true"),"success only after confirmed server reply");
+assert.ok(js.includes('leadMode!=="save"')&&js.includes("response.ok&&result.ok===true"),"secure form saves only when ready and only confirms on server success");
 assert.ok(js.includes("functions/v1/conference-lead")&&js.includes("sendStoredLead")&&js.includes("turnstileToken"),"conference lead form uses secure server intake after Turnstile verification");
 assert.ok(html.includes('class="button buttonSecondary" id="waBusiness"')&&html.includes("https://wa.me/201014408788"),"verified WhatsApp remains an alternative to the secure contact form");
 assert.ok(html.includes('class="button buttonSecondary" id="emailContact"')&&html.includes('class="shareIcon" id="waShare"'),"email and share icon still available");
