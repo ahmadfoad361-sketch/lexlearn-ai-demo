@@ -100,6 +100,16 @@ assert.equal(arPromoShort.textContent,"\u2066LexLearn\u2069 · \u2066Web Summit 
 
 node("langEN").handlers.click();
 assert.equal(translatable.find(x=>x.key==="pilotLexLearnRole").textContent,"LexLearn follows the pilot and evaluates its results.");
+
+/* Open direct Arabic URL with an English saved preference: URL controls initial language. */
+vm.runInNewContext(js,{
+ document:doc,window:{location:{search:"?lang=ar&review=fresh"}},
+ localStorage:{getItem:()=> "en",setItem:()=>{}},encodeURIComponent,console
+});
+assert.equal(language.lang,"ar","?lang=ar must open the fresh pilot in Arabic regardless of old saved preference");
+assert.equal(translatable.find(x=>x.key==="pilotLexLearnRole").textContent,"تتولى LexLearn متابعة التجربة وتقييم نتائجها.");
+node("langEN").handlers.click();
+
 assert.equal(language.lang,"en");assert.equal(language.dir,"ltr");
 assert.ok(node("studentCard").href.startsWith("showcase-en.html"));
 assert.ok(node("downloadDeck").href.endsWith("lexlearn-public-pitch-en.pdf"));
@@ -332,7 +342,7 @@ assert.ok(js.includes('promo:"\\u2066LexLearn\\u2069 في مؤتمر \\u2066Web 
 assert.ok(!js.includes("ويب ساميت قطر ٢٠٢٧")&&!js.includes("ليكس ليرن · ويب ساميت"),"do not localize the event or project brand names in event strip");
 assert.ok(js.includes('promoShort:"LexLearn · Web Summit Qatar 2027 · ALPHA"'),"English banner retains official event identity");
 assert.ok(html.includes('title="Web Summit Qatar 2027 · ALPHA"')&&pub.includes('"go/index.html"')&&pub.includes('"lexlearn-go-qr.svg"'),"translated strip and permanent printed QR retained without visitor download");
-assert.ok(html.includes("assets/conference.css?v=20261017.1")&&html.includes("assets/conference.js?v=20261017.3"),"invalidate mobile first-fold UI cache");
+assert.ok(html.includes("assets/conference.css?v=20261017.1")&&html.includes("assets/conference.js?v=20261017.4"),"invalidate mobile first-fold UI cache");
 
 
 /* Follow-up UX contract: conference, pilot, investor and student demo. */
@@ -359,7 +369,7 @@ for(const code of [sc,scEn]){
 assert.ok(nav.includes('showcase(?:-en)?'),"public demo must skip generic floating Back injection");
 assert.ok(scCss.includes(".demoIntro .demoStart{display:block;width:min(100%,485px)")&&scCss.includes(".demoIntro .stageCard:before{display:none}"),"wide CTA and no abrupt colored stripe");
 assert.ok(!read("showcase.html").includes("fonts.googleapis.com")&&!read("showcase-en.html").includes("fonts.googleapis.com"),"remove blocking remote Google fonts");
-assert.ok(html.includes("assets/conference.css?v=20261017.1")&&html.includes("assets/conference.js?v=20261017.3"),"bump CSS/JS cache");
+assert.ok(html.includes("assets/conference.css?v=20261017.1")&&html.includes("assets/conference.js?v=20261017.4"),"bump CSS/JS cache");
 
 
 /* Conversion UX and privacy-safe lead capture for Web Summit Qatar 2027. */
@@ -438,6 +448,6 @@ assert.ok(!leadsUpdates.includes("مشرف أكاديمي، ومجموعة طل�
 assert.ok(js.includes('slide5P:"تجربة مقترحة بإشراف LexLearn'),"Arabic summary slide must agree with leadership model");
 assert.ok(css.includes('.pilotExchange{grid-template-columns:repeat(3,minmax(0,1fr))'),"three pilot responsibility cards on desktop");
 assert.ok(css.includes('@media(max-width:760px){.pilotExchange{grid-template-columns:minmax(0,1fr)}'),"pilot role cards stack cleanly on phones");
-assert.ok(html.includes("assets/conference.js?v=20261017.3")&&html.includes("assets/conference-leads.js?v=20261017.3")&&html.includes("assets/conference.css?v=20261017.1"),"publish all three synchronized copies and styles without stale cache");
+assert.ok(html.includes("assets/conference.js?v=20261017.4")&&html.includes("assets/conference-leads.js?v=20261017.3")&&html.includes("assets/conference.css?v=20261017.1"),"publish all three synchronized copies and styles without stale cache");
 
 console.log("conference landing release test PASS");
