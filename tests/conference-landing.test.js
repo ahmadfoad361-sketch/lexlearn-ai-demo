@@ -72,7 +72,7 @@ function node(id){if(!nodes.has(id))nodes.set(id,{id,href:"",attrs:{},handlers:{
  setAttribute(key,val){this.attrs[key]=val;},
  removeAttribute(key){delete this.attrs[key];}
 });return nodes.get(id);}
-const translatable=["heroTitle","skill1","skill2","skill3","skill4","skill5","founderName","download","promo","promoShort"]
+const translatable=["heroTitle","skill1","skill2","skill3","skill4","skill5","founderName","download","promo","promoShort","pilotLexLearnTitle","pilotLexLearnRole"]
  .map(k=>({key:k,textContent:"",getAttribute(){return this.key;}}));
 const language={lang:"en",dir:"ltr"},doc={
  documentElement:language,title:"",
@@ -87,6 +87,7 @@ assert.equal(language.lang,"en");
 assert.equal(translatable.find(x=>x.key==="skill5").textContent,"Exam answer structure");
 node("langAR").handlers.click();
 assert.equal(language.lang,"ar");assert.equal(language.dir,"rtl");
+assert.equal(translatable.find(x=>x.key==="pilotLexLearnRole").textContent,"تتولى LexLearn متابعة التجربة وتقييم نتائجها.");
 assert.equal(translatable.find(x=>x.key==="skill5").textContent,"بناء الإجابة الامتحانية");
 assert.equal(translatable.find(x=>x.key==="founderName").textContent,"د. أحمد فؤاد الفقي");
 assert.ok(node("studentCard").href.startsWith("showcase.html"));
@@ -98,6 +99,7 @@ assert.equal(arPromo.textContent,"\u2066LexLearn\u2069 في مؤتمر \u2066Web
 assert.equal(arPromoShort.textContent,"\u2066LexLearn\u2069 · \u2066Web Summit Qatar 2027\u2069 · برنامج \u2066ALPHA\u2069");
 
 node("langEN").handlers.click();
+assert.equal(translatable.find(x=>x.key==="pilotLexLearnRole").textContent,"LexLearn follows the pilot and evaluates its results.");
 assert.equal(language.lang,"en");assert.equal(language.dir,"ltr");
 assert.ok(node("studentCard").href.startsWith("showcase-en.html"));
 assert.ok(node("downloadDeck").href.endsWith("lexlearn-public-pitch-en.pdf"));
@@ -330,7 +332,7 @@ assert.ok(js.includes('promo:"\\u2066LexLearn\\u2069 في مؤتمر \\u2066Web 
 assert.ok(!js.includes("ويب ساميت قطر ٢٠٢٧")&&!js.includes("ليكس ليرن · ويب ساميت"),"do not localize the event or project brand names in event strip");
 assert.ok(js.includes('promoShort:"LexLearn · Web Summit Qatar 2027 · ALPHA"'),"English banner retains official event identity");
 assert.ok(html.includes('title="Web Summit Qatar 2027 · ALPHA"')&&pub.includes('"go/index.html"')&&pub.includes('"lexlearn-go-qr.svg"'),"translated strip and permanent printed QR retained without visitor download");
-assert.ok(html.includes("assets/conference.css?v=20261017.1")&&html.includes("assets/conference.js?v=20261017.2"),"invalidate mobile first-fold UI cache");
+assert.ok(html.includes("assets/conference.css?v=20261017.1")&&html.includes("assets/conference.js?v=20261017.3"),"invalidate mobile first-fold UI cache");
 
 
 /* Follow-up UX contract: conference, pilot, investor and student demo. */
@@ -357,14 +359,14 @@ for(const code of [sc,scEn]){
 assert.ok(nav.includes('showcase(?:-en)?'),"public demo must skip generic floating Back injection");
 assert.ok(scCss.includes(".demoIntro .demoStart{display:block;width:min(100%,485px)")&&scCss.includes(".demoIntro .stageCard:before{display:none}"),"wide CTA and no abrupt colored stripe");
 assert.ok(!read("showcase.html").includes("fonts.googleapis.com")&&!read("showcase-en.html").includes("fonts.googleapis.com"),"remove blocking remote Google fonts");
-assert.ok(html.includes("assets/conference.css?v=20261017.1")&&html.includes("assets/conference.js?v=20261017.2"),"bump CSS/JS cache");
+assert.ok(html.includes("assets/conference.css?v=20261017.1")&&html.includes("assets/conference.js?v=20261017.3"),"bump CSS/JS cache");
 
 
 /* Conversion UX and privacy-safe lead capture for Web Summit Qatar 2027. */
 const leadsJS=read("assets/conference-leads.js");
 assert.doesNotThrow(()=>new vm.Script(leadsJS,{filename:"assets/conference-leads.js"}),"lead form JavaScript must parse");
 assert.ok(pub.includes('"conference-leads.js"')&&pub.includes('"assets/conference-leads.js"'),"contact capture JS must ship with the public release");
-assert.ok(html.includes("assets/conference-leads.js?v=20261017.2"),"conference must load the active consent-based lead capture client");
+assert.ok(html.includes("assets/conference-leads.js?v=20261017.3"),"conference must load the active consent-based lead capture client");
 assert.ok(html.includes('id="leadForm"')&&html.includes('id="facultyField"')&&html.includes('id="leadStatus"'),"real contact form, university field and live status required");
 assert.ok(html.includes('name="audience"')&&html.includes('name="contact"')&&html.includes('name="organization"'),"visitor data inputs must be present");
 assert.ok(leadsJS.includes('fetch(endpoint')&&leadsJS.includes('conference-lead')&&leadsJS.includes('authorization'),"lead capture must POST securely to LexLearn's Supabase Edge Function");
@@ -427,14 +429,15 @@ assert.ok(js.includes('pilotBody:"تُنفَّذ التجربة بالتعاون
 assert.ok(html.includes("The pilot will run in collaboration with the university"),"default English pilot should explain LexLearn responsibility concisely");
 
 assert.ok(!js.includes("الدكتوراه في القانون المدني")&&!js.includes("PhD in Civil Law"),"Arabic and English pitch copy should focus on the project instead of the founder degree");
-assert.ok(leadsUpdates.includes('pilotLexLearnTitle:"دور LexLearn",pilotLexLearnRole:"تتولى LexLearn متابعة التجربة وتقييم نتائجها."'),"short Arabic statement identifies LexLearn as the evaluator");
-assert.ok(leadsUpdates.includes('pilotLexLearnTitle:"LexLearn\'s role",pilotLexLearnRole:"LexLearn follows the pilot and evaluates its results."'),"English message must say LexLearn follows and assesses the pilot");
+assert.ok(js.includes('pilotLexLearnTitle:"دور LexLearn",pilotLexLearnRole:"تتولى LexLearn متابعة التجربة وتقييم نتائجها."'),"main Arabic script owns one short correct role statement");
+assert.ok(!leadsUpdates.includes("pilotLexLearnRole:"),"contact form should never override project role copy");
+assert.ok(js.includes('pilotLexLearnTitle:"LexLearn\'s role",pilotLexLearnRole:"LexLearn follows the pilot and evaluates its results."'),"main English script owns one short correct role statement");
 assert.ok(leadsUpdates.includes("متطوعين، ومسؤول اتصال لتنسيق الموافقات والمواعيد"),"university contributes students and scheduling, not mandatory supervision or premises");
 assert.ok(leadsUpdates.includes("volunteer student group, a university contact"),"English institution coordination request must be equivalent");
 assert.ok(!leadsUpdates.includes("مشرف أكاديمي، ومجموعة طلاب")&&!leadsUpdates.includes("An academic supervisor, a student group"),"outdated university-led pilot requirement cannot recur");
 assert.ok(js.includes('slide5P:"تجربة مقترحة بإشراف LexLearn'),"Arabic summary slide must agree with leadership model");
 assert.ok(css.includes('.pilotExchange{grid-template-columns:repeat(3,minmax(0,1fr))'),"three pilot responsibility cards on desktop");
 assert.ok(css.includes('@media(max-width:760px){.pilotExchange{grid-template-columns:minmax(0,1fr)}'),"pilot role cards stack cleanly on phones");
-assert.ok(html.includes("assets/conference.js?v=20261017.2")&&html.includes("assets/conference-leads.js?v=20261017.2")&&html.includes("assets/conference.css?v=20261017.1"),"publish all three synchronized copies and styles without stale cache");
+assert.ok(html.includes("assets/conference.js?v=20261017.3")&&html.includes("assets/conference-leads.js?v=20261017.3")&&html.includes("assets/conference.css?v=20261017.1"),"publish all three synchronized copies and styles without stale cache");
 
 console.log("conference landing release test PASS");
