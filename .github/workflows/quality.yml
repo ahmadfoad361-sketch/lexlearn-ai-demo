@@ -45,6 +45,7 @@ jobs:
           node tests/learning-quality.test.js
           node tests/diagnostic-evidence.test.js
           node tests/public-showcase.test.js
+          node tests/showcase-semantic.test.mjs
           node tests/showcase-learning-cycle.test.js
           node tests/semantic-service.test.js
           node tests/review-bank.test.js
