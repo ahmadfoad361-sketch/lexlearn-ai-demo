@@ -182,7 +182,7 @@ function setLang(next){
  if(leadPrivacyLink)leadPrivacyLink.href=privacy.href;
  const leadSaveButton=document.getElementById("leadSubmit");
  if(leadSaveButton)leadSaveButton.textContent=leadMode==="save"?t.leadSaveSubmit:t.leadSubmit;
- const leadNote=document.querySelector(".leadForm .leadPrivacy");
+ const leadNote=typeof document.querySelector==="function"?document.querySelector(".leadForm .leadPrivacy"):null;
  if(leadNote)leadNote.textContent=leadMode==="save"?t.leadLivePrivacy:t.leadPrivacy;
  deck.removeAttribute("download");
  deck.href=active==="ar"?"#deck":"assets/lexlearn-public-pitch-en.pdf";
