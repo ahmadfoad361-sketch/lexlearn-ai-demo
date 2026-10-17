@@ -330,7 +330,7 @@ assert.ok(js.includes('promo:"\\u2066LexLearn\\u2069 في مؤتمر \\u2066Web 
 assert.ok(!js.includes("ويب ساميت قطر ٢٠٢٧")&&!js.includes("ليكس ليرن · ويب ساميت"),"do not localize the event or project brand names in event strip");
 assert.ok(js.includes('promoShort:"LexLearn · Web Summit Qatar 2027 · ALPHA"'),"English banner retains official event identity");
 assert.ok(html.includes('title="Web Summit Qatar 2027 · ALPHA"')&&pub.includes('"go/index.html"')&&pub.includes('"lexlearn-go-qr.svg"'),"translated strip and permanent printed QR retained without visitor download");
-assert.ok(html.includes("assets/conference.css?v=20261015.9")&&html.includes("assets/conference.js?v=20261015.9"),"invalidate mobile first-fold UI cache");
+assert.ok(html.includes("assets/conference.css?v=20261017.1")&&html.includes("assets/conference.js?v=20261017.1"),"invalidate mobile first-fold UI cache");
 
 
 /* Follow-up UX contract: conference, pilot, investor and student demo. */
@@ -357,7 +357,7 @@ for(const code of [sc,scEn]){
 assert.ok(nav.includes('showcase(?:-en)?'),"public demo must skip generic floating Back injection");
 assert.ok(scCss.includes(".demoIntro .demoStart{display:block;width:min(100%,485px)")&&scCss.includes(".demoIntro .stageCard:before{display:none}"),"wide CTA and no abrupt colored stripe");
 assert.ok(!read("showcase.html").includes("fonts.googleapis.com")&&!read("showcase-en.html").includes("fonts.googleapis.com"),"remove blocking remote Google fonts");
-assert.ok(html.includes("assets/conference.css?v=20261015.9")&&html.includes("assets/conference.js?v=20261015.9"),"bump CSS/JS cache");
+assert.ok(html.includes("assets/conference.css?v=20261017.1")&&html.includes("assets/conference.js?v=20261017.1"),"bump CSS/JS cache");
 
 
 /* Conversion UX and privacy-safe lead capture for Web Summit Qatar 2027. */
