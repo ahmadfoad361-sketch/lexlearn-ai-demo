@@ -19,10 +19,10 @@
 <meta name="twitter:image" content="https://ahmadfoad361-sketch.github.io/lexlearn-ai-demo/assets/lexlearn-og.jpg">
 <link rel="icon" type="image/svg+xml" href="assets/lexlearn-x-transparent.svg">
 <link rel="canonical" href="https://ahmadfoad361-sketch.github.io/lexlearn-ai-demo/conference.html">
-<link rel="stylesheet" href="assets/conference.css?v=20261017.8">
+<link rel="stylesheet" href="assets/conference.css?v=20261017.10">
 <link rel="stylesheet" href="assets/lexlearn-navigation.css?v=20261014.11">
 <script src="assets/conference-pdf.js?v=20261014.2" defer></script>
-<script src="assets/conference.js?v=20261017.9" defer></script>
+<script src="assets/conference.js?v=20261017.10" defer></script>
 <script src="assets/lexlearn-learning-lines.js?v=20261014.6" defer></script>
 <script src="assets/lexlearn-investor-quotes.js?v=20261017.7" defer></script>
 <script src="assets/lexlearn-navigation.js?v=20261015.2" defer></script>
@@ -151,8 +151,12 @@
 <label><span data-t="leadRole">I am a</span><select id="leadRole" name="role" required><option value="student" data-t="leadRoleStudent">Student</option><option value="investor" data-t="leadRoleInvestor">Investor or partner</option><option value="university" data-t="leadRoleUniversity">University or institution</option></select></label>
 <label><span data-t="leadContact">WhatsApp number or email</span><input id="leadContact" name="contact" autocomplete="off" maxlength="120" required></label>
 </div>
-<div class="leadActions"><button type="submit" class="button buttonPrimary" data-t="leadSubmit">Continue on WhatsApp</button><button type="button" class="button buttonSecondary" id="leadEmail" data-t="leadEmail">Send by email</button></div>
+<label class="honeypot" aria-hidden="true">Website<input id="leadWebsite" name="website" tabindex="-1" autocomplete="off"></label>
+<div class="leadConsentGroup" id="leadConsentGroup" hidden><label class="leadConsent"><input type="checkbox" id="leadConsent"><span data-t="leadConsentLabel">I agree to the use of my details to contact me about LexLearn, under the privacy policy.</span></label><a href="privacy-en.html" id="leadPrivacyLink" data-t="leadPrivacyLink">Read the privacy policy</a></div>
+<div id="leadTurnstile" class="leadCaptcha" hidden aria-label="Bot protection"></div>
+<div class="leadActions"><button type="submit" id="leadSubmit" class="button buttonPrimary" data-t="leadSubmit">Continue on WhatsApp</button><button type="button" class="button buttonSecondary" id="leadEmail" data-t="leadEmail">Send by email</button></div>
 <p class="leadPrivacy" data-t="leadPrivacy">This page does not store your details. WhatsApp or email opens a draft; nothing is sent until you confirm.</p>
+<p id="leadStatus" class="leadStatus" role="status" aria-live="polite"></p>
 </form>
   <div class="founder">
   <div class="founderPhoto" role="img" aria-label="Founder portrait pending approved photo"><img src="assets/lexlearn-x-transparent.svg" width="56" height="56" alt="LexLearn"></div>
