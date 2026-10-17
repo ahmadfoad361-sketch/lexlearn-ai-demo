@@ -442,7 +442,7 @@ assert.ok(!pilotText.includes("Qatar University")&&!pilotText.includes("Lusail U
 assert.ok((pilotText.match(/class="pilotStepNum"/g)||[]).length===3,"three pilot phases unchanged");
 assert.ok((pilotText.match(/<div><h3 data-t="pilot(?:LexLearnTitle|NeedsTitle|ValueTitle)"/g)||[]).length===3,"three role cards unchanged");
 assert.ok(pilotText.includes('30–60')&&pilotText.includes('6–8')&&pilotText.includes('data-t="pilotStudents"')&&pilotText.includes('data-t="pilotWeeks"'),"proposed ranges retained");
-assert.ok(css.includes(".pilotExchange>div,.pilotExchange>div:first-child{background:#fffdfb!important"),"all three role cards must have identical background and border");
+assert.ok(css.includes(".pilotExchange>div{background:#fffdfb!important"),"all three role cards must have identical background and border");
 assert.ok(css.includes(".pilotOffer{display:inline-block"),"free pilot line receives visible highlighting");
 assert.ok(css.includes(".pilotActions{grid-column:1/-1;display:grid"),"two direct-contact pilot buttons align responsively");
 assert.ok(html.includes("assets/conference.js?v=20261017.5")&&html.includes("assets/conference.css?v=20261017.6"),"invalidate conference client cache");
