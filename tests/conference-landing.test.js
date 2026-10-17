@@ -369,7 +369,7 @@ assert.doesNotThrow(()=>new vm.Script(scEn,{filename:"assets/showcase-en.js"}),"
 for(const code of [sc,scEn]){
  assert.ok(code.includes('class="demoGhost demoBack" href="conference.html#paths"'),"single header Back instead of Home+floating Back");
  assert.ok(!code.includes("نفهم طريقة تفكيرك، ونبني طريقك."),"remove tagline beneath demo logo");
- assert.ok(code.includes("اقرأ قاعدة قصيرة، أجب عن 6 أسئلة، وشوف نقاط قوتك."),"short intro must be exact");
+ assert.ok(code.includes("اقرأ قاعدة قصيرة، أجب عن 6 أسئلة، وتعرّف على نقاط قوتك."),"short intro must be exact");
  assert.ok(code.includes("إجابتك مجهولة الهوية وتُستخدم لتحسين التجربة فقط."),"privacy line immediately below Start");
  assert.ok(code.includes('class="btn primary demoStart"'),"Start CTA enlarged");
 }
