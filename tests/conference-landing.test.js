@@ -349,7 +349,7 @@ assert.ok(js.includes('promo:"\\u2066LexLearn\\u2069 في مؤتمر \\u2066Web 
 assert.ok(!js.includes("ويب ساميت قطر ٢٠٢٧")&&!js.includes("ليكس ليرن · ويب ساميت"),"do not localize the event or project brand names in event strip");
 assert.ok(js.includes('promoShort:"LexLearn · Web Summit Qatar 2027 · ALPHA"'),"English banner retains official event identity");
 assert.ok(html.includes('title="Web Summit Qatar 2027 · ALPHA"')&&pub.includes('"go/index.html"')&&pub.includes('"lexlearn-go-qr.svg"'),"translated strip and permanent printed QR retained without visitor download");
-assert.ok(html.includes("assets/conference.css?v=20261017.8")&&html.includes("assets/conference.js?v=20261017.9"),"invalidate mobile first-fold UI cache");
+assert.ok(html.includes("assets/conference.css?v=20261017.10")&&html.includes("assets/conference.js?v=20261017.10"),"invalidate mobile first-fold UI cache");
 
 
 /* Follow-up UX contract: conference, pilot, investor and student demo. */
@@ -385,12 +385,14 @@ assert.ok(html.includes("assets/conference.css?v=20261017.8")&&html.includes("as
 assert.ok(pub.includes('"conference.js"')&&!pub.includes('"conference-leads.js"'),"retired data-capture client must not be published");
 assert.ok(!html.includes("conference-leads.js")&&!html.includes("conference-contact.js"),"a single language JS handles both conference languages");
 assert.ok(html.includes('<form id="leadForm"')&&!js.includes("localStorage.setItem(\"lexlearn_lead\""),"contact form is present but no contact data is stored locally");
-assert.ok(!js.includes("fetch(endpoint")&&!js.includes("conference-lead"),"conference scripts must not call retired lead endpoint");
+assert.ok(html.includes('id="leadConsent"')&&html.includes('id="leadTurnstile"')&&html.includes('id="leadStatus"'),"conference form visibly mounts opt-in consent, bot protection and delivery feedback");
+assert.ok(js.includes('leadMode==="save"')&&js.includes("response.ok&&responseData.ok===true"),"success only after confirmed server reply");
+assert.ok(js.includes("functions/v1/conference-lead")&&js.includes("sendStoredLead")&&js.includes("turnstileToken"),"conference lead form uses secure server intake after Turnstile verification");
 assert.ok(html.includes('class="button buttonPrimary" id="waBusiness"')&&html.includes("https://wa.me/201014408788"),"verified WhatsApp stays primary for general contact");
 assert.ok(html.includes('class="button buttonSecondary" id="emailContact"')&&html.includes('class="shareIcon" id="waShare"'),"email and share icon still available");
 assert.ok(html.includes('href="mailto:Ahmadfoad361@gmail.com"'),"founder email is unchanged");
 assert.ok(html.includes('class="founderPhoto"'),"founder card image slot remains");
-assert.ok(read("privacy.html").includes("نموذجًا مختصرًا")&&read("privacy-en.html").includes("short form"),"privacy policies state that conference does not collect visitor details");
+assert.ok(read("privacy.html").includes("موافقة صريحة")&&read("privacy-en.html").includes("unticked consent box"),"privacy policies disclose opt-in secure conference storage");
 assert.ok(html.includes('<bdi dir="ltr">30–60</bdi>')&&html.includes('<bdi dir="ltr">6–8</bdi>'),"retain proposed pilot ranges in readable order");
 assert.ok(html.includes('class="roadmapStatus statusReady"')&&html.includes('class="roadmapStatus statusProgress"')&&html.includes('class="roadmapStatus statusUpcoming"'),"status labels preserved");
 assert.ok(css.includes(".roadmap::before")&&css.includes(".roadmapMarker"),"investor timeline remains intact");
