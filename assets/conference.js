@@ -215,7 +215,7 @@ if(leadForm){
  const roleSelect=document.getElementById("leadRole"),emailButton=document.getElementById("leadEmail");
  const submitButton=document.getElementById("leadSubmit"),consentGroup=document.getElementById("leadConsentGroup");
  const consentCheck=document.getElementById("leadConsent"),captchaMount=document.getElementById("leadTurnstile");
- const statusEl=document.getElementById("leadStatus"),privacyNote=leadForm.querySelector(".leadPrivacy");
+ const statusEl=document.getElementById("leadStatus"),privacyNote=typeof leadForm.querySelector==="function"?leadForm.querySelector(".leadPrivacy"):null;
  let captchaToken="",widgetId=null,isBusy=false;
  function tr(key){return (active==="ar"?AR:EN)[key]||key;}
  function status(message,state){
@@ -226,7 +226,7 @@ if(leadForm){
   const enabled=next==="save";
   consentGroup.hidden=!enabled;consentCheck.required=enabled;captchaMount.hidden=!enabled;
   submitButton.textContent=tr(enabled?"leadSaveSubmit":"leadSubmit");
-  privacyNote.textContent=tr(enabled?"leadLivePrivacy":"leadPrivacy");
+  if(privacyNote)privacyNote.textContent=tr(enabled?"leadLivePrivacy":"leadPrivacy");
  }
  document.querySelectorAll("[data-role]").forEach(function(link){
   link.addEventListener("click",function(){roleSelect.value=link.getAttribute("data-role")||"student";status("","");});
@@ -285,6 +285,7 @@ if(leadForm){
   window.location.href="mailto:ahmadfoad361@gmail.com?subject="+encodeURIComponent(subject)+"&body="+encodeURIComponent(leadMessage());
  });
  async function setupSecureIntake(){
+  if(typeof fetch!=="function"||typeof AbortController!=="function")return;
   const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),8000);
   try{
    const res=await fetch(endpoint,{method:"GET",signal:controller.signal,cache:"no-store"});
