@@ -5,6 +5,13 @@ for(const page of ["showcase","showcase-en"]){
  const js=fs.readFileSync("assets/"+page+".js","utf8");
  const html=fs.readFileSync(page+".html","utf8");
  assert(js.includes('analysisPage()'),'AI analysis stage must appear before results');
+ assert(js.includes('demoDeliveryWarning')&&js.includes('unconfirmed?null:g.recall_score'),
+   'If anonymous sign-in fails, result must warn before the cards and no recall grade can be shown');
+ assert(js.includes("!r.received")&&js.includes("errorLabel(r.error)"),
+   'Unconfirmed receipt must explicitly display the server delivery/auth error');
+ assert(js.includes('Automated grading and saving could not be completed'),
+   'Bilingual failure disclosure must say grading and saving both failed');
+
  assert(js.includes('receiptScreen()')||js.includes('receiptScreen'),'A branded completion screen is required');
  assert(js.includes('assets/lexlearn-logo.svg'),'Must use the approved logo');
  assert(js.includes('showcase-grade'),'Public demo has its own grade function');
