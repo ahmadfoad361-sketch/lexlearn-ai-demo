@@ -42,10 +42,17 @@ assert.ok(migration2.includes("curriculum_mappings"),"Qatar curriculum evidence 
 assert.ok(migration2.includes("'legal_review'"),"seeded legal questions must not auto-approve themselves");
 
 const grader=read("supabase/functions/grade-answer/index.ts");
-for(const needle of ["enrollments","grading_rate_limit","item_not_approved","approved_sources_missing","needs_human_review","OPENAI_MODEL"]){
+for(const needle of ["enrollments","grading_rate_limit","item_not_approved","approved_sources_missing","needs_human_review","no_paid_semantic_model"]){
   assert.ok(grader.includes(needle),"grader safety missing "+needle);
 }
-assert.ok(!grader.includes('||"gpt-'),"grader must not silently choose an unverified model");
+assert.ok(!grader.includes('api.openai.com')&&!grader.includes('OPENAI_API_KEY'),"general grader must never issue paid model requests");
+const pilotGrade=read("supabase/functions/pilot-grade/index.ts");
+const showcaseGrade=read("supabase/functions/showcase-grade/handler.mjs");
+for(const [path,source] of [["pilot-grade",pilotGrade],["showcase-grade",showcaseGrade]]){
+ assert.ok(!source.includes("api.openai.com")&&!source.includes("OPENAI_API_KEY"),path+" must avoid paid inference");
+}
+assert.ok(pilotGrade.includes("PILOT_RELEASE_TOPICS")&&pilotGrade.includes('x.status!=="approved"'),"pilot server must enforce release and approved learning content");
+assert.ok(read("assets/pilot-learning.js").includes("release={1:false,22:false}"),"unapproved pilot content must be locked on the frontend");
 
 const manage=read("supabase/functions/admin-manage-student/index.ts");
 assert.ok(manage.includes("temporaryPassword"),"password reset must generate credentials server-side");
