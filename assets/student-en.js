@@ -314,7 +314,7 @@ function render(){
   var actionPrimary=course.completedProgram
     ? "<a class='actionCard primary completeAction' href='program-en.html?"+demoPrefix+"country="+country+"&subject=rights&start=1'><span class='actionIcon'>🏆</span><span class='actionCopy'><b>View your final achievement</b><small>You have completed the full program — open the final achievement screen.</small></span></a>"
     : !result
-      ? "<a class='actionCard primary' href='showcase-en.html?country="+country+"&subject=rights'><span class='actionIcon'>"+icon("test")+"</span><span class='actionCopy'><b>Start the diagnostic</b><small>Opens the diagnostic directly.</small></span></a>"
+      ? "<a class='actionCard primary' href='"+(session.cloud?"diagnostic.html?lang=en":"showcase-en.html?country="+country+"&subject=rights") + "'><span class='actionIcon'>"+icon("test")+"</span><span class='actionCopy'><b>Start the diagnostic</b><small>Opens the diagnostic directly.</small></span></a>"
       : "<a class='actionCard primary' href='program-en.html?"+demoPrefix+"country="+country+"&subject=rights&start=1'><span class='actionIcon'>"+icon("play")+"</span><span class='actionCopy'><b>Continue today's session</b><small>Opens the active training session directly.</small></span></a>";
 
   var insight=studentInsight();
@@ -380,6 +380,8 @@ async function boot(){
         location.replace("student-login-en.html");
         return;
       }
+      var who=await LEX_CLOUD.db().auth.getUser();
+      if(who.error||!who.data||!who.data.user||who.data.user.id!==student.id)throw new Error("student_session_mismatch");
       var consent=await LEX_CLOUD.getConsent(CONSENT_VERSION,"learning_data");
       consentOk=!!consent;
       if(cloudProfile){
@@ -398,16 +400,17 @@ async function boot(){
       if(ps&&ps.state){
         profile=ps.state;write(PROFILE_KEY,profile);result=profile.results&&profile.results[country+"-"+(country==="qa"?"rights":"sources")]||null;
       }else if(profile&&profile.results&&profile.results[country+"-"+(country==="qa"?"rights":"sources")]){
-        // Recover a diagnostic that was completed in this browser before central sync was enabled.
-        await LEX_CLOUD.saveSnapshot({courseId:country+"-"+(country==="qa"?"rights":"sources"),snapshotType:"profile",state:profile});
-        result=profile.results[country+"-"+(country==="qa"?"rights":"sources")]||null;
+        // Untrusted browser cache is not an official diagnostic. Never promote it to cloud.
+        result=null;
       }
+      result=window.LEX_OFFICIAL_DIAGNOSTIC&&LEX_OFFICIAL_DIAGNOSTIC.valid(result,student.id)?result:null;
       var cs=await LEX_CLOUD.loadSnapshot({courseId:country+"-"+(country==="qa"?"rights":"sources"),snapshotType:"course"});
       if(cs&&cs.state){
         course=cs.state;write(COURSE_KEY,course);
+        if(result&&course.diagnosticAttemptId!==result.attempt_id)result=null;
       }else if(course&&((course.completed&&course.completed.length)||(course.evidence&&course.evidence.length)||Number(course.session)>1)){
-        // Recover real training progress already completed by this signed-in student in this browser.
-        await LEX_CLOUD.saveSnapshot({courseId:country+"-"+(country==="qa"?"rights":"sources"),snapshotType:"course",state:course});
+        // Never upload an unsigned local course to replace authenticated cloud progress.
+        course={session:1,completed:[],weekResults:{},achievements:[],adminOverrideWeeks:{}};
       }
     }catch(e){
       APP.innerHTML="Unable to verify your session. Please <a href='student-login-en.html'>sign in again</a>.";
