@@ -39,6 +39,12 @@ assert.ok(read("assets/conference.css").includes(".pilot > div:first-child h2"),
 
 assert.ok(go.includes("../conference.html")&&go.includes("window.location.replace("),"permanent QR redirect required");
 assert.ok(!go.includes('<link rel="canonical"')&&!go.includes("https://ahmadfoad361-sketch.github.io"),"printed QR redirect must not canonicalize to the old preview hostname");
+const leadServer=read("supabase/functions/conference-lead/index.ts");
+assert.ok(leadServer.includes('Deno.env.get("LEX_ALLOWED_ORIGINS")'),"conference lead function must support explicit approved production origins");
+assert.ok(leadServer.includes('!allowedOrigins().has(origin)'),"conference form must reject unknown origins");
+assert.ok(leadServer.includes('check.hostname===hostname'),"Turnstile must verify the requesting approved site hostname");
+assert.ok(leadServer.includes('new URL(origin).hostname'),"Turnstile hostname must be derived from the authorized origin");
+assert.ok(!leadServer.includes('check.hostname==="ahmadfoad361-sketch.github.io"'),"Turnstile cannot be locked to GitHub Pages after custom-domain launch");
 assert.ok(pub.includes('"go/index.html"')&&pub.includes('"conference.html"'),"release artifact must include routes");
 assert.ok(pub.includes('"lexlearn-go-qr.svg"')&&pub.includes('"conference-pdf.js"'),"release must ship PDF and QR assets");
 assert.ok(!html.includes('id="printQR"')&&pub.includes('"lexlearn-go-qr.svg"'),"visitor page must not show owner-only QR download, but published QR asset stays available");
