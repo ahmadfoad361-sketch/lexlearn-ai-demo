@@ -1,5 +1,5 @@
 const fs=require('fs'),vm=require('vm'),assert=require('assert');
-function environment(file,lang,seed,confirmed=true,pilotReleased=false){
+function environment(file,lang,seed,confirmed=true,pilotReleased=false,stageOnePreview=false){
  const storage=new Map();
  if(seed)storage.set('lexlearn_v9_profile',JSON.stringify({results:{'qa-rights':{metrics:{recall:50,understanding:90,application:70,legal_precision:60,exam:null}}}}));
  let nodes=[];
@@ -11,18 +11,31 @@ function environment(file,lang,seed,confirmed=true,pilotReleased=false){
  Element.prototype.querySelectorAll=query;
  Element.prototype.querySelector=function(s){return query(s)[0]||null;};
  Element.prototype.appendChild=function(el){nodes.push(el);};
- const c={document,location:{search:'?demo=1&country=qa&subject=rights',replace(){}},URLSearchParams,Date,Math,JSON,Promise,console,setTimeout,clearTimeout,localStorage:{getItem(k){return storage.get(k)||null;},setItem(k,v){storage.set(k,v);}},scrollTo(){}};c.window=c;c.globalThis=c;vm.createContext(c);
+ const c={document,location:{search:stageOnePreview?'?demo=1&start=1&preview=stage1&country=qa&subject=rights':'?demo=1&country=qa&subject=rights',replace(){}},URLSearchParams,Date,Math,JSON,Promise,console,setTimeout,clearTimeout,localStorage:{getItem(k){return storage.get(k)||null;},setItem(k,v){storage.set(k,v);}},scrollTo(){}};c.window=c;c.globalThis=c;vm.createContext(c);
  for(const name of ['assets/adaptive-engine.js','assets/learning-quality.js','assets/pilot-learning.js']){let script=fs.readFileSync(name,'utf8');if(pilotReleased&&name.endsWith('pilot-learning.js'))script=script.replace('var release={1:false,22:false}','var release={1:true,22:true}'); // isolated approved-pilot fixture only
  vm.runInContext(script,c);}
  if(pilotReleased){let seq=0;c.LEX_CLOUD={isConfigured:()=>true,recordAttempt:async()=>({id:'test-attempt-'+(++seq)}),gradePilot:async()=>({status:'scored',passed:true}),db:()=>({from:table=>({select:()=>({eq:()=>({maybeSingle:async()=>({data:table==='pilot_ai_grades'?{status:'scored',passed:true,score:1,feedback:'صحيح؛ القاعدة والتطبيق والنتيجة متسقة مع الواقعة.'}:null})})})})})};}
  // A confirmed-review fixture tests the gates, not model accuracy.
  if(confirmed)c.LEX_QUALITY.gradeAsync=async function(answer,task,language){const p=c.LEX_QUALITY.grade(answer,task,language);p.pending=false;p.overall=/لا أتذكر|cannot remember/.test(answer)?0:100;p.axes[task.dimension]=p.overall;p.needsHumanReview=false;p.gradingMethod='grounded_semantic';return p;};
  let src=fs.readFileSync(file,'utf8');
- src=src.replace(/boot\(\);\s*\}\)\(\);\s*$/,'window.__test={state:state,home:home,render:render,buildQueue:'+(lang==='ar'?'buildTrainingQueue':'buildQueue')+',assessmentQueue:'+(lang==='ar'?'assessmentBankForWeek':'assessmentQueue')+'};})();');
- vm.runInContext(src,c);return {c,storage,document,get nodes(){return nodes;}};
+ src=src.replace(/boot\(\);\s*\}\)\(\);\s*$/,'window.__test={state:state,home:home,render:render,boot:boot,buildQueue:'+(lang==='ar'?'buildTrainingQueue':'buildQueue')+',assessmentQueue:'+(lang==='ar'?'assessmentBankForWeek':'assessmentQueue')+'};})();');
+ vm.runInContext(src,c);if(stageOnePreview)c.__test.boot();return {c,storage,document,get nodes(){return nodes;}};
 }
 (async()=>{
  for(const lang of ['ar','en']){
+  const file='assets/program'+(lang==='en'?'-en':'')+'.js';
+  const stage1=environment(file,lang,false,true,false,true);
+  const preview=stage1.c.__test;
+  assert.equal(preview.state.view,'train','explicit showcase handoff opens first training session without looping');
+  assert.equal(preview.state.course.session,1,'the preview starts at stage one only');
+  assert.equal(preview.state.diag.source,'public_stage_one_preview');
+  assert.equal(preview.state.diag.metrics.recall,null,'no invented recall score from public showcase');
+  assert.equal(preview.state.diag.metrics.understanding,null,'no invented understanding grade');
+  assert.equal(stage1.c.LEX_PILOT.isReleased(1),false,'the university pilot must remain locked');
+  assert.ok(!stage1.storage.get('lexlearn_v9_profile'),'no forged permanent diagnostic profile');
+  const noHandoff=environment(file,lang,false,true,false,false);
+  assert.equal(noHandoff.c.__test.state.view,'home','ordinary unsigned programme remains gated');
+
   const env=environment('assets/program'+(lang==='en'?'-en':'')+'.js',lang,true),{c,document:d}=env,t=c.__test;
   for(let n=1;n<=30;n++){
    assert.equal(t.state.course.session,n);

@@ -70,5 +70,13 @@ for(const page of ["showcase.html","showcase-en.html"]){
 }
 assert.ok(read("assets/program.js").includes("var unverified="),"local rubric needs an explicit unverified status");
 assert.ok(read("assets/program.js").includes("لا تعتمد هذه النتيجة كدرجة أكاديمية"),"no pseudo academic grade for unverified free text");
-assert.ok(read("program.html").includes("program.js?v=20261018.2"),"refresh browser cache for honest training status");
+assert.ok(read("program.html").includes("program.js?v=20261018.3"),"refresh browser cache for first-session preview");
+assert.ok(read("program-en.html").includes("program-en.js?v=20261018.3"),"refresh English stage-one entry");
+for(const p of ["showcase.html","showcase-en.html"])
+ assert.ok(read(p).includes("showcase-learning-cycle.js?v=20261018.3"),"refresh completed-cycle navigation for "+p);
+for(const source of [read("assets/program.js"),read("assets/program-en.js")]){
+ assert.ok(source.includes('FIRST_STAGE_PREVIEW=DEMO&&AUTO_START'),"stage-one handoff must be restricted to public demo");
+ assert.ok(source.includes('state.course=defaultCourse()'),"stage-one public preview must not continue stale local course progress");
+ assert.ok(source.includes('state.view="stagePreviewComplete"'),"preview must not unlock later academic sessions");
+}
 console.log("production-boundaries tests: PASS");

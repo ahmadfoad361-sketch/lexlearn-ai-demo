@@ -5,6 +5,7 @@ var qs=new URLSearchParams(location.search);
 var AUTO_START=qs.get("start")==="1";
 var STUDENT_SESSION=(function(){try{return JSON.parse(localStorage.getItem("lexlearn_student_session"))||null;}catch(e){return null;}})();
 var DEMO=qs.get("demo")==="1"&&!(STUDENT_SESSION&&STUDENT_SESSION.cloud&&STUDENT_SESSION.studentId);
+var FIRST_STAGE_PREVIEW=DEMO&&AUTO_START&&qs.get("preview")==="stage1";
 var COUNTRY="qa",SUBJECT="rights",SNAPSHOT_COURSE="qa-rights",COURSE_DB_ID="qa-qu-lawc101-rights";
 var STUDENT_SCOPE=STUDENT_SESSION&&STUDENT_SESSION.studentId?("_"+STUDENT_SESSION.studentId):"";
 var PROFILE_KEY="lexlearn_v9_profile"+STUDENT_SCOPE;
@@ -261,7 +262,7 @@ function addEvidence(dim,score,method,answer,task){
 }
 function syncNote(error){var el=document.getElementById("qualitySync");if(el)el.textContent=error?"Progress is saved locally; central saving could not be confirmed. Retry when connected.":"Central saving for the instructor is confirmed.";}
 function chrome(inner){
- APP.innerHTML='<div class="courseShell"><header class="courseTop"><div class="courseTopIn"><div class="brand"><div class="mark"><img src="assets/lexlearn-logo.svg" alt="LexLearn"></div><div><b>Lex<span class="brandLearn">Learn</span></b><small>Qatar • Theory of Rights • We understand your mind and build your path.</small></div></div><div class="topActions"><a class="topBtn" href="student-en.html">Student Portal</a><a class="topBtn" href="program.html?country=qa&subject=rights'+(DEMO?'&demo=1':'')+'">العربية</a></div></div></header><main class="courseWrap">'+inner+(STUDENT_SESSION&&STUDENT_SESSION.cloud?'<p id="qualitySync" role="status">Local progress is saved; central saving is confirmed after sync.</p>':'')+'</main></div>';
+ APP.innerHTML='<div class="courseShell"><header class="courseTop"><div class="courseTopIn"><div class="brand"><div class="mark"><img src="assets/lexlearn-logo.svg" alt="LexLearn"></div><div><b>Lex<span class="brandLearn">Learn</span></b><small>Qatar • Theory of Rights • We understand your mind and build your path.</small></div></div><div class="topActions"><a class="topBtn" href="student-en.html">Student Portal</a><a class="topBtn" href="program.html?country=qa&subject=rights'+(DEMO?'&demo=1':'')+'">العربية</a></div></div></header><main class="courseWrap">'+(FIRST_STAGE_PREVIEW?'<div class="notice" role="note">First-session preview only. This is not an approved university pilot. No diagnostic score or academic credit is transferred.</div>':'')+inner+(STUDENT_SESSION&&STUDENT_SESSION.cloud?'<p id="qualitySync" role="status">Local progress is saved; central saving is confirmed after sync.</p>':'')+'</main></div>';
   if(window.LEX_PILOT&&['home','sessionResult','completion'].indexOf(state.view)>=0)LEX_PILOT.dashboard(document.querySelector('.courseWrap'),state.course,'en',save,function(){state.view='home';render();},!!(STUDENT_SESSION&&STUDENT_SESSION.cloud));
 }
 function metricCard(label,v){var n=v==null?"—":Math.round(v)+"%",word=v==null?"Not measured":v>=80?"Strong":v>=60?"Developing well":v>=40?"Needs focus":"Priority";return '<div class="snapshotCard"><div class="snapshotRing" style="--p:'+(v==null?0:v)+'"><b>'+n+'</b></div><strong>'+label+'</strong><small>'+word+'</small></div>';}
@@ -297,11 +298,20 @@ function nextTask(){if(state.task<state.queue.length-1){state.task++;render();}e
 function train(){
   if(window.LEX_PILOT&&LEX_PILOT.isReleased(state.course.session)){LEX_PILOT.mount(APP,state.course.session,'en',{course:state.course,onSave:save,onComplete:function(pilot){state.answers=[1,2,3,4,5].map(function(step){var a=pilot.attempts.filter(function(x){return x.step===step;}).slice(-1)[0];return {dimension:step===4?'recall':'application',score:a&&a.score,correct:!!(a&&a.score===1)};});finishTraining();},onExit:function(){state.view='home';render();}});return;}var t=state.queue[state.task]||buildQueue()[0];renderTask(t,false);}
 function finishTraining(){
+  if(FIRST_STAGE_PREVIEW){state.view="stagePreviewComplete";render();return;}
   if(window.LEX_PILOT&&!state.repairMode)LEX_PILOT.schedule(state.course,state.course.session);
  state.course.history.push({session:state.course.session,type:state.repairMode?"repair":"training",answers:state.answers,ts:Date.now()});
  if(state.repairMode){state.repairMode=false;state.view="assessment";state.task=0;state.answers=[];state.queue=assessmentQueue(state.repairWeek||sessionMeta(state.course.session).week);render();return;}
  if(state.course.completed.indexOf(state.course.session)===-1)state.course.completed.push(state.course.session);
  state.course.session=Math.min(30,state.course.session+1);save();state.view="sessionResult";render();
+}
+function stagePreviewComplete(){
+ chrome('<section class="stage"><div class="taskCard"><span class="kicker">Stage one preview complete</span>'+
+ '<h2>You completed the first-session preview</h2>'+
+ '<p>This practice is illustrative only. It does not issue a university grade or certificate, and later sessions remain unavailable until academic approval.</p>'+
+ '<div class="choiceRow"><a class="primary" href="program-en.html?demo=1&start=1&preview=stage1&country=qa&subject=rights">Repeat the first-session preview</a>'+
+ '<a class="secondary" href="showcase-en.html?country=qa&subject=rights">Back to diagnostic</a>'+
+ '<a class="secondary" href="conference.html?lang=en">University pilot information</a></div></div></section>');
 }
 function sessionResult(){var total=state.answers.length||1,correct=state.answers.filter(function(x){return x.correct;}).length,p=Math.round(correct/total*100),next=sessionMeta(state.course.session);chrome('<section class="stage"><div class="taskCard"><span class="kicker">Session complete</span><h2>Good work — your data has updated the next session.</h2><div class="resultGrid"><div class="metric"><span>Session performance</span><b>'+p+'%</b></div><div class="metric"><span>Next session</span><b>'+state.course.session+'</b></div></div><div class="notice">The next week will not unlock until you pass the current weekly assessment.</div><div class="choiceRow"><button class="primary" id="continueNext">'+(next.kind==="assessment"?"Start weekly assessment":"Start next session")+'</button><button class="secondary" id="goHome">Back to program</button></div></div></section>');document.getElementById("continueNext").onclick=function(){state.task=0;state.answers=[];state.queue=next.kind==="assessment"?assessmentQueue(next.week):buildQueue();state.view=next.kind==="assessment"?"assessment":"train";render();};document.getElementById("goHome").onclick=function(){state.view="home";render();};}
 function assessment(){
@@ -328,7 +338,7 @@ function completion(){
  var r=state.course.weekResults[6]||{},score=r.score==null?"—":r.score+"%",date=state.course.completedAt?new Date(state.course.completedAt).toLocaleDateString("en-GB"):"Today";
  chrome('<section class="stage finalStage"><div class="finalCard professionalFinal"><div class="finalSeal">§</div><span class="kicker">Program completed</span><h1>You completed the LexLearn Theory of Rights program</h1><p>You completed all six weeks and the final assessment.</p><div class="finalStats"><div><span>Weeks</span><b>6 / 6</b></div><div><span>Sessions</span><b>30 / 30</b></div><div><span>Final assessment</span><b>'+score+'</b></div></div><div class="finalRibbon">Academic learning milestone • '+date+'</div><div class="choiceRow"><a class="primary finalLink" href="student-en.html">Return to Student Portal</a></div></div></section>');
 }
-function render(){if(state.view==="home")return home();if(state.view==="train")return train();if(state.view==="sessionResult")return sessionResult();if(state.view==="assessment")return assessment();if(state.view==="assessmentResult")return assessmentResult();if(state.view==="completion")return completion();}
+function render(){if(state.view==="stagePreviewComplete")return stagePreviewComplete();if(state.view==="home")return home();if(state.view==="train")return train();if(state.view==="sessionResult")return sessionResult();if(state.view==="assessment")return assessment();if(state.view==="assessmentResult")return assessmentResult();if(state.view==="completion")return completion();}
 
 async function boot(){
  if(!DEMO&&STUDENT_SESSION&&STUDENT_SESSION.cloud&&window.LEX_CLOUD&&LEX_CLOUD.isConfigured&&LEX_CLOUD.isConfigured()){
@@ -337,6 +347,12 @@ async function boot(){
    var cs=await LEX_CLOUD.loadSnapshot({courseId:SNAPSHOT_COURSE,snapshotType:"course"});if(cs&&cs.state){localStorage.setItem(COURSE_KEY,JSON.stringify(cs.state));state.course=loadCourse();}
    state.diag=diagnostic();
   }catch(e){}
+ }
+ if(FIRST_STAGE_PREVIEW){
+  state.diag={metrics:{recall:null,understanding:null,application:null,
+   legal_precision:null,exam:null,retention:null},pendingRecall:true,
+   profileType:"insufficient_evidence",source:"public_stage_one_preview"};
+  state.course=defaultCourse();
  }
  if(AUTO_START&&state.diag&&!state.course.completedProgram){var meta=sessionMeta(state.course.session);state.task=0;state.answers=[];state.queue=meta.kind==="assessment"?assessmentQueue(meta.week):buildQueue();state.view=meta.kind==="assessment"?"assessment":"train";}
  render();

@@ -6,6 +6,7 @@ var AUTO_START=qs.get("start")==="1";
 var STUDENT_SESSION=(function(){try{return JSON.parse(localStorage.getItem("lexlearn_student_session"))||null;}catch(e){return null;}})();
 // A signed-in cloud student must always use the real tracked path, even if an old demo=1 link is opened.
 var DEMO=qs.get("demo")==="1"&&!(STUDENT_SESSION&&STUDENT_SESSION.cloud&&STUDENT_SESSION.studentId);
+var FIRST_STAGE_PREVIEW=DEMO&&AUTO_START&&qs.get("preview")==="stage1";
 // The first release is restricted to Qatar law, including old country query links.
 var COUNTRY="qa",SUBJECT="rights";
 var COURSE_DB_ID="qa-qu-lawc101-rights";
@@ -748,12 +749,13 @@ function chrome(inner){
   APP.innerHTML='<div class="courseShell"><header class="courseTop"><div class="courseTopIn">'+
     '<div class="brand"><div class="mark"><img src="assets/lexlearn-logo.svg" alt="LexLearn"></div><div><b>Lex<span class="brandLearn">Learn</span></b><small>'+countryLabel()+' • نظرية الحق • نفهم طريقة تفكيرك، ونبني طريقك.</small></div></div>'+
     '<div class="topActions">'+(['home','sessionResult','achievement','weekSummary','completion','notebook'].indexOf(state.view)>=0?'<button class="topBtn" type="button" id="openLearningKeys">نوتة المفاتيح</button>':'')+'<a class="topBtn" href="program-en.html?country=qa&subject=rights'+(DEMO?'&demo=1':'')+'">English</a><a class="topBtn" href="showcase.html?country='+COUNTRY+'">الديمو التشخيصي</a><a class="topBtn" href="index.html">الرئيسية</a></div>'+
-  '</div></header><main class="courseWrap">'+inner+(STUDENT_SESSION&&STUDENT_SESSION.cloud?'<p id="qualitySync" role="status">التقدم المحلي محفوظ؛ الحفظ المركزي يُؤكد بعد إتمام المزامنة.</p>':'')+'</main></div>';
+  '</div></header><main class="courseWrap">'+(FIRST_STAGE_PREVIEW?'<div class="notice" role="note">معاينة الجلسة الأولى فقط. هذه ليست تجربة جامعية معتمدة، ولم تُنقل درجات التشخيص أو إجابتك إلى ملف أكاديمي.</div>':'')+inner+(STUDENT_SESSION&&STUDENT_SESSION.cloud?'<p id="qualitySync" role="status">التقدم المحلي محفوظ؛ الحفظ المركزي يُؤكد بعد إتمام المزامنة.</p>':'')+'</main></div>';
   var keysNav=document.getElementById("openLearningKeys");
    if(keysNav)keysNav.onclick=function(){state.view="notebook";render();};
    if(window.LEX_PILOT&&['home','sessionResult','completion'].indexOf(state.view)>=0)LEX_PILOT.dashboard(document.querySelector('.courseWrap'),state.course,'ar',save,function(){state.view='home';render();},!!(STUDENT_SESSION&&STUDENT_SESSION.cloud));
 }
 function render(){
+   if(state.view==="stagePreviewComplete")return stagePreviewComplete();
    if(state.view==="notebook")return notebookPage();
    if(state.view==="home")return home();
   if(state.view==="train")return train();
@@ -1060,6 +1062,8 @@ function buildRepairQueue(){
   return [targeted,pool[0],pool[1],learningBridge().primary,pool[2]].filter(Boolean).map(function(t){return contextualizeTask(t,meta);});
 }
 function finishTraining(){
+  // Public preview must not certify or unlock any unapproved academic session.
+  if(FIRST_STAGE_PREVIEW){state.view="stagePreviewComplete";render();return;}
   if(window.LEX_PILOT&&!state.repairMode)LEX_PILOT.schedule(state.course,state.course.session);
   var model=recomputeAdaptiveModel();
   state.course.history.push({session:state.course.session,type:state.repairMode?"repair":"training_summary",answers:state.answers,adaptiveModel:model,ts:Date.now()});
@@ -1068,6 +1072,14 @@ function finishTraining(){
   }
   pushUnique(state.course.completed,state.course.session);
   state.course.session=Math.min(30,state.course.session+1);save();state.view="sessionResult";render();
+}
+function stagePreviewComplete(){
+  chrome('<section class="stage"><div class="taskCard"><span class="kicker">نهاية معاينة المرحلة الأولى</span>'+
+   '<h2>أكملت معاينة الجلسة الأولى</h2>'+
+   '<p>جرّبت أول درس دون فتح المراحل الجامعية غير المعتمدة. هذا تدريب استرشادي؛ لا توجد درجة أكاديمية ولا شهادة إتمام، ولا تُتاح بقية الجلسات قبل اعتماد المحتوى.</p>'+
+   '<div class="choiceRow"><a class="primary" href="program.html?demo=1&start=1&preview=stage1&country=qa&subject=rights">إعادة معاينة الجلسة الأولى</a>'+
+   '<a class="secondary" href="showcase.html?country=qa&subject=rights">العودة إلى التشخيص</a>'+
+   '<a class="secondary" href="conference.html">التعرّف على خطة التجربة الجامعية</a></div></div></section>');
 }
 function sessionResult(){
   var correct=state.answers.filter(function(x){return x.correct;}).length,total=state.answers.length||1,p=Math.round(correct/total*100),sessionDesc=correct>=Math.ceil(total*.75)?"الجلسة مستقرة — انتقل للخطوة التالية":correct>=Math.ceil(total*.4)?"محتاج جولة إضافية على بعض المهارات":"الأولوية الآن للتثبيت قبل التقدم";
@@ -1276,6 +1288,14 @@ async function boot(){
       if(cs&&cs.state){localStorage.setItem(COURSE_KEY,JSON.stringify(cs.state));state.course=loadCourse();}
       state.diag=diagnostic();
     }catch(e){}
+  }
+  if(FIRST_STAGE_PREVIEW){
+    // The public practice cycle is not a verified or persistently assessed
+    // student diagnostic. All skill metrics stay null; no academic unlock.
+    state.diag={metrics:{recall:null,understanding:null,application:null,
+      legal_precision:null,exam:null,retention:null},pendingRecall:true,
+      profileType:"insufficient_evidence",source:"public_stage_one_preview"};
+    state.course=defaultCourse();
   }
   if(DEMO&&AUTO_START&&state.diag){if(state.course.completedProgram){state.view="completion";}else{var autoMeta=sessionMeta(state.course.session);state.answers=[];state.assessmentAnswers=[];state.task=0;state.queue=buildTrainingQueue();state.view=autoMeta.kind==="assessment"?"assessment":"train";}}
   render();
