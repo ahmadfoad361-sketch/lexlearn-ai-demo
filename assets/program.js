@@ -607,7 +607,8 @@ function learningBridge(){
     return {type:model.bridge.mode,title:x.title,lead:model.bridge.label,primary:x.primary,secondary:x.secondary,strongest:model.strongest,weakest:model.weakest,confidence:model.confidence};
   }
   var m=(state.diag&&state.diag.metrics)||{};
-  var recall=m.recall==null?50:m.recall,understanding=m.understanding==null?50:m.understanding;
+  var recall=m.recall,understanding=m.understanding;
+  if(recall==null||understanding==null)return {type:"unmeasured",title:"الأدلة غير كافية",lead:"نبدأ بتدريب تأسيسي دون افتراض قوة الحفظ أو الفهم.",primary:taskBank.memoryAnchor,secondary:taskBank.whyContrast};
   var gap=recall-understanding;
   if(gap>=12)return {type:"memorizer",title:"من الحفظ إلى الفهم",lead:"ذاكرتك أقوى من تفسيرك للقاعدة. لن نطلب منك حفظًا أكثر؛ سنحوّل ما تحفظه إلى أسباب وعلاقات وتطبيق.",primary:taskBank.explainRule,secondary:taskBank.whyContrast};
   if(gap<=-12)return {type:"understander",title:"من الفهم إلى التثبيت",lead:"فهمك أقوى من الحفظ. سنحوّل المعنى الذي تفهمه إلى مفاتيح ذاكرة قصيرة ثم نختبر تذكّرها على فترات.",primary:taskBank.memoryAnchor,secondary:taskBank.reconstruct};
@@ -1112,6 +1113,7 @@ function recordAssessmentEvidence(q,correct,confidence,repair){
   return {skill:q.skill,dimension:dim,correct:correct,confidence:confidence||null,score:score};
 }
 function assessment(){
+  if(!DEMO&&STUDENT_SESSION&&STUDENT_SESSION.cloud&&(!window.LEX_PILOT||!LEX_PILOT.isReleased(state.course.session))){state.view="train";return train();}
   var week=sessionMeta(state.course.session).week,bank=assessmentBankForWeek(week),q=bank[state.task%bank.length],ordered=q.mode==="free"?[]:orderedOptions(q,7);
   state.taskStartedAt=Date.now();
   if(q.mode==="free"){
@@ -1233,6 +1235,7 @@ function achievementBoard(){
   var bh=document.getElementById("backHome");if(bh)bh.onclick=function(){state.view="home";render();};
 }
 function repairAssessment(){
+  if(!DEMO&&STUDENT_SESSION&&STUDENT_SESSION.cloud&&(!window.LEX_PILOT||!LEX_PILOT.isReleased(state.course.session))){state.view="train";return train();}
   var week=state.course.repairWeek||sessionMeta(state.course.session).week,full=assessmentBankForWeek(week);
   var weakest=state.course.adaptiveModel&&state.course.adaptiveModel.weakest;
   var orderedBank=full.slice().sort(function(x,y){return (x.dimension===weakest?-1:0)-(y.dimension===weakest?-1:0);});
