@@ -91,8 +91,8 @@ function editFreeAnswer(){
   '<p>'+tr('اذكر بداية الشخصية القانونية ونهايتها، وحقوق الحمل المتعلقة بعدم اشتراط القبول، وشرط الولادة حية. لا يلزم حفظ النص حرفيًا. قد يعجز الفحص المحدود عن فهم إجابة صحيحة، ولا يعني ذلك أنها خاطئة.',
    'Explain when legal personality begins and ends, which prenatal rights require no acceptance, and the live-birth condition. Exact wording is not necessary. A valid answer may still go unrecognized by the limited checker.')+'</p>'+
   '<textarea class="freeInput" id="revisedFreeAnswer" maxlength="1800" aria-label="'+tr('تعديل الإجابة القانونية','Edit legal answer')+'"></textarea>'+
-  '<p class="demoPrivacy">'+tr('إذا كانت المحاولة الأصلية محفوظة لدى المشرف، ستُحفظ إجابتك المعدلة كمحاولة جديدة دون مسح السابقة.',
-   'If your original attempt was saved for the supervisor, your revised answer will create a separate attempt without overwriting it.')+'</p>'+
+  '<p class="demoPrivacy">'+tr('إعادة فحص الإجابة نفسها أو تعديلها تُنشئ محاولة جديدة مع بقاء المحاولات السابقة لدى المشرف.',
+   'Rechecking the same answer or editing it creates a separate attempt and does not overwrite any earlier supervisor record.')+'</p>'+
   '<div id="revisedFreeError" role="alert"></div>'+
   '<div class="demoActions"><button type="button" class="btn primary" id="submitRevisedFree">'+tr('إعادة الفحص بالقواعد المحدودة','Recheck with limited rules')+'</button>'+
   '<button type="button" class="btn secondary" id="cancelRevisedFree">'+tr('العودة للنتيجة','Back to results')+'</button></div>');
@@ -101,10 +101,11 @@ function editFreeAnswer(){
  document.getElementById('submitRevisedFree').onclick=function(){
   var revised=field.value.trim(),note=document.getElementById('revisedFreeError');
   if(!revised){note.textContent=tr('اكتب إجابتك أولًا.','Write your answer first.');field.focus();return;}
-  if(revised===original){note.textContent=tr('لم تتغير الإجابة. عدّل النص ثم أعد التحليل، أو ارجع للنتيجة لإعادة إرسال المحاولة القديمة عند فشل الحفظ.',
-   'The answer has not changed. Revise the text, or return to the result to retry saving the original attempt.');field.focus();return;}
+  // Allow rechecking exactly the same legal answer after a published rubric-engine
+  // correction. A fresh request_id creates a new, auditable attempt under the
+  // existing daily limit, while leaving the original grader result unchanged.
   if(busy)return;
-  // Each changed answer has distinct immutable evidence and an idempotent retry ID.
+  // Every recheck gets its own immutable evidence and an idempotent retry ID.
   requestId=crypto.randomUUID();free=revised;lastDemo=null;persist();result();
  };
 }
