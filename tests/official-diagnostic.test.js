@@ -22,6 +22,7 @@ function cloud(uid,opts={}){
   db:()=>({auth:{getUser:async()=>({data:{user:{id:opts.authId||uid}},error:null})},
    from:()=>({select:()=>({eq:()=>({eq:()=>({eq:()=>({maybeSingle:async()=>({data:opts.noEnrollment?null:{status:"active",course_id:"qa-qu-lawc101-rights"},error:null})})})})})})}),
   profile:async()=>({id:uid,role:opts.role||"student",active:!opts.inactive}),
+  getConsent:async()=>opts.noConsent?null:{accepted:true},
   loadSnapshot:async({courseId,snapshotType})=>value(courseId,snapshotType),
   saveSnapshot:async({courseId,snapshotType,state})=>{
     calls.push({courseId,snapshotType});
@@ -81,6 +82,7 @@ function cloud(uid,opts={}){
  });
  await assert.rejects(D.identity(cloud("student-no-enrollment",{noEnrollment:true})),/not_enrolled/);
  await assert.rejects(D.identity(cloud("inactive",{inactive:true})),/student_account_not_active/);
+ await assert.rejects(D.identity(cloud("no-consent",{noConsent:true})),/learning_data_consent_required/);
  const broken=cloud("failure",{failType:"profile"});
  const fd=D.build("failure",rows("recognition"),"","attempt-fail",new Date().toISOString());
  await assert.rejects(D.persist(broken,"failure",fd),/simulated_snapshot/);
