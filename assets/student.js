@@ -145,9 +145,9 @@ function profileTitle(){
   var model=course&&course.adaptiveModel;
   if(model&&model.bridge&&model.bridge.label)return model.bridge.label;
   if(!result)return "ابدأ بالتقييم التشخيصي";
-  if(result.profileType==="recall-led")return "ذاكرتك أقوى من الفهم — هنحوّل الحفظ إلى استخدام";
-  if(result.profileType==="understanding-led")return "فهمك أقوى من الحفظ — هنحوّل المعنى إلى تذكّر أسرع";
-  return "أداء متوازن — هنركز على أقل مهارة حاليًا";
+  if(result.profileType==="recall-led")return "التعرّف على القاعدة أقوى من التفسير مبدئيًا — الحفظ الحر لم يُقَس";
+  if(result.profileType==="understanding-led")return "الفهم أقوى من التعرّف الموضوعي مبدئيًا — الحفظ الحر ينتظر المراجعة";
+  return result.profileType==="insufficient_evidence"?"أدلة غير كافية — نبدأ تأسيسيًا":"مؤشرات أولية متقاربة — سنعيد القياس";
 }
 function studentInsight(){
   var items=[
@@ -324,7 +324,7 @@ function render(){
   var actionPrimary=course.completedProgram
     ? "<a class='actionCard primary completeAction' href='program.html?"+demoPrefix+"country="+country+"&subject=rights&start=1'><span class='actionIcon'>🏆</span><span class='actionCopy'><b>عرض إنجازك النهائي</b><small>لقد أنهيت البرنامج بالكامل — افتح شاشة الفوز والإنهاء.</small></span></a>"
     : !result
-      ? "<a class='actionCard primary' href='showcase.html?country="+country+"&subject=rights'><span class='actionIcon'>"+icon("test")+"</span><span class='actionCopy'><b>ابدأ التقييم التشخيصي</b><small>يفتح الاختبار مباشرة بدل الرجوع للصفحة الرئيسية.</small></span></a>"
+      ? "<a class='actionCard primary' href='"+(session.cloud?"diagnostic.html?lang=ar":"showcase.html?country="+country+"&subject=rights") + "'><span class='actionIcon'>"+icon("test")+"</span><span class='actionCopy'><b>ابدأ التقييم التشخيصي</b><small>يفتح الاختبار مباشرة بدل الرجوع للصفحة الرئيسية.</small></span></a>"
       : "<a class='actionCard primary' href='program.html?"+demoPrefix+"country="+country+"&subject=rights&start=1'><span class='actionIcon'>"+icon("play")+"</span><span class='actionCopy'><b>أكمل جلسة اليوم</b><small>يفتح التدريب الفعلي مباشرة.</small></span></a>";
 
   var insight=studentInsight();
@@ -390,6 +390,8 @@ async function boot(){
         location.replace("student-login.html");
         return;
       }
+      var who=await LEX_CLOUD.db().auth.getUser();
+      if(who.error||!who.data||!who.data.user||who.data.user.id!==student.id)throw new Error("student_session_mismatch");
       var consent=await LEX_CLOUD.getConsent(CONSENT_VERSION,"learning_data");
       consentOk=!!consent;
       if(cloudProfile){
@@ -408,16 +410,17 @@ async function boot(){
       if(ps&&ps.state){
         profile=ps.state;write(PROFILE_KEY,profile);result=profile.results&&profile.results[country+"-"+(country==="qa"?"rights":"sources")]||null;
       }else if(profile&&profile.results&&profile.results[country+"-"+(country==="qa"?"rights":"sources")]){
-        // Recover a diagnostic that was completed in this browser before central sync was enabled.
-        await LEX_CLOUD.saveSnapshot({courseId:country+"-"+(country==="qa"?"rights":"sources"),snapshotType:"profile",state:profile});
-        result=profile.results[country+"-"+(country==="qa"?"rights":"sources")]||null;
+        // Untrusted browser cache is not an official diagnostic. Never promote it to cloud.
+        result=null;
       }
+      result=window.LEX_OFFICIAL_DIAGNOSTIC&&LEX_OFFICIAL_DIAGNOSTIC.valid(result,student.id)?result:null;
       var cs=await LEX_CLOUD.loadSnapshot({courseId:country+"-"+(country==="qa"?"rights":"sources"),snapshotType:"course"});
       if(cs&&cs.state){
         course=cs.state;write(COURSE_KEY,course);
+        if(result&&course.diagnosticAttemptId!==result.attempt_id)result=null;
       }else if(course&&((course.completed&&course.completed.length)||(course.evidence&&course.evidence.length)||Number(course.session)>1)){
-        // Recover real training progress already completed by this signed-in student in this browser.
-        await LEX_CLOUD.saveSnapshot({courseId:country+"-"+(country==="qa"?"rights":"sources"),snapshotType:"course",state:course});
+        // Never upload an unsigned local course to replace authenticated cloud progress.
+        course={session:1,completed:[],weekResults:{},achievements:[],adminOverrideWeeks:{}};
       }
     }catch(e){
       APP.innerHTML="تعذر التحقق من الجلسة. <a href='student-login.html'>سجّل الدخول من جديد</a>.";
