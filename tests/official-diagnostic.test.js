@@ -41,6 +41,34 @@ function cloud(uid,opts={}){
  assert.ok(qs.find(x=>x.id==="q63a").arOptions[2].includes("يكون استعمالًا غير مشروع"),"sole intention to harm is unlawful under Art 63(2)");
 
  assert.equal(qs.filter(q=>q.dimension==="recognition").length,3);
+ const legalSources={
+  q39r:["qa-civil-2004-art39"],q49r:["qa-civil-2004-art49"],q62r:["qa-civil-2004-art62"],
+  q39u:["qa-civil-2004-art39"],q50u:["qa-civil-2004-art39","qa-civil-2004-art50"],q63a:["qa-civil-2004-art63"]
+ };
+ function approvedRow(q){
+  return {status:"approved",reviewed_at:"2026-10-18T22:00:00Z",
+   legal_reviewer:"LEGAL_REVIEWER_FIXTURE",learning_reviewer:"LEARNING_REVIEWER_FIXTURE",
+   metadata:{legal_approval:true,learning_approval:true,official_diagnostic_v2_id:q.id},
+   prompt_ar:q.ar,rubric_json:{prompt_en:q.en},options_json:{ar:q.arOptions,en:q.enOptions},
+   answer_key_json:{correct_index:q.a},source_ids:legalSources[q.id]};
+ }
+ const correct=qs.map(approvedRow);
+ assert.ok(correct.every((item,i)=>D.exactApprovedQuestion(item,qs[i])),"reviewed six questions can match their approved content exactly");
+ for(const [field,wrong] of [["prompt_ar","question changed after review"],["legal_reviewer",null],["reviewed_at",null]]){
+  const item={...correct[0],[field]:wrong};
+  assert.equal(D.exactApprovedQuestion(item,qs[0]),false,"must not release altered/unreviewed "+field);
+ }
+ const incorrectKey={...correct[0],answer_key_json:{correct_index:2}};
+ assert.equal(D.exactApprovedQuestion(incorrectKey,qs[0]),false,"must not present a question with altered answer key");
+ const incompleteSources={...correct[0],source_ids:[]};
+ assert.equal(D.exactApprovedQuestion(incompleteSources,qs[0]),false,"every official question needs its approved legal source");
+ const sameReviewer={...correct[0],learning_reviewer:correct[0].legal_reviewer};
+ assert.equal(D.exactApprovedQuestion(sameReviewer,qs[0]),false,"separate substantive and instructional approval required");
+ const sourceCloud={db:()=>({from:()=>({select:()=>({eq:()=>({eq:()=>Promise.resolve({data:correct,error:null})})})})})};
+ assert.equal(await D.academicItemsApproved(sourceCloud),true,"six exact reviewed items may be released after real institutional approval");
+ const unreviewed={db:()=>({from:()=>({select:()=>({eq:()=>({eq:()=>Promise.resolve({data:correct.slice(1),error:null})})})})})};
+ assert.equal(await D.academicItemsApproved(unreviewed),false,"missing one of the six questions must lock diagnosis");
+
  for(const [kind,expected] of [["recognition","recall-led"],["understanding","understanding-led"],["insufficient","insufficient_evidence"]]){
   const uid="student-"+kind,free="Personality begins upon a live birth; exceptions need legal review";
   const d=D.build(uid,rows(kind),free,"attempt-"+kind,"2026-10-18T20:00:00.000Z");
