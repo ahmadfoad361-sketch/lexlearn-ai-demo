@@ -61,4 +61,11 @@ assert.ok(manage.includes("admin_audit"),"admin actions must be audited");
 const privacy=read("privacy.html"),terms=read("terms.html");
 assert.ok(/2026-10-17-v5/.test(privacy)&&terms.includes("شروط الاستخدام"),"legal notices and terms must be published");
 
+
+for(const page of ["program.html","program-en.html","pilot-review.html","pilot-qa.html","admin.html"]){
+ assert.ok(read(page).includes("pilot-learning.js?v=20261018.1"),"pilot gate cache bust missing in "+page);
+}
+for(const page of ["showcase.html","showcase-en.html"]){
+ assert.ok(read(page).includes("showcase"+(page.includes("-en")?"-en":"")+".js?v=20261018.1"),"demo disclosure cache bust missing in "+page);
+}
 console.log("production-boundaries tests: PASS");
