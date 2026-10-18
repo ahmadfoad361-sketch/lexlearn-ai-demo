@@ -1,10 +1,10 @@
-import {gradeWithAI} from "./semantic.mjs";
-export function createHandler({createClient,env,assess,semanticGrade=gradeWithAI}){
+// Public showcase runs with a no-cost, limited proposition engine, not a paid model.
+export function createHandler({createClient,env,assess}){
 const cors={"Access-Control-Allow-Origin":"https://ahmadfoad361-sketch.github.io","Access-Control-Allow-Headers":"authorization, apikey, content-type, x-client-info","Access-Control-Allow-Methods":"POST, OPTIONS"};
 const json=(body,status=200)=>new Response(JSON.stringify(body),{status,headers:{...cors,"Content-Type":"application/json"}});
-// Only the server grades and stores free-text responses. The optional semantic model
-// uses approved sources and verified evidence; a supervisor receives every attempt.
-// No browser API keys, no definitive score when the evidence is uncertain.
+// Only the server checks and stores free-text responses; supervisors can review.
+// Rule-based scores are provisional evidence, NOT full semantic AI assessment.
+// Deliberately do not call external paid model APIs.
 return async req=>{
  if(req.method==="OPTIONS")return new Response("ok",{headers:cors});
  if(req.method!=="POST")return json({error:"method_not_allowed"},405);
@@ -40,15 +40,9 @@ return async req=>{
   if(sources.error||sources.data?.length!==2||sources.data.some((s)=>s.status!=="approved"||!s.excerpt)){
    grade={grade_status:"pending_review",recall_score:null,feedback:lang==='ar'?"تعذر التحقق من المصادر المعتمدة؛ حُفظت إجابتك دون احتساب صفر.":"Approved sources could not be verified; your answer is saved without a zero.",details:{reason:"legal_sources_not_ready",provider:"none",points:null,max_points:7}};
   }else{
-   try{
-    const semantic=await semanticGrade({
-     answer,lang,sources:sources.data,key:env("OPENAI_API_KEY"),model:env("OPENAI_MODEL")
-    });
-    if((semantic.status==="scored"||semantic.status==="review")&&semantic.grade)grade=semantic.grade;
-    else grade.details={...grade.details,provider_status:semantic.reason||"semantic_unavailable"};
-   }catch(_){
-    grade.details={...grade.details,provider_status:"semantic_unavailable"};
-   }
+   // No API billing, no remote model calls, and no unsupported claim of semantic grading.
+   // If the limited matcher cannot substantiate a proposition, preserve pending review.
+   grade.details={...grade.details,provider:"none",provider_status:"disabled_no_paid_calls"};
   }
   const saved=await db.rpc("save_demo_submission",{p_user:session.user.id,p_request_id:requestId,p_hash:digest,p_record:{language:lang,answer_text:answer,choices,choice_indicators:indicators,grade_status:grade.grade_status,recall_score:grade.recall_score,grade_feedback:grade.feedback,grade_evidence:grade.details}});
   if(saved.error||!saved.data)return json({error:"demo_result_save_failed"},503);
