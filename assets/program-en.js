@@ -240,7 +240,7 @@ function bridgeTask(meta){
  return generic.application;
 }
 function buildQueue(){
- return LEX_QUALITY.queue(state.course.session,"en",weakestDimension(),null,LEX_QUALITY.learnerContext(state.course,(state.diag&&state.diag.metrics)||{}));
+ var p=state.diag&&state.diag.trainingPlan,mode=state.course.session===1&&p?(p.mode==="foundation"?"foundation":p.weakest):weakestDimension();return LEX_QUALITY.queue(state.course.session,"en",mode,null,LEX_QUALITY.learnerContext(state.course,(state.diag&&state.diag.metrics)||{}));
  /* Legacy pool retained for compatibility. */
  var meta=sessionMeta(state.course.session),pool=weekTasks[meta.week]||weekTasks[1],lead=pool[Math.min(pool.length-1,meta.day-1)]||pool[0],weak=weakestDimension();
  var adaptive=weak==="recall"?generic.memory:weak==="understanding"?generic.understanding:weak==="application"?generic.application:weak==="exam"?generic.exam:generic.spot;
@@ -275,12 +275,12 @@ function roadmap(current){
 function home(){
  if(state.course.completedProgram)return completion();
  if(!state.diag){
-  chrome('<section class="simpleStudentHero"><div><span class="kicker">Start here</span><h1>Complete the diagnostic first</h1><p>Week 1 remains locked until LexLearn has analysed your recall, understanding and application.</p></div><a class="primary bigStudentCta" href="showcase-en.html?country=qa&subject=rights">Start diagnostic</a></section>'+roadmap(1));return;
+  chrome('<section class="simpleStudentHero"><div><span class="kicker">Start here</span><h1>Complete the diagnostic first</h1><p>Week 1 remains locked until LexLearn has analysed your recall, understanding and application.</p></div><a class="primary bigStudentCta" href="diagnostic.html?lang=en">Start diagnostic</a></section>'+roadmap(1));return;
  }
  var meta=sessionMeta(state.course.session),m=currentMetrics();
  chrome('<section class="simpleStudentHero"><div><span class="kicker">Today’s session</span><h1>'+esc(meta.title)+'</h1><p>'+esc(meta.detail)+'</p><div class="simpleMeta"><span>Week '+meta.week+' of 6</span><span>Session '+state.course.session+' of 30</span><span>≈ 20 minutes</span></div></div><button class="primary bigStudentCta" id="startSession">'+(meta.kind==="assessment"?"Start weekly assessment":"Start session")+'</button></section>'+
  '<div class="simpleSectionTitle"><div><h2>Your level at a glance</h2><p>Five skills; untested skills stay unscored. These provisional indicators update with new attempts.</p></div></div><section class="studentSnapshot">'+metricCard("Recall",m.recall)+metricCard("Understanding",m.understanding)+metricCard("Application",m.application)+metricCard("Legal precision",m.legal_precision)+metricCard("Exam answer structure",m.exam)+'</section>'+
- '<section class="studentTip"><div><b>Adaptive teaching plan</b><p>'+esc(teachingPlan().method)+'</p></div></section>'+roadmap(meta.week));
+ '<section class="studentTip"><div><b>Adaptive teaching plan</b><p>'+esc(state.diag&&state.diag.trainingPlan?state.diag.trainingPlan.reason_en:teachingPlan().method)+'</p></div></section>'+roadmap(meta.week));
  document.getElementById("startSession").onclick=function(){state.task=0;state.answers=[];state.assessmentAnswers=[];state.queue=meta.kind==="assessment"?assessmentQueue(meta.week):buildQueue();state.view=meta.kind==="assessment"?"assessment":"train";render();};
  document.querySelectorAll("[data-week]").forEach(function(b){b.onclick=function(){var w=Number(b.dataset.week);if(w>meta.week){state.course.session=(w-1)*5+1;save();}state.task=0;state.queue=buildQueue();state.view="train";render();};});
 }
@@ -296,6 +296,10 @@ function renderTask(t,assessment){
 }
 function nextTask(){if(state.task<state.queue.length-1){state.task++;render();}else{if(state.view==="assessment")finishAssessment();else finishTraining();}}
 function train(){
+  if(!DEMO&&STUDENT_SESSION&&STUDENT_SESSION.cloud&&(!window.LEX_PILOT||!LEX_PILOT.isReleased(state.course.session))){
+    var p=state.diag&&state.diag.trainingPlan;
+    chrome('<section class="stage"><div class="taskCard"><span class="kicker">Session '+state.course.session+' · academic approval pending</span><h2>Your first-level adaptive plan is saved</h2><p>'+esc(p?p.reason_en:"Your diagnostic was saved.")+'</p><p>Proposed task order: '+esc(p?p.firstTasks.join(" → "):"Foundation and review")+'</p><div class="notice">Academic items are awaiting legal and university review; no unapproved material is available and no fictional progress is recorded.</div><a class="secondary" href="student-en.html">Student Portal</a></div></section>');return;
+  }
   if(window.LEX_PILOT&&LEX_PILOT.isReleased(state.course.session)){LEX_PILOT.mount(APP,state.course.session,'en',{course:state.course,onSave:save,onComplete:function(pilot){state.answers=[1,2,3,4,5].map(function(step){var a=pilot.attempts.filter(function(x){return x.step===step;}).slice(-1)[0];return {dimension:step===4?'recall':'application',score:a&&a.score,correct:!!(a&&a.score===1)};});finishTraining();},onExit:function(){state.view='home';render();}});return;}var t=state.queue[state.task]||buildQueue()[0];renderTask(t,false);}
 function finishTraining(){
   if(FIRST_STAGE_PREVIEW){state.view="stagePreviewComplete";render();return;}
@@ -341,17 +345,22 @@ function completion(){
 function render(){if(state.view==="stagePreviewComplete")return stagePreviewComplete();if(state.view==="home")return home();if(state.view==="train")return train();if(state.view==="sessionResult")return sessionResult();if(state.view==="assessment")return assessment();if(state.view==="assessmentResult")return assessmentResult();if(state.view==="completion")return completion();}
 
 async function boot(){
- if(!DEMO&&STUDENT_SESSION&&STUDENT_SESSION.cloud&&window.LEX_CLOUD&&LEX_CLOUD.isConfigured&&LEX_CLOUD.isConfigured()){
+ if(!DEMO){
+  if(!STUDENT_SESSION||!STUDENT_SESSION.cloud||!STUDENT_SESSION.studentId||!window.LEX_CLOUD||!LEX_CLOUD.isConfigured()){location.replace("student-login-en.html");return;}
   try{
-   var ps=await LEX_CLOUD.loadSnapshot({courseId:SNAPSHOT_COURSE,snapshotType:"profile"});if(ps&&ps.state)localStorage.setItem(PROFILE_KEY,JSON.stringify(ps.state));
-   var cs=await LEX_CLOUD.loadSnapshot({courseId:SNAPSHOT_COURSE,snapshotType:"course"});if(cs&&cs.state){localStorage.setItem(COURSE_KEY,JSON.stringify(cs.state));state.course=loadCourse();}
-   state.diag=diagnostic();
-  }catch(e){}
+   var u=await LEX_CLOUD.db().auth.getUser();
+   if(u.error||!u.data||!u.data.user||u.data.user.id!==STUDENT_SESSION.studentId)throw new Error("not_authenticated");
+   var ps=await LEX_CLOUD.loadSnapshot({courseId:SNAPSHOT_COURSE,snapshotType:"profile"});
+   var d=ps&&ps.state&&ps.state.results&&ps.state.results[SNAPSHOT_COURSE];
+   if(!window.LEX_OFFICIAL_DIAGNOSTIC||!LEX_OFFICIAL_DIAGNOSTIC.valid(d,u.data.user.id)){location.replace("diagnostic.html?lang=en");return;}
+   localStorage.setItem(PROFILE_KEY,JSON.stringify(ps.state));
+   var cs=await LEX_CLOUD.loadSnapshot({courseId:SNAPSHOT_COURSE,snapshotType:"course"});
+   if(!cs||!cs.state||cs.state.diagnosticAttemptId!==d.attempt_id)throw new Error("diagnostic_course_sync_required");
+   localStorage.setItem(COURSE_KEY,JSON.stringify(cs.state));state.course=loadCourse();state.diag=d;
+  }catch(e){APP.textContent="Unable to confirm cloud progress ("+String(e.message||e)+"). Please return to the student portal.";return;}
  }
  if(FIRST_STAGE_PREVIEW){
-  state.diag={metrics:{recall:null,understanding:null,application:null,
-   legal_precision:null,exam:null,retention:null},pendingRecall:true,
-   profileType:"insufficient_evidence",source:"public_stage_one_preview"};
+  state.diag={metrics:{recall:null,understanding:null,application:null,legal_precision:null,exam:null,retention:null},pendingRecall:true,profileType:"insufficient_evidence",source:"public_stage_one_preview"};
   state.course=defaultCourse();
  }
  if(AUTO_START&&state.diag&&!state.course.completedProgram){var meta=sessionMeta(state.course.session);state.task=0;state.answers=[];state.queue=meta.kind==="assessment"?assessmentQueue(meta.week):buildQueue();state.view=meta.kind==="assessment"?"assessment":"train";}
