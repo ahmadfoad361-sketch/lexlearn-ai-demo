@@ -52,6 +52,21 @@ function cloud(uid,opts={}){
    prompt_ar:q.ar,rubric_json:{prompt_en:q.en},options_json:{ar:q.arOptions,en:q.enOptions},
    answer_key_json:{correct_index:q.a},source_ids:legalSources[q.id]};
  }
+ const reviewedPack=JSON.parse(fs.readFileSync("validation/official-diagnostic-qatar-v2-review.json","utf8"));
+ assert.equal(reviewedPack.questions.length,6,"all six diagnostic MCQs must have one review draft");
+ for(const q of qs){
+  const draft=reviewedPack.questions.find(x=>x.metadata.official_diagnostic_v2_id===q.id);
+  assert.ok(draft,"academic packet must contain "+q.id);
+  assert.equal(draft.status,"legal_review","unreviewed items may never auto-approve");
+  assert.equal(draft.metadata.legal_approval,false);
+  assert.equal(draft.metadata.learning_approval,false);
+  assert.equal(draft.prompt_ar,q.ar);
+  assert.equal(draft.rubric_json.prompt_en,q.en);
+  assert.deepEqual(draft.options_json.ar,q.arOptions);
+  assert.deepEqual(draft.options_json.en,q.enOptions);
+  assert.equal(draft.answer_key_json.correct_index,q.a);
+  assert.deepEqual(draft.source_ids,legalSources[q.id]);
+ }
  const correct=qs.map(approvedRow);
  assert.ok(correct.every((item,i)=>D.exactApprovedQuestion(item,qs[i])),"reviewed six questions can match their approved content exactly");
  for(const [field,wrong] of [["prompt_ar","question changed after review"],["legal_reviewer",null],["reviewed_at",null]]){
