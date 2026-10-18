@@ -68,4 +68,7 @@ for(const page of ["program.html","program-en.html","pilot-review.html","pilot-q
 for(const page of ["showcase.html","showcase-en.html"]){
  assert.ok(read(page).includes("showcase"+(page.includes("-en")?"-en":"")+".js?v=20261018.1"),"demo disclosure cache bust missing in "+page);
 }
+assert.ok(read("assets/program.js").includes("var unverified="),"local rubric needs an explicit unverified status");
+assert.ok(read("assets/program.js").includes("لا تعتمد هذه النتيجة كدرجة أكاديمية"),"no pseudo academic grade for unverified free text");
+assert.ok(read("program.html").includes("program.js?v=20261018.2"),"refresh browser cache for honest training status");
 console.log("production-boundaries tests: PASS");
