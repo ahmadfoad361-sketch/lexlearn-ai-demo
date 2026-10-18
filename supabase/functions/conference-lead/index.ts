@@ -25,8 +25,15 @@ function respond(req:Request, payload:Record<string,unknown>, status=200) {
 function config() {
   const siteKey=Deno.env.get("TURNSTILE_SITE_KEY")||"";
   const secret=Deno.env.get("TURNSTILE_SECRET_KEY")||"";
-  const serverKey=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")||"";
-  return {enabled:Boolean(siteKey&&secret&&serverKey),siteKey:siteKey&&secret?siteKey:"",policyVersion};
+  let serverKey=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")||"";
+  if(!serverKey){try{serverKey=JSON.parse(Deno.env.get("SUPABASE_SECRET_KEYS")||"{}").default||"";}catch(_){}}
+  // Without a configured notification recipient, the owner has no staff inbox for
+  // these private records. Fail closed instead of silently accepting unseen leads.
+  // Never expose notification email addresses or API keys to the browser.
+  const notifyReady=Boolean(Deno.env.get("RESEND_API_KEY")&&
+    Deno.env.get("LEAD_NOTIFY_TO")&&Deno.env.get("LEAD_NOTIFY_FROM"));
+  return {enabled:Boolean(siteKey&&secret&&serverKey&&notifyReady),
+    siteKey:siteKey&&secret?siteKey:"",policyVersion};
 }
 function clean(v:unknown,max:number) {
   if(typeof v!=="string"||v.length>max+50)return "";
@@ -74,7 +81,12 @@ async function deliverNotification(db:ReturnType<typeof adminClient>,id:string,d
   const token=Deno.env.get("RESEND_API_KEY")||"";
   const recipient=Deno.env.get("LEAD_NOTIFY_TO")||"";
   const sender=Deno.env.get("LEAD_NOTIFY_FROM")||"";
-  if(!token||!recipient||!sender)return;
+  // Defensive safeguard if notifications are revoked between readiness and delivery.
+  if(!token||!recipient||!sender){
+    await db.from("conference_leads").update({notification_status:"failed",
+      notification_retry_after:new Date(Date.now()+15*60*1000).toISOString()}).eq("id",id);
+    return;
+  }
   // A failed email must never undo a saved inquiry.
   const {error:claimError}=await db.from("conference_leads").update({notification_status:"sending",notification_attempts:1}).eq("id",id);
   if(claimError)return;

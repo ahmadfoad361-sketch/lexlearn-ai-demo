@@ -62,6 +62,9 @@ jobs:
         run: node tests/conference-landing.test.js
       - name: Production boundary tests
         run: node tests/production-boundaries.test.js
+      - name: Live conference intake readiness (no data submitted)
+        continue-on-error: true
+        run: node scripts/verify-conference-endpoint.mjs
 
   deploy:
     needs: test
