@@ -748,7 +748,7 @@ function syncNote(error){var el=document.getElementById("qualitySync");if(el)el.
 function chrome(inner){
   APP.innerHTML='<div class="courseShell"><header class="courseTop"><div class="courseTopIn">'+
     '<div class="brand"><div class="mark"><img src="assets/lexlearn-logo.svg" alt="LexLearn"></div><div><b>Lex<span class="brandLearn">Learn</span></b><small>'+countryLabel()+' • نظرية الحق • نفهم طريقة تفكيرك، ونبني طريقك.</small></div></div>'+
-    '<div class="topActions">'+(['home','sessionResult','achievement','weekSummary','completion','notebook'].indexOf(state.view)>=0?'<button class="topBtn" type="button" id="openLearningKeys">نوتة المفاتيح</button>':'')+'<a class="topBtn" href="program-en.html?country=qa&subject=rights'+(DEMO?'&demo=1':'')+'">English</a><a class="topBtn" href="showcase.html?country='+COUNTRY+'">الديمو التشخيصي</a><a class="topBtn" href="index.html">الرئيسية</a></div>'+
+    '<div class="topActions">'+(['home','sessionResult','achievement','weekSummary','completion','notebook'].indexOf(state.view)>=0?'<button class="topBtn" type="button" id="openLearningKeys">نوتة المفاتيح</button>':'')+'<a class="topBtn" href="program-en.html?country=qa&subject=rights'+(DEMO?'&demo=1':'')+'">English</a><a class="topBtn" href="showcase.html?country='+COUNTRY+'">الديمو العام</a><a class="topBtn" href="index.html">الرئيسية</a></div>'+
   '</div></header><main class="courseWrap">'+(FIRST_STAGE_PREVIEW?'<div class="notice" role="note">معاينة الجلسة الأولى فقط. هذه ليست تجربة جامعية معتمدة، ولم تُنقل درجات التشخيص أو إجابتك إلى ملف أكاديمي.</div>':'')+inner+(STUDENT_SESSION&&STUDENT_SESSION.cloud?'<p id="qualitySync" role="status">التقدم المحلي محفوظ؛ الحفظ المركزي يُؤكد بعد إتمام المزامنة.</p>':'')+'</main></div>';
   var keysNav=document.getElementById("openLearningKeys");
    if(keysNav)keysNav.onclick=function(){state.view="notebook";render();};
@@ -804,6 +804,11 @@ function shortStudentTip(metrics){
 function home(){
   if(state.course.completedProgram){state.view="completion";return completion();}
   var m=sessionMeta(state.course.session),d=state.diag;
+  if(!d&&!(STUDENT_SESSION&&STUDENT_SESSION.cloud)){
+    chrome('<section class="simpleStudentHero"><div><span class="kicker">معاينة عامة • ليست حساب الطالب</span><h1>اختر طريقة تجربة LexLearn</h1><p>يمكنك تجربة الديمو العام أو معاينة أول جلسة تدريبية. نتائج الديمو لا تُستخدم كتقييم تشخيصي رسمي ولا تفتح مراحل الطالب المسجل.</p></div><div class="choiceRow"><a class="primary bigStudentCta" id="publicDemoEntry" href="showcase.html?country=qa&subject=rights">ابدأ الديمو العام</a><a class="secondary" id="publicFirstStage" href="program.html?demo=1&start=1&preview=stage1&country=qa&subject=rights">معاينة المستوى الأول</a><a class="secondary" id="realStudentLogin" href="student-login.html">دخول الطالب المسجل</a></div></section>'+
+      '<section class="simpleSteps"><div><span>1</span><b>الديمو</b><small>مثال توضيحي</small></div><div><span>2</span><b>معاينة المستوى</b><small>جلسة أولى بلا درجات رسمية</small></div><div><span>3</span><b>حساب الطالب</b><small>تشخيص وحفظ سحابي مستقلان</small></div></section>');
+    return;
+  }
   if(!d){
     chrome('<section class="simpleStudentHero"><div><span class="kicker">جاهز نبدأ؟</span><h1>ابدأ بتقييم قصير</h1><p>بضع أسئلة فقط، وبعدها يظهر لك تدريب مناسب لمستواك.</p></div><a class="primary bigStudentCta" href="showcase.html?country='+COUNTRY+'&subject='+SUBJECT+'">ابدأ التقييم</a></section>'+
       '<section class="simpleSteps"><div><span>1</span><b>اختبر</b><small>أسئلة قصيرة</small></div><div><span>2</span><b>تدرّب</b><small>على ما تحتاجه</small></div><div><span>3</span><b>تقدّم</b><small>خطوة بعد خطوة</small></div></section>');
