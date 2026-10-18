@@ -209,7 +209,7 @@ function run(options) {
       '<p class="cycleLead">'+pick(ar,"استخدمت معلومة أو مهارة أظهرتها محاولتك لتتدرّب على مهارة أخرى، ثم واجهت سؤالًا بواقعة مختلفة.","You used an observed strength to practise another skill, then addressed a changed fact pattern.")+'</p>'+
       '<div class="cycleSummary"><div><b>'+tasks.length+'</b><span>'+pick(ar,"خطوات تدريبية","Practice steps")+'</span></div><div><b>'+correct+' / '+choiceScores.length+'</b><span>'+pick(ar,"أسئلة اختيار صحيحة أثناء التدريب","Correct multiple-choice checks")+'</span></div></div>'+
       '<p class="cycleSmall">'+pick(ar,"الكتابة الحرة كانت للمقارنة الذاتية ولم تدخل في العدد. لا تُقاس فاعلية التدريب أو الاحتفاظ طويل المدى في هذه المعاينة. يمكنك الآن معاينة الجلسة الأولى، لكن البرنامج الجامعي ما زال غير معتمد للطلاب.","Free-text comparisons were not scored. This preview does not measure learning gains or long-term retention. You can preview the first session; the academic pilot is not yet approved for students.")+'</p>'+
-      '<div class="demoActions"><a class="btn primary" id="cycleFirstStage" href="'+(ar?"program.html":"program-en.html")+'?demo=1&start=1&country=qa&subject=rights">'+pick(ar,"ابدأ معاينة المرحلة الأولى","Preview stage one")+'</a>'+
+      '<div class="demoActions"><a class="btn primary" id="cycleFirstStage" href="'+(ar?"program.html":"program-en.html")+'?demo=1&start=1&preview=stage1&country=qa&subject=rights">'+pick(ar,"ابدأ معاينة المرحلة الأولى","Preview stage one")+'</a>'+
       '<button type="button" class="btn secondary" id="cycleAgain">'+pick(ar,"أعد دورة التدريب","Repeat practice")+'</button>'+backButton()+'</div>');
     document.getElementById("cycleAgain").onclick=function(){pos=0;choiceScores=[];intro();};
     wireBack();
