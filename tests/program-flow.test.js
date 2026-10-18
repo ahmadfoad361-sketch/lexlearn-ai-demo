@@ -18,8 +18,8 @@ function environment(file,lang,seed,confirmed=true,pilotReleased=false,stageOneP
  // A confirmed-review fixture tests the gates, not model accuracy.
  if(confirmed)c.LEX_QUALITY.gradeAsync=async function(answer,task,language){const p=c.LEX_QUALITY.grade(answer,task,language);p.pending=false;p.overall=/لا أتذكر|cannot remember/.test(answer)?0:100;p.axes[task.dimension]=p.overall;p.needsHumanReview=false;p.gradingMethod='grounded_semantic';return p;};
  let src=fs.readFileSync(file,'utf8');
- src=src.replace(/boot\(\);\s*\}\)\(\);\s*$/,'window.__test={state:state,home:home,render:render,buildQueue:'+(lang==='ar'?'buildTrainingQueue':'buildQueue')+',assessmentQueue:'+(lang==='ar'?'assessmentBankForWeek':'assessmentQueue')+'};})();');
- vm.runInContext(src,c);return {c,storage,document,get nodes(){return nodes;}};
+ src=src.replace(/boot\(\);\s*\}\)\(\);\s*$/,'window.__test={state:state,home:home,render:render,boot:boot,buildQueue:'+(lang==='ar'?'buildTrainingQueue':'buildQueue')+',assessmentQueue:'+(lang==='ar'?'assessmentBankForWeek':'assessmentQueue')+'};})();');
+ vm.runInContext(src,c);if(stageOnePreview)c.__test.boot();return {c,storage,document,get nodes(){return nodes;}};
 }
 (async()=>{
  for(const lang of ['ar','en']){
