@@ -372,6 +372,7 @@ function render(){
 }
 
 async function boot(){
+  if(session.cloud&&(!window.LEX_CLOUD||!LEX_CLOUD.isConfigured||!LEX_CLOUD.isConfigured())){APP.textContent="Cloud authentication is currently unavailable; progress was not verified.";return;}
   if(session.cloud&&window.LEX_CLOUD&&LEX_CLOUD.isConfigured&&LEX_CLOUD.isConfigured()){
     try{
       var cloudProfile=await LEX_CLOUD.profile();
@@ -404,6 +405,7 @@ async function boot(){
         result=null;
       }
       result=window.LEX_OFFICIAL_DIAGNOSTIC&&LEX_OFFICIAL_DIAGNOSTIC.valid(result,student.id)?result:null;
+      if(result)await LEX_OFFICIAL_DIAGNOSTIC.restore(LEX_CLOUD,student.id);
       var cs=await LEX_CLOUD.loadSnapshot({courseId:country+"-"+(country==="qa"?"rights":"sources"),snapshotType:"course"});
       if(cs&&cs.state){
         course=cs.state;write(COURSE_KEY,course);
