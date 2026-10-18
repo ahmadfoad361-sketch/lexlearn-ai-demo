@@ -38,6 +38,7 @@ assert.ok(read("assets/lexlearn-navigation.css").includes(".ll-back-inline .ll-b
 assert.ok(read("assets/conference.css").includes(".pilot > div:first-child h2"),"pilot heading responsive treatment missing");
 
 assert.ok(go.includes("../conference.html")&&go.includes("window.location.replace("),"permanent QR redirect required");
+assert.ok(!go.includes('<link rel="canonical"')&&!go.includes("https://ahmadfoad361-sketch.github.io"),"printed QR redirect must not canonicalize to the old preview hostname");
 assert.ok(pub.includes('"go/index.html"')&&pub.includes('"conference.html"'),"release artifact must include routes");
 assert.ok(pub.includes('"lexlearn-go-qr.svg"')&&pub.includes('"conference-pdf.js"'),"release must ship PDF and QR assets");
 assert.ok(!html.includes('id="printQR"')&&pub.includes('"lexlearn-go-qr.svg"'),"visitor page must not show owner-only QR download, but published QR asset stays available");
