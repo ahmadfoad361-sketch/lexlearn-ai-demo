@@ -2,6 +2,7 @@ const assert=require("node:assert/strict");
 const fs=require("node:fs");
 const D=require("../assets/official-diagnostic.js");
 const qs=D.QUESTIONS;
+global.localStorage={setItem(){},getItem(){return null;}};
 function rows(kind){
  return qs.map(q=>{
   let selected=-1;
