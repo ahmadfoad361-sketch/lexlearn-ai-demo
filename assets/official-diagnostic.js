@@ -1,14 +1,14 @@
 /* Official, authenticated diagnostic. Public showcase is never an input. Issue #36. */
 (function(root){
 "use strict";
-var COURSE_SCOPE="qa-rights",COURSE_DB_ID="qa-qu-lawc101-rights",VERSION=1,RUBRIC="lexdiagnostic-objective-v1";
+var COURSE_SCOPE="qa-rights",COURSE_DB_ID="qa-qu-lawc101-rights",VERSION=2,RUBRIC="lexdiagnostic-objective-v2";
 var QUESTIONS=[
  {id:"q39r",dimension:"recognition",ar:"متى تبدأ الشخصية القانونية للإنسان كأصل وفق المادة 39؟",en:"When does legal personality begin as a general rule under Article 39?",arOptions:["بتمام ولادته حيًا","عند إتمام السابعة","عند تمام 18 سنة"],enOptions:["Upon live birth","At age seven","At age eighteen"],a:0},
  {id:"q49r",dimension:"recognition",ar:"ما سن الرشد كأصل وفق المادة 49؟",en:"What is the general age of majority under Article 49?",arOptions:["21 سنة","18 سنة كاملة","7 سنوات"],enOptions:["Twenty-one","Eighteen full years","Seven"],a:1},
  {id:"q62r",dimension:"recognition",ar:"أي عبارة أقرب إلى قاعدة المادة 62؟",en:"Which statement best reflects Article 62?",arOptions:["كل ضرر يوجب التعويض","كل استعمال للحق ممنوع","الاستعمال المشروع لا يرتب المسؤولية لمجرد الضرر"],enOptions:["Every harm requires compensation","Every exercise of a right is forbidden","Lawful exercise does not create liability merely because harm occurs"],a:2},
  {id:"q39u",dimension:"understanding",ar:"وُلد طفل حيًا ثم توفي بعد ساعات. ما التفسير الأدق؟",en:"A child was born alive and died hours later. Which explanation is most accurate?",arOptions:["لم تثبت له شخصية قانونية","ثبتت له الشخصية عند الولادة وانتهت بالوفاة","تبدأ الشخصية عند الرشد"],enOptions:["No legal personality arose","Personality began at live birth and ended at death","Personality begins at majority"],a:1},
- {id:"q50u",dimension:"understanding",ar:"لماذا تختلف أهلية طفل لم يكمل السابعة عن بالغ راشد؟",en:"Why does capacity differ between a child under seven and an adult?",arOptions:["لأن التمييز والأهلية يرتبطان بشروط قانونية مختلفة","لأن كل الأعمار لها أهلية واحدة","لأن السن لا أثر له"],enOptions:["Legal capacity and discernment depend on defined conditions","Everyone has the same capacity","Age has no effect"],a:0},
- {id:"q63a",dimension:"application",ar:"يستعمل شخص حقًا بهدف الإضرار بالغير وحده. ما التكييف الأقرب؟",en:"Someone exercises a right solely to harm another. What is the closest legal classification?",arOptions:["يكون مشروعًا دائمًا","يكفي وجود الحق لاستبعاد التعسف","قد يعد استعمالًا غير مشروع للحق"],enOptions:["Always lawful","Having a right always excludes abuse","May constitute an unlawful exercise of a right"],a:2}
+ {id:"q50u",dimension:"understanding",ar:"طفل عمره ست سنوات يملك مالًا ويحاول إبرام تصرف قانوني بنفسه. أي تفسير قانوني أدق؟",en:"A six-year-old owns property and attempts to enter a legal transaction alone. Which explanation is legally sound?",arOptions:["له أهلية الأداء الكاملة لأنه يملك مالًا","لا يكون أهلًا لأداء التصرفات القانونية لكونه عديم التمييز، وإن أمكن أن تثبت له حقوق","لا تثبت له شخصية قانونية حتى يبلغ السابعة"],enOptions:["Owning property gives him full capacity to act","He lacks capacity to enter legal acts because he is below the age of discernment, though rights may vest in him","He has no legal personality until age seven"],a:1},
+ {id:"q63a",dimension:"application",ar:"يستعمل شخص حقًا بهدف الإضرار بالغير وحده. ما التكييف الأقرب؟",en:"Someone exercises a right solely to harm another. What is the closest legal classification?",arOptions:["يكون مشروعًا دائمًا","يكفي وجود الحق لاستبعاد التعسف","يكون استعمالًا غير مشروع للحق لانفراد قصد الإضرار"],enOptions:["Always lawful","Having a right always excludes abuse","It is an unlawful exercise of the right because causing harm was the sole aim"],a:2}
 ];
 function valid(x,uid){
  return !!(x&&x.version===VERSION&&x.source==="student_official_diagnostic"&&x.completed_at&&x.student_id===uid&&x.course_id===COURSE_DB_ID&&x.attempt_id&&x.measurements&&x.trainingPlan);
@@ -36,7 +36,7 @@ function build(uid,rows,free,attemptId,date){
   "insufficient_evidence":{mode:"foundation",weakest:"foundation",firstTasks:["worked_example","supported_decision","unaided_check"],reason_ar:"لا توجد إجابات موضوعية كافية للمقارنة؛ تبدأ جلسة تأسيسية دون افتراض ضعف أو قوة مؤكدة.",reason_en:"There is insufficient comparable objective evidence; begin with supported foundations without assuming strength or weakness."}
  };
  var plan=plans[profile];
- return {version:VERSION,source:"student_official_diagnostic",student_id:uid,course_id:COURSE_DB_ID,attempt_id:attemptId,completed_at:date,review_status:free.trim()?"pending_human_review":"not_requested",
+ return {version:VERSION,source:"student_official_diagnostic",student_id:uid,course_id:COURSE_DB_ID,attempt_id:attemptId,completed_at:date,legal_reference:"Qatar Civil Code Law 22/2004 Arts 39,49,50,62,63",review_status:free.trim()?"pending_human_review":"not_requested",
   measurements:{recognition:recognition,recall:recall,understanding:understanding,application:application,
     legal_precision:{value:null,measured:false,item_count:0,status:"not_measured",method:"none",rubric_version:RUBRIC,source_id:null},
     exam:{value:null,measured:false,item_count:0,status:"not_measured",method:"none",rubric_version:RUBRIC,source_id:null},
@@ -111,7 +111,7 @@ async function academicItemsApproved(cloud){
  if(r.error)throw r.error;
  var items=r.data||[];
  return QUESTIONS.every(function(q){return items.some(function(item){
-   return item.status==="approved"&&item.reviewed_at&&item.metadata&&item.metadata.official_diagnostic_v1_id===q.id;
+   return item.status==="approved"&&item.reviewed_at&&item.metadata&&item.metadata.official_diagnostic_v2_id===q.id;
  });});
 }
 async function mount(){
