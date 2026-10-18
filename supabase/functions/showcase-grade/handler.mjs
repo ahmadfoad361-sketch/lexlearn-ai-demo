@@ -1,16 +1,26 @@
 import {gradeWithAI} from "./semantic.mjs";
 export function createHandler({createClient,env,assess,semanticGrade=gradeWithAI}){
-const cors={"Access-Control-Allow-Origin":"https://ahmadfoad361-sketch.github.io","Access-Control-Allow-Headers":"authorization, apikey, content-type, x-client-info","Access-Control-Allow-Methods":"POST, OPTIONS"};
-const json=(body,status=200)=>new Response(JSON.stringify(body),{status,headers:{...cors,"Content-Type":"application/json"}});
+// Explicitly allow the GitHub Pages preview and owner-approved production origins.
+// LEX_ALLOWED_ORIGINS is a comma-separated list of HTTPS origins, never a wildcard.
+// Origin checks are an extra browser boundary; the user JWT is still mandatory.
+const previewOrigin="https://ahmadfoad361-sketch.github.io";
+const extraOrigins=String(env("LEX_ALLOWED_ORIGINS")||"").split(",").map(x=>x.trim())
+ .filter(x=>/^https:\/\/[a-z0-9.-]+(?::\d{2,5})?$/i.test(x));
+const allowedOrigins=new Set([previewOrigin,...extraOrigins]);
 // Only the server grades and stores free-text responses. The optional semantic model
 // uses approved sources and verified evidence; a supervisor receives every attempt.
 // No browser API keys, no definitive score when the evidence is uncertain.
 return async req=>{
+ const origin=req.headers.get("origin")||"";
+ const cors={"Access-Control-Allow-Origin":allowedOrigins.has(origin)?origin:previewOrigin,
+  "Access-Control-Allow-Headers":"authorization, apikey, content-type, x-client-info",
+  "Access-Control-Allow-Methods":"POST, OPTIONS","Vary":"Origin"};
+ const json=(body,status=200)=>new Response(JSON.stringify(body),
+  {status,headers:{...cors,"Content-Type":"application/json"}});
+ if(origin&&!allowedOrigins.has(origin))return json({error:"origin_denied"},403);
  if(req.method==="OPTIONS")return new Response("ok",{headers:cors});
  if(req.method!=="POST")return json({error:"method_not_allowed"},405);
  try{
-  const origin=req.headers.get("origin")||"";
-  if(origin&&origin!=="https://ahmadfoad361-sketch.github.io")return json({error:"origin_denied"},403);
   const auth=req.headers.get("authorization")||"";
   const url=env("SUPABASE_URL")||"",key=env("SUPABASE_ANON_KEY")||"",service=env("SUPABASE_SERVICE_ROLE_KEY")||"";
   if(!auth.startsWith("Bearer "))return json({error:"authentication_required"},401);
