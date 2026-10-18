@@ -25,6 +25,26 @@ const aiReceipt=await(await aiHandler(new Request('https://example.com',{method:
 assert.equal(aiReceipt.grade_status,'ai_assessed','Automated AI-grade provenance must persist for supervisor access');
 assert.equal(aiReceipt.recall_score,100,'Semantic model score must be visible in student receipt');
 assert.equal(aiReceipt.details.provider,'openai');
+// A verified custom domain must pass preflight; a random origin must not.
+// This is not an authentication bypass: all accepted POSTs still require JWTs.
+const prodOrigin='https://lexlearn.example';
+const production=createHandler({createClient:()=>db,
+ env:(name)=>name==='LEX_ALLOWED_ORIGINS'?prodOrigin+',http://insecure.example,*':name.startsWith('OPENAI_')?undefined:'test',
+ assess:R.assess});
+const options=(origin)=>new Request('https://example.com',{method:'OPTIONS',headers:{origin,'Access-Control-Request-Method':'POST'}});
+let preflight=await production(options(prodOrigin));
+assert.equal(preflight.status,200,'approved HTTPS custom domain should pass OPTIONS');
+assert.equal(preflight.headers.get('Access-Control-Allow-Origin'),prodOrigin);
+assert.equal(preflight.headers.get('Vary'),'Origin');
+assert.equal((await production(options('https://evil.example'))).status,403,'unknown origin denied on preflight');
+assert.equal((await production(options('http://insecure.example'))).status,403,'HTTP origins are never whitelisted');
+assert.equal((await production(new Request('https://example.com',{method:'POST',
+ headers:{origin:'https://evil.example',authorization:'Bearer test'}}))).status,403,
+ 'unknown browser origin denied before any data handling');
+assert.equal((await production(new Request('https://example.com',{method:'POST',
+ headers:{origin:prodOrigin}}))).status,401,'CORS permission must not replace JWT auth');
+preflight=await handler(options('https://ahmadfoad361-sketch.github.io'));
+assert.equal(preflight.status,200,'existing GitHub Pages preview still works');
 assert.equal((await handler(new Request('https://example.com',{method:'POST'}))).status,401);
 global.fetch=oldFetch;console.log('Delivery: provider exhaustion isolation, retry, quota, source failure, engine failure, auth PASS');
 })().catch(e=>{console.error(e);process.exit(1)});
