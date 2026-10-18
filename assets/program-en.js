@@ -206,9 +206,9 @@ function engineModel(){
  if(window.LEX_ENGINE){
   try{return LEX_ENGINE.learnerModel({metrics:base,events:state.course.evidence||[]});}catch(e){}
  }
- var axes={};["recall","understanding","application","legal_precision","retention","exam"].forEach(function(k){axes[k]={value:base[k]==null?50:Number(base[k]),evidence:base[k]==null?0:1};});
- var ranked=["recall","understanding","application"].sort(function(a,b){return axes[a].value-axes[b].value;});
- return {axes:axes,weakest:ranked[0],strongest:ranked[ranked.length-1],bridge:{mode:"evidence_bridge",label:"Use the strongest measured skill to build the weakest."},confidence:0.5};
+ var axes={};["recall","understanding","application","legal_precision","retention","exam"].forEach(function(k){axes[k]={value:base[k]==null?null:Number(base[k]),evidence:base[k]==null?0:1};});
+ var ranked=["recall","understanding","application"].filter(function(k){return axes[k].value!=null;}).sort(function(a,b){return axes[a].value-axes[b].value;});
+ return {axes:axes,weakest:ranked[0]||null,strongest:ranked[ranked.length-1]||null,bridge:{mode:"evidence_bridge",label:"Use the strongest measured skill to build the weakest."},confidence:0.5};
 }
 function currentMetrics(){
  var base=(state.diag&&state.diag.metrics)||{},m=engineModel(),out={};
@@ -234,7 +234,8 @@ function save(){
 }
 function weakestDimension(){return (engineModel().weakest||"application")==="legal_precision"?"understanding":(engineModel().weakest||"application");}
 function bridgeTask(meta){
- var m=currentMetrics(),r=m.recall==null?50:m.recall,u=m.understanding==null?50:m.understanding;
+ var m=currentMetrics(),r=m.recall,u=m.understanding;
+ if(r==null||u==null)return generic.application;
  if(r-u>=12)return {mode:"essay",title:"From Recall to Understanding — "+meta.title,q:"Without opening the text, state the rule you remember for "+meta.detail+". Then explain why its decisive element changes the legal outcome.",dimension:"understanding",keys:["rule","because","therefore"],why:"We are using strong recall to build deeper understanding."};
  if(u-r>=12)return {mode:"essay",title:"From Understanding to Retrieval — "+meta.title,q:"For "+meta.detail+", write three short retrieval cues that would help you reconstruct the rule later. Explain the function of each cue.",dimension:"recall",keys:["rule","element","effect"],why:"We are converting understanding into reliable retrieval."};
  return generic.application;
