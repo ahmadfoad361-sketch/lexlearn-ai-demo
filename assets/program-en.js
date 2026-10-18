@@ -274,6 +274,9 @@ function roadmap(current){
 }
 function home(){
  if(state.course.completedProgram)return completion();
+ if(!state.diag&&!(STUDENT_SESSION&&STUDENT_SESSION.cloud)){
+  chrome('<section class="simpleStudentHero"><div><span class="kicker">Public preview • not a student account</span><h1>Choose how to explore LexLearn</h1><p>Try the public demo or preview the first training session. Demo results are not an official student diagnostic and cannot unlock university course stages.</p></div><div class="choiceRow"><a class="primary bigStudentCta" id="publicDemoEntry" href="showcase-en.html?country=qa&subject=rights">Start public demo</a><a class="secondary" id="publicFirstStage" href="program-en.html?demo=1&start=1&preview=stage1&country=qa&subject=rights">Preview level one</a><a class="secondary" id="realStudentLogin" href="student-login-en.html">Student sign-in</a></div></section>'+roadmap(1));return;
+ }
  if(!state.diag){
   chrome('<section class="simpleStudentHero"><div><span class="kicker">Start here</span><h1>Complete the diagnostic first</h1><p>Week 1 remains locked until LexLearn has analysed your recall, understanding and application.</p></div><a class="primary bigStudentCta" href="showcase-en.html?country=qa&subject=rights">Start diagnostic</a></section>'+roadmap(1));return;
  }

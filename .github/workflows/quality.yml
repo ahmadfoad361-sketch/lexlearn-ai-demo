@@ -59,3 +59,20 @@ jobs:
         run: node tests/production-boundaries.test.js
       - name: Build public artifact
         run: node scripts/build-public.js
+
+  browser-preview:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Install browser driver
+        run: npm install --no-save --no-package-lock playwright-core@1.56.1
+      - name: Build and serve public site
+        run: |
+          node scripts/build-public.js
+          python3 -m http.server 18765 --bind 127.0.0.1 --directory dist-site > /tmp/lexlearn-preview-http.log 2>&1 &
+          sleep 2
+      - name: Real Chrome smoke (AR/EN desktop/mobile, session one preview)
+        run: node tests/meeting-browser-flow.cjs
