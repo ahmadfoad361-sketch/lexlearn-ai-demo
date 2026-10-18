@@ -10,26 +10,16 @@ async function run(options={}){
 (async()=>{
  assert.equal((await run({item:false})).result.status,422);
  assert.equal((await run({sources:false})).result.status,422);
- assert.equal((await run({key:false})).result.status,503);
- assert.equal((await run({provider:false})).result.status,502);
- assert.equal((await run({invalid:true})).result.status,502);
- for(const result of [{score:.95,model_confidence:.5,needs_human_review:false},{score:.95,model_confidence:.9,needs_human_review:true},{score:'1',model_confidence:.9,needs_human_review:false}]){
-  const r=await run({result});assert.equal(r.result.body.score,null);assert.equal(r.result.body.needs_human_review,true);
+ // Any API key or simulated provider response must not cause an external model call.
+ for(const options of [{},{key:false},{provider:false},{invalid:true},{result:{score:1,needs_human_review:false}}]){
+  const r=await run(options);
+  assert.equal(r.result.status,200);
+  assert.equal(r.result.body.score,null);
+  assert.equal(r.result.body.needs_human_review,true);
+  assert.equal(r.result.body.grading_method,'human_review_pending');
+  assert.equal(r.result.body.reason,'no_paid_semantic_model');
+  assert.equal(r.sent,undefined,'No paid model request permitted');
+  assert.equal(r.saved,undefined,'Do not invent a graded result');
  }
- const valid={score:1,model_confidence:.9,needs_human_review:false,contradictions:[],achieved_criteria:[{id:'c1',label:'criterion',evidence:'Issue: a claim.'}],missing_criteria:[],feedback_ar:'reviewed'};
- assert.equal((await run({result:valid})).result.body.score,1);
- const weighted=await run({answer:'Element one. Element two. Element three.',rubric:{criteria:[2,2,2,1,1].map((weight,i)=>({id:'c'+(i+1),weight}))},result:{...valid,score:.75,achieved_criteria:['one','two','three'].map((x,i)=>({id:'c'+(i+1),label:'element',evidence:'Element '+x+'.'})),missing_criteria:['c4','c5']}});
- assert.equal(weighted.result.body.score,.75,'missing cues reduce only their own proposed weights, without inventing a legal contradiction');
- assert.equal(weighted.result.body.contradictions.length,0);
- for(const result of [
- {...valid,achieved_criteria:[{id:'invented',label:'criterion',evidence:'Issue: a claim.'}]},
- {...valid,achieved_criteria:[{id:'c1',label:'criterion',evidence:'Invented quotation'}]},
- {...valid,missing_criteria:['c1']},
- {...valid,score:.5},
- {...valid,needs_human_review:undefined},
- {...valid,contradictions:'not an array'},
- {...valid,achieved_criteria:[],missing_criteria:[]}
- ]){const out=await run({result});assert.equal(out.result.body.score,null);assert.equal(out.result.body.needs_human_review,true);}
- const r=await run();assert.equal(r.result.body.score,0);assert.equal(r.saved.result.score,0);assert.equal(r.sent.store,false);assert.equal(r.sent.input.includes('English'),true);
- console.log('semantic service handler: PASS (isolated doubles; not a live provider accuracy test)');
+ console.log('General grading: approved sources only, no paid model, human review pending PASS');
 })().catch(e=>{console.error(e);process.exit(1);});
