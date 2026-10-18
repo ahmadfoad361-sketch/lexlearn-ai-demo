@@ -1,7 +1,14 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 
-const originAllowed = "https://ahmadfoad361-sketch.github.io";
+const previewOrigin = "https://ahmadfoad361-sketch.github.io";
+// Set LEX_ALLOWED_ORIGINS to exact comma-separated HTTPS origins after buying the domain.
+// Turnstile must separately allow each hostname in its Cloudflare widget settings.
+function allowedOrigins() {
+  const added=(Deno.env.get("LEX_ALLOWED_ORIGINS")||"").split(",").map(v=>v.trim())
+    .filter(v=>/^https:\/\/[a-z0-9.-]+(?::\d{2,5})?$/i.test(v));
+  return new Set([previewOrigin,...added]);
+}
 const policyVersion = "2026-10-17";
 const encoder = new TextEncoder();
 
@@ -12,7 +19,7 @@ function respond(req:Request, payload:Record<string,unknown>, status=200) {
     "Cache-Control":"no-store", "Vary":"Origin",
     "X-Content-Type-Options":"nosniff"
   };
-  if(origin===originAllowed)headers["Access-Control-Allow-Origin"]=originAllowed;
+  if(origin&&allowedOrigins().has(origin))headers["Access-Control-Allow-Origin"]=origin;
   return new Response(JSON.stringify(payload),{status,headers});
 }
 function config() {
@@ -47,7 +54,7 @@ function adminClient(){
   if(!key)throw new Error("backend_not_configured");
   return createClient(Deno.env.get("SUPABASE_URL")||"",key,{auth:{persistSession:false,autoRefreshToken:false}});
 }
-async function turnstileCheck(token:string,ip:string){
+async function turnstileCheck(token:string,ip:string,hostname:string){
   const secret=Deno.env.get("TURNSTILE_SECRET_KEY")||"";
   if(!secret||token.length<5||token.length>2048)return false;
   const body=new URLSearchParams({secret,response:token});
@@ -60,7 +67,7 @@ async function turnstileCheck(token:string,ip:string){
     });
     if(!response.ok)return false;
     const check=await response.json();
-    return check.success===true&&check.hostname==="ahmadfoad361-sketch.github.io";
+    return check.success===true&&check.hostname===hostname;
   }catch(_){return false;}finally{clearTimeout(timer);}
 }
 async function deliverNotification(db:ReturnType<typeof adminClient>,id:string,data:{name:string,role:string,organization:string,contact:string}){
@@ -91,9 +98,9 @@ async function deliverNotification(db:ReturnType<typeof adminClient>,id:string,d
 }
 Deno.serve(async(req:Request)=>{
   const origin=req.headers.get("origin");
-  if(origin!==originAllowed)return respond(req,{error:"forbidden_origin"},403);
+  if(!origin||!allowedOrigins().has(origin))return respond(req,{error:"forbidden_origin"},403);
   if(req.method==="OPTIONS")return new Response(null,{status:204,headers:{
-    "Access-Control-Allow-Origin":originAllowed,
+    "Access-Control-Allow-Origin":origin,
     "Access-Control-Allow-Methods":"GET, POST, OPTIONS",
     "Access-Control-Allow-Headers":"content-type",
     "Access-Control-Max-Age":"600","Vary":"Origin"
@@ -116,7 +123,7 @@ Deno.serve(async(req:Request)=>{
     input.consent!==true||input.privacyNoticeVersion!==policyVersion)
     return respond(req,{error:"invalid_fields"},400);
   const ip=(req.headers.get("cf-connecting-ip")||req.headers.get("x-real-ip")||(req.headers.get("x-forwarded-for")||"").split(",")[0]||"unknown").trim().slice(0,100);
-  if(!await turnstileCheck(captcha,ip))return respond(req,{error:"security_check_failed"},403);
+  if(!await turnstileCheck(captcha,ip,new URL(origin).hostname))return respond(req,{error:"security_check_failed"},403);
   try {
     const db=adminClient();
     const ipHash=await keyedDigest("ip-v1",ip);
