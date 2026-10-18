@@ -142,6 +142,7 @@ function status(value){
   return "أولوية تدريب";
 }
 function profileTitle(){
+  if(result&&result.trainingPlan)return result.trainingPlan.reason_ar;
   var model=course&&course.adaptiveModel;
   if(model&&model.bridge&&model.bridge.label)return model.bridge.label;
   if(!result)return "ابدأ بالتقييم التشخيصي";
@@ -429,6 +430,7 @@ async function boot(){
       return;
     }
   }
+  if(session.cloud&&!result){course={session:1,completed:[],weekResults:{},achievements:[],adminOverrideWeeks:{},repairRequired:false,completedProgram:false};}
   render();
 }
 boot();
