@@ -60,6 +60,8 @@ async function identity(cloud){
  if(!profile||profile.role!=="student"||profile.active===false||profile.id!==u.data.user.id)throw new Error("student_account_not_active");
  var e=await c.from("enrollments").select("course_id,status").eq("user_id",u.data.user.id).eq("course_id",COURSE_DB_ID).eq("status","active").maybeSingle();
  if(e.error)throw e.error;if(!e.data)throw new Error("not_enrolled_in_this_course");
+ var consent=await cloud.getConsent("2026-10-06-v1","learning_data");
+ if(!consent)throw new Error("learning_data_consent_required");
  return u.data.user.id;
 }
 async function persist(cloud,uid,result){
