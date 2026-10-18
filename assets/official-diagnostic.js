@@ -101,13 +101,25 @@ async function restore(cloud,uid){
  root.localStorage.setItem(localCourseKey(uid),JSON.stringify(course));
  return d;
 }
+async function academicItemsApproved(cloud){
+ var c=cloud&&cloud.db&&cloud.db();if(!c)throw new Error("cloud_not_configured");
+ // Fail closed. A reviewed record must explicitly map to EACH deployed question.
+ var r=await c.from("content_items").select("status,metadata,reviewed_at")
+   .eq("course_id",COURSE_DB_ID).eq("status","approved");
+ if(r.error)throw r.error;
+ var items=r.data||[];
+ return QUESTIONS.every(function(q){return items.some(function(item){
+   return item.status==="approved"&&item.reviewed_at&&item.metadata&&item.metadata.official_diagnostic_v1_id===q.id;
+ });});
+}
 async function mount(){
  var rootEl=root.document.getElementById("officialDiagnostic"),lang=language(),cloud=root.LEX_CLOUD;
  if(!rootEl)return;
  function show(html){rootEl.innerHTML=html;}
  show("<p role='status'>"+message(lang,"جارٍ التحقق من حسابك ومقررك…","Verifying your account and course…")+"</p>");
  var uid;
- try{uid=await identity(cloud);var old=await restore(cloud,uid);if(old){root.location.replace(target(lang));return;}}
+ try{uid=await identity(cloud);var old=await restore(cloud,uid);if(old){root.location.replace(target(lang));return;}
+  if(!await academicItemsApproved(cloud)){show("<p role='status'>"+message(lang,"الاختبار الرسمي لم يُفتح بعد: عناصر التشخيص تنتظر الاعتماد القانوني والأكاديمي. نتائج الديمو العام لا تُنقل إلى حسابك.","The official diagnostic is locked pending legal and academic approval of every diagnostic item. Public demo scores are not imported.")+"</p><a href='student"+(lang==="en"?"-en":"")+".html'>"+message(lang,"حساب الطالب","Student portal")+"</a>");return;}}
  catch(err){show("<p role='alert'>"+escapeHtml(message(lang,"تعذّر التحقق من الحساب أو التسجيل بالمقرر: ","Cannot verify account/enrolment: ")+String(err.message||err))+"</p><a href='student-login"+(lang==="en"?"-en":"")+".html'>"+message(lang,"تسجيل الدخول","Sign in")+"</a>");return;}
  var pos=0,rows=[],busy=false,answers={};
  function page(){
@@ -141,7 +153,7 @@ async function mount(){
  }
  page();
 }
-var api={QUESTIONS:QUESTIONS,build:build,valid:valid,persist:persist,restore:restore,identity:identity,defaultCourse:defaultCourse,mount:mount};
+var api={QUESTIONS:QUESTIONS,build:build,valid:valid,persist:persist,restore:restore,identity:identity,academicItemsApproved:academicItemsApproved,defaultCourse:defaultCourse,mount:mount};
 root.LEX_OFFICIAL_DIAGNOSTIC=api;
 if(typeof module!=="undefined"&&module.exports)module.exports=api;
 })(typeof window!=="undefined"?window:globalThis);
