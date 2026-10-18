@@ -33,8 +33,14 @@ function assess(answer,lang){
   var wrongTiming=/(?:قبل[^،؛.]{0,18}(?:ولاد|ميلاد)|لا بالولاد|before[^.]{0,15}(?:birth|born))/.test(t);
   var wrongBirth=/(?:ولاد\S*\s+ميت|الولاده ميت|ولد\S*\s+ميت|سن الرشد|بلوغ|conception|stillbirth|born dead|adulthood)/.test(t);
   var wrongOrigin=/(?:تكتسب|يكتسب|تبدا|يبدا|تقوم|begins?|starts?|commenc)[^.]{0,50}(?:بالحمل|عند الحمل|من الحمل|بمجرد الحمل|at conception|from conception)/.test(t);
-  if(hasPerson&&start&&wrongOrigin&&!hasBirth)add(0,false,p);
-  if(hasPerson&&start&&hasBirth&&!hasPrenatal&&(!negStart||exceptStart)&&!wrongBirth&&!wrongTiming)add(0,true,p);
+  // "الشخصية القانونية تثبت بولادة الجنين حيا" establishes the start of
+  // personality, even though "الجنين" appears in the birth description.
+  // Only a clause *about prenatal rights* should block that inference.
+  var discussingPrenatalRights=hasPrenatal&&rights.test(t);
+  // If the text instead explicitly starts personality at conception, a later
+  // mention of live birth must not turn an incorrect rule into positive credit.
+  if(hasPerson&&start&&wrongOrigin&&!negStart)add(0,false,p);
+  if(hasPerson&&start&&hasBirth&&!discussingPrenatalRights&&(!negStart||exceptStart)&&!wrongOrigin&&!wrongBirth&&!wrongTiming)add(0,true,p);
   if(hasPerson&&start&&((negStart&&!exceptStart)||wrongTiming||(wrongBirth&&!/(?:^|\s)(?:لا|لم|ليس|not|never)(?:\s|$)/.test(t))))add(0,false,p);
   var negEnd=/(?:لا|لم|لن)\s+(?:تنتهي|تنقضي|تنقطع)|(?:does not|doesnt|never)\s+(?:end|cease|terminat)/.test(t);
   var exceptEnd=/(?:لا|لم|لن)\s+(?:تنتهي|تنقضي|تنقطع)[^،؛.]{0,90}\sالا\s/.test(t);
@@ -75,7 +81,7 @@ function assess(answer,lang){
   no_legal_content:['لم يتم التعرف على إجابة قانونية في النص المكتوب. اكتب ما تتذكره من القاعدة أو اختر «لا أتذكر». لا تُحتسب درجة صفر بسبب نص غير مفهوم.','No recognizable legal answer was found. Write what you recall about the rule or choose “I do not remember”. No zero is assigned to unintelligible text.'],
   unrecognized_wording:['لم يستطع المحرك المحلي إثبات علاقة قانونية بثقة في هذه الصياغة. ستظل الإجابة والأدلة متاحة للمشرف دون احتسابها صفرًا.','The local engine could not confidently establish a legal proposition in this wording. The answer remains available for review without being scored zero.']
  };
- return {grade_status:score===null?'insufficient_evidence':'rule_assessed',recall_score:score,feedback:messages[reason][ar?0:1],details:{engine:'local-propositions-v4',provider:'none',provider_status:'disabled_no_paid_calls',provisional:true,reason:reason,points:points,max_points:7,criteria:rows,achieved:rows.filter(function(r){return r.status==='supported';}).map(function(r){return {id:r.id,evidence:r.evidence.join(' … '),points:r.points};}),missing:rows.filter(function(r){return r.status!=='supported';}).map(function(r){return r.id;}),contradictions:conflicts,source_ids:['qa-civil-2004-art39','qa-civil-2004-art40']}};
+ return {grade_status:score===null?'insufficient_evidence':'rule_assessed',recall_score:score,feedback:messages[reason][ar?0:1],details:{engine:'local-propositions-v5',provider:'none',provider_status:'disabled_no_paid_calls',provisional:true,reason:reason,points:points,max_points:7,criteria:rows,achieved:rows.filter(function(r){return r.status==='supported';}).map(function(r){return {id:r.id,evidence:r.evidence.join(' … '),points:r.points};}),missing:rows.filter(function(r){return r.status!=='supported';}).map(function(r){return r.id;}),contradictions:conflicts,source_ids:['qa-civil-2004-art39','qa-civil-2004-art40']}};
 }
 var api={assess:assess,criteria:criteria};root.LEX_RECALL=api;if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })(typeof globalThis!=='undefined'?globalThis:this);
