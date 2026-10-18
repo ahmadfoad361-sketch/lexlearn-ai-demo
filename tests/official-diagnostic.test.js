@@ -36,6 +36,10 @@ function cloud(uid,opts={}){
 }
 (async()=>{
  assert.equal(qs.length,6);
+ assert.ok(qs.find(x=>x.id==="q50u").ar.includes("عمره ست سنوات"),"the age/capacity scenario should be application-relevant");
+ assert.equal(qs.find(x=>x.id==="q50u").a,1,"the Art 50 expected answer must reflect lacking capacity to act");
+ assert.ok(qs.find(x=>x.id==="q63a").arOptions[2].includes("يكون استعمالًا غير مشروع"),"sole intention to harm is unlawful under Art 63(2)");
+
  assert.equal(qs.filter(q=>q.dimension==="recognition").length,3);
  for(const [kind,expected] of [["recognition","recall-led"],["understanding","understanding-led"],["insufficient","insufficient_evidence"]]){
   const uid="student-"+kind,free="Personality begins upon a live birth; exceptions need legal review";
