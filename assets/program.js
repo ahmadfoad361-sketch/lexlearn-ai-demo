@@ -932,7 +932,7 @@ function essayAnalysis(answer,t){return LEX_QUALITY.grade(answer,t,"ar");}
 function essayMini(profile){return LEX_QUALITY.feedback(profile,"ar",esc);}
 
 function taskStatusBox(correct,label,provisional){
-  return '<div class="answerStatus '+(correct?"correct":"wrong")+'"><span class="answerStatusIcon">'+ico(correct?"check":"repeat")+'</span><div><b>'+(provisional?"الدرجة القانونية معلّقة":(correct?"إجابتك صحيحة":"إجابتك تحتاج تعديل"))+'</b><small>'+esc(label||"راجع السبب ثم انتقل للمهمة التالية.")+'</small></div></div>';
+  return '<div class="answerStatus '+(provisional?"pending":correct?"correct":"wrong")+'"><span class="answerStatusIcon">'+ico(provisional?"repeat":correct?"check":"repeat")+'</span><div><b>'+(provisional?"فحص تدريبي مبدئي — لا توجد درجة قانونية مؤكدة":(correct?"إجابتك صحيحة":"إجابتك تحتاج تعديل"))+'</b><small>'+esc(label||"راجع السبب ثم انتقل للمهمة التالية.")+'</small></div></div>';
 }
 function orderedOptions(t,salt){return LEX_QUALITY.shuffleOptions(t);}
 
@@ -969,12 +969,13 @@ function train(){
       var finalScore=merged&&merged.score!=null?Math.round(merged.score*100):r.score;
       var pass=finalScore>=60;
       var method=essay?essay.gradingMethod:(merged&&!merged.needsHumanReview?"grounded_semantic":"concept_rubric_v2");
+      var unverified=!!(essay&&essay.pending)||(!essay&&method!=="grounded_semantic");
       var semanticNote=merged&&!merged.needsHumanReview?
         '<div class="goodbox"><b>تحليل دلالي موثّق</b><div>'+esc(merged.feedback||"تم تقييم المعنى باستخدام المعيار والمصادر المعتمدة فقط.")+'</div><small>الثقة: '+Math.round((merged.confidence||0)*100)+'%</small></div>':
         (itemId&&semantic&&semantic.needs_human_review?'<div class="notice">التحليل الدلالي لم يصل لثقة كافية؛ استخدم النظام التحليل البنائي ولم يخمّن.</div>':'');
       document.getElementById("feed").innerHTML=
-        taskStatusBox(pass,essay&&essay.pending?"الدرجة القانونية معلّقة لحين التحقق من المعنى؛ لم يُسجّل نجاح أو ضعف.":pass?"تم التحقق من العناصر القانونية المطلوبة.":"راجع العناصر التي لم نتحقق منها أدناه.",!!(essay&&essay.pending))+
-        (essay?essayMini(essay):'<div class="rubricMini"><b>التحليل البنائي</b><span>'+finalScore+'%</span><small>'+(method==="grounded_semantic"?"تقييم دلالي مقيّد بالمصادر المعتمدة.":"Rubric بنائي احتياطي حتى تتوافر مراجعة دلالية موثوقة.")+'</small></div>')+
+        taskStatusBox(pass,unverified?"ظهور كلمات أو عناصر في إجابتك مؤشر تدريبي فقط؛ لم يتم التحقق من صحة الحكم القانوني، ولا تعتمد هذه النتيجة كدرجة أكاديمية.":pass?"تم التحقق من العناصر القانونية المطلوبة.":"راجع العناصر التي لم نتحقق منها أدناه.",unverified)+
+        (essay?essayMini(essay):'<div class="rubricMini"><b>'+(unverified?'تغطية شكلية للتدريب (غير معتمدة)':'التحليل البنائي')+'</b><span>'+finalScore+'%</span><small>'+(method==="grounded_semantic"?"تقييم دلالي مقيّد بالمصادر المعتمدة.":"Rubric بنائي احتياطي حتى تتوافر مراجعة دلالية موثوقة.")+'</small></div>')+
         semanticNote+
         (t.model?'<div class="modelAnswer"><b>نموذج للمقارنة</b><p>'+esc(t.model)+'</p></div>':'')+
         (t.why?'<div class="feedback">'+esc(t.why)+'</div>':'')+
