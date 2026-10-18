@@ -319,6 +319,7 @@ function stagePreviewComplete(){
 }
 function sessionResult(){var total=state.answers.length||1,correct=state.answers.filter(function(x){return x.correct;}).length,p=Math.round(correct/total*100),next=sessionMeta(state.course.session);chrome('<section class="stage"><div class="taskCard"><span class="kicker">Session complete</span><h2>Good work — your data has updated the next session.</h2><div class="resultGrid"><div class="metric"><span>Session performance</span><b>'+p+'%</b></div><div class="metric"><span>Next session</span><b>'+state.course.session+'</b></div></div><div class="notice">The next week will not unlock until you pass the current weekly assessment.</div><div class="choiceRow"><button class="primary" id="continueNext">'+(next.kind==="assessment"?"Start weekly assessment":"Start next session")+'</button><button class="secondary" id="goHome">Back to program</button></div></div></section>');document.getElementById("continueNext").onclick=function(){state.task=0;state.answers=[];state.queue=next.kind==="assessment"?assessmentQueue(next.week):buildQueue();state.view=next.kind==="assessment"?"assessment":"train";render();};document.getElementById("goHome").onclick=function(){state.view="home";render();};}
 function assessment(){
+ if(!DEMO&&STUDENT_SESSION&&STUDENT_SESSION.cloud&&(!window.LEX_PILOT||!LEX_PILOT.isReleased(state.course.session))){state.view="train";return train();}
  var week=sessionMeta(state.course.session).week;
  if(state.queue.length===0)state.queue=assessmentQueue(week);
  var t=state.queue[state.task];
@@ -348,11 +349,11 @@ async function boot(){
  if(!DEMO){
   if(!STUDENT_SESSION||!STUDENT_SESSION.cloud||!STUDENT_SESSION.studentId||!window.LEX_CLOUD||!LEX_CLOUD.isConfigured()){location.replace("student-login-en.html");return;}
   try{
-   var u=await LEX_CLOUD.db().auth.getUser();
-   if(u.error||!u.data||!u.data.user||u.data.user.id!==STUDENT_SESSION.studentId)throw new Error("not_authenticated");
+   var verifiedStudentId=await LEX_OFFICIAL_DIAGNOSTIC.identity(LEX_CLOUD);
+   if(verifiedStudentId!==STUDENT_SESSION.studentId)throw new Error("student_session_mismatch");
    var ps=await LEX_CLOUD.loadSnapshot({courseId:SNAPSHOT_COURSE,snapshotType:"profile"});
    var d=ps&&ps.state&&ps.state.results&&ps.state.results[SNAPSHOT_COURSE];
-   if(!window.LEX_OFFICIAL_DIAGNOSTIC||!LEX_OFFICIAL_DIAGNOSTIC.valid(d,u.data.user.id)){location.replace("diagnostic.html?lang=en");return;}
+   if(!window.LEX_OFFICIAL_DIAGNOSTIC||!LEX_OFFICIAL_DIAGNOSTIC.valid(d,verifiedStudentId)){location.replace("diagnostic.html?lang=en");return;}
    localStorage.setItem(PROFILE_KEY,JSON.stringify(ps.state));
    var cs=await LEX_CLOUD.loadSnapshot({courseId:SNAPSHOT_COURSE,snapshotType:"course"});
    if(!cs||!cs.state||cs.state.diagnosticAttemptId!==d.attempt_id)throw new Error("diagnostic_course_sync_required");
