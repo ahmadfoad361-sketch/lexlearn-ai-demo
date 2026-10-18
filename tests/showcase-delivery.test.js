@@ -44,5 +44,14 @@ assert.equal((await production(new Request('https://example.com',{method:'POST',
 preflight=await handler(options('https://ahmadfoad361-sketch.github.io'));
 assert.equal(preflight.status,200,'existing GitHub Pages preview still works');
 assert.equal((await handler(new Request('https://example.com',{method:'POST'}))).status,401);
+payload.request_id='00000000-0000-4000-8000-000000000006';
+payload.answer='الشخصية القانونية تثبت بولادة الجنين حيا';
+response=await send();r=await response.json();
+assert.equal(response.status,200);
+assert.equal(r.grade_status,'rule_assessed','Legally valid shortened phrasing must produce evidenced partial recall grade');
+assert.equal(r.recall_score,29,'Live birth of fetus is a legal-personality start, not prenatal rights');
+assert.equal(r.details.criteria[0].id,'birth_alive');
+assert.equal(r.details.criteria[0].points,2);
+assert.equal(providerCalls,0,'No paid model API calls for restored score');
 global.fetch=oldFetch;console.log('Delivery: no paid inference, secure CORS, retry, quota, source and engine failure PASS');
 })().catch(e=>{console.error(e);process.exit(1)});
