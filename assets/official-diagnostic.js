@@ -103,16 +103,29 @@ async function restore(cloud,uid){
  root.localStorage.setItem(localCourseKey(uid),JSON.stringify(course));
  return d;
 }
+var LAW_SOURCES={
+ q39r:["qa-civil-2004-art39"],q49r:["qa-civil-2004-art49"],q62r:["qa-civil-2004-art62"],
+ q39u:["qa-civil-2004-art39"],q50u:["qa-civil-2004-art39","qa-civil-2004-art50"],q63a:["qa-civil-2004-art63"]
+};
+function exactApprovedQuestion(item,q){
+ var x=item||{},metadata=x.metadata||{},opts=x.options_json||{},key=x.answer_key_json||{},rubric=x.rubric_json||{},sources=x.source_ids||[];
+ return x.status==="approved"&&!!x.reviewed_at&&
+  !!x.legal_reviewer&&!!x.learning_reviewer&&x.legal_reviewer!==x.learning_reviewer&&
+  metadata.legal_approval===true&&metadata.learning_approval===true&&
+  metadata.official_diagnostic_v2_id===q.id&&x.prompt_ar===q.ar&&rubric.prompt_en===q.en&&
+  JSON.stringify(opts.ar)===JSON.stringify(q.arOptions)&&
+  JSON.stringify(opts.en)===JSON.stringify(q.enOptions)&&
+  Number.isInteger(key.correct_index)&&key.correct_index===q.a&&
+  (LAW_SOURCES[q.id]||[]).every(function(src){return sources.indexOf(src)!==-1;});
+}
 async function academicItemsApproved(cloud){
  var c=cloud&&cloud.db&&cloud.db();if(!c)throw new Error("cloud_not_configured");
  // Fail closed. A reviewed record must explicitly map to EACH deployed question.
- var r=await c.from("content_items").select("status,metadata,reviewed_at")
+ var r=await c.from("content_items").select("status,metadata,reviewed_at,legal_reviewer,learning_reviewer,prompt_ar,rubric_json,options_json,answer_key_json,source_ids")
    .eq("course_id",COURSE_DB_ID).eq("status","approved");
  if(r.error)throw r.error;
  var items=r.data||[];
- return QUESTIONS.every(function(q){return items.some(function(item){
-   return item.status==="approved"&&item.reviewed_at&&item.metadata&&item.metadata.official_diagnostic_v2_id===q.id;
- });});
+ return QUESTIONS.every(function(q){return items.some(function(item){return exactApprovedQuestion(item,q);});});
 }
 async function mount(){
  var rootEl=root.document.getElementById("officialDiagnostic"),lang=language(),cloud=root.LEX_CLOUD;
@@ -164,7 +177,7 @@ async function mount(){
  }
  page();
 }
-var api={QUESTIONS:QUESTIONS,build:build,valid:valid,persist:persist,restore:restore,identity:identity,academicItemsApproved:academicItemsApproved,defaultCourse:defaultCourse,mount:mount};
+var api={QUESTIONS:QUESTIONS,build:build,valid:valid,persist:persist,restore:restore,identity:identity,academicItemsApproved:academicItemsApproved,exactApprovedQuestion:exactApprovedQuestion,defaultCourse:defaultCourse,mount:mount};
 root.LEX_OFFICIAL_DIAGNOSTIC=api;
 if(typeof module!=="undefined"&&module.exports)module.exports=api;
 })(typeof window!=="undefined"?window:globalThis);
