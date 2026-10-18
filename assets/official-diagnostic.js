@@ -121,7 +121,15 @@ async function mount(){
  try{uid=await identity(cloud);var old=await restore(cloud,uid);if(old){root.location.replace(target(lang));return;}
   if(!await academicItemsApproved(cloud)){show("<p role='status'>"+message(lang,"الاختبار الرسمي لم يُفتح بعد: عناصر التشخيص تنتظر الاعتماد القانوني والأكاديمي. نتائج الديمو العام لا تُنقل إلى حسابك.","The official diagnostic is locked pending legal and academic approval of every diagnostic item. Public demo scores are not imported.")+"</p><a href='student"+(lang==="en"?"-en":"")+".html'>"+message(lang,"حساب الطالب","Student portal")+"</a>");return;}}
  catch(err){show("<p role='alert'>"+escapeHtml(message(lang,"تعذّر التحقق من الحساب أو التسجيل بالمقرر: ","Cannot verify account/enrolment: ")+String(err.message||err))+"</p><a href='student-login"+(lang==="en"?"-en":"")+".html'>"+message(lang,"تسجيل الدخول","Sign in")+"</a>");return;}
- var pos=0,rows=[],busy=false,answers={};
+ var pos=0,rows=[],busy=false,answers={},freeDraft="";
+ var draftKey="lexlearn_official_diagnostic_draft_"+uid+"_"+COURSE_SCOPE;
+ try{
+  var oldDraft=JSON.parse(root.sessionStorage.getItem(draftKey)||"null");
+  if(oldDraft&&Number.isInteger(oldDraft.pos)&&oldDraft.pos>=0&&oldDraft.pos<=QUESTIONS.length&&Array.isArray(oldDraft.rows)&&oldDraft.rows.length===oldDraft.pos&&oldDraft.rows.every(function(r,i){return r.id===QUESTIONS[i].id;})){
+   pos=oldDraft.pos;rows=oldDraft.rows;answers=oldDraft.answers||{};freeDraft=String(oldDraft.free||"");
+  }
+ }catch(_){}
+ function rememberDraft(){try{root.sessionStorage.setItem(draftKey,JSON.stringify({pos:pos,rows:rows,answers:answers,free:freeDraft}));}catch(_){}}
  function page(){
   var q=QUESTIONS[pos],last=pos===QUESTIONS.length,progress=Math.round(pos/(QUESTIONS.length+1)*100);
   var html="<p class='subtle'>"+message(lang,"تقييم الطالب الرسمي، منفصل عن الديمو العام. لا تُمنح درجة للحفظ الحر آليًا.","Official student diagnostic, separate from the public demo. Free recall is never automatically graded.")+"</p>"+
@@ -134,6 +142,7 @@ async function mount(){
    "<p>"+message(lang,"اكتب ما تتذكره عن بدء الشخصية القانونية؛ يُحفظ النص للمراجعة البشرية، دون تقدير دلالي مؤكد أو نسبة حفظ.","Write what you remember about when legal personality begins. This is saved for human review, with no semantic score.")+"</p><textarea id='freeRecall' rows='5' maxlength='2000' placeholder='"+message(lang,"اكتب بطريقتك…","In your own words…")+"'></textarea>";
   html+="<div class='actions'><button id='diagNext'>"+(last?message(lang,"احفظ التشخيص وابدأ الخطة","Save diagnostic & open plan"):message(lang,"التالي","Next"))+"</button></div><p id='diagError' role='alert'></p>";
   show(html);
+  if(last){var freeBox=root.document.getElementById("freeRecall");freeBox.value=freeDraft;freeBox.oninput=function(){freeDraft=freeBox.value;rememberDraft();};}
   root.document.getElementById("diagNext").onclick=async function(){
    if(busy)return;
    if(!last){
@@ -141,13 +150,13 @@ async function mount(){
     if(!selected){root.document.getElementById("diagError").textContent=message(lang,"اختر إجابة أو لا أدري.","Choose an answer or Not sure.");return;}
     var pick=Number(selected.value);answers[q.id]=pick;
     rows.push({id:q.id,dimension:q.dimension,selected:pick,correct:pick===q.a});
-    pos++;page();return;
+    pos++;rememberDraft();page();return;
    }
    busy=true;var button=root.document.getElementById("diagNext");button.disabled=true;
    var free=root.document.getElementById("freeRecall").value||"";
    var attempt=(root.crypto&&root.crypto.randomUUID)?root.crypto.randomUUID():"diagnostic-"+uid+"-"+Date.now();
    var result=build(uid,rows,free,attempt,new Date().toISOString());
-   try{await persist(cloud,uid,result);root.location.replace(target(lang));}
+   try{await persist(cloud,uid,result);try{root.sessionStorage.removeItem(draftKey);}catch(_){}root.location.replace(target(lang));}
    catch(e){busy=false;button.disabled=false;root.document.getElementById("diagError").textContent=message(lang,"لم يُؤكد الحفظ المركزي. احتفظ بهذه الصفحة وأعد المحاولة: ","Central saving not confirmed. Retry here: ")+String(e.message||e);}
   };
  }
