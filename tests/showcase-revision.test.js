@@ -6,7 +6,7 @@ const vm=require("node:vm");
 async function check(lang){
  const store=new Map(),elements=new Map(),sent=[],ids=[];
  const el=()=>({value:"",textContent:"",onclick:null,focus(){this.focused=true;},
-   set innerHTML(html){this._html=String(html);for(const x of this._html.matchAll(/\\bid="([^"]+)"/g))elements.set(x[1],el());},
+   set innerHTML(html){this._html=String(html);for(const x of this._html.matchAll(/\bid="([^"]+)"/g))elements.set(x[1],el());},
    get innerHTML(){return this._html||"";}});
  const app=el();
  const document={
@@ -33,7 +33,7 @@ async function check(lang){
  context.LEX_CLOUD=context.window.LEX_CLOUD;
  vm.createContext(context);
  let source=fs.readFileSync("assets/showcase"+(lang==="en"?"-en":"")+".js","utf8");
- source=source.replace(/\\}\\)\\(\\);\\s*$/, `window.__test={show:function(receipt,initial){
+ source=source.replace(/\}\)\(\);\s*$/, `window.__test={show:function(receipt,initial){
    free=initial;requestId="00000000-0000-4000-8000-000000000099";
    answers=["recall","recall","understanding","understanding","understanding","understanding"].map(type=>({type,selected:0,correct:true}));
    lastDemo={receipt,grade:receipt,summary:{metrics:{recall:null,understanding:25},weak:"balanced"}};
