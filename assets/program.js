@@ -1290,11 +1290,11 @@ async function boot(){
       location.replace("student-login.html");return;
     }
     try{
-      var user=await LEX_CLOUD.db().auth.getUser();
-      if(user.error||!user.data||!user.data.user||user.data.user.id!==STUDENT_SESSION.studentId)throw new Error("not_authenticated");
+      var verifiedStudentId=await LEX_OFFICIAL_DIAGNOSTIC.identity(LEX_CLOUD);
+      if(verifiedStudentId!==STUDENT_SESSION.studentId)throw new Error("student_session_mismatch");
       var ps=await LEX_CLOUD.loadSnapshot({courseId:COUNTRY+"-"+SUBJECT,snapshotType:"profile"});
       var result=ps&&ps.state&&ps.state.results&&ps.state.results[COUNTRY+"-"+SUBJECT];
-      if(!window.LEX_OFFICIAL_DIAGNOSTIC||!LEX_OFFICIAL_DIAGNOSTIC.valid(result,user.data.user.id)){
+      if(!window.LEX_OFFICIAL_DIAGNOSTIC||!LEX_OFFICIAL_DIAGNOSTIC.valid(result,verifiedStudentId)){
         location.replace("diagnostic.html?lang=ar");return;
       }
       localStorage.setItem(PROFILE_KEY,JSON.stringify(ps.state));
