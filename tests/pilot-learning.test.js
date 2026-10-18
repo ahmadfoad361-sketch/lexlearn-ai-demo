@@ -1,6 +1,6 @@
 const assert=require('assert'),fs=require('fs'),vm=require('vm');
 const P=require('../assets/pilot-learning'),Q=require('../assets/learning-quality');
-assert.equal(P.isReleased(1),true);assert.equal(P.isReleased(22),true);assert.equal(P.isReleased(2),false);
+assert.equal(P.isReleased(1),false);assert.equal(P.isReleased(22),false);assert.equal(P.isReleased(2),false);
 const s={step:2,failures:0};
 assert.equal(P.advance(s,false),'retry');assert.equal(s.step,2);
 assert.equal(P.advance(s,false),'support');assert.equal(s.step,1);

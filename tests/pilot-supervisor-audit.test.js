@@ -10,9 +10,9 @@ assert.ok(admin.includes('preview:true'),'Live evaluation must not save syntheti
 assert.ok(admin.includes('expected:false')&&admin.includes('expected:true'),'Include both incorrect and correct answers');
 assert.ok(admin.includes('pilotSourceLinks(g.source_ids)'),'Grade cites the article source');
 assert.ok(admin.includes('pilotSourceLinks(x.source_ids)'),'Content view cites the article source');
-assert.ok(pilot.includes('release={1:true,22:true}'),'Only the two authorized topics may be public');
+assert.ok(pilot.includes('release={1:false,22:false}'),'No unreviewed pilot topic may open to students');
 assert.ok(grader.includes('review_required'),'If scoring fails the supervisor must decide');
 assert.ok(grader.includes('score:null,passed:null'),'Unverified output must not be counted as success');
-assert.ok(grader.includes('store:false'),'Provider must not retain student answers');
-assert.ok(grader.includes('t.criteria'),'Criteria must be passed through to evaluator');
+assert.ok(!grader.includes('api.openai.com'),'No paid model usage in academic pilot');
+assert.ok(grader.includes('x.status!=="approved"'),'Only fully approved educational content may be used');
 console.log('Pilot supervisor and grading audit guards: PASS (static, not a live AI accuracy measurement)');

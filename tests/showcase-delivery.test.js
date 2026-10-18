@@ -13,18 +13,36 @@ payload.request_id='00000000-0000-4000-8000-000000000002';failed=true;response=a
 payload.request_id='00000000-0000-4000-8000-000000000003';quota=true;assert.equal((await send()).status,429);quota=false;
 sourceFail=true;r=await(await send()).json();assert(r.received);assert.equal(r.recall_score,null);assert.equal(r.details.reason,'legal_sources_not_ready');
 const crashing=createHandler({createClient:()=>db,env:()=> 'test',assess:()=>{throw new Error('engine crash')}});sourceFail=false;payload.request_id='00000000-0000-4000-8000-000000000004';r=await(await crashing(new Request('https://example.com',{method:'POST',headers:{authorization:'Bearer test'},body:JSON.stringify(payload)}))).json();assert(r.received);assert.equal(r.recall_score,null);assert.equal(r.details.reason,'local_engine_error');
-const aiHandler=createHandler({createClient:()=>db,env:(name)=>name.startsWith('OPENAI_')?undefined:'test',assess:R.assess,
- semanticGrade:async()=>({status:'scored',grade:{
-  grade_status:'ai_assessed',recall_score:100,
-  feedback:'Model mock found all approved legal elements in the answer.',
-  details:{engine:'grounded-semantic-v1',provider:'openai',provisional:true,points:7,max_points:7,
-   source_ids:['qa-civil-2004-art39','qa-civil-2004-art40'],criteria:[]}
- }})});
+// No paid inference calls even when obsolete API secrets exist in deployment.
+const noCost=createHandler({createClient:()=>db,env:(name)=>
+ name==='OPENAI_API_KEY'?'accidental-secret':name==='OPENAI_MODEL'?'model':'test',assess:R.assess});
 payload.request_id='00000000-0000-4000-8000-000000000005';
-const aiReceipt=await(await aiHandler(new Request('https://example.com',{method:'POST',headers:{authorization:'Bearer test'},body:JSON.stringify(payload)}))).json();
-assert.equal(aiReceipt.grade_status,'ai_assessed','Automated AI-grade provenance must persist for supervisor access');
-assert.equal(aiReceipt.recall_score,100,'Semantic model score must be visible in student receipt');
-assert.equal(aiReceipt.details.provider,'openai');
+const localReceipt=await(await noCost(new Request('https://example.com',{method:'POST',
+ headers:{authorization:'Bearer test'},body:JSON.stringify(payload)}))).json();
+assert.equal(localReceipt.grade_status,'rule_assessed');
+assert.equal(localReceipt.details.provider,'none');
+assert.equal(localReceipt.details.provider_status,'disabled_no_paid_calls');
+assert.equal(providerCalls,0,'No external paid model calls, regardless of configuration');
+// A verified custom domain must pass preflight; a random origin must not.
+// This is not an authentication bypass: all accepted POSTs still require JWTs.
+const prodOrigin='https://lexlearn.example';
+const production=createHandler({createClient:()=>db,
+ env:(name)=>name==='LEX_ALLOWED_ORIGINS'?prodOrigin+',http://insecure.example,*':name.startsWith('OPENAI_')?undefined:'test',
+ assess:R.assess});
+const options=(origin)=>new Request('https://example.com',{method:'OPTIONS',headers:{origin,'Access-Control-Request-Method':'POST'}});
+let preflight=await production(options(prodOrigin));
+assert.equal(preflight.status,200,'approved HTTPS custom domain should pass OPTIONS');
+assert.equal(preflight.headers.get('Access-Control-Allow-Origin'),prodOrigin);
+assert.equal(preflight.headers.get('Vary'),'Origin');
+assert.equal((await production(options('https://evil.example'))).status,403,'unknown origin denied on preflight');
+assert.equal((await production(options('http://insecure.example'))).status,403,'HTTP origins are never whitelisted');
+assert.equal((await production(new Request('https://example.com',{method:'POST',
+ headers:{origin:'https://evil.example',authorization:'Bearer test'}}))).status,403,
+ 'unknown browser origin denied before any data handling');
+assert.equal((await production(new Request('https://example.com',{method:'POST',
+ headers:{origin:prodOrigin}}))).status,401,'CORS permission must not replace JWT auth');
+preflight=await handler(options('https://ahmadfoad361-sketch.github.io'));
+assert.equal(preflight.status,200,'existing GitHub Pages preview still works');
 assert.equal((await handler(new Request('https://example.com',{method:'POST'}))).status,401);
-global.fetch=oldFetch;console.log('Delivery: provider exhaustion isolation, retry, quota, source failure, engine failure, auth PASS');
+global.fetch=oldFetch;console.log('Delivery: no paid inference, secure CORS, retry, quota, source and engine failure PASS');
 })().catch(e=>{console.error(e);process.exit(1)});
