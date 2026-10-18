@@ -52,6 +52,7 @@ jobs:
           node scripts/validate-pilot-grading.js
           node tests/program-flow.test.js
           node tests/official-diagnostic.test.js
+          node tests/official-diagnostic-dom-flow.test.js
           node tests/public-showcase.test.js
           node tests/showcase-revision.test.js
           node tests/showcase-learning-cycle.test.js
