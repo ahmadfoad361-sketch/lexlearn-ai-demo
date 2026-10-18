@@ -671,7 +671,8 @@ function contextualizeTask(t,meta){
 function buildTrainingQueue(){
   if(COUNTRY==="qa"&&window.LEX_QUALITY){
     var fm=recomputeAdaptiveModel()||state.course.adaptiveModel;
-    var mode=fm&&fm.foundation&&fm.foundation.active?"foundation":weakestDimension();
+    var plan=state.diag&&state.diag.trainingPlan;
+    var mode=state.course.session===1&&plan?(plan.mode==="foundation"?"foundation":plan.weakest):fm&&fm.foundation&&fm.foundation.active?"foundation":weakestDimension();
     return LEX_QUALITY.queue(state.course.session,"ar",mode,null,LEX_QUALITY.learnerContext(state.course,(state.diag&&state.diag.metrics)||{}));
   }
   var dim=weakestDimension(),err=strongestErrorSkill(),bridge=learningBridge(),meta=sessionMeta(state.course.session);
@@ -748,7 +749,7 @@ function syncNote(error){var el=document.getElementById("qualitySync");if(el)el.
 function chrome(inner){
   APP.innerHTML='<div class="courseShell"><header class="courseTop"><div class="courseTopIn">'+
     '<div class="brand"><div class="mark"><img src="assets/lexlearn-logo.svg" alt="LexLearn"></div><div><b>Lex<span class="brandLearn">Learn</span></b><small>'+countryLabel()+' • نظرية الحق • نفهم طريقة تفكيرك، ونبني طريقك.</small></div></div>'+
-    '<div class="topActions">'+(['home','sessionResult','achievement','weekSummary','completion','notebook'].indexOf(state.view)>=0?'<button class="topBtn" type="button" id="openLearningKeys">نوتة المفاتيح</button>':'')+'<a class="topBtn" href="program-en.html?country=qa&subject=rights'+(DEMO?'&demo=1':'')+'">English</a><a class="topBtn" href="showcase.html?country='+COUNTRY+'">الديمو التشخيصي</a><a class="topBtn" href="index.html">الرئيسية</a></div>'+
+    '<div class="topActions">'+(['home','sessionResult','achievement','weekSummary','completion','notebook'].indexOf(state.view)>=0?'<button class="topBtn" type="button" id="openLearningKeys">نوتة المفاتيح</button>':'')+'<a class="topBtn" href="program-en.html?country=qa&subject=rights'+(DEMO?'&demo=1':'')+'">English</a><a class="topBtn" href="showcase.html?country='+COUNTRY+'">الديمو العام</a><a class="topBtn" href="index.html">الرئيسية</a></div>'+
   '</div></header><main class="courseWrap">'+(FIRST_STAGE_PREVIEW?'<div class="notice" role="note">معاينة الجلسة الأولى فقط. هذه ليست تجربة جامعية معتمدة، ولم تُنقل درجات التشخيص أو إجابتك إلى ملف أكاديمي.</div>':'')+inner+(STUDENT_SESSION&&STUDENT_SESSION.cloud?'<p id="qualitySync" role="status">التقدم المحلي محفوظ؛ الحفظ المركزي يُؤكد بعد إتمام المزامنة.</p>':'')+'</main></div>';
   var keysNav=document.getElementById("openLearningKeys");
    if(keysNav)keysNav.onclick=function(){state.view="notebook";render();};
@@ -805,7 +806,7 @@ function home(){
   if(state.course.completedProgram){state.view="completion";return completion();}
   var m=sessionMeta(state.course.session),d=state.diag;
   if(!d){
-    chrome('<section class="simpleStudentHero"><div><span class="kicker">جاهز نبدأ؟</span><h1>ابدأ بتقييم قصير</h1><p>بضع أسئلة فقط، وبعدها يظهر لك تدريب مناسب لمستواك.</p></div><a class="primary bigStudentCta" href="showcase.html?country='+COUNTRY+'&subject='+SUBJECT+'">ابدأ التقييم</a></section>'+
+    chrome('<section class="simpleStudentHero"><div><span class="kicker">جاهز نبدأ؟</span><h1>ابدأ بتقييم قصير</h1><p>بضع أسئلة فقط، وبعدها يظهر لك تدريب مناسب لمستواك.</p></div><a class="primary bigStudentCta" href="diagnostic.html?lang=ar">ابدأ التقييم</a></section>'+
       '<section class="simpleSteps"><div><span>1</span><b>اختبر</b><small>أسئلة قصيرة</small></div><div><span>2</span><b>تدرّب</b><small>على ما تحتاجه</small></div><div><span>3</span><b>تقدّم</b><small>خطوة بعد خطوة</small></div></section>');
     return;
   }
@@ -817,7 +818,7 @@ function home(){
       '<button class="primary bigStudentCta" id="startSession">'+(m.kind==="assessment"?"ابدأ تقييم الأسبوع":"ابدأ الجلسة")+'</button></section>'+
     '<div class="simpleSectionTitle"><div><h2>مستواك بسرعة</h2><p>خمس مهارات؛ يظهر تقدير فقط لما اختبرته. النسب مؤشرات أداء أولية تتغير مع المحاولات.</p></div></div>'+
     studentSnapshot(metrics)+
-    '<section class="studentTip"><span>✨</span><div><b>لماذا هذا التدريب؟</b><p>نبدأ من الأداء الذي ظهر في محاولاتك؛ نختار الصعوبة حسب أدائك، وننوّع بين التطبيق ونقد الاستنتاج والمقارنة، ونراجع موضوعًا سبق أن أخطأت فيه. '+esc(shortStudentTip(metrics))+'</p></div></section>'+
+    '<section class="studentTip"><span>✨</span><div><b>لماذا هذا التدريب؟</b><p>'+esc(d&&d.trainingPlan?d.trainingPlan.reason_ar:"نختار الصعوبة حسب الإجابات المقاسة فقط.")+' '+esc(shortStudentTip(metrics))+'</p></div></section>'+
     '<section class="studentTip keysTeaser"><span>✎</span><div><b>نوتة المفاتيح</b><p>احتفظ بالمفاتيح المرتبطة بمعاني القواعد، وراجعها بين الجلسات. لا تظهر أثناء الاختبار.</p><button class="secondary" type="button" id="openNotesHome">افتح نوتة المفاتيح</button></div></section>'+
      weekBar(m.week)
    );
@@ -835,7 +836,7 @@ function priorityText(m){
 }
 function bridgeCard(m){
   var b=learningBridge();
-  return '<section class="bridgePanel"><div class="bridgeHead"><div><span class="kicker">جسر التعلم</span><h2>'+esc(b.title)+'</h2><p>'+esc(b.lead)+'</p></div><div class="bridgeScore"><span>الحفظ</span><b>'+Math.round(m.recall||0)+'</b><span>الفهم</span><b>'+Math.round(m.understanding||0)+'</b></div></div><div class="bridgeSteps"><div><b>1</b><span>استرجع</span><small>من الذاكرة قبل فتح النص</small></div><div><b>2</b><span>فسّر</span><small>قل لماذا تعمل القاعدة هكذا</small></div><div><b>3</b><span>طبّق</span><small>غيّر واقعة واحدة واختبر النتيجة</small></div><div><b>4</b><span>ثبّت</span><small>مفتاح ذاكرة مرتبط بالمعنى</small></div></div></section>';
+  return '<section class="bridgePanel"><div class="bridgeHead"><div><span class="kicker">جسر التعلم</span><h2>'+esc(b.title)+'</h2><p>'+esc(b.lead)+'</p></div><div class="bridgeScore"><span>الحفظ</span><b>'+(m.recall==null?"لم يُقَس":Math.round(m.recall)+"%")+'</b><span>الفهم</span><b>'+(m.understanding==null?"لم يُقَس":Math.round(m.understanding)+"%")+'</b></div></div><div class="bridgeSteps"><div><b>1</b><span>استرجع</span><small>من الذاكرة قبل فتح النص</small></div><div><b>2</b><span>فسّر</span><small>قل لماذا تعمل القاعدة هكذا</small></div><div><b>3</b><span>طبّق</span><small>غيّر واقعة واحدة واختبر النتيجة</small></div><div><b>4</b><span>ثبّت</span><small>مفتاح ذاكرة مرتبط بالمعنى</small></div></div></section>';
 }
 function weekResult(w){return (state.course.weekResults||{})[w]||null;}
 function weekUnlocked(w,current){
@@ -939,7 +940,11 @@ function taskStatusBox(correct,label,provisional){
 function orderedOptions(t,salt){return LEX_QUALITY.shuffleOptions(t);}
 
 function train(){
-  if(window.LEX_PILOT&&LEX_PILOT.isReleased(state.course.session)&&!(state.course.adaptiveModel&&state.course.adaptiveModel.foundation&&state.course.adaptiveModel.foundation.active)){LEX_PILOT.mount(APP,state.course.session,'ar',{course:state.course,onSave:save,onComplete:function(pilot){state.answers=[1,2,3,4,5].map(function(step){var a=pilot.attempts.filter(function(x){return x.step===step;}).slice(-1)[0];return {dimension:step===4?'recall':'application',score:a&&a.score,correct:!!(a&&a.score===1)};});finishTraining();},onExit:function(){state.view='home';render();}});return;}
+  if(!DEMO&&STUDENT_SESSION&&STUDENT_SESSION.cloud&&(!window.LEX_PILOT||!LEX_PILOT.isReleased(state.course.session))){
+    var p=state.diag&&state.diag.trainingPlan;
+    chrome('<section class="stage"><div class="taskCard"><span class="kicker">الجلسة '+state.course.session+' • بانتظار الاعتماد الأكاديمي</span><h2>خطة المستوى الأول جاهزة ومحفوظة</h2><p>'+esc(p?p.reason_ar:"تم حفظ التشخيص بنجاح.")+'</p><p>ترتيب التدريب المقترح: '+esc(p?p.firstTasks.join(" ← "):"تأسيس ثم قياس")+'</p><div class="notice">عناصر المقرر لم تحصل بعد على الاعتماد القانوني والأكاديمي. لن نفتحها أو نحسب تقدّمًا وهميًا.</div><a class="secondary" href="student.html">حساب الطالب</a></div></section>');return;
+  }
+  if(window.LEX_PILOT&&LEX_PILOT.isReleased(state.course.session)){LEX_PILOT.mount(APP,state.course.session,'ar',{course:state.course,onSave:save,onComplete:function(pilot){state.answers=[1,2,3,4,5].map(function(step){var a=pilot.attempts.filter(function(x){return x.step===step;}).slice(-1)[0];return {dimension:step===4?'recall':'application',score:a&&a.score,correct:!!(a&&a.score===1)};});finishTraining();},onExit:function(){state.view='home';render();}});return;}
   var q=state.queue.length?state.queue:buildTrainingQueue(),t=q[state.task%q.length],meta=sessionMeta(state.course.session);
   if(t.mode==="study"){
     chrome('<section class="stage"><div class="taskCard foundationStudy"><span class="kicker">مسار تأسيسي: الحفظ والفهم معًا</span><h2>'+esc(t.title)+'</h2><p>'+esc(t.q)+'</p><div class="legalBox"><b>القاعدة المرجعية</b><p>'+esc(t.articleText||"")+'</p></div><div class="legalBox"><b>مثال للتدريب</b><p>'+esc(t.example||"")+'</p><p>'+esc(t.explanation||"")+'</p></div><p class="keysWarning">قراءة المثال لا تُحتسب نجاحًا. الأسئلة التالية تختبر الاسترجاع والفهم دون إظهار المساعدة.</p><button class="primary" id="nextFoundation" type="button">انتقل لتجربة الحل</button></div></section>');
@@ -1280,24 +1285,36 @@ function completion(){
 }
 function assessmentResult(){state.view="achievement";render();}
 async function boot(){
-  if(!DEMO&&STUDENT_SESSION&&STUDENT_SESSION.cloud&&window.LEX_CLOUD&&LEX_CLOUD.isConfigured&&LEX_CLOUD.isConfigured()){
+  if(!DEMO){
+    if(!STUDENT_SESSION||!STUDENT_SESSION.cloud||!STUDENT_SESSION.studentId||!window.LEX_CLOUD||!LEX_CLOUD.isConfigured()){
+      location.replace("student-login.html");return;
+    }
     try{
+      var user=await LEX_CLOUD.db().auth.getUser();
+      if(user.error||!user.data||!user.data.user||user.data.user.id!==STUDENT_SESSION.studentId)throw new Error("not_authenticated");
       var ps=await LEX_CLOUD.loadSnapshot({courseId:COUNTRY+"-"+SUBJECT,snapshotType:"profile"});
-      if(ps&&ps.state)localStorage.setItem(PROFILE_KEY,JSON.stringify(ps.state));
+      var result=ps&&ps.state&&ps.state.results&&ps.state.results[COUNTRY+"-"+SUBJECT];
+      if(!window.LEX_OFFICIAL_DIAGNOSTIC||!LEX_OFFICIAL_DIAGNOSTIC.valid(result,user.data.user.id)){
+        location.replace("diagnostic.html?lang=ar");return;
+      }
+      localStorage.setItem(PROFILE_KEY,JSON.stringify(ps.state));
       var cs=await LEX_CLOUD.loadSnapshot({courseId:COUNTRY+"-"+SUBJECT,snapshotType:"course"});
-      if(cs&&cs.state){localStorage.setItem(COURSE_KEY,JSON.stringify(cs.state));state.course=loadCourse();}
-      state.diag=diagnostic();
-    }catch(e){}
+      if(!cs||!cs.state||cs.state.diagnosticAttemptId!==result.attempt_id)throw new Error("diagnostic_course_sync_required");
+      localStorage.setItem(COURSE_KEY,JSON.stringify(cs.state));state.course=loadCourse();
+      state.diag=result;
+    }catch(e){
+      APP.textContent="تعذر تأكيد ملف الطالب والتقدم السحابي ("+String(e.message||e)+"). ارجع إلى حساب الطالب وأعد المحاولة.";
+      return;
+    }
   }
   if(FIRST_STAGE_PREVIEW){
-    // The public practice cycle is not a verified or persistently assessed
-    // student diagnostic. All skill metrics stay null; no academic unlock.
-    state.diag={metrics:{recall:null,understanding:null,application:null,
-      legal_precision:null,exam:null,retention:null},pendingRecall:true,
-      profileType:"insufficient_evidence",source:"public_stage_one_preview"};
+    state.diag={metrics:{recall:null,understanding:null,application:null,legal_precision:null,exam:null,retention:null},pendingRecall:true,profileType:"insufficient_evidence",source:"public_stage_one_preview"};
     state.course=defaultCourse();
   }
-  if(DEMO&&AUTO_START&&state.diag){if(state.course.completedProgram){state.view="completion";}else{var autoMeta=sessionMeta(state.course.session);state.answers=[];state.assessmentAnswers=[];state.task=0;state.queue=buildTrainingQueue();state.view=autoMeta.kind==="assessment"?"assessment":"train";}}
+  if(DEMO&&AUTO_START&&state.diag||!DEMO&&AUTO_START&&state.diag){
+    if(state.course.completedProgram)state.view="completion";
+    else{var meta=sessionMeta(state.course.session);state.answers=[];state.assessmentAnswers=[];state.task=0;state.queue=buildTrainingQueue();state.view=meta.kind==="assessment"?"assessment":"train";}
+  }
   render();
 }
 boot();
