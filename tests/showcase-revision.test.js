@@ -5,10 +5,10 @@ const vm=require("node:vm");
 
 async function check(lang){
  const store=new Map(),elements=new Map(),sent=[],ids=[];
- const el=()=>({value:"",textContent:"",onclick:null,focus(){this.focused=true;},
-   set innerHTML(html){this._html=String(html);for(const x of this._html.matchAll(/\bid="([^"]+)"/g))elements.set(x[1],el());},
+ const el=(root=false)=>({value:"",textContent:"",onclick:null,focus(){this.focused=true;},
+   set innerHTML(html){if(root)elements.clear();this._html=String(html);for(const x of this._html.matchAll(/\bid="([^"]+)"/g))elements.set(x[1],el());},
    get innerHTML(){return this._html||"";}});
- const app=el();
+ const app=el(true);
  const document={
    documentElement:{lang},
    getElementById(id){return id==="showcaseApp"?app:elements.get(id)||null;},
