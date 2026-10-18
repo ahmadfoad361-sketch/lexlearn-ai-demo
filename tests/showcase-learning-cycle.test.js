@@ -32,6 +32,12 @@ global.document={
   querySelectorAll(sel){return sel==="[data-cycle-choice]"?(els._choices||[]):[]}
 };
 let backCalls=0;
+const practiceState=new Map();
+global.sessionStorage={
+ getItem(key){return practiceState.get(key)||null;},
+ setItem(key,value){practiceState.set(key,value);},
+ removeItem(key){practiceState.delete(key);}
+};
 function stage(percent,html){
   assert.equal(percent,100);
   markup=html;
@@ -45,6 +51,7 @@ for(const lang of ["ar","en"]){
     const did=Cycle.run({lang,weak:mode,stage,goBack(){backCalls++}});
     assert.equal(did,true);
     assert(els.cycleStart,"Must present an invitation to start guided practice");
+    assert.equal(practiceState.has("lexlearn-showcase-first-session-v1"),false,"starting a new cycle clears old completion");
     els.cycleStart.onclick();
     for(let i=0;i<4;i++){
       assert(markup.includes(tasks[i].title),"Practice step must match the selected weakness");
@@ -68,12 +75,17 @@ for(const lang of ["ar","en"]){
     assert(markup.includes(lang==="ar"?"لم تدخل في العدد":"were not scored"));
     assert(els.cycleAgain&&els.cycleBack);
     assert(els.cycleFirstStage,"A completed cycle must offer stage-one preview");
+    const complete=JSON.parse(practiceState.get("lexlearn-showcase-first-session-v1"));
+    assert.equal(complete.completed,true,"practice is marked complete after fourth activity");
+    assert.equal(complete.lang,lang);
+    assert(Number.isFinite(complete.at),"completion timestamp required");
     assert(markup.includes((lang==="ar"?"program.html":"program-en.html")+"?demo=1&start=1&preview=stage1&country=qa&subject=rights"),
       "Stage-one CTA must not loop back to an unsigned official programme");
     assert(markup.includes(lang==="ar"?"البرنامج الجامعي ما زال غير معتمد":"not yet approved for students"),
       "Academic pilot release status must be explicit");
     els.cycleBack.onclick();
     els.cycleAgain.onclick();
+    assert(!practiceState.has("lexlearn-showcase-first-session-v1"),"restarting practice must clear the previous completion");
     assert(els.cycleStart,"Restart must reset the training cycle");
   }
 }

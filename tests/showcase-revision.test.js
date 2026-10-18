@@ -5,10 +5,10 @@ const vm=require("node:vm");
 
 async function check(lang){
  const store=new Map(),elements=new Map(),sent=[],ids=[];
- const el=()=>({value:"",textContent:"",onclick:null,focus(){this.focused=true;},
-   set innerHTML(html){this._html=String(html);for(const x of this._html.matchAll(/\bid="([^"]+)"/g))elements.set(x[1],el());},
+ const el=(root=false)=>({value:"",textContent:"",onclick:null,focus(){this.focused=true;},
+   set innerHTML(html){if(root)elements.clear();this._html=String(html);for(const x of this._html.matchAll(/\bid="([^"]+)"/g))elements.set(x[1],el());},
    get innerHTML(){return this._html||"";}});
- const app=el();
+ const app=el(true);
  const document={
    documentElement:{lang},
    getElementById(id){return id==="showcaseApp"?app:elements.get(id)||null;},
@@ -43,6 +43,21 @@ async function check(lang){
  const prior={received:true,submission_id:"original-submission",grade_status:"insufficient_evidence",
   recall_score:null,choice_indicators:{understanding:25},details:{reason:"incomplete_proposition",criteria:[]},
   feedback:"Not assessed"};
+ context.window.__test.show(prior,"الولادة حيا");
+ assert(elements.get("previewDemo"),"before training, result offers guided practice");
+ assert(!elements.get("firstStageFromResults"),"no stage-one completion link before finishing four activities");
+ store.set("lexlearn-showcase-first-session-v1",JSON.stringify({completed:true,at:Date.now(),lang}));
+ context.window.__test.show(prior,"الولادة حيا");
+ assert(elements.get("firstStageFromResults"),"completing all four activities must reveal level-one CTA after returning");
+ assert(app.innerHTML.includes((lang==="ar"?"program.html":"program-en.html")+"?demo=1&start=1&preview=stage1&country=qa&subject=rights"),
+  "first-level preview link must be correct after pressing back to results");
+ assert(app.innerHTML.includes(lang==="ar"?"أنهيت الأربع مهام":"You completed the four"),
+  "results must explain why the next level is available");
+ assert(elements.get("previewDemo"),"repeat practice still available");
+ store.set("lexlearn-showcase-first-session-v1",JSON.stringify({completed:true,at:Date.now(),lang:lang==="ar"?"en":"ar"}));
+ context.window.__test.show(prior,"الولادة حيا");
+ assert(!elements.get("firstStageFromResults"),"other language tab completion must not impersonate same-language completion");
+ store.delete("lexlearn-showcase-first-session-v1");
  context.window.__test.show(prior,"الولادة حيا");
  assert(elements.get("editFreeAnswer"),"revision CTA shown on results");
  elements.get("editFreeAnswer").onclick();
