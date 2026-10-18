@@ -67,6 +67,11 @@ for(const lang of ["ar","en"]){
     assert(markup.includes(lang==="ar"?"اكتملت دورة التدريب":"Practice cycle complete"));
     assert(markup.includes(lang==="ar"?"لم تدخل في العدد":"were not scored"));
     assert(els.cycleAgain&&els.cycleBack);
+    assert(els.cycleFirstStage,"A completed cycle must offer stage-one preview");
+    assert(markup.includes((lang==="ar"?"program.html":"program-en.html")+"?demo=1&start=1&preview=stage1&country=qa&subject=rights"),
+      "Stage-one CTA must not loop back to an unsigned official programme");
+    assert(markup.includes(lang==="ar"?"البرنامج الجامعي ما زال غير معتمد":"not yet approved for students"),
+      "Academic pilot release status must be explicit");
     els.cycleBack.onclick();
     els.cycleAgain.onclick();
     assert(els.cycleStart,"Restart must reset the training cycle");
