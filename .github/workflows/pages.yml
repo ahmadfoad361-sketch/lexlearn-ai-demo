@@ -57,6 +57,14 @@ jobs:
           node tests/showcase-recall.test.js
           node tests/showcase-delivery.test.js
           node tests/showcase-semantic.test.mjs
+      - name: Browser dependency
+        run: npm install --no-save --no-package-lock playwright-core@1.56.1
+      - name: Serve review artifact and verify preview with real Chrome
+        run: |
+          node scripts/build-public.js
+          python3 -m http.server 18765 --bind 127.0.0.1 --directory dist-site > /tmp/lexlearn-preview-http.log 2>&1 &
+          sleep 2
+          node tests/meeting-browser-flow.cjs
       - name: Conference registration smoke tests
         run: node tests/conference-signup.test.js
       - name: Conference landing release checks
@@ -96,3 +104,16 @@ jobs:
       - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v4
+      - name: Install browser driver for live verification
+        run: npm install --no-save --no-package-lock playwright-core@1.56.1
+      - name: Verify published visitor entry and level-one preview in real Chrome
+        env:
+          BASE_URL: ${{ steps.deployment.outputs.page_url }}
+        run: |
+          for attempt in 1 2 3 4 5; do
+            echo "Live browser check attempt $attempt"
+            if node tests/meeting-browser-flow.cjs; then exit 0; fi
+            sleep 12
+          done
+          exit 1
+
