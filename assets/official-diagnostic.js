@@ -67,7 +67,7 @@ async function persist(cloud,uid,result){
  var old=await cloud.loadSnapshot({courseId:COURSE_SCOPE,snapshotType:"profile"});
  var profile=old&&old.state&&typeof old.state==="object"?old.state:{results:{}};
  profile.results=profile.results||{};
- if(valid(profile.results[COURSE_SCOPE],uid))return profile.results[COURSE_SCOPE];
+ if(valid(profile.results[COURSE_SCOPE],uid)){await restore(cloud,uid);return profile.results[COURSE_SCOPE];}
  var next=Object.assign({},profile,{results:Object.assign({},profile.results)});
  next.results[COURSE_SCOPE]=result;
  await cloud.saveSnapshot({courseId:COURSE_SCOPE,snapshotType:"profile",state:next,version:VERSION});
@@ -95,7 +95,8 @@ async function restore(cloud,uid){
  // Recover interrupted profile->course save without ever asking for another diagnostic.
  var cs=await cloud.loadSnapshot({courseId:COURSE_SCOPE,snapshotType:"course"});
  var course=cs&&cs.state?cs.state:defaultCourse(d.attempt_id,d.trainingPlan);
- if(!course.diagnosticAttemptId){course.diagnosticAttemptId=d.attempt_id;course.officialTrainingPlan=d.trainingPlan;await cloud.saveSnapshot({courseId:COURSE_SCOPE,snapshotType:"course",state:course});}
+ if(course.diagnosticAttemptId&&course.diagnosticAttemptId!==d.attempt_id)throw new Error("diagnostic_course_mismatch");
+ if(!cs||!cs.state||!course.diagnosticAttemptId){course.diagnosticAttemptId=d.attempt_id;course.officialTrainingPlan=d.trainingPlan;await cloud.saveSnapshot({courseId:COURSE_SCOPE,snapshotType:"course",state:course});}
  root.localStorage.setItem(localProfileKey(uid),JSON.stringify(ps.state));
  root.localStorage.setItem(localCourseKey(uid),JSON.stringify(course));
  return d;
