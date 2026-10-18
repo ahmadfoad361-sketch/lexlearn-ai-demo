@@ -41,6 +41,11 @@ assert.ok(go.includes("../conference.html")&&go.includes("window.location.replac
 assert.ok(!go.includes('<link rel="canonical"')&&!go.includes("https://ahmadfoad361-sketch.github.io"),"printed QR redirect must not canonicalize to the old preview hostname");
 const leadServer=read("supabase/functions/conference-lead/index.ts");
 assert.ok(leadServer.includes('Deno.env.get("LEX_ALLOWED_ORIGINS")'),"conference lead function must support explicit approved production origins");
+assert.ok(leadServer.includes('Deno.env.get("RESEND_API_KEY")')&&leadServer.includes('Deno.env.get("LEAD_NOTIFY_TO")')&&leadServer.includes('Deno.env.get("LEAD_NOTIFY_FROM")'),"contact form must check configured staff notification before accepting leads");
+assert.ok(leadServer.includes('siteKey&&secret&&serverKey&&notifyReady'),"must fail closed when no owner delivery channel is ready");
+assert.ok(!leadServer.includes("enabled:Boolean(siteKey&&secret&&serverKey)"),"do not accept unobservable leads");
+assert.ok(leadServer.includes('notification_status:"failed"'),"revoked notification configuration must flag a saved lead for retry");
+
 assert.ok(leadServer.includes('!allowedOrigins().has(origin)'),"conference form must reject unknown origins");
 assert.ok(leadServer.includes('check.hostname===hostname'),"Turnstile must verify the requesting approved site hostname");
 assert.ok(leadServer.includes('new URL(origin).hostname'),"Turnstile hostname must be derived from the authorized origin");
