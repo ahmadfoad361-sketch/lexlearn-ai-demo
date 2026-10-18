@@ -1,5 +1,5 @@
-import {gradeWithAI} from "./semantic.mjs";
-export function createHandler({createClient,env,assess,semanticGrade=gradeWithAI}){
+// This endpoint is strictly no-paid-inference: the local matcher is provisional.
+export function createHandler({createClient,env,assess}){
 // Explicitly allow the GitHub Pages preview and owner-approved production origins.
 // LEX_ALLOWED_ORIGINS is a comma-separated list of HTTPS origins, never a wildcard.
 // Origin checks are an extra browser boundary; the user JWT is still mandatory.
@@ -7,9 +7,8 @@ const previewOrigin="https://ahmadfoad361-sketch.github.io";
 const extraOrigins=String(env("LEX_ALLOWED_ORIGINS")||"").split(",").map(x=>x.trim())
  .filter(x=>/^https:\/\/[a-z0-9.-]+(?::\d{2,5})?$/i.test(x));
 const allowedOrigins=new Set([previewOrigin,...extraOrigins]);
-// Only the server grades and stores free-text responses. The optional semantic model
-// uses approved sources and verified evidence; a supervisor receives every attempt.
-// No browser API keys, no definitive score when the evidence is uncertain.
+// Only the server checks and stores free-text responses; a supervisor can review.
+// Unclear free text never receives a fabricated zero. No paid inference API calls.
 return async req=>{
  const origin=req.headers.get("origin")||"";
  const cors={"Access-Control-Allow-Origin":allowedOrigins.has(origin)?origin:previewOrigin,
@@ -50,15 +49,9 @@ return async req=>{
   if(sources.error||sources.data?.length!==2||sources.data.some((s)=>s.status!=="approved"||!s.excerpt)){
    grade={grade_status:"pending_review",recall_score:null,feedback:lang==='ar'?"تعذر التحقق من المصادر المعتمدة؛ حُفظت إجابتك دون احتساب صفر.":"Approved sources could not be verified; your answer is saved without a zero.",details:{reason:"legal_sources_not_ready",provider:"none",points:null,max_points:7}};
   }else{
-   try{
-    const semantic=await semanticGrade({
-     answer,lang,sources:sources.data,key:env("OPENAI_API_KEY"),model:env("OPENAI_MODEL")
-    });
-    if((semantic.status==="scored"||semantic.status==="review")&&semantic.grade)grade=semantic.grade;
-    else grade.details={...grade.details,provider_status:semantic.reason||"semantic_unavailable"};
-   }catch(_){
-    grade.details={...grade.details,provider_status:"semantic_unavailable"};
-   }
+   // This is a limited, deterministic rule check, never a semantic language-model grade.
+   // Recognized evidence is provisional; uncertain meaning must remain unscored.
+   grade.details={...grade.details,provider:"none",provider_status:"disabled_no_paid_calls"};
   }
   const saved=await db.rpc("save_demo_submission",{p_user:session.user.id,p_request_id:requestId,p_hash:digest,p_record:{language:lang,answer_text:answer,choices,choice_indicators:indicators,grade_status:grade.grade_status,recall_score:grade.recall_score,grade_feedback:grade.feedback,grade_evidence:grade.details}});
   if(saved.error||!saved.data)return json({error:"demo_result_save_failed"},503);
