@@ -6,6 +6,15 @@ assert.equal(ctx.LEX_STUDENT_PATH.noHtmlScore(0),"0%");
 assert.equal(ctx.LEX_STUDENT_PATH.noHtmlScore(65.5),"66%");
 assert.equal(ctx.LEX_STUDENT_PATH.noHtmlScore(null),"غير قابل للتقدير");
 assert.equal(ctx.LEX_STUDENT_PATH.noHtmlScore(101),"100%");
+assert.equal(ctx.LEX_STUDENT_PATH.previousAnswerTitle(
+  {item_id:"rights-v1-s1-understanding",dimension:"understanding"},
+  {dimension:"understanding",title_ar:"بداية الشخصية",title_en:"Beginning of legal personality"}),
+  "إجابتك السابقة — الفهم · بداية الشخصية");
+const fakeTitle=ctx.LEX_STUDENT_PATH.previousAnswerTitle(
+  {item_id:"rights-v1-s1-understanding",dimension:"understanding"},null);
+assert.ok(!fakeTitle.includes("rights-v1"),"missing exercise title must not leak internal question identifier");
+const nav=fs.readFileSync("assets/lexlearn-navigation.js","utf8");
+assert.ok(nav.includes("isStudentPath")&&nav.includes("main > header"),"student back button must be inline, not float over lessons");
 for(const required of ["trainingOverview","trainingOpen","trainingSubmit","answer_readback_failed"]){
  if(required==="student_id")continue;
  assert.ok(source.includes(required),required);
