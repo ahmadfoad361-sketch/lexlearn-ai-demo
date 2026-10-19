@@ -25,18 +25,19 @@ const base="http://127.0.0.1:18765/";
 (async()=>{
  const browser=await chromium.launch({executablePath:chrome,headless:true,args:["--no-sandbox","--disable-dev-shm-usage"]});
  const dir="ci-artifacts/local-staging-browser";fs.mkdirSync(dir,{recursive:true});
- const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,recordVideo:{dir}});
- const page=await context.newPage(),requests=[],jsErrors=[];
- page.setDefaultTimeout(12000);
- page.setDefaultNavigationTimeout(20000);
- let step="start";
+ let context=null,page=null,step="initialize Chrome recording";
+ const requests=[],jsErrors=[];
  const milestone=label=>{step=label;console.log("CHROME-STEP:",label);};
- page.on("response",r=>{
-  const m=r.url().match(/\/rest\/v1\/rpc\/([a-z_]+)/);
-  if(m)requests.push({rpc:m[1],status:r.status()});
- });
- page.on("pageerror",e=>jsErrors.push(e.message));
  try{
+  context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,recordVideo:{dir}});
+  page=await context.newPage();
+  page.setDefaultTimeout(12000);
+  page.setDefaultNavigationTimeout(20000);
+  page.on("response",r=>{
+   const m=r.url().match(/\/rest\/v1\/rpc\/([a-z_]+)/);
+   if(m)requests.push({rpc:m[1],status:r.status()});
+  });
+  page.on("pageerror",e=>jsErrors.push(e.message));
   milestone("load student login");
   await page.goto(base+"student-login.html?country=qa",{waitUntil:"domcontentloaded"});
   await page.waitForFunction(()=>window.LEX_CLOUD&&LEX_CLOUD.isConfigured(),{timeout:25000});
@@ -94,11 +95,11 @@ const base="http://127.0.0.1:18765/";
   fs.writeFileSync(dir+"/network-proof.json",JSON.stringify({case:"LOCAL STAGING ONLY",commit:process.env.GITHUB_SHA?.slice(0,12),requests},null,2));
   console.log("PASS Chrome real-local authenticated LexLearn: login -> six questions -> server 2xx -> adapted Level1 -> preliminary grade -> reload, no loop. Network evidence stored.");
  }catch(e){
-  console.error("Chrome stopped at step:",step,"page:",page.url());
-  try{await page.screenshot({path:dir+"/failure.png",fullPage:true,timeout:4000});}catch(_){}
-  try{fs.writeFileSync(dir+"/failure-summary.json",JSON.stringify({step,url:page.url(),runtimeErrors:jsErrors,requests,visibleText:(await page.locator("body").innerText({timeout:3000})).slice(0,1800)},null,2));}catch(_){}
+  console.error("Chrome stopped at step:",step,"page:",page? page.url():"browser_not_initialized");
+  if(page)try{await page.screenshot({path:dir+"/failure.png",fullPage:true,timeout:4000});}catch(_){}
+  try{fs.writeFileSync(dir+"/failure-summary.json",JSON.stringify({step,url:page?page.url():null,runtimeErrors:jsErrors,requests,visibleText:page?(await page.locator("body").innerText({timeout:3000})).slice(0,1800):""},null,2));}catch(_){}
   throw e;
  }finally{
-  await context.close();await browser.close();
+  if(context)await context.close();await browser.close();
  }
 })().catch(e=>{console.error("STAGING BROWSER FAIL",e);process.exitCode=1;});
