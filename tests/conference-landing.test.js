@@ -373,7 +373,7 @@ assert.ok(html.includes("assets/conference.css?v=20261019.12")&&html.includes("a
 
 /* Follow-up UX contract: conference, pilot, investor and student demo. */
 assert.ok(html.includes('id="pathsReturn"')&&html.includes('href="#paths"'),"return to visitor paths must be accessible");
-assert.ok(/<a class="pathsReturn"[^>]+aria-label="Back to paths"[^>]*><svg[\s\S]*?<\/svg><\/a>/.test(html),"floating return must be a single icon-only arrow, not visible text");
+assert.ok(html.includes('data-t="returnPaths">Conference home</span>'),"floating return must have a visible localized label");
 assert.ok(js.includes('backToPaths.setAttribute("aria-label",t.returnPaths)'),"return arrow accessible label must localize to Arabic and English");
 assert.ok(html.includes('id="deckPrev"')&&html.includes('id="deckNext"')&&html.includes('id="deckDots"'),"carousel requires arrows and dots");
 assert.ok(js.includes("slide.scrollIntoView")&&js.includes("rtl?r.right-rect.right:r.left-rect.left"),"RTL/LTR card scrolling must use physical direction correctly");
@@ -447,7 +447,7 @@ assert.ok(css.includes('.section.frame{scroll-margin-top:88px')&&css.includes('.
 assert.ok(css.includes('.roadmap::before{inset-inline-start:31px')&&css.includes('.roadmap::before{inset-inline-start:20px'),"timeline line is offset from viewport edge on desktop and mobile");
 assert.ok(visionHTML.includes('class="pilotNumbers"')&&visionHTML.includes('<bdi dir="ltr">30–60</bdi>')&&visionHTML.includes('<bdi dir="ltr">6–8</bdi>'),"Qatar pilot range remains LTR isolated");
 assert.ok(css.includes('.roadmap .pilotNumbers bdi{display:inline-block')&&css.includes('font-variant-numeric:tabular-nums'),"Safari pilot numbers do not break across lines");
-assert.ok(js.includes('hasUserScrolled && depth>140')&&js.includes('contactTop>viewport*.82')&&js.includes('footerTop>viewport'),"floating return appears only after scroll and hides above contact/footer");
+assert.ok(js.includes('var show=(window.scrollY||0)>140;')&&!js.includes('contactTop>viewport'),"return remains available at contact/footer and restored scroll positions");
 assert.ok(js.includes('backToPaths.tabIndex=show?0:-1'),"invisible floating control must not be focusable");
 assert.ok(css.includes('.pathsReturn.isVisible{opacity:.76'),"subtle return control opacity avoids obscuring copy");
 
@@ -485,3 +485,17 @@ assert.match(html,/<video id="brandIntroVideo" muted playsinline preload="none"/
 assert.ok(html.includes('Illustrative law faculty lecture theatre'));
 assert.ok(pub.includes('conference-media/logo-intro-navy.mp4'));
 assert.ok(pub.includes('conference-experience.js'));
+
+// Return stays reachable at deep sections and on browser-restored positions.
+{
+ const listeners={},attrs={};let visible=false;
+ const returnButton={classList:{toggle(name,value){visible=value;}},setAttribute(key,value){attrs[key]=value;},tabIndex:-1};
+ const browser={scrollY:2200,addEventListener(name,fn){listeners[name]=fn;}};
+ const navigationBlock=js.slice(js.indexOf('if(backToPaths && typeof window.addEventListener'),js.indexOf('let active="en";'));
+ vm.runInNewContext(navigationBlock,{backToPaths:returnButton,window:browser});
+ assert.ok(visible&&returnButton.tabIndex===0&&attrs['aria-hidden']==='false','deep-link return must be available immediately');
+ for(const depth of [800,5000,9000]){browser.scrollY=depth;listeners.scroll();assert.ok(visible&&returnButton.tabIndex===0,'PDF/contact/footer must retain keyboard-accessible return');}
+ browser.scrollY=0;listeners.scroll();assert.ok(!visible&&returnButton.tabIndex===-1,'hide only when already at conference home');
+ browser.scrollY=9000;listeners.pageshow();assert.ok(visible,'restore return on browser back');
+ assert.ok(html.includes('class="visitor-return-bar"'),'audience dialogs must retain their sticky home control');
+}

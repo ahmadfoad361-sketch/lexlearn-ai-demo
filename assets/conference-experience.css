@@ -129,3 +129,16 @@ html[lang=ar] .visual-scene h2,html[lang=ar] .visual-scene h3{line-height:1.55}
 .visual-modal[data-audience="university"] .visual-scene:before{display:none}
 .visual-modal[data-audience="university"] .visual-scene>figcaption{background:#111d31;padding-top:24px}
 @media(max-width:599px){.visual-modal[data-audience="university"] .visual-scene>.scene-image{height:215px}}
+
+/* Visible return controls remain reachable throughout the conference. */
+.pathsReturn,.pathsReturn.isVisible{width:auto;max-width:calc(100vw - 32px);height:auto;min-height:48px;padding:11px 18px;gap:9px;border-radius:999px;background:#8A1F39;color:#fff;box-shadow:0 6px 22px #111d3138;bottom:calc(16px + env(safe-area-inset-bottom,0px));inset-inline-end:16px}
+.pathsReturn.isVisible{opacity:1}
+.pathsReturn:hover,.pathsReturn:active{background:#111D31}
+.pathsReturn svg{flex:none;width:20px;height:20px}
+body:has(.pathsReturn){padding-bottom:calc(84px + env(safe-area-inset-bottom,0px))}
+#paths{scroll-margin-top:160px}
+.visitor-return-bar{position:sticky;top:0;z-index:5;display:flex;justify-content:flex-end;padding:10px 14px;background:#111D31;box-shadow:0 3px 12px #0002}
+.visitor-return-bar .visual-close{position:static;min-height:44px;background:#8A1F39;border-color:#b9697d;backdrop-filter:none}
+.visitor-return-bar .visual-close:hover,.visitor-return-bar .visual-close:active{background:#243955}
+.visitor-return-bar .visual-close:focus-visible{outline:3px solid #fff;outline-offset:3px}
+@media print{.pathsReturn,.visitor-return-bar{display:none!important}body:has(.pathsReturn){padding-bottom:0}}
