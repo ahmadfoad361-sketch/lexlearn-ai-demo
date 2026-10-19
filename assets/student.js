@@ -354,7 +354,7 @@ function render(){
   APP.innerHTML=
     "<header class='top'><div class='topin'>"+
       "<div class='brand'><div class='mark'><img src='assets/lexlearn-logo.svg' alt='LexLearn'></div><div><b>LexLearn</b><small>حساب الطالب • نفهم طريقة تفكيرك، ونبني طريقك.</small></div></div>"+
-      "<div class='topactions'><span class='topbtn countryTop staticCountry'>🇶🇦 قطر</span><a class='topbtn' href='student-en.html'>English</a><button class='topbtn' id='changePass'>تغيير كلمة المرور</button><a class='topbtn' href='index.html'>الموقع</a><button class='topbtn' id='logout'>خروج</button></div>"+
+      "<div class='topactions'><span class='topbtn countryTop staticCountry'>🇶🇦 قطر</span><a class='topbtn' href='student-en.html'>English</a><button class='topbtn' id='changePass'>تغيير كلمة المرور</button><span class='topbtn' aria-disabled='true' title='الديمو للزوار فقط ولا يحتسب درجات الطالب' style='opacity:.42;cursor:not-allowed;filter:grayscale(1);pointer-events:none' tabindex='-1'>◈ الديمو · للزوار فقط</span><a class='topbtn' href='index.html'>الموقع</a><button class='topbtn' id='logout'>خروج</button></div>"+
     "</div></header>"+
     "<main class='wrap'>"+
       "<section class='hero "+(course.completedProgram?"heroComplete":"")+"'>"+
