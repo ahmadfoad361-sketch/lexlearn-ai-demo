@@ -148,12 +148,13 @@ async function recordAttempt(row){
 async function studentLifecycleRpc(action,params){
  var c=db();if(!c)throw new Error("cloud_not_configured");
  var calls={status:"lex_diagnostic_status",begin:"lex_diagnostic_begin",draft:"lex_diagnostic_draft",
-    complete:"lex_diagnostic_complete",level:"lex_level_access"};
+    complete:"lex_diagnostic_complete",level:"lex_level_access",firstLevel:"lex_level_one_open",submitLevelOne:"lex_level_one_submit"};
  if(!Object.prototype.hasOwnProperty.call(calls,action))throw new Error("unknown_lifecycle_action");
  var args={p_course:params&&params.courseId||"qa-qu-lawc101-rights"};
  if(action==="draft"||action==="complete")args.p_answers=params.answers;
  if(action==="complete")args.p_free_text=params.freeText||"";
  if(action==="level")args.p_level=params.level;
+ if(action==="submitLevelOne"){args.p_item_id=params.itemId;args.p_answer=params.answer;}
  var r=await c.rpc(calls[action],args);
  if(r.error)throw new Error(r.error.message||"lifecycle_server_unavailable");
  if(!r.data||typeof r.data!=="object")throw new Error("unverified_lifecycle_response");
