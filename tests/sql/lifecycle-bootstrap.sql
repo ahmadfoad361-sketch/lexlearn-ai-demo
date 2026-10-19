@@ -8,6 +8,7 @@ create or replace function auth.uid() returns uuid language sql stable as $$
 $$;
 create table public.profiles(id uuid primary key,role text not null,active boolean not null default true,
  cohort_id uuid, display_name text);
+grant select on public.profiles to authenticated;
 create table public.courses(id text primary key);
 create table public.enrollments(user_id uuid references public.profiles(id),course_id text references public.courses(id),status text,
  primary key(user_id,course_id));
