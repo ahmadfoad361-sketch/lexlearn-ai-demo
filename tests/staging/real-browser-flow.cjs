@@ -35,7 +35,7 @@ const base="http://127.0.0.1:18765/";
  try{
   await page.goto(base+"student-login.html?country=qa",{waitUntil:"domcontentloaded"});
   await page.waitForFunction(()=>window.LEX_CLOUD&&LEX_CLOUD.isConfigured(),{timeout:25000});
-  await page.locator("#studentUser").fill("student-d");
+  await page.locator("#studentUser").fill("student-d@lexlearn-ci.invalid");
   await page.locator("#studentPassword").fill("EphemeralLocal!2026");
   await page.locator("#studentLogin button[type=submit]").click();
   await page.waitForURL(/\/student\.html/,{timeout:30000});
