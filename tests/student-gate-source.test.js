@@ -10,8 +10,9 @@ for(const en of [false,true]){
  assert.ok(s.includes('state.view="train"'),name+" must open saved adaptive first-level plan from completed server record");
  assert.ok(s.includes('state.diag=status.result'),name+" must use server diagnostic data only");
  assert.ok(s.includes('status.result.source==="server_finalized_diagnostic"'),name+" must reject public showcase results");
- assert.ok(s.includes('state.levelAccess.allowed&&state.course.session===1&&window.LEX_PILOT&&LEX_PILOT.isReleased'),name+" must require BOTH server release and published curriculum");
+ assert.ok(s.includes('state.levelAccess.allowed&&state.course.session===1&&window.LEX_OFFICIAL_LEVEL_ONE'),name+" must require server authorization and official Level1 learning module");
  assert.ok(s.includes('STUDENT_SESSION.studentId'),name+" must verify student identity");
+ assert.ok(s.includes('LEX_OFFICIAL_LEVEL_ONE.mount'),name+" must load official first-level exercises instead of legacy local practice");
  assert.ok(s.includes('showcase-level1'),name+" public first-level preview must have distinct route");
 }
 for(const page of loginHtml){
