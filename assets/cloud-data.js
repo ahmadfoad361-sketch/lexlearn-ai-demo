@@ -148,7 +148,7 @@ async function recordAttempt(row){
 async function studentLifecycleRpc(action,params){
  var c=db();if(!c)throw new Error("cloud_not_configured");
  var calls={status:"lex_diagnostic_status",begin:"lex_diagnostic_begin",draft:"lex_diagnostic_draft",
-    complete:"lex_diagnostic_complete",level:"lex_level_access",firstLevel:"lex_level_one_open",submitLevelOne:"lex_level_one_submit"};
+    complete:"lex_diagnostic_complete",reviewDiagnostic:"lex_diagnostic_internal_assess",level:"lex_level_access",firstLevel:"lex_level_one_open",submitLevelOne:"lex_level_one_submit"};
  if(!Object.prototype.hasOwnProperty.call(calls,action))throw new Error("unknown_lifecycle_action");
  var args={p_course:params&&params.courseId||"qa-qu-lawc101-rights"};
  if(action==="draft"||action==="complete")args.p_answers=params.answers;
