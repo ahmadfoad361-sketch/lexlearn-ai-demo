@@ -1,0 +1,43 @@
+name: LexLearn real Auth local Supabase E2E
+
+on:
+  push:
+    branches:
+      - fix/student-lifecycle-server-gated-20261019
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lexlearn-free-supabase-local-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  authenticated-local-stage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - uses: supabase/setup-cli@v3
+      - name: Start isolated local Supabase Auth, REST, Postgres (NEVER production)
+        run: |
+          supabase --version
+          supabase start --exclude realtime,storage-api,imgproxy,mailpit,studio,edge-runtime,postgres-meta,logflare,vector,supavisor
+      - name: Get ephemeral local keys without publishing them
+        run: |
+          supabase status -o env > /tmp/lexlearn-local.env
+          test -s /tmp/lexlearn-local.env
+      - name: Test real local GoTrue sign-in, signed PostgREST requests and adaptive lesson
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y postgresql-client
+          node tests/staging/real-auth-e2e.mjs /tmp/lexlearn-local.env
+      - name: Clear local credentials and shut down disposable stack
+        if: always()
+        run: |
+          rm -f /tmp/lexlearn-local.env
+          supabase stop --no-backup || true
