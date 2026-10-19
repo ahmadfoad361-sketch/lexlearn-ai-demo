@@ -104,8 +104,10 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "20"
-      - name: Install local Playwright driver
-        run: npm install --no-save --no-package-lock playwright-core@1.56.1
+      - name: Install pinned Playwright driver and matching video helper
+        run: |
+          npm install --no-save --no-package-lock playwright-core@1.56.1
+          node node_modules/playwright-core/cli.js install ffmpeg
       - name: Confirm actual published build and public learning routes
         env:
           BASE_URL: ${{ steps.deployment.outputs.page_url }}
