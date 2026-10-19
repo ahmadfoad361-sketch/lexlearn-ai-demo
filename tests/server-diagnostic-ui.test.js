@@ -52,12 +52,15 @@ function make(uid,lang,data,opts={}){
   assert.ok(env.nodes.ungradedText,"six objective questions lead to optional free recall");
   env.nodes.ungradedText.value="needs human review";
   await env.nodes.serverNext.onclick();
-  assert.equal(env.redirects.length,1,"redirect to program only after verified server completion");
+  assert.equal(env.redirects.length,0,"show verified result before any training navigation");
+  assert.match(env.main.html,/diagnosticReport/,"student sees persisted result report");
+  assert.match(env.main.html,/program/,"result offers adaptive level CTA");
   assert.equal(env.calls.filter(c=>c==="draft").length,6);
   assert.deepEqual(env.calls.slice(-3),["complete","reviewDiagnostic","status"]);
   const returning=make(uid,lang,data);
   await returning.win.LEX_SERVER_DIAGNOSTIC.mount();
-  assert.equal(returning.redirects.length,1,"completed result must never restart diagnostic");
+  assert.equal(returning.redirects.length,0,"returning student sees the report, not a redirect loop");
+  assert.match(returning.main.html,/diagnosticReport/,"returning student can read the saved report again");
   assert.ok(!returning.nodes.beginDiagnostic);
  }
  // Partial draft is truly server-originating, and is resumed in another language.
