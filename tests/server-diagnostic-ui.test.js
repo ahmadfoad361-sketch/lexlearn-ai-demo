@@ -29,7 +29,7 @@ function make(uid,lang,data,opts={}){
    throw Error("unknown action");
   }
  };
- const D={identity:async()=>uid,QUESTIONS};
+ const D={identity:async()=>uid,academicItemsApproved:async()=>!opts.unapproved,QUESTIONS};
  const win={document,location:{search:"?lang="+lang,replace:url=>redirects.push(url)},
   URLSearchParams,LEX_CLOUD:cloud,LEX_OFFICIAL_DIAGNOSTIC:D,console,Promise};
  win.window=win;
@@ -73,7 +73,7 @@ function make(uid,lang,data,opts={}){
  // Content not approved -> no questions shown, no bypass.
  const denied=make("unreviewed","ar",data,{unapproved:true});
  await denied.win.LEX_SERVER_DIAGNOSTIC.mount();
- await denied.nodes.beginDiagnostic.onclick();
+ assert.equal(denied.nodes.beginDiagnostic,undefined,"unapproved questions never render a start button");
  assert.match(denied.main.html,/تنتظر مراجعة/);
  assert.ok(!denied.nodes.serverNext);
  console.log("Server-connected diagnostic UI mock PASS: AR/EN start/draft/readback, return, partial resume, failure, approval guard");
