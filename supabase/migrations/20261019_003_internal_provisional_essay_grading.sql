@@ -196,4 +196,33 @@ begin
 end $$;
 
 
+-- The optional free-recall response in the official diagnostic also gets an internal
+-- provisional percentage when there is enough legally interpretable evidence.
+-- Separate it from objective MCQs; never recast an unmeasured skill as a certified zero.
+create or replace function public.lex_diagnostic_internal_assess(p_course text)
+returns jsonb language plpgsql security definer set search_path='' as $$
+declare v_uid uuid; d public.student_diagnostic_runs%rowtype;
+  v_grade jsonb; v_old jsonb;
+begin
+ v_uid:=public.lex_require_student(p_course);
+ select * into d from public.student_diagnostic_runs
+  where user_id=v_uid and course_id=p_course for update;
+ if not found or d.status<>'completed' then
+  raise exception 'diagnostic_not_completed' using errcode='42501';
+ end if;
+ if length(trim(coalesce(d.free_text,'')))=0 then return public.lex_diagnostic_status(p_course);end if;
+ if d.result #> '{measurements,recall,internal_grade}' is not null then
+   return public.lex_diagnostic_status(p_course);
+ end if;
+ v_grade:=public.lex_internal_personality_grade('diagnostic-legal-personality',d.free_text);
+ v_old:=coalesce(d.result #> '{measurements,recall}','{}'::jsonb);
+ update public.student_diagnostic_runs
+ set result=jsonb_set(d.result,'{measurements,recall}',v_old||
+   jsonb_build_object('internal_grade',v_grade)),
+   updated_at=now()
+ where user_id=v_uid and course_id=p_course;
+ return public.lex_diagnostic_status(p_course);
+end $$;
+revoke all on function public.lex_diagnostic_internal_assess(text) from public,anon;
+grant execute on function public.lex_diagnostic_internal_assess(text) to authenticated;
 commit;
