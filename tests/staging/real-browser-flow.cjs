@@ -27,46 +27,60 @@ const base="http://127.0.0.1:18765/";
  const dir="ci-artifacts/local-staging-browser";fs.mkdirSync(dir,{recursive:true});
  const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,recordVideo:{dir}});
  const page=await context.newPage(),requests=[],jsErrors=[];
+ page.setDefaultTimeout(12000);
+ page.setDefaultNavigationTimeout(20000);
+ let step="start";
+ const milestone=label=>{step=label;console.log("CHROME-STEP:",label);};
  page.on("response",r=>{
   const m=r.url().match(/\/rest\/v1\/rpc\/([a-z_]+)/);
   if(m)requests.push({rpc:m[1],status:r.status()});
  });
  page.on("pageerror",e=>jsErrors.push(e.message));
  try{
+  milestone("load student login");
   await page.goto(base+"student-login.html?country=qa",{waitUntil:"domcontentloaded"});
   await page.waitForFunction(()=>window.LEX_CLOUD&&LEX_CLOUD.isConfigured(),{timeout:25000});
+  milestone("enter temporary learner credentials");
   await page.locator("#studentUser").fill("student-d@lexlearn-ci.invalid");
   await page.locator("#studentPassword").fill("EphemeralLocal!2026");
   await page.locator("#studentLogin button[type=submit]").click();
-  await page.waitForURL(/\/student\.html/,{timeout:30000});
+  milestone("wait for authenticated student portal");
+  await page.waitForURL(/\/student\.html/,{timeout:16000});
+  milestone("start official student diagnostic");
   await page.locator('a[href*="diagnostic.html"]').first().click();
-  await page.waitForURL(/\/diagnostic\.html/,{timeout:30000});
-  await page.locator("#beginDiagnostic").waitFor({timeout:30000});
+  await page.waitForURL(/\/diagnostic\.html/,{timeout:16000});
+  milestone("check academic bank and begin assessment");
+  await page.locator("#beginDiagnostic").waitFor({timeout:16000});
   await page.locator("#beginDiagnostic").click();
   const selections=[0,1,2,0,0,2];
   for(let i=0;i<6;i++){
+   milestone("answer diagnostic question "+(i+1));
    await page.waitForFunction(index=>{
     const q=window.LEX_OFFICIAL_DIAGNOSTIC.QUESTIONS[index];
     return !!q&&document.querySelector("#officialDiagnostic")?.textContent?.includes(q.ar)
        &&document.querySelectorAll('input[name="selected"]').length>=3;
-   },i,{timeout:30000});
+   },i,{timeout:14000});
    await page.locator('input[name="selected"][value="'+selections[i]+'"]').check();
    await page.locator("#serverNext").click();
   }
-  await page.locator("#ungradedText").waitFor({timeout:30000});
+  milestone("submit diagnostic free answer");
+  await page.locator("#ungradedText").waitFor({timeout:16000});
   await page.locator("#ungradedText").fill("تبدأ الشخصية القانونية بتمام الولادة حية وتنتهي بالوفاة.");
   await page.locator("#serverNext").click();
-  await page.waitForURL(/\/program\.html/,{timeout:40000});
-  await page.locator("#officialEssayAnswer").waitFor({timeout:40000});
+  milestone("redirect to server-adapted Level 1");
+  await page.waitForURL(/\/program\.html/,{timeout:20000});
+  await page.locator("#officialEssayAnswer").waitFor({timeout:16000});
   assert.match(await page.locator("body").innerText(),/المستوى الأول/);
   const before=await page.locator("body").innerText();
   assert.ok(before.includes("تم حفظ 0 / 3"));
   await page.locator("#officialEssayAnswer").fill("الشخصية القانونية تبدأ بتمام الولادة حية وتنتهي بالوفاة، وللحمل حقوق مشروطة بالولادة الحية ولا يحتاج سببها إلى قبول.");
+  milestone("save first essay and its internal score");
   await page.locator("#officialSaveAnswer").click();
-  await page.waitForFunction(()=>document.body.innerText.includes("تم حفظ 1 / 3"),{timeout:35000});
+  await page.waitForFunction(()=>document.body.innerText.includes("تم حفظ 1 / 3"),{timeout:18000});
   assert.match(await page.locator("body").innerText(),/تقييم المحرك الداخلي المبدئي/);
+  milestone("reload to verify server persistence");
   await page.reload({waitUntil:"domcontentloaded"});
-  await page.locator("#officialEssayAnswer").waitFor({timeout:40000});
+  await page.locator("#officialEssayAnswer").waitFor({timeout:16000});
   assert.match(await page.locator("body").innerText(),/تم حفظ 1 \/ 3/);
   assert.match(await page.locator("body").innerText(),/تقييم المحرك الداخلي المبدئي/);
   const body=await page.locator("body").innerText();
@@ -79,6 +93,11 @@ const base="http://127.0.0.1:18765/";
   await page.screenshot({path:dir+"/stage-1-after-reload.png",fullPage:true});
   fs.writeFileSync(dir+"/network-proof.json",JSON.stringify({case:"LOCAL STAGING ONLY",commit:process.env.GITHUB_SHA?.slice(0,12),requests},null,2));
   console.log("PASS Chrome real-local authenticated LexLearn: login -> six questions -> server 2xx -> adapted Level1 -> preliminary grade -> reload, no loop. Network evidence stored.");
+ }catch(e){
+  console.error("Chrome stopped at step:",step,"page:",page.url());
+  try{await page.screenshot({path:dir+"/failure.png",fullPage:true,timeout:4000});}catch(_){}
+  try{fs.writeFileSync(dir+"/failure-summary.json",JSON.stringify({step,url:page.url(),runtimeErrors:jsErrors,requests,visibleText:(await page.locator("body").innerText({timeout:3000})).slice(0,1800)},null,2));}catch(_){}
+  throw e;
  }finally{
   await context.close();await browser.close();
  }
