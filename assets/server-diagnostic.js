@@ -15,7 +15,7 @@ async function startUI(){
  function fail(err){
   var msg=String(err&&err.message||err);
   if(/diagnostic_academic_approval_pending/i.test(msg)){
-   render("<p role='status'>"+tr("أسئلة التشخيص تنتظر مراجعة قانونية وأكاديمية. لا يُسمح بعرضها قبل اعتمادها. الديمو العام متاح بصورة منفصلة.","Official diagnostic questions await legal and academic review. The public demo is separate and remains available.")+"</p><a href='"+portal()+"'>"+tr("حساب الطالب","Student portal")+"</a>");return;
+   render("<p role='status'>"+tr("أسئلة التشخيص الرسمية تنتظر مراجعة واعتمادًا قانونيًا وأكاديميًا مستقلًا. يمكنك الآن تجربة تقييم تدريبي متكيف داخل حسابك، ولن يُحتسب ضمن نتائجك الرسمية.","The official questions await independent review. You can now start a signed-in adaptive rehearsal, separate from official records.")+"</p><p><a class='practice-start' href='student-practice.html?lang="+lang()+"'>"+tr("ابدأ التقييم التدريبي التكيفي الآن","Start adaptive student practice now")+"</a></p><a href='"+portal()+"'>"+tr("حساب الطالب","Student portal")+"</a>");return;
   }
   render("<p role='alert'>"+tr("تعذّر تأكيد حالة التشخيص بالخادم. لا توجد نتيجة محفوظة مؤكدة. ","Unable to confirm the server diagnostic state. No result can be assumed. ")+esc(msg)+"</p><a href='"+portal()+"'>"+tr("حساب الطالب","Student portal")+"</a>");
  }
