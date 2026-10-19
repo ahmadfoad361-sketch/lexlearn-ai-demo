@@ -5,7 +5,7 @@
 #paths .exhibit-copy h1{font-size:clamp(30px,3.6vw,47px);line-height:1.25;margin:0 0 12px}
 html[lang=ar] #paths .exhibit-copy h1{font-size:clamp(28px,3.2vw,42px);line-height:1.5}
 #paths .heroSub{margin-bottom:0;font-size:16px;line-height:1.75}
-.exhibit-mark{position:relative;display:grid;place-items:center;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle,#fffdfb,transparent 70%)}
+.exhibit-mark{position:relative;display:grid;place-items:center;aspect-ratio:1;border-radius:50%;background:transparent}
 .exhibit-mark img{width:85%;height:85%;object-fit:contain}.exhibit-orbit{position:absolute;inset:4px;border:1px solid #97493435;border-radius:50%;animation:visual-orbit 25s linear infinite}.exhibit-orbit:before{content:"";position:absolute;top:-4px;left:48%;width:8px;height:8px;border-radius:50%;background:var(--clay)}
 .exhibit-tagline{position:absolute;bottom:-7px;font-size:11px;color:var(--clay);text-align:center;background:var(--cream);padding:0 5px}
 #paths .paths{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px;perspective:1200px;padding-bottom:10px}
@@ -83,9 +83,9 @@ html[lang=ar] .visual-scene h2,html[lang=ar] .visual-scene h3{line-height:1.55}
 /* Approved RGB identity, burgundy-to-navy controls, and the AI moon. */
 :root{--clay:#8A1F39;--clay-light:#9b2c45;--clay-dark:#591126}
 .site-header{position:sticky;top:0;z-index:70;background:#f9f4eff5;backdrop-filter:blur(16px);box-shadow:0 3px 20px #111d3110}
-.site-header .identity{gap:12px}.header-logo-orbit{position:relative;display:grid;place-items:center;width:62px;height:62px;border:2px solid white;border-radius:50%;background:#fff;box-shadow:0 2px 14px #111d3114;flex:none}
+.site-header .identity{gap:12px}.header-logo-orbit{position:relative;display:grid;place-items:center;width:62px;height:62px;border:2px solid white;border-radius:50%;background:transparent;box-shadow:0 2px 14px #111d3114;flex:none}
 .site-header .identity .header-logo-orbit img{width:47px;height:43px;object-fit:contain}
-.header-ai-moon{position:absolute;inset:-4px;border:1px solid #ffffffbb;border-radius:50%;animation:visual-orbit 10s linear infinite;pointer-events:none}
+.header-ai-moon{position:absolute;inset:-4px;border:0;border-radius:50%;animation:visual-orbit 10s linear infinite;pointer-events:none}
 .header-ai-moon:before{content:"";position:absolute;left:calc(50% - 6px);top:-5px;width:12px;height:12px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff 0%,#f7e7d8 40%,#b96a82 72%,#8a1f39 100%);box-shadow:0 0 0 3px #fff8,0 0 12px #8a1f3955}
 #paths .paths .path{background:linear-gradient(145deg,#9b2c45,#8a1f39 55%,#74162e);border-color:#b9697d;border-bottom-color:#571024;transition:background .2s,transform .25s,box-shadow .25s}
 #paths .path:active,#paths .path.is-selected{background:linear-gradient(145deg,#243955,#111d31 65%);border-color:#52647e;border-bottom-color:#070f1c}
@@ -112,3 +112,9 @@ html[lang=ar] .visual-scene h2,html[lang=ar] .visual-scene h3{line-height:1.55}
 .visual-modal #visitorSceneTitle,.visual-modal #visitorSceneLabel{text-align:center;margin-inline:auto}
 .exhibit-pause,.visual-replay,.intro-skip,.visual-close{background:#8a1f39;color:#fff;border-color:#a95870}
 .exhibit-pause:active,.visual-replay:active,.intro-skip:active,.visual-close:active{background:#111d31;border-color:#111d31}
+
+/* Complete one learning direction before switching to the other. */
+.skill-loop li{animation:none!important;transition:background .3s,color .3s,border-color .3s,box-shadow .3s}
+.skill-loop li.is-complete{background:#8a1f3977;border-color:#d8a0ad}
+.skill-loop li.is-lit{background:#fff4e7;color:#8a1f39;border-color:#fff4e7;box-shadow:0 0 0 2px #f5d2b733,0 0 22px #efc5a777;font-weight:800}
+@media(prefers-reduced-motion:reduce){.skill-loop li{transition:none}}
