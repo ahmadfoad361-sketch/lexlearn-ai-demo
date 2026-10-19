@@ -32,6 +32,7 @@ jobs:
           node --check assets/showcase-en.js
           node --check assets/official-level-one.js
           node --check assets/server-diagnostic.js
+          node --check assets/student-practice.js
           node --check assets/official-diagnostic.js
           node --check assets/program-en.js
           node --check assets/student-en.js
@@ -66,6 +67,7 @@ jobs:
           node tests/official-diagnostic-dom-flow.test.js
           node tests/server-diagnostic-ui.test.js
           node tests/student-gate-source.test.js
+          node tests/student-provisional-flow.test.js
           node tests/official-level-one-ui.test.js
       - name: Production boundary tests
         run: node tests/production-boundaries.test.js
