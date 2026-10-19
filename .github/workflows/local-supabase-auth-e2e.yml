@@ -55,6 +55,7 @@ jobs:
       - name: Browser driver and build (LOCAL only, config overwritten)
         run: |
           npm install --no-save --no-package-lock playwright-core@1.56.1
+          npx playwright install ffmpeg
           node scripts/build-public.js
           python3 -m http.server 18765 --bind 127.0.0.1 --directory dist-site >/tmp/lexlearn-local-http.log 2>&1 &
           sleep 2
