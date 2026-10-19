@@ -22,7 +22,9 @@ begin
  -- Evaluate legal *relationships*, not merely answer length or the presence of a single keyword.
  b:=(t~'(تبدا|يبدا|بدايه).{0,80}(شخص|personality).{0,60}(ولاد|ولد|birth|born).{0,18}(حي|live|alive)'
    or t~'(شخص|personality).{0,50}(تبدا|بدايه|starts|begins).{0,55}(ولاد|ولد|birth|born).{0,18}(حي|live|alive)'
-   or t~'(ولاد|ولد|birth|born).{0,18}(حي|live|alive).{0,50}(تبدا|بدايه|starts|begins).{0,38}(شخص|personality)');
+   or t~'(ولاد|ولد|birth|born).{0,18}(حي|live|alive).{0,50}(تبدا|بدايه|starts|begins).{0,38}(شخص|personality)'
+   or t~'personality.{0,35}(begins|starts).{0,40}(live birth|born alive)'
+   or t~'(live birth|born alive).{0,40}(begins|starts).{0,30}personality');
  d:=t~'(وفا|موت|death|died)' and t~'(تنتهي|نهايه|end|ends)'
    and t~'(شخص|personality)';
  u:=t~'(حمل|جنين|unborn|prenatal)' and t~'(حق|حقوق|rights?)'
