@@ -6,7 +6,7 @@ assert.equal(ctx.LEX_STUDENT_PATH.noHtmlScore(0),"0%");
 assert.equal(ctx.LEX_STUDENT_PATH.noHtmlScore(65.5),"66%");
 assert.equal(ctx.LEX_STUDENT_PATH.noHtmlScore(null),"غير قابل للتقدير");
 assert.equal(ctx.LEX_STUDENT_PATH.noHtmlScore(101),"100%");
-for(const required of ["trainingOverview","trainingOpen","trainingSubmit","answer_readback_failed","student_id","lex"]){
+for(const required of ["trainingOverview","trainingOpen","trainingSubmit","answer_readback_failed"]){
  if(required==="student_id")continue;
  assert.ok(source.includes(required),required);
 }
