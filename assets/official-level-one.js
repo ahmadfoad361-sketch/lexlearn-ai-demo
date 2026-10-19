@@ -8,6 +8,31 @@ var COURSE_ID="qa-qu-lawc101-rights";
 function esc(value){return String(value==null?"":value).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
 function phrase(lang,ar,en){return lang==="en"?en:ar;}
 function byId(arr,id){return arr.find(function(x){return x.item_id===id;});}
+function feedbackHtml(entry,lang){
+ if(!entry)return "";
+ var ar=lang!=="en",ev=entry.evaluation||{},labels={
+ live_birth:["الولادة الحية وبداية الشخصية","Live birth and legal personality"],
+ death_end:["الوفاة ونهاية الشخصية","Death ends personality"],
+ prenatal_conditional_rights:["حقوق الحمل المشروطة","Conditional prenatal rights"],
+ memory_cues:["مفاتيح حفظ","Memory cues"],
+ cues_with_meaning:["ربط المفاتيح بمعانيها","Meaningful cue connections"],
+ explain_live_birth:["تفسير الولادة الحية","Explain live birth"],
+ explain_death:["تفسير الوفاة","Explain death"],
+ explain_prenatal_condition:["تفسير شرط حقوق الحمل","Explain prenatal conditions"],
+ correct_wrong_comparison:["تصحيح المقارنة غير الدقيقة","Correct the inaccurate comparison"],
+ relevant_legal_rule:["القاعدة القانونية","The legal rule"],
+ connect_facts_to_rule:["التطبيق على الوقائع","Apply the facts"],
+ direct_legal_conclusion:["النتيجة القانونية","The legal conclusion"]
+ };
+ function list(keys){return (Array.isArray(keys)?keys:[]).map(function(k){return "<li>"+esc((labels[k]||[k,k])[ar?0:1])+"</li>";}).join("");}
+ var hasScore=typeof ev.provisional_percent==="number"&&Number.isFinite(ev.provisional_percent);
+ var score=hasScore?Math.round(Math.max(0,Math.min(100,ev.provisional_percent)))+"%":(ar?"التقييم الآلي غير مكتمل":"Automatic evaluation incomplete");
+ return "<div class='legalBox' role='status'><b>"+(ar?"تقييم المحرك الداخلي المبدئي: ":"Preliminary internal assessment: ")+esc(score)+"</b>"+
+  "<p>"+(ar?"النسبة أولية وليست درجة نهائية؛ يفحص المحرك العناصر القانونية والعلاقات ولا يعتمد على طول الإجابة وحده. المشرف يستطيع مراجعتها.":"This provisional percentage checks identifiable legal elements and relationships, not answer length. Supervisors may review it; it is not a final grade.")+"</p>"+
+  (list(ev.criteria_met)?"<p>"+(ar?"عناصر متحققة مبدئيًا:":"Elements found:")+"</p><ul>"+list(ev.criteria_met)+"</ul>":"")+
+  (list(ev.criteria_missing)?"<p>"+(ar?"عناصر تحتاج استكمالًا:":"Elements needing work:")+"</p><ul>"+list(ev.criteria_missing)+"</ul>":"")+
+  (ev.reason?"<p>"+esc(ev.reason)+"</p>":"")+"</div>";
+}
 function adaptiveHint(lang,mode,dim){
  var hints={
   "recall-led":{recall:["استرجع العناصر دون الرجوع إلى النص.","Recall the elements without looking back."],
@@ -32,7 +57,7 @@ async function mount(host,opts){
   return;
  }
  function t(ar,en){return phrase(lang,ar,en);}
- var data;
+ var data,lastFeedback=null;
  host.innerHTML="<section class='stage'><div class='taskCard' role='status'>"+t("جارٍ تحميل المستوى الأول المعتمد…","Loading the approved first level…")+"</div></section>";
  try{
   data=await cloud.studentLifecycleRpc("firstLevel",{courseId:COURSE_ID});
@@ -55,9 +80,10 @@ async function mount(host,opts){
   var summary="<section class='stage'><div class='taskCard'><span class='kicker'>"+t("حساب الطالب • المستوى الأول • نظرية الحق","Student account • Level 1 • Theory of Rights")+"</span>"+
    "<h2>"+t("بداية الشخصية القانونية","Beginning of legal personality")+"</h2><p>"+esc(reason)+"</p>"+
    "<p role='status'>"+t("تم حفظ ","Saved ")+completed+" / "+data.tasks.length+t(" مهام على الخادم"," tasks on the server")+"</p>"+
-   "<p>"+t("ترتيب المهام متكيف مع التشخيص. الإجابات الحرة تنتظر مراجعة قانونية بشرية ولا تُمنح درجة آلية.","Task order adapts to the diagnostic. Free answers await human legal review; no automatic grade is assigned.")+"</p></div></section>";
+   "<p>"+t("ترتيب المهام متكيف مع التشخيص. يحلل المحرك الداخلي الإجابات الحرة ويعرض نسبة مبدئية لعناصر المعنى عند كفاية الأدلة، مع إمكانية مراجعة المشرف.","Task order adapts to the diagnostic. The internal engine shows a provisional free-answer percentage when evidence permits, subject to supervisor review.")+"</p></div></section>";
+  var previousResults=data.tasks.filter(function(x){return !!byId(saved,x.id);}).map(function(x){return feedbackHtml(byId(saved,x.id),lang);}).join("");
   if(!next){
-   host.innerHTML=summary+"<section class='stage'><div class='taskCard'><span class='kicker'>"+t("اكتملت التمارين الثلاثة","All three tasks submitted")+"</span><h2>"+t("تم حفظ تدريب المستوى الأول","Level-one practice saved")+"</h2><p>"+t("كل الإجابات محفوظة، وبانتظار مراجعتها. لا يُفتح المستوى الثاني حتى يتحقق اعتماد التقدم من الخادم.","All answers are saved and pending review. Level two stays locked until server-verified completion.")+"</p><a class='secondary' href='"+(lang==="en"?"student-en":"student")+".html'>"+t("العودة إلى حساب الطالب","Back to student account")+"</a></div></section>";
+   host.innerHTML=summary+previousResults+"<section class='stage'><div class='taskCard'><span class='kicker'>"+t("اكتملت التمارين الثلاثة","All three tasks submitted")+"</span><h2>"+t("تم حفظ تدريب المستوى الأول","Level-one practice saved")+"</h2><p>"+t("كل الإجابات محفوظة، وبانتظار مراجعتها. لا يُفتح المستوى الثاني حتى يتحقق اعتماد التقدم من الخادم.","All answers are saved and pending review. Level two stays locked until server-verified completion.")+"</p><a class='secondary' href='"+(lang==="en"?"student-en":"student")+".html'>"+t("العودة إلى حساب الطالب","Back to student account")+"</a></div></section>";
    return;
   }
   var n=completed+1,dim=next.dimension;
@@ -82,7 +108,7 @@ async function mount(host,opts){
     if(!reply||!reply.allowed||!Array.isArray(reply.saved)||!byId(reply.saved,next.id))throw Error("level_one_answer_not_confirmed");
     var readback=await cloud.studentLifecycleRpc("firstLevel",{courseId:COURSE_ID});
     if(!readback||!readback.allowed||!Array.isArray(readback.saved)||!byId(readback.saved,next.id))throw Error("level_one_readback_failed");
-    data=readback;render();
+    lastFeedback=byId(readback.saved,next.id);data=readback;render();
    }catch(e){
     var msg=host.querySelector("#officialSaveMessage");if(msg)msg.textContent=t("لم يتم تأكيد الحفظ: ","Save not confirmed: ")+String(e&&e.message||e);
     button.disabled=false;
