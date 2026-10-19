@@ -306,7 +306,7 @@ function renderTask(t,assessment){
 }
 function nextTask(){if(state.task<state.queue.length-1){state.task++;render();}else{if(state.view==="assessment")finishAssessment();else finishTraining();}}
 function train(){
-  if(!DEMO&&STUDENT_SESSION&&STUDENT_SESSION.cloud&&!(state.levelAccess&&state.levelAccess.allowed&&state.course.session===1)){
+  if(!DEMO&&STUDENT_SESSION&&STUDENT_SESSION.cloud&&!(state.levelAccess&&state.levelAccess.allowed&&state.course.session===1&&window.LEX_PILOT&&LEX_PILOT.isReleased(state.course.session))){
     var p=state.diag&&state.diag.trainingPlan;
     chrome('<section class="stage"><div class="taskCard"><span class="kicker">Session '+state.course.session+' · academic approval pending</span><h2>Your first-level adaptive plan is saved</h2><p>'+esc(p?p.reason_en:"Your diagnostic was saved.")+'</p><p>Proposed task order: '+esc(p?p.firstTasks.join(" → "):"Foundation and review")+'</p><div class="notice">Academic items are awaiting legal and university review; no unapproved material is available and no fictional progress is recorded.</div><a class="secondary" href="student-en.html">Student Portal</a></div></section>');return;
   }
@@ -329,7 +329,7 @@ function stagePreviewComplete(){
 }
 function sessionResult(){var total=state.answers.length||1,correct=state.answers.filter(function(x){return x.correct;}).length,p=Math.round(correct/total*100),next=sessionMeta(state.course.session);chrome('<section class="stage"><div class="taskCard"><span class="kicker">Session complete</span><h2>Good work — your data has updated the next session.</h2><div class="resultGrid"><div class="metric"><span>Session performance</span><b>'+p+'%</b></div><div class="metric"><span>Next session</span><b>'+state.course.session+'</b></div></div><div class="notice">The next week will not unlock until you pass the current weekly assessment.</div><div class="choiceRow"><button class="primary" id="continueNext">'+(next.kind==="assessment"?"Start weekly assessment":"Start next session")+'</button><button class="secondary" id="goHome">Back to program</button></div></div></section>');document.getElementById("continueNext").onclick=function(){state.task=0;state.answers=[];state.queue=next.kind==="assessment"?assessmentQueue(next.week):buildQueue();state.view=next.kind==="assessment"?"assessment":"train";render();};document.getElementById("goHome").onclick=function(){state.view="home";render();};}
 function assessment(){
- if(!DEMO&&STUDENT_SESSION&&STUDENT_SESSION.cloud&&!(state.levelAccess&&state.levelAccess.allowed&&state.course.session===1)){state.view="train";return train();}
+ if(!DEMO&&STUDENT_SESSION&&STUDENT_SESSION.cloud&&!(state.levelAccess&&state.levelAccess.allowed&&state.course.session===1&&window.LEX_PILOT&&LEX_PILOT.isReleased(state.course.session))){state.view="train";return train();}
  var week=sessionMeta(state.course.session).week;
  if(state.queue.length===0)state.queue=assessmentQueue(week);
  var t=state.queue[state.task];
@@ -370,6 +370,11 @@ async function boot(){
     state.diag=status.result;state.diag.trainingPlan=status.training_plan;
     state.course.officialTrainingPlan=status.training_plan;state.course.diagnosticAttemptId=status.attempt_id;
     state.levelAccess=await LEX_CLOUD.studentLifecycleRpc("level",{courseId:COURSE_DB_ID,level:1});
+    // Route from verified server completion, never from a URL parameter.
+    // Pending academic release shows the saved plan without exposing lesson content.
+    state.view="train";
+    state.answers=[];state.assessmentAnswers=[];state.task=0;
+    state.queue=buildQueue();
    }else if(status.status==="in_progress"){
     APP.innerHTML='<main class="courseWrap"><h1>Resume your diagnostic</h1><p>Your answers are saved on the server.</p><a class="primary" href="diagnostic.html?lang=en">Resume diagnostic</a></main>';return;
    }else if(status.status!=="not_started")throw new Error("unknown_diagnostic_status");
