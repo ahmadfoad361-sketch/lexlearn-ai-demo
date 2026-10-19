@@ -23,7 +23,9 @@ jobs:
         with:
           node-version: "20"
       - name: Validate real-auth E2E test script before Docker downloads
-        run: node --check tests/staging/real-auth-e2e.mjs
+        run: |
+          node --check tests/staging/real-auth-e2e.mjs
+          node --check tests/staging/real-browser-flow.cjs
       - uses: supabase/setup-cli@v3
       - name: Normalize legacy filename versions only inside disposable CI checkout
         run: |
@@ -50,6 +52,22 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install -y postgresql-client
           node tests/staging/real-auth-e2e.mjs /tmp/lexlearn-local.env
+      - name: Browser driver and build (LOCAL only, config overwritten)
+        run: |
+          npm install --no-save --no-package-lock playwright-core@1.56.1
+          node scripts/build-public.js
+          python3 -m http.server 18765 --bind 127.0.0.1 --directory dist-site >/tmp/lexlearn-local-http.log 2>&1 &
+          sleep 2
+      - name: Real mobile Chrome student journey and saved grade after reload
+        run: node tests/staging/real-browser-flow.cjs /tmp/lexlearn-local.env
+      - name: Keep browser movie, screenshot and sanitized REST status evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lexlearn-local-auth-e2e-${{ github.sha }}
+          path: ci-artifacts/local-staging-browser/
+          retention-days: 7
+          if-no-files-found: ignore
       - name: Clear local credentials and shut down disposable stack
         if: always()
         run: |
