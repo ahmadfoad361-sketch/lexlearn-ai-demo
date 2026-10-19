@@ -55,6 +55,7 @@ create table if not exists public.student_training_sessions(
  session_number integer not null check(session_number between 1 and 30),
  started_at timestamptz not null default now(),
  completed_at timestamptz,
+ tasks_json jsonb not null default '[]'::jsonb,
  primary key(user_id,course_id,session_number)
 );
 create table if not exists public.student_training_answers(
@@ -156,7 +157,7 @@ create or replace function public.lex_training_session_open(p_course text,p_sess
 returns jsonb language plpgsql stable security definer set search_path='' as $$
 declare uid uuid; overview jsonb; v_next integer; v_mode text; v_weak text;
  v_dims text[]; v_dim text; v_session integer; v_id text; v_i integer; v_count integer;
- v_row public.content_items%rowtype; v_tasks jsonb:='[]'::jsonb; v_saved jsonb:='[]'::jsonb;
+ v_row public.content_items%rowtype; v_tasks jsonb:='[]'::jsonb; v_saved jsonb:='[]'::jsonb; v_fixed jsonb;
  v_avg numeric; v_grade numeric; v_n integer;
 begin
  uid:=public.lex_require_student(p_course);
@@ -194,6 +195,13 @@ begin
    when 'understanding' then array['understanding','exam_execution','recall']
    else array['exam_execution','understanding','recall'] end;
  v_count:=case when p_session%5=0 then 4 else 3 end;
+ -- Once the first answer is submitted, freeze the selected tasks for this student.
+ -- Never allow subsequent adaptive updates to change required task identities midway.
+ select tasks_json into v_fixed from public.student_training_sessions
+ where user_id=uid and course_id=p_course and session_number=p_session;
+ if jsonb_typeof(v_fixed)='array' and jsonb_array_length(v_fixed)=v_count then
+  v_tasks:=v_fixed;
+ else
  for v_i in 1..v_count loop
   if p_session%5=0 then
    -- Six review checkpoints (5/10/.../30) each revisit the four preceding topics.
@@ -214,6 +222,7 @@ begin
    'title_ar',v_row.rubric_json->>'topic_title_ar','title_en',v_row.rubric_json->>'topic_title_en',
    'sources',to_jsonb(v_row.source_ids)));
  end loop;
+ end if;
  select coalesce(jsonb_agg(jsonb_build_object('item_id',item_id,'dimension',dimension,
    'answer_text',answer_text,'evaluation',evaluation,'submitted_at',submitted_at)
    order by submitted_at),'[]'::jsonb) into v_saved
@@ -237,8 +246,8 @@ begin
  select t->>'id',t->>'dimension' into v_id,v_dim from jsonb_array_elements(stage->'tasks') t
  where t->>'id'=p_item_id limit 1;
  if v_id is null then raise exception 'item_not_authorized_for_session' using errcode='42501';end if;
- insert into public.student_training_sessions(user_id,course_id,session_number)
- values(uid,p_course,p_session) on conflict do nothing;
+ insert into public.student_training_sessions(user_id,course_id,session_number,tasks_json)
+ values(uid,p_course,p_session,stage->'tasks') on conflict do nothing;
  v_evaluation:=public.lex_training_rubric_coverage(p_item_id,trim(p_answer));
  insert into public.student_training_answers
  (user_id,course_id,session_number,item_id,dimension,answer_text,evaluation)
