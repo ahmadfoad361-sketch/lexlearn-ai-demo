@@ -98,3 +98,20 @@ jobs:
           psql -v ON_ERROR_STOP=1 -f tests/sql/lifecycle-bootstrap.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261019_001_student_diagnostic_lifecycle.sql
           psql -v ON_ERROR_STOP=1 -f tests/sql/lifecycle-scenarios.sql
+
+  public-preview-chrome:
+    name: Published-artifact-equivalent Chrome AR/EN and mobile/desktop
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Install test browser driver
+        run: npm install --no-save --no-package-lock playwright-core@1.56.1
+      - name: Build public output and run real Chrome
+        run: |
+          node scripts/build-public.js
+          python3 -m http.server 18765 --bind 127.0.0.1 --directory dist-site >/tmp/lexlearn-lifecycle-serve.log 2>&1 &
+          sleep 2
+          node tests/student-path-browser.cjs
