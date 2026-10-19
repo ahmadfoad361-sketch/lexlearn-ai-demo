@@ -33,6 +33,7 @@ async function startUI(){
   }
   var status=await cloud.studentLifecycleRpc("status",{courseId:COURSE_ID});
   if(status.status==="completed"){root.location.replace(program());return;}
+  if(!await D.academicItemsApproved(cloud))throw new Error("diagnostic_academic_approval_pending");
   if(status.status==="not_started"){
    render("<p>"+tr("سيُحفظ كل سؤال على الخادم. لن تُحسب المهارة غير المقاسة صفرًا، ولن تُمنح الإجابة الحرة درجة دلالية آلية.","Each answer is saved on the server. Unmeasured skills are not zero and free text is not graded automatically.")+"</p>"+
     "<button id='beginDiagnostic'>"+tr("ابدأ التشخيص الرسمي","Begin official diagnostic")+"</button><p id='startError' role='alert'></p>");
