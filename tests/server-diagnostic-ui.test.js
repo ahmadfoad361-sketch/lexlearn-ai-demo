@@ -23,13 +23,13 @@ function make(uid,lang,data,opts={}){
    if(action==="draft"){if(st.status!=="in_progress")throw Error("invalid_phase");st.draft=props.answers;return st;}
    if(action==="reviewDiagnostic"){
     assert.equal(st.status,"completed","only completed official diagnostic may be reviewed");
-    st.result.measurements={recall:{internal_grade:{status:"preliminary_internal",provisional_percent:75,method:"internal_qatar_rights_rules_v1"}}};
+    st.result.measurements={recall:{internal_grade:{status:"preliminary_internal",provisional_percent:75,method:"internal_qatar_rights_rules_v1",criteria_met:["live_birth"],criteria_missing:["prenatal_conditional_rights"]}}};
     return st;
    }
    if(action==="complete"){
     assert.equal(props.answers.length,6);
     st.status="completed";st.draft=[];st.result={source:"server_finalized_diagnostic",student_id:uid};
-    st.training_plan={mode:opts.mode||"foundation"};return st;
+    st.training_plan={mode:opts.mode||"foundation",firstTasks:["memory_cues","reconstruct","delayed_retrieval"]};return st;
    }
    throw Error("unknown action");
   }
@@ -50,9 +50,13 @@ function make(uid,lang,data,opts={}){
   await env.nodes.beginDiagnostic.onclick();
   for(const q of QUESTIONS){assert.ok(env.nodes.serverNext,"each question must have a save action");env.choose(q.a);await env.nodes.serverNext.onclick();}
   assert.ok(env.nodes.ungradedText,"six objective questions lead to optional free recall");
+  assert.match(env.main.html,lang==="ar"?/متى تبدأ الشخصية القانونية/:/when does a human being/,
+    "free recall must explain the exact task without supplying its answer");
   env.nodes.ungradedText.value="needs human review";
   await env.nodes.serverNext.onclick();
   assert.equal(env.redirects.length,0,"show verified result before any training navigation");
+  assert.ok(!/memory_cues|live_birth|prenatal_conditional_rights/.test(env.main.html),"internal plan and criterion keys must never render to a learner");
+  assert.match(env.main.html,lang==="ar"?/مفاتيح للذاكرة/:/Memory cues/,"training plan must use localized task names");
   assert.match(env.main.html,/diagnosticReport/,"student sees persisted result report");
   assert.match(env.main.html,/student-path\.html/,"result opens the server-side adaptive learning journey");
   assert.equal(env.calls.filter(c=>c==="draft").length,6);

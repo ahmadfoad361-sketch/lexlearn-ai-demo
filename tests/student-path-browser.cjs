@@ -18,9 +18,9 @@ const CHROME=[process.env.CHROME_BIN,"/usr/bin/google-chrome","/usr/bin/google-c
     await p.locator(".courseWrap").waitFor();
     assert.match(await p.locator("body").innerText(),en?/Student account only/:/هذا مسار الطالب المسجل/,"public program may not masquerade as student");
     assert.equal(await p.locator(".taskCard").count(),0,"public query parameters must never unlock student level");
-    assert.ok(await p.locator("#lexBuild").innerText(),"build id must be visible");
+    assert.ok(await p.locator("#lexBuild").textContent(),"exact build id must remain available for diagnostics");
     if(process.env.EXPECTED_BUILD_SHA){
-      assert.ok((await p.locator("#lexBuild").innerText()).includes(process.env.EXPECTED_BUILD_SHA.slice(0,12)),
+      assert.ok((await p.locator("#lexBuild").textContent()).includes(process.env.EXPECTED_BUILD_SHA.slice(0,12)),
       "Published build mismatch; GitHub Pages may still be serving an older commit");
     }
     await p.goto(BASE+showcase,{waitUntil:"domcontentloaded"});

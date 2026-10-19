@@ -42,7 +42,7 @@ const buildId=(sha||"unknown").slice(0,12);
 for(const page of pages){
  if(!page.endsWith(".html"))continue;
  const full=path.join(out,page);let html=fs.readFileSync(full,"utf8");
- const stamp='<footer id="lexBuild" role="contentinfo" style="position:fixed;bottom:0;left:0;z-index:999;background:#111d31;color:white;opacity:.92;font:11px sans-serif;padding:3px 8px;border-top-right-radius:7px">LexLearn build '+buildId+'</footer>';
+ const stamp='<footer id="lexBuild" hidden aria-hidden="true">LexLearn build '+buildId+'</footer>';
  html=html.replace("</body>",stamp+"</body>");
  html=html.replace(/(assets\/(?:program|program-en|student|student-en|student-login|student-login-en|cloud-data|official-diagnostic|server-diagnostic|official-level-one|student-practice|student-path|student-demo-guard|showcase|showcase-en|showcase-learning-cycle)\.js)(?:\?v=[^"']*)?/g,"$1?v="+buildId);
  fs.writeFileSync(full,html);

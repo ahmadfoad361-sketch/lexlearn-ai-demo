@@ -21,13 +21,13 @@ function feedback(item){
  var ev=item&&item.evaluation||{},provisional=noHtmlScore(ev.provisional_percent);
  return "<div class='feedback' role='status'><b>"+t("تغطية مبدئية لعناصر القاعدة: ","Provisional legal-rule coverage: ")+esc(provisional)+"</b>"+
  "<p>"+esc((lang()==="en"?ev.feedback_en:ev.feedback_ar)||t("يلزم التأكد من المعنى القانوني مع مراجعة علمية.","Legal meaning still needs independent review."))+"</p>"+
- "<small>"+t("تحليل آلي داخلي يستند إلى ألفاظ القاعدة المرجعية؛ لا يفهم كل المرادفات أو الاستثناءات. لا تُحتسب النسبة درجة نهائية.","Internal reference-term coverage; it can miss paraphrases, negation and legal exceptions. Not a final grade.")+"</small></div>";
+ "<small>"+t("تقدير أولي لتغطية عناصر القاعدة، وقد لا يلتقط بعض الصياغات أو الاستثناءات. راجع الملاحظات مع المشرف عند الحاجة.","Preliminary coverage of rule elements may miss paraphrases or exceptions. Discuss the feedback with your instructor when needed.")+"</small></div>";
 }
 async function boot(){
  if(!host)return;
  var cloud=root.LEX_CLOUD;
  function show(x){host.innerHTML=x;}
- function reportError(e){show("<p role='alert'>"+t("تعذر تأكيد حالة الطالب على الخادم. لم يتم فتح أي مستوى دون تحقق. ","Student server verification failed. No level was opened without validation. ")+esc(e&&e.message||e)+"</p><a href='student-login"+(lang()==="en"?"-en":"")+".html'>"+t("دخول الطالب","Sign in")+"</a>");}
+ function reportError(e){show("<p role='alert'>"+t("تعذر تحميل تدريبك الآن. تحقق من اتصالك ثم حاول مجددًا، أو سجّل الدخول إلى حسابك. ","Your training could not be loaded. Check your connection and try again, or sign in to your account. ")+"</p><a href='student-login"+(lang()==="en"?"-en":"")+".html'>"+t("دخول الطالب","Sign in")+"</a>");}
  show("<p role='status'>"+t("جارٍ تحميل تدريبك المحفوظ...","Loading your saved training...")+"</p>");
  try{
   var uid=await root.LEX_OFFICIAL_DIAGNOSTIC.identity(cloud);
@@ -43,8 +43,8 @@ async function boot(){
     t("تقييم ومراجعة الأسبوع ","Week checkpoint ")+Math.ceil((i+1)/5):
     t("الجلسة ","Session ")+(i+1);});
   function nav(){
-   return "<div class='heading'><div><b>"+t("المسار الأكاديمي الداخلي","Internal learning path")+"</b><p>"+t("المقرر: نظرية الحق • 6 أسابيع • 30 جلسة • نتائج لكل طالب","Theory of Rights • 6 weeks • 30 sessions • individual results")+"</p></div><a href='student"+(lang()==="en"?"-en":"")+".html'>"+t("حساب الطالب","Student account")+"</a></div>"+
-   "<p class='scope' role='note'>"+t("مسار تدريبي داخلي باعتماد مؤسس LexLearn، غير معتمد كدرجات جامعية. يعتمد على حفظ الإجابات مركزيًا؛ لا يتأثر بنتائج الديمو العام.","Founder-approved internal practice; no university-certified marks. Responses are server-saved and isolated from the public demo.")+"</p>"+
+   return "<div class='heading'><div><b>"+t("مسارك التدريبي المتكيف","Your adaptive learning path")+"</b><p>"+t("المقرر: نظرية الحق • 6 أسابيع • 30 جلسة • نتائج لكل طالب","Theory of Rights • 6 weeks • 30 sessions • individual results")+"</p></div><a href='student"+(lang()==="en"?"-en":"")+".html'>"+t("حساب الطالب","Student account")+"</a></div>"+
+   "<p class='scope' role='note'>"+t("تدريب يتكيف مع أدائك، مع حفظ إجاباتك وتقدمك في حسابك. النتائج مؤشرات تدريبية قابلة لمراجعة المشرف، وليست درجات جامعية معتمدة.","Practice adapts to your performance, with answers and progress saved to your account. Results are training indicators subject to instructor review, not certified university marks.")+"</p>"+
    "<p class='overview'>"+t("التقدم المحفوظ: ","Verified practice progress: ")+overview.completed_count+" / 30 · "+t("الجلسة الحالية: ","Current session: ")+overview.unlocked+"</p>"+
    "<div class='sessionGrid'>"+programLabels.map(function(v,i){
     var n=i+1,done=n<=overview.completed_count,active=n===selected,locked=n>overview.unlocked;
@@ -71,11 +71,11 @@ async function boot(){
     return "<details class='past'><summary>"+esc(previousAnswerTitle(v,task))+"</summary><p style='white-space:pre-wrap'>"+esc(v.answer_text)+"</p>"+feedback(v)+"</details>";
    }).join("");
    var main="<section class='stage'><h1>"+esc(name)+"</h1>"+why+
-    "<p>"+t("أُرسلت ","Saved ")+saved.length+" / "+data.tasks.length+t(" إجابات على الخادم."," answers on the server.")+"</p>"+
+    "<p>"+t("أُرسلت ","Saved ")+saved.length+" / "+data.tasks.length+t(" إجابات محفوظة في حسابك."," answers to your account.")+"</p>"+
     completedFeedback;
    if(completed){
     main+="<h2>"+t("اكتملت تدريبات الجلسة","Practice session completed")+"</h2>"+
-    "<p>"+t("تم تسجيل إتمام التدريب، وليس إتقانًا جامعيًا معتمدًا. يمكن متابعة الجلسة التالية الآن.","Practice completion is recorded, not certified mastery. You may continue to the next session.")+"</p>"+
+    "<p>"+t("أتممت تدريب هذه الجلسة وحُفظت إجاباتك. يمكنك متابعة الجلسة التالية ومراجعة ملاحظاتك في أي وقت.","Your practice and answers are saved. Continue to the next session and revisit your feedback at any time.")+"</p>"+
     (selected<30?"<button type='button' id='nextSession'>"+t("انتقل للجلسة التالية","Continue to next session")+"</button>":
      "<p role='status'>"+t("اكتملت الجلسات التدريبية الثلاثون. احتفظ بنتائجك للمراجعة.","All 30 practice sessions completed; your results remain saved for review.")+"</p>");
    }else if(next){
@@ -97,7 +97,7 @@ async function boot(){
     if(busy)return;
     var answer=host.querySelector("#adaptiveEssay").value.trim();
     if(answer.length<8){host.querySelector("#adaptiveError").textContent=t("اكتب إجابة من ثمانية أحرف على الأقل.","Write at least eight characters.");return;}
-    busy=true;submit.disabled=true;host.querySelector("#adaptiveError").textContent=t("يجري الحفظ والتقييم الداخلي...","Saving and performing provisional review...");
+    busy=true;submit.disabled=true;host.querySelector("#adaptiveError").textContent=t("جارٍ حفظ إجابتك وتحليلها...","Saving and performing provisional review...");
     try{
      var v=await cloud.studentLifecycleRpc("trainingSubmit",{courseId:COURSE,session:selected,itemId:next.id,answer:answer});
      if(!v||!v.allowed||!v.saved||!byId(v.saved,next.id))throw Error("answer_not_verified");
@@ -106,7 +106,7 @@ async function boot(){
      data=checked;
      if(data.completed){var fresh=await cloud.studentLifecycleRpc("trainingOverview",{courseId:COURSE});if(fresh&&fresh.allowed)overview=fresh;}
      busy=false;render();
-    }catch(e){busy=false;submit.disabled=false;host.querySelector("#adaptiveError").textContent=t("لم يُؤكد الحفظ؛ لم تُحتسب المهمة. ","Save not verified; task remains pending. ")+String(e&&e.message||e);}
+    }catch(e){busy=false;submit.disabled=false;host.querySelector("#adaptiveError").textContent=t("تعذر تأكيد حفظ الإجابة. إجابتك ما زالت هنا؛ تحقق من الاتصال ثم أعد المحاولة.","We could not confirm your answer was saved. Your text is still here; check your connection and try again.");}
    };
   }
   await open(selected);

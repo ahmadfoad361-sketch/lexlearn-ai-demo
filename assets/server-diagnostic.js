@@ -9,6 +9,20 @@ function program(){return "program"+(lang()==="en"?"-en":"")+".html?country=qa&s
 function portal(){return "student"+(lang()==="en"?"-en":"")+".html";}
 function login(){return "student-login"+(lang()==="en"?"-en":"")+".html";}
 
+function taskLabel(key){
+ var labels={
+  explain_rule:["شرح القاعدة بأسلوبك","Explain the rule"],change_one_fact:["تغيير واقعة واحدة","Change one fact"],supported_retrieval:["استرجاع بمساعدة","Supported recall"],
+  memory_cues:["مفاتيح للذاكرة","Memory cues"],reconstruct:["إعادة بناء القاعدة","Reconstruct the rule"],delayed_retrieval:["استرجاع بعد فترة","Spaced recall"],
+  supported_rule:["مراجعة القاعدة","Review the rule"],one_fact:["تطبيق على واقعة","Apply to a fact"],retrieval_check:["اختبار الاسترجاع","Recall check"],
+  worked_example:["مثال محلول","Worked example"],supported_decision:["تطبيق مع إرشاد","Guided application"],unaided_check:["اختبار دون مساعدة","Unaided practice"]
+ };
+ return (labels[key]||labels.worked_example)[lang()==="en"?1:0];
+}
+
+function criterionLabel(key){
+ var labels={live_birth:["بداية الشخصية بالولادة الحية","Personality begins with live birth"],death_end:["نهاية الشخصية بالوفاة","Personality ends at death"],prenatal_conditional_rights:["حقوق الحمل المشروطة","Conditional prenatal rights"]};
+ return (labels[key]||["عنصر من القاعدة يحتاج مراجعة","Rule element to review"])[lang()==="en"?1:0];
+}
 function report(status,uid){
  var d=status&&status.result||{},metrics=d.metrics||{},measurements=d.measurements||{};
  if(status.status!=="completed"||d.source!=="server_finalized_diagnostic"||d.student_id!==uid)throw Error("unverified_diagnostic_report");
@@ -27,16 +41,16 @@ function report(status,uid){
  ].map(function(x){return "<div class='resultMetric' style='background:#F9F4EF;border-radius:12px;padding:1rem;min-width:130px;flex:1'><small>"+esc(x[0])+"</small><div style='font-weight:800;font-size:1.65rem'>"+esc(numberOrNot(x[1]))+"</div></div>";}).join("");
  return "<section class='diagnosticReport' role='region' aria-label='"+tr("نتيجة التشخيص","Diagnostic results")+"'>"+
  "<h2>"+tr("نتيجة تقييمك التشخيصي","Your diagnostic result")+"</h2>"+
- "<p role='status'>"+tr("الاختبار محفوظ ومؤكد على الخادم. تستطيع الرجوع لهذه الصفحة لرؤية نتيجتك.","Your assessment was saved and verified on the server. Return here to see your result.")+"</p>"+
+ "<p role='status'>"+tr("حُفظت نتيجتك في حسابك. يمكنك العودة إلى هذه الصفحة لمراجعتها في أي وقت.","Your result is saved to your account. Return to this page to review it at any time.")+"</p>"+
  "<div style='display:flex;flex-wrap:wrap;gap:.75rem'>"+tiles+"</div>"+
- "<div class='resultMetric' style='margin:1rem 0;padding:1rem;border:1px solid #e5d9dc;border-radius:12px'><b>"+tr("الإجابة الحرة — التقييم الداخلي المبدئي","Free answer — provisional internal evaluation")+": "+esc(free)+"</b>"+
+ "<div class='resultMetric' style='margin:1rem 0;padding:1rem;border:1px solid #e5d9dc;border-radius:12px'><b>"+tr("الإجابة الحرة — التقييم المبدئي","Free answer — preliminary assessment")+": "+esc(free)+"</b>"+
  "<p>"+tr("هذه نسبة آلية مبدئية لتغطية عناصر القاعدة القانونية؛ ليست درجة جامعية نهائية، وليست تصحيحًا دلاليًا بنموذج لغوي.","This is preliminary rule-coverage analysis, not a final university mark or LLM-based semantic grading.")+"</p>"+
- (Array.isArray(internal.criteria_met)&&internal.criteria_met.length?"<p>"+tr("عناصر التقطها المحرك","Detected elements")+": "+esc(internal.criteria_met.join("، "))+"</p>":"")+
- (Array.isArray(internal.criteria_missing)&&internal.criteria_missing.length?"<p>"+tr("عناصر راجعها","Review these elements")+": "+esc(internal.criteria_missing.join("، "))+"</p>":"")+
+ (Array.isArray(internal.criteria_met)&&internal.criteria_met.length?"<p>"+tr("عناصر ظهرت في إجابتك","Detected elements")+": "+esc(internal.criteria_met.map(criterionLabel).join(lang()==="en"?", ":"، "))+"</p>":"")+
+ (Array.isArray(internal.criteria_missing)&&internal.criteria_missing.length?"<p>"+tr("عناصر راجعها","Review these elements")+": "+esc(internal.criteria_missing.map(criterionLabel).join(lang()==="en"?", ":"، "))+"</p>":"")+
  "</div>"+
  "<h2>"+tr("خطة تدريبك المتكيفة","Your adaptive practice plan")+"</h2>"+
  "<p>"+esc((lang()==="en"?p.reason_en:p.reason_ar)||reasons[mode]||reasons.foundation)+"</p>"+
- "<p>"+tr("الترتيب المبدئي: ","Initial order: ")+esc(Array.isArray(p.firstTasks)?p.firstTasks.join(" ← "):"foundation")+"</p>"+
+ "<p>"+tr("الترتيب المبدئي: ","Initial order: ")+esc(Array.isArray(p.firstTasks)&&p.firstTasks.length?p.firstTasks.map(taskLabel).join(lang()==="en"?" → ":" ← "):taskLabel("worked_example"))+"</p>"+
  "<div class='actions'><a class='actionCard' style='display:inline-block;background:#111D31;color:white;padding:1rem 1.3rem;border-radius:10px;text-decoration:none' href='student-path.html?lang="+lang()+"'>"+tr("ابدأ المستوى الأول المتكيف","Start your adaptive first level")+"</a></div>"+
  "<p><a href='"+portal()+"'>"+tr("العودة لحساب الطالب","Back to student account")+"</a></p></section>";
 }
@@ -52,7 +66,7 @@ async function startUI(){
   }
   render("<p role='alert'>"+tr("تعذّر تأكيد حالة التشخيص بالخادم. لا توجد نتيجة محفوظة مؤكدة. ","Unable to confirm the server diagnostic state. No result can be assumed. ")+esc(msg)+"</p><a href='"+portal()+"'>"+tr("حساب الطالب","Student portal")+"</a>");
  }
- render("<p role='status'>"+tr("جارٍ التحقق من حالة الطالب على الخادم…","Checking your server-side student status…")+"</p>");
+ render("<p role='status'>"+tr("جارٍ تحميل تقييمك…","Loading your assessment…")+"</p>");
  var student,studentName;
  try{
   student=await D.identity(cloud);
@@ -68,7 +82,7 @@ async function startUI(){
   if(status.status==="completed"){render(report(status,student));return;}
   if(!await D.academicItemsApproved(cloud))throw new Error("diagnostic_academic_approval_pending");
   if(status.status==="not_started"){
-   render("<p>"+tr("سيُحفظ كل سؤال على الخادم. تحلل الإجابة الحرة داخليًا إلى نسبة مبدئية إذا توفرت أدلة كافية، وإلا تظهر غير مكتملة دون صفر وهمي.","Each answer is saved on the server. Free text gets a provisional internal percentage when assessable; otherwise it stays ungraded, never a fabricated zero.")+"</p>"+
+   render("<p>"+tr("ابدأ بتقييم قصير لتحديد نقطة انطلاقك. تُحفظ إجاباتك في حسابك، وتحصل الإجابة الحرة على تقدير مبدئي عند توفر أدلة كافية لتقييمها.","Start with a short assessment to find your starting point. Answers are saved to your account; free responses receive a preliminary estimate when there is enough evidence to assess them.")+"</p>"+
     "<button id='beginDiagnostic'>"+tr("ابدأ التشخيص الرسمي","Begin official diagnostic")+"</button><p id='startError' role='alert'></p>");
    root.document.getElementById("beginDiagnostic").onclick=async function(){
     this.disabled=true;
@@ -92,10 +106,11 @@ async function startUI(){
       q[lang()+"Options"].map(function(o,j){return "<label class='choice'><input name='selected' type='radio' value='"+j+"'>"+esc(o)+"</label>";}).join("")+
       "<label class='choice'><input name='selected' type='radio' value='-1'>"+tr("لا أدري (لم يُقَس)","Not sure (not measured)")+"</label></fieldset>";
    }else{
-    html+="<h2>"+tr("استرجاع حر (اختياري، للمراجعة البشرية)","Free recall (optional; pending human review)")+"</h2>"+
+    html+="<h2>"+tr("استرجاع من الذاكرة (اختياري)","Recall from memory (optional)")+"</h2>"+
+      "<p>"+tr("اكتب من ذاكرتك: متى تبدأ الشخصية القانونية للإنسان؟ عبّر عن القاعدة بأسلوبك دون الرجوع إلى النص.","From memory, when does a human being’s legal personality begin? State the rule in your own words without consulting the text.")+"</p>"+
       "<textarea id='ungradedText' rows='5' maxlength='2000' aria-label='"+tr("إجابة حرة","Free answer")+"'></textarea>";
    }
-   html+="<button id='serverNext'>"+(done?tr("حفظ واعتماد نتيجة التشخيص على الخادم","Save diagnostic on server"):tr("حفظ والانتقال للسؤال التالي","Save and continue"))+"</button>"+
+   html+="<button id='serverNext'>"+(done?tr("احفظ التقييم واعرض نتيجتي","Save assessment and show my result"):tr("حفظ والانتقال للسؤال التالي","Save and continue"))+"</button>"+
    "<p id='serverError' role='alert'></p>";
    render(html);
    root.document.getElementById("serverNext").onclick=async function(){
