@@ -949,7 +949,7 @@ function taskStatusBox(correct,label,provisional){
 function orderedOptions(t,salt){return LEX_QUALITY.shuffleOptions(t);}
 
 function train(){
-  if(!DEMO&&STUDENT_SESSION&&STUDENT_SESSION.cloud&&!(state.levelAccess&&state.levelAccess.allowed&&state.course.session===1)){
+  if(!DEMO&&STUDENT_SESSION&&STUDENT_SESSION.cloud&&!(state.levelAccess&&state.levelAccess.allowed&&state.course.session===1&&window.LEX_PILOT&&LEX_PILOT.isReleased(state.course.session))){
     var p=state.diag&&state.diag.trainingPlan;
     chrome('<section class="stage"><div class="taskCard"><span class="kicker">الجلسة '+state.course.session+' • بانتظار الاعتماد الأكاديمي</span><h2>خطة المستوى الأول جاهزة ومحفوظة</h2><p>'+esc(p?p.reason_ar:"تم حفظ التشخيص بنجاح.")+'</p><p>ترتيب التدريب المقترح: '+esc(p?p.firstTasks.join(" ← "):"تأسيس ثم قياس")+'</p><div class="notice">عناصر المقرر لم تحصل بعد على الاعتماد القانوني والأكاديمي. لن نفتحها أو نحسب تقدّمًا وهميًا.</div><a class="secondary" href="student.html">حساب الطالب</a></div></section>');return;
   }
@@ -1121,7 +1121,7 @@ function recordAssessmentEvidence(q,correct,confidence,repair){
   return {skill:q.skill,dimension:dim,correct:correct,confidence:confidence||null,score:score};
 }
 function assessment(){
-  if(!DEMO&&STUDENT_SESSION&&STUDENT_SESSION.cloud&&!(state.levelAccess&&state.levelAccess.allowed&&state.course.session===1)){state.view="train";return train();}
+  if(!DEMO&&STUDENT_SESSION&&STUDENT_SESSION.cloud&&!(state.levelAccess&&state.levelAccess.allowed&&state.course.session===1&&window.LEX_PILOT&&LEX_PILOT.isReleased(state.course.session))){state.view="train";return train();}
   var week=sessionMeta(state.course.session).week,bank=assessmentBankForWeek(week),q=bank[state.task%bank.length],ordered=q.mode==="free"?[]:orderedOptions(q,7);
   state.taskStartedAt=Date.now();
   if(q.mode==="free"){
@@ -1243,7 +1243,7 @@ function achievementBoard(){
   var bh=document.getElementById("backHome");if(bh)bh.onclick=function(){state.view="home";render();};
 }
 function repairAssessment(){
-  if(!DEMO&&STUDENT_SESSION&&STUDENT_SESSION.cloud&&!(state.levelAccess&&state.levelAccess.allowed&&state.course.session===1)){state.view="train";return train();}
+  if(!DEMO&&STUDENT_SESSION&&STUDENT_SESSION.cloud&&!(state.levelAccess&&state.levelAccess.allowed&&state.course.session===1&&window.LEX_PILOT&&LEX_PILOT.isReleased(state.course.session))){state.view="train";return train();}
   var week=state.course.repairWeek||sessionMeta(state.course.session).week,full=assessmentBankForWeek(week);
   var weakest=state.course.adaptiveModel&&state.course.adaptiveModel.weakest;
   var orderedBank=full.slice().sort(function(x,y){return (x.dimension===weakest?-1:0)-(y.dimension===weakest?-1:0);});
@@ -1311,6 +1311,11 @@ async function boot(){
     state.course.officialTrainingPlan=status.training_plan;
     state.course.diagnosticAttemptId=status.attempt_id;
     state.levelAccess=await LEX_CLOUD.studentLifecycleRpc("level",{courseId:COURSE_DB_ID,level:1});
+    // Route from verified server completion, never from a URL parameter.
+    // Pending academic release shows the saved plan without exposing lesson content.
+    state.view="train";
+    state.answers=[];state.assessmentAnswers=[];state.task=0;
+    state.queue=buildTrainingQueue();
    }else if(status.status==="in_progress"){
     APP.innerHTML='<main class="courseWrap"><h1>استكمال التشخيص</h1><p>إجاباتك محفوظة على الخادم؛ استكمل من حيث توقفت دون إعادة الاختبار.</p><a class="primary" href="diagnostic.html?lang=ar">استكمال التشخيص</a></main>';return;
    }else if(status.status!=="not_started")throw new Error("unrecognized_diagnostic_status");
