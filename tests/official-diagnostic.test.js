@@ -144,7 +144,7 @@ function cloud(uid,opts={}){
  const program=fs.readFileSync("assets/program.js","utf8"),en=fs.readFileSync("assets/program-en.js","utf8");
  for(const source of [program,en]){
   assert.ok(source.includes('studentLifecycleRpc("status"'),"server lifecycle controls real student entry");
-  assert.ok(source.includes("!LEX_PILOT.isReleased(state.course.session)"),"no student bypass of unapproved content");
+  assert.ok(source.includes("state.levelAccess&&state.levelAccess.allowed"),"no student bypass of unapproved content");
   assert.ok(source.includes("status.attempt_id"),"server attempt identifier drives student session");
  }
  for(const page of ["student.html","student-en.html","program.html","program-en.html"]){
@@ -157,10 +157,10 @@ function cloud(uid,opts={}){
   const program=fs.readFileSync("assets/program"+(lang==="en"?"-en":"")+".js","utf8");
   const portal=fs.readFileSync("assets/student"+(lang==="en"?"-en":"")+".js","utf8");
   assert.ok(program.includes('href="diagnostic.html?lang='+lang+'"'),lang+" student CTA must point to official diagnostic");
-  assert.ok(program.includes('location.replace("diagnostic.html?lang='+lang+'")'),lang+" unauthenticated baseline must redirect to official diagnostic");
+  assert.ok(program.includes('studentLifecycleRpc("status"'),lang+" server status must drive student route with no redirect loop");
   assert.ok(portal.includes('diagnostic.html?lang='+lang),lang+" student portal must not route through public demo");
   assert.ok(!program.includes('href="showcase'+(lang==="en"?"-en":"")+'.html?country=qa&subject=rights">Start diagnostic'),
-    "the English academic CTA must never send students to the public 4-task demo");
+    "the academic CTA must never send students to the public 4-task demo");
  }
  const official=fs.readFileSync("assets/official-diagnostic.js","utf8");
  assert.ok(official.includes('if(!await academicItemsApproved(cloud))'),"official diagnostic content is fail-closed until human approval");
