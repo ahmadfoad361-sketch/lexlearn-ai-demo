@@ -11,7 +11,7 @@ html[data-theme=dark]{color-scheme:dark;--cream:#111D31;--paper:#1b2a40;--ink:#f
 html[data-theme=dark] body{background:#111D31;color:var(--theme-text)}
 html[data-theme=dark] .site-header{background:#111d31f7;border-bottom:1px solid var(--line);box-shadow:0 4px 20px #0003}
 html[data-theme=dark] .promo{background:#0a1424;color:#f9f4ef}
-html[data-theme=dark] :is(.identity b span,.eyebrow,.heroBrand,.solutionPanel>span,.skills article>span,.slideBody small,.textLink,.founderEmail,.roadmapDemoLink,.businessModel>h3,.pilotSteps strong,.leadConsentGroup>a,.pilotActions .pilotWhatsApp,.exhibit-chapters a span:first-child){color:var(--theme-accent)}
+html[data-theme=dark] :is(.identity b span,.brand-intro-name span,.eyebrow,.heroBrand,.solutionPanel>span,.skills article>span,.slideBody small,.textLink,.founderEmail,.roadmapDemoLink,.businessModel>h3,.pilotSteps strong,.leadConsentGroup>a,.pilotActions .pilotWhatsApp,.exhibit-chapters a span:first-child){color:var(--theme-accent)}
 html[data-theme=dark] .exhibit-tagline{background:#111D31;color:var(--theme-accent)}
 html[data-theme=dark] .exhibit-orbit{border-color:#f0a9ba66}
 html[data-theme=dark] .exhibit-orbit:before,html[data-theme=dark] .exhibit-dot{background:#f0a9ba}
