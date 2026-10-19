@@ -91,7 +91,7 @@ async function mount(host,opts){
   if(!q||q.length<15){
    host.innerHTML="<p role='alert'>"+t("المهمة غير مترجمة أو غير مكتملة.","The lesson question is not available in this language.")+"</p>";return;
   }
-  host.innerHTML=summary+"<section class='stage'><div class='taskCard'><span class='kicker'>"+t("المهمة ","Task ")+n+" / 3</span>"+
+  host.innerHTML=summary+(lastFeedback?feedbackHtml(lastFeedback,lang):"")+"<section class='stage'><div class='taskCard'><span class='kicker'>"+t("المهمة ","Task ")+n+" / 3</span>"+
    "<h2>"+esc(lang==="en"?next.title_en:next.title_ar)+"</h2><p>"+esc(adaptiveHint(lang,mode,dim))+"</p>"+
    "<div class='legalBox' style='white-space:pre-line'>"+esc(q)+"</div>"+
    "<label for='officialEssayAnswer'>"+t("إجابتك القانونية","Your legal answer")+"</label>"+
