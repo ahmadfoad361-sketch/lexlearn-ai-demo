@@ -14,7 +14,7 @@ const assets=[
   "lexlearn-logo.svg","lexlearn-x-transparent.svg","lexlearn-og.jpg","lexlearn-public-pitch-en.pdf","lexlearn-go-qr.svg","conference.css","conference.js","conference-pdf.js","lexlearn-navigation.css","lexlearn-navigation.js","lexlearn-learning-lines.js","lexlearn-investor-quotes.js","conference-promo.css","brand-intro.js","training-carousel.js",
   "v9-law.css","v9-law-content.js","v9-law.js",
   "adaptive-engine.js","learning-quality.js","pilot-learning.js","pilot-review.js","pilot-qa.js","quality.css",
-  "showcase-recall.js","showcase.css","showcase-learning-cycle.css","showcase-learning-cycle.js","showcase.js","showcase-en.js",
+  "student-demo-guard.js","showcase-recall.js","showcase.css","showcase-learning-cycle.css","showcase-learning-cycle.js","showcase.js","showcase-en.js",
   "program.css","program.js","program-en.js","official-diagnostic.js","server-diagnostic.js","official-level-one.js",
   "portal.css","register.css","auth-controls.js","student-register.js","student-login.js","student-login-en.js","admin-login-v2.js",
   "student.css","student.js","student-en.js",
@@ -44,7 +44,7 @@ for(const page of pages){
  const full=path.join(out,page);let html=fs.readFileSync(full,"utf8");
  const stamp='<footer id="lexBuild" role="contentinfo" style="position:fixed;bottom:0;left:0;z-index:999;background:#111d31;color:white;opacity:.92;font:11px sans-serif;padding:3px 8px;border-top-right-radius:7px">LexLearn build '+buildId+'</footer>';
  html=html.replace("</body>",stamp+"</body>");
- html=html.replace(/(assets\/(?:program|program-en|student|student-en|student-login|student-login-en|cloud-data|official-diagnostic|server-diagnostic|official-level-one|showcase|showcase-en|showcase-learning-cycle)\.js)(?:\?v=[^"']*)?/g,"$1?v="+buildId);
+ html=html.replace(/(assets\/(?:program|program-en|student|student-en|student-login|student-login-en|cloud-data|official-diagnostic|server-diagnostic|official-level-one|student-demo-guard|showcase|showcase-en|showcase-learning-cycle)\.js)(?:\?v=[^"']*)?/g,"$1?v="+buildId);
  fs.writeFileSync(full,html);
 }
 
