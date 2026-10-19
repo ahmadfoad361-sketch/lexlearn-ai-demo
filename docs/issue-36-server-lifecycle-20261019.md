@@ -57,3 +57,22 @@ The current GitHub Pages \`main\` anonymous \`program.html\` still sends "ابد
 6. Roll back the frontend to prior commit if post-release verification fails; roll back any future SQL schema only by a separately reviewed compensating migration, preserving official student records.
 
 **Decision: code branch can be reviewed; academic student deployment is BLOCKED. Public preview is meeting-only and cannot be represented as the live official student experience.**
+
+## 6. Follow-up release-control checks
+
+- After a verified server `completed` status, the bilingual program now selects its stored adaptive **level-one view directly**, with no dependency on `start=1` query parameters or re-running the public demo.
+- The view fails closed if EITHER the server `lex_level_access(level=1)` declines OR the actual academic pilot session is not released in `LEX_PILOT.isReleased`. In this state students see an explanatory saved plan, **not the unapproved lesson or a fabricated grade**.
+- Added `tests/student-gate-source.test.js` to prevent regressions in the six-language? **two-language** (Arabic and English) program entry; it also checks that no unauthorised public demo URL unlocks the course, and that the six-question server diagnostic completes with an explicit status.
+- Added an **after-publication Chrome test** to the GitHub Pages workflow which uses the actual deployment URL and verifies the footer's **exact commit ID**, public demo, and isolated nonacademic level-one preview. Browser recordings are uploaded for review. This is only a *future release gate*: no published-site evidence exists until that post-deploy step actually runs.
+- GitHub Pages deployment is now explicitly restricted to `refs/heads/main`; a feature-branch workflow dispatch cannot intentionally deploy this draft.
+- Read-only production `information_schema` verification confirms the needed columns/types in `profiles`, `enrollments`, `consent_records`, `content_items`, `courses` and `attempts` match the proposal's basic assumptions. This is NOT proof that a migration works on the full production schema or current data.
+
+### Existing-student handling
+
+A saved legacy `learner_snapshots` or anonymous showcase submission is **retained as historical data** but does not count as server-finalized diagnostic evidence, does not set status `completed`, and cannot unlock levels. An existing student whose official server row is absent is treated as `not_started` and is invited to take the new authenticated assessment once after the approved bank becomes available. A separate staff-reviewed legacy equivalence/import procedure can be designed if genuine prior assessments can be authenticated; no automatic migration or deletion is authorized.
+
+### Remaining decision boundaries
+
+The proposed migration introduces new tables and RPCs but is **not deployed**. An authorized server-side learning-content reader and graded level completion workflow still need implementation and review; the front-end preview is not a substitute. Provisioning paid Supabase staging was blocked pending cost approval. Neither a full real JWT/Auth browser test nor a production network trace/recording has been completed. Do not merge or publish this branch until the SQL/RLS review, full staging E2E, content approvals and user-controlled release decision are completed.
+
+The latest passing CI run and commit SHA should be taken from the branch checks at review time; earlier linked passing runs certify only their specific commit.
