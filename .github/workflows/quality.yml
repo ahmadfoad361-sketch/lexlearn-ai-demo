@@ -103,8 +103,10 @@ jobs:
           psql -v ON_ERROR_STOP=1 -f tests/sql/lifecycle-bootstrap.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261019_001_student_diagnostic_lifecycle.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261019_002_official_level_one.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261019_003_internal_provisional_essay_grading.sql
           psql -v ON_ERROR_STOP=1 -f tests/sql/lifecycle-scenarios.sql
           psql -v ON_ERROR_STOP=1 -f tests/sql/level-one-acceptance.sql
+          psql -v ON_ERROR_STOP=1 -f tests/sql/internal-grader-acceptance.sql
 
   public-preview-chrome:
     name: Published-artifact-equivalent Chrome AR/EN and mobile/desktop
@@ -154,7 +156,9 @@ jobs:
           psql -v ON_ERROR_STOP=1 -f tests/sql/lifecycle-bootstrap.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261019_001_student_diagnostic_lifecycle.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261019_002_official_level_one.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261019_003_internal_provisional_essay_grading.sql
       - name: Run real PostgreSQL RLS, idempotency and level progression cases
         run: |
           psql -v ON_ERROR_STOP=1 -f tests/sql/lifecycle-acceptance.sql
           psql -v ON_ERROR_STOP=1 -f tests/sql/level-one-acceptance.sql
+          psql -v ON_ERROR_STOP=1 -f tests/sql/internal-grader-acceptance.sql
