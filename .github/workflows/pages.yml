@@ -55,6 +55,7 @@ jobs:
           node tests/official-diagnostic-dom-flow.test.js
           node tests/server-diagnostic-ui.test.js
           node tests/student-provisional-flow.test.js
+          node tests/founder-pilot-release.test.js
           node tests/student-gate-source.test.js
           node tests/public-showcase.test.js
           node tests/showcase-revision.test.js
