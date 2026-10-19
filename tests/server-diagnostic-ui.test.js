@@ -21,6 +21,11 @@ function make(uid,lang,data,opts={}){
    if(action==="status")return st;
    if(action==="begin"){if(opts.unapproved)throw new Error("diagnostic_academic_approval_pending");data[uid]={status:"in_progress",draft:[],attempt_id:uid+"-attempt"};return data[uid];}
    if(action==="draft"){if(st.status!=="in_progress")throw Error("invalid_phase");st.draft=props.answers;return st;}
+   if(action==="reviewDiagnostic"){
+    assert.equal(st.status,"completed","only completed official diagnostic may be reviewed");
+    st.result.measurements={recall:{internal_grade:{status:"preliminary_internal",provisional_percent:75,method:"internal_qatar_rights_rules_v1"}}};
+    return st;
+   }
    if(action==="complete"){
     assert.equal(props.answers.length,6);
     st.status="completed";st.draft=[];st.result={source:"server_finalized_diagnostic",student_id:uid};
@@ -49,7 +54,7 @@ function make(uid,lang,data,opts={}){
   await env.nodes.serverNext.onclick();
   assert.equal(env.redirects.length,1,"redirect to program only after verified server completion");
   assert.equal(env.calls.filter(c=>c==="draft").length,6);
-  assert.deepEqual(env.calls.slice(-2),["complete","status"]);
+  assert.deepEqual(env.calls.slice(-3),["complete","reviewDiagnostic","status"]);
   const returning=make(uid,lang,data);
   await returning.win.LEX_SERVER_DIAGNOSTIC.mount();
   assert.equal(returning.redirects.length,1,"completed result must never restart diagnostic");
