@@ -118,3 +118,14 @@ html[lang=ar] .visual-scene h2,html[lang=ar] .visual-scene h3{line-height:1.55}
 .skill-loop li.is-complete{background:#8a1f3977;border-color:#d8a0ad}
 .skill-loop li.is-lit{background:#fff4e7;color:#8a1f39;border-color:#fff4e7;box-shadow:0 0 0 2px #f5d2b733,0 0 22px #efc5a777;font-weight:800}
 @media(prefers-reduced-motion:reduce){.skill-loop li{transition:none}}
+
+/* The lecture theatre is shown clearly, with its copy below the photograph. */
+#pilot>.visual-scene{display:block;min-height:0}
+#pilot>.visual-scene>.scene-image{position:relative;inset:auto;z-index:auto;display:block;width:100%;height:clamp(260px,38vw,440px);object-fit:cover;object-position:center;animation:none}
+#pilot>.visual-scene:before{display:none}
+#pilot>.visual-scene>figcaption{background:#111d31;padding-top:26px}
+.visual-modal[data-audience="university"] .visual-scene{display:flex;flex-direction:column;min-height:0}
+.visual-modal[data-audience="university"] .visual-scene>.scene-image{position:relative;inset:auto;z-index:auto;display:block;flex:none;width:100%;height:250px;object-fit:cover;object-position:center;animation:none}
+.visual-modal[data-audience="university"] .visual-scene:before{display:none}
+.visual-modal[data-audience="university"] .visual-scene>figcaption{background:#111d31;padding-top:24px}
+@media(max-width:599px){.visual-modal[data-audience="university"] .visual-scene>.scene-image{height:215px}}
