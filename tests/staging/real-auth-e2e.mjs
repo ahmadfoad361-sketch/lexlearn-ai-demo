@@ -52,13 +52,14 @@ for(let i=0;i<accounts.length;i++){
  }
 }
 for(const n of [39,40,49,50,62,63]){
- seed+="INSERT INTO public.content_sources(id,country_code,title,authority,status,excerpt) VALUES("+quote("qa-civil-2004-art"+n)+",'qa','Synthetic staging source '+n+"','LOCAL ONLY','approved','Synthetic TEST material') ON CONFLICT DO NOTHING;\n";
+ seed+="INSERT INTO public.content_sources(id,country_code,title,authority,status,excerpt) VALUES("+[quote("qa-civil-2004-art"+n),"'qa'",quote("Synthetic staging source "+n),"'LOCAL ONLY'","'approved'","'Synthetic TEST material'"].join(",")+") ON CONFLICT DO NOTHING;\n";
 }
 const refs=[39,49,62,39,50,63];
+const requiredSources={q39r:[39],q49r:[49],q62r:[62],q39u:[39],q50u:[39,50],q63a:[63]};
 for(let i=0;i<questions.length;i++){
  const q=questions[i],dim=i<3?"recall":i<5?"understanding":"application";
  seed+="INSERT INTO public.content_items(id,course_id,unit_id,concept_id,dimension,item_type,prompt_ar,options_json,answer_key_json,rubric_json,source_ids,status,legal_reviewer,learning_reviewer,reviewed_at,metadata) VALUES("+
- [quote("local-v2-"+q.id),quote(course),"'week-1'","'topic-1'",quote(dim),"'mcq'",quote(q.ar),j({ar:Array.from(q.arOptions),en:Array.from(q.enOptions)}),j({correct_index:q.a}),"'{}'::jsonb","ARRAY["+quote("qa-civil-2004-art"+refs[i])+"]::text[]","'approved'",checked(accounts[4].uid),checked(accounts[5].uid),"now()",j({official_diagnostic_v2_id:q.id,legal_approval:true,learning_approval:true,staging_only:true})].join(",")+
+ [quote("local-v2-"+q.id),quote(course),"'week-1'","'topic-1'",quote(dim),"'mcq'",quote(q.ar),j({ar:Array.from(q.arOptions),en:Array.from(q.enOptions)}),j({correct_index:q.a}),j({prompt_en:q.en}),"ARRAY["+requiredSources[q.id].map(n=>quote("qa-civil-2004-art"+n)).join(",")+"]::text[]","'approved'",checked(accounts[4].uid),checked(accounts[5].uid),"now()",j({official_diagnostic_v2_id:q.id,legal_approval:true,learning_approval:true,staging_only:true})].join(",")+
  ");\n";
 }
 for(const [key,dim] of [["rights-v1-s1-recall","recall"],["rights-v1-s1-understanding","understanding"],["rights-v1-s1-exam","exam_execution"]]){
