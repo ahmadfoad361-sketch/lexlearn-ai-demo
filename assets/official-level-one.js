@@ -76,9 +76,12 @@ async function mount(host,opts){
   }
   var saved=data.saved,completed=data.tasks.filter(function(x){return !!byId(saved,x.id);}).length;
   var next=data.tasks.find(function(x){return !byId(saved,x.id);}),mode=data.plan_mode||"foundation";
+  var diagnosticGrade=opts&&opts.diagnostic&&opts.diagnostic.measurements&&opts.diagnostic.measurements.recall&&opts.diagnostic.measurements.recall.internal_grade;
+  var diagnosticMetric=diagnosticGrade&&typeof diagnosticGrade.provisional_percent==="number"?
+    "<p role='status'>"+t("تقييم الاسترجاع الحر في التشخيص — نسبة آلية مبدئية: ","Diagnostic free recall — preliminary internal score: ")+esc(diagnosticGrade.provisional_percent)+"%</p>":"";
   var reason=(lang==="en"?data.reason_en:data.reason_ar)||"";
   var summary="<section class='stage'><div class='taskCard'><span class='kicker'>"+t("حساب الطالب • المستوى الأول • نظرية الحق","Student account • Level 1 • Theory of Rights")+"</span>"+
-   "<h2>"+t("بداية الشخصية القانونية","Beginning of legal personality")+"</h2><p>"+esc(reason)+"</p>"+
+   "<h2>"+t("بداية الشخصية القانونية","Beginning of legal personality")+"</h2><p>"+esc(reason)+"</p>"+diagnosticMetric+
    "<p role='status'>"+t("تم حفظ ","Saved ")+completed+" / "+data.tasks.length+t(" مهام على الخادم"," tasks on the server")+"</p>"+
    "<p>"+t("ترتيب المهام متكيف مع التشخيص. يحلل المحرك الداخلي الإجابات الحرة ويعرض نسبة مبدئية لعناصر المعنى عند كفاية الأدلة، مع إمكانية مراجعة المشرف.","Task order adapts to the diagnostic. The internal engine shows a provisional free-answer percentage when evidence permits, subject to supervisor review.")+"</p></div></section>";
   var previousResults=data.tasks.filter(function(x){return !!byId(saved,x.id);}).map(function(x){return feedbackHtml(byId(saved,x.id),lang);}).join("");
