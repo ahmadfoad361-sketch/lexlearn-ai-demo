@@ -336,6 +336,7 @@ function render(){
         "<div class='heroSide studentHeroSide'><div class='heroVisual'>"+icon(course.completedProgram?"trophy":"compass")+"</div><h3>"+(course.completedProgram?"أحسنت! أنهيت البرنامج":"جاهز للجلسة التالية؟")+"</h3><p>"+(course.completedProgram?"يمكنك عرض إنجازك النهائي في أي وقت.":(result?"جلسة واحدة قصيرة، ومحتواها يتغير حسب مستواك.":"ابدأ التقييم القصير لنحدد أفضل بداية لك."))+"</p></div>"+
       "</section>"+
       "<section class='actionGrid singleAction'>"+actionPrimary+"</section>"+
+      (result?"<p style='margin-top:1rem'><a class='topbtn' href='diagnostic.html?lang=ar'>عرض نتيجة التشخيص المحفوظة ونسب المهارات</a></p>":"")+
       "<div class='sectionHead'><div><h2>رحلتك</h2><p>كلما أنهيت مرحلة، تفتح التالية تلقائيًا.</p></div><span class='progressTag'>"+course.completed.length+" / 30</span></div>"+
       "<section class='weekGrid'>"+weeks+"</section>"+
       "<div class='sectionHead'><div><h2>مستواك ببساطة</h2><p>الحفظ: تذكّر القاعدة دون النص • الفهم: معرفة لماذا تعمل • التطبيق على الوقائع: استخدام القاعدة في واقعة قانونية جديدة.</p></div></div>"+
