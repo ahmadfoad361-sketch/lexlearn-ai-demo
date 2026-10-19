@@ -122,6 +122,7 @@ jobs:
           python3 -m http.server 18765 --bind 127.0.0.1 --directory dist-site >/tmp/lexlearn-lifecycle-serve.log 2>&1 &
           sleep 2
           node tests/student-path-browser.cjs
+          node tests/student-adaptive-browser.cjs
 
   sql-lifecycle:
     runs-on: ubuntu-latest
