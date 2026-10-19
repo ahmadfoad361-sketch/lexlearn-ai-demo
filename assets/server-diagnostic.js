@@ -76,7 +76,7 @@ async function startUI(){
       var next=answers.concat([{question_id:q.id,selected:Number(sel.value)}]);
       var reply=await cloud.studentLifecycleRpc("draft",{courseId:COURSE_ID,answers:next});
       if(reply.status!=="in_progress"||!Array.isArray(reply.draft)||reply.draft.length!==next.length)throw new Error("draft_not_confirmed");
-      answers=reply.draft;idx=answers.length;page();
+      answers=reply.draft;idx=answers.length;saving=false;page();
      }else{
       var reply=await cloud.studentLifecycleRpc("complete",{courseId:COURSE_ID,answers:answers,freeText:root.document.getElementById("ungradedText").value||""});
       if(reply.status!=="completed"||!reply.result||reply.result.source!=="server_finalized_diagnostic"||reply.result.student_id!==student||!reply.training_plan)throw new Error("completion_not_confirmed");
