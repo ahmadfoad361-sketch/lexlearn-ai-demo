@@ -50,7 +50,7 @@ function run(uid,lang,storage,opts={}){
    fresh.nodes().officialEssayAnswer.value="Legal elements, issue, rule, application and conclusion.";
    await fresh.nodes().officialSaveAnswer.onclick();
   }
-  assert.ok(fresh.host.html.includes("pending"),"practice completion must remain pending human review");
+  assert.match(fresh.host.html,lang==="ar"?/بانتظار مراجعتها/:/pending review/,"practice completion must remain pending human review");
   assert.equal(storage["student-"+lang].saved.length,3);
   assert.equal(fresh.calls.filter(x=>x.action==="submitLevelOne").length,2);
  }
