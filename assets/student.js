@@ -92,7 +92,7 @@ function passedWeek(n){
   return !!(r&&(r.status==="mastered"||r.status==="completed"||r.status==="completed_with_support"));
 }
 function weekStatus(n){
-  if(session.cloud&&!student.academicLevelOneAllowed)return ["locked","بانتظار اعتماد المحتوى","lock"];
+  if(session.cloud&&(n!==1||!student.academicLevelOneAllowed))return ["locked","المستوى غير منشور لهذا الطالب","lock"];
   var r=course.weekResults[n];
   if(!result)return ["locked",n===1?"يتاح بعد التقييم التشخيصي":"مغلق حتى اجتياز المرحلة السابقة","lock"];
   if(r&&r.status==="repair")return ["need","يحتاج تثبيت","repeat"];
@@ -297,7 +297,7 @@ function render(){
   var actionPrimary=course.completedProgram
     ? "<a class='actionCard primary completeAction' href='program.html?"+demoPrefix+"country="+country+"&subject=rights&start=1'><span class='actionIcon'>🏆</span><span class='actionCopy'><b>عرض إنجازك النهائي</b><small>لقد أنهيت البرنامج بالكامل — افتح شاشة الفوز والإنهاء.</small></span></a>"
     : !result
-      ? "<a class='actionCard primary' href='"+(session.cloud?"diagnostic.html?lang=ar":"showcase.html?country="+country+"&subject=rights") + "'><span class='actionIcon'>"+icon("test")+"</span><span class='actionCopy'><b>بدء التشخيص أو استكماله</b><small>يفتح الاختبار مباشرة بدل الرجوع للصفحة الرئيسية.</small></span></a>"
+      ? "<a class='actionCard primary' href='"+"diagnostic.html?lang=ar" + "'><span class='actionIcon'>"+icon("test")+"</span><span class='actionCopy'><b>بدء التشخيص أو استكماله</b><small>يفتح الاختبار مباشرة بدل الرجوع للصفحة الرئيسية.</small></span></a>"
       : "<a class='actionCard primary' href='program.html?"+demoPrefix+"country="+country+"&subject=rights&start=1'><span class='actionIcon'>"+icon("play")+"</span><span class='actionCopy'><b>أكمل جلسة اليوم</b><small>يفتح التدريب الفعلي مباشرة.</small></span></a>";
 
   var insight=studentInsight();
