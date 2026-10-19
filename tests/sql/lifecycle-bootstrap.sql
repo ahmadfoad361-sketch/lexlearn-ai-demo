@@ -40,7 +40,7 @@ insert into public.enrollments values
 insert into public.consent_records
  select id,'2026-10-06-v1','learning_data',true from public.profiles where role='student';
 insert into public.content_items(id,course_id,metadata,status,reviewed_at,legal_reviewer,learning_reviewer,prompt_ar,rubric_json,options_json,answer_key_json,source_ids)
-select 'test-'+x.id,'qa-qu-lawc101-rights',
+select 'test-'||x.id,'qa-qu-lawc101-rights',
  jsonb_build_object('official_diagnostic_v2_id',x.id,'legal_approval',true,'learning_approval',true),
  'approved',now(),'20000000-0000-4000-8000-000000000001'::uuid,'20000000-0000-4000-8000-000000000002'::uuid,
  'Fixture question '||x.id,'{"prompt_en":"Fixture"}'::jsonb,
