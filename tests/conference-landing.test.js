@@ -373,7 +373,7 @@ assert.ok(html.includes("assets/conference.css?v=20261019.12")&&html.includes("a
 
 /* Follow-up UX contract: conference, pilot, investor and student demo. */
 assert.ok(html.includes('id="pathsReturn"')&&html.includes('href="#paths"'),"return to visitor paths must be accessible");
-assert.ok(html.includes('data-t="returnPaths">Conference home</span>'),"floating return must have a visible localized label");
+assert.ok(html.includes('data-t="returnPaths">Back to top</span>'),"floating return must have a visible localized label");
 assert.ok(js.includes('backToPaths.setAttribute("aria-label",t.returnPaths)'),"return arrow accessible label must localize to Arabic and English");
 assert.ok(html.includes('id="deckPrev"')&&html.includes('id="deckNext"')&&html.includes('id="deckDots"'),"carousel requires arrows and dots");
 assert.ok(js.includes("slide.scrollIntoView")&&js.includes("rtl?r.right-rect.right:r.left-rect.left"),"RTL/LTR card scrolling must use physical direction correctly");
