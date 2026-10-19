@@ -83,5 +83,16 @@ function assess(answer,lang){
  };
  return {grade_status:score===null?'insufficient_evidence':'rule_assessed',recall_score:score,feedback:messages[reason][ar?0:1],details:{engine:'local-propositions-v5',provider:'none',provider_status:'disabled_no_paid_calls',provisional:true,reason:reason,points:points,max_points:7,criteria:rows,achieved:rows.filter(function(r){return r.status==='supported';}).map(function(r){return {id:r.id,evidence:r.evidence.join(' … '),points:r.points};}),missing:rows.filter(function(r){return r.status!=='supported';}).map(function(r){return r.id;}),contradictions:conflicts,source_ids:['qa-civil-2004-art39','qa-civil-2004-art40']}};
 }
-var api={assess:assess,criteria:criteria};root.LEX_RECALL=api;if(typeof module!=='undefined'&&module.exports)module.exports=api;
+// Public practice reports rubric coverage even when semantic meaning needs review.
+// The conservative academic assessment above remains unchanged.
+function assessPractice(answer,lang){
+ var grade=assess(answer,lang),ar=lang!=='en',d=grade.details;
+ var review=grade.recall_score===null;
+ var points=review?(d.reason==='ambiguous_assertion'?0:d.points):d.points;
+ var score=review?Math.round(points/d.max_points*100):grade.recall_score;
+ var note=ar?'نسبة الحفظ هنا تقيس عناصر الإجابة التي تحقق منها المحرك الداخلي، وليست حكمًا نهائيًا على إتقانك.':'This recall percentage measures answer elements verified by the internal engine, not final mastery.';
+ var feedback=review?(ar?'تحقق المحرك الداخلي من '+points+' من '+d.max_points+' نقاط. راجع العناصر الموضحة أدناه ثم أعد صياغة إجابتك؛ عدم التعرّف على صياغتك لا يثبت أنها خاطئة.':'The internal engine verified '+points+' of '+d.max_points+' points. Review the elements below and revise your answer; unrecognized wording is not proof that it is wrong.'):grade.feedback;
+ return {grade_status:'practice_coverage',recall_score:score,feedback:feedback+' '+note,details:Object.assign({},d,{score_basis:'verified_element_coverage',needs_review:review,coverage_points:points,academic_score:grade.recall_score,criteria:d.reason==='ambiguous_assertion'?d.criteria.map(function(c){return Object.assign({},c,{points:0,status:'unrecognized'});}):d.criteria})};
+}
+var api={assess:assess,assessPractice:assessPractice,criteria:criteria};root.LEX_RECALL=api;if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })(typeof globalThis!=='undefined'?globalThis:this);

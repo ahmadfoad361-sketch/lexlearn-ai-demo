@@ -24,7 +24,7 @@ async function check(lang){
   functions:{invoke:async(name,opts)=>{assert.equal(name,"showcase-grade");sent.push(opts.body);return {data:newReceipt};}}};
  let uuid=0;
  const context={document,window:{LEX_QUALITY:{},LEX_SHOWCASE_CYCLE:{recommend:()=>"balanced"},
-   LEX_RECALL:{assess:()=>({details:{},recall_score:null})},
+   LEX_RECALL:require("../assets/showcase-recall.js"),
    LEX_CLOUD:{isConfigured:()=>true,db:()=>db}},
    sessionStorage:{getItem:k=>store.get(k)||null,setItem:(k,v)=>store.set(k,v)},
    crypto:{randomUUID:()=>{let id="00000000-0000-4000-8000-"+String(++uuid).padStart(12,"0");ids.push(id);return id;}},

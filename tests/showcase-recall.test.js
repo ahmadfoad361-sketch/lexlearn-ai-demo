@@ -42,3 +42,19 @@ const corpus=require('./qa-39-40-300-answer-variants.json').examples,counts={};
 for(const x of corpus){let r=R.assess(x.answer,'ar'),c=counts[x.reference_category]??={n:0,full:0,partial:0,unscored:0,zero:0};c.n++;c[r.recall_score===100?'full':r.recall_score===null?'unscored':r.recall_score===0?'zero':'partial']++;assert(!(x.reference_category==='contradiction_or_error'&&r.recall_score===100),x.id+' cannot receive full marks');}
 console.log('Legal acceptance cases PASS:',cases.length);console.log(JSON.stringify(counts,null,2));
 module.exports=cases;
+
+// Practice percentages are explicit rubric coverage, separate from an academic grade.
+for(const [answer,expected] of [
+ ['تبدأ الشخصية القانونية بالولادة حية.',29],
+ ['تبدأ الشخصية القانونية بالولادة حية، وتنتهي بالموت.',43],
+ ['لا أتذكر',0],['الولادة حيا',0],['كلام غير مفهوم',0],
+ ['هل تبدأ الشخصية القانونية بالولادة حية؟',0],
+ ['تبدأ الشخصية القانونية بالولادة حية، ولكن الشخصية القانونية لا تبدأ بالولادة حية.',0]
+]){
+ const base=R.assess(answer,'ar'),practice=R.assessPractice(answer,'ar');
+ assert.equal(practice.recall_score,expected);
+ assert.equal(practice.details.academic_score,base.recall_score);
+ assert.equal(practice.details.score_basis,'verified_element_coverage');
+ assert.equal(practice.details.criteria.reduce((n,c)=>n+c.points,0),practice.details.coverage_points);
+ if(base.recall_score===null)assert(practice.details.needs_review);
+}

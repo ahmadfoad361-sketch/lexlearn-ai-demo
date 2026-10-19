@@ -35,8 +35,11 @@ async function run(lang,answer,expected,serverNull=false){
  const ar='تبدأ الشخصية القانونية بالولادة حية، وتنتهي بالموت، وللجنين حقوق لا تحتاج قبولًا، بشرط ولادته حيا.';
  const en='Legal personality begins at live birth and ends at death. An unborn child has rights that require no acceptance, provided that the child is born alive.';
  for(const [lang,text] of [['ar',ar],['en',en]]){
-  await run(lang,text,100);await run(lang,lang==='ar'?'لا أتذكر':'I do not remember',null);await run(lang,text,null,true);
+  await run(lang,text,100);await run(lang,lang==='ar'?'لا أتذكر':'I do not remember',0);await run(lang,text,100,true);
  }
  await run('ar','الشخصية القانونية تثبت بولادة الجنين حيا',29);
- console.log('Demo loading, local provisional score, save failures and authoritative server abstention: PASS');
+ await run('ar','قبول حياة موت حقوق ولادة',0);
+ await run('ar','ربما تبدأ الشخصية القانونية بالولادة حية.',0);
+ await run('ar','تبدأ الشخصية القانونية بالولادة حية، وتنتهي بالموت، وللجنين حقوق لا تحتاج قبولًا.',71);
+ console.log('Demo loading, local provisional score, save failures and internal practice coverage: PASS');
 })().catch(e=>{console.error(e);process.exitCode=1;});
