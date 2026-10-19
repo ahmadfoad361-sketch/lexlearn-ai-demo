@@ -5,12 +5,9 @@ for(const page of ["showcase","showcase-en"]){
  const js=fs.readFileSync("assets/"+page+".js","utf8");
  const html=fs.readFileSync(page+".html","utf8");
  assert(js.includes('analysisPage()'),'AI analysis stage must appear before results');
- assert(js.includes('demoDeliveryWarning')&&js.includes('recall=g.recall_score'),
-   'If saving fails, keep the provisional local estimate and warn that it was not saved');
- assert(js.includes("!r.received")&&js.includes("errorLabel(r.error)"),
-   'Unconfirmed receipt must explicitly display the server delivery/auth error');
- assert(js.includes('The supervisor could not receive this attempt'),
-   'Bilingual failure disclosure must truthfully report the failed save');
+ assert(js.includes('recall=g.recall_score'),'Keep the provisional local estimate when delivery is unavailable');
+ assert(!js.includes('demoDeliveryWarning')&&!js.includes('The supervisor could not receive this attempt'),'Public results omit supervisor delivery warnings');
+ assert(js.includes('r.received&&r.submission_id'),'Only confirmed receipts can show a saved message');
 
  assert(js.includes('receiptScreen()')||js.includes('receiptScreen'),'A branded completion screen is required');
  assert(js.includes('assets/lexlearn-logo.svg'),'Must use the approved logo');
