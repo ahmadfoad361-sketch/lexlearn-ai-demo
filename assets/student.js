@@ -92,7 +92,13 @@ function passedWeek(n){
   return !!(r&&(r.status==="mastered"||r.status==="completed"||r.status==="completed_with_support"));
 }
 function weekStatus(n){
-  if(session.cloud&&(n!==1||!student.academicLevelOneAllowed))return ["locked","المستوى غير منشور لهذا الطالب","lock"];
+  if(session.cloud){
+    if(!result||!student.trainingUnlocked)return ["locked","يبدأ بعد التشخيص","lock"];
+    var current=Math.ceil(student.trainingUnlocked/5);
+    if(n<current)return ["done","اكتمل التدريب","check"];
+    if(n===current)return ["current","متاح في المسار التكيفي","play"];
+    return ["locked","أكمل الجلسات السابقة","lock"];
+  }
   var r=course.weekResults[n];
   if(!result)return ["locked",n===1?"يتاح بعد التقييم التشخيصي":"مغلق حتى اجتياز المرحلة السابقة","lock"];
   if(r&&r.status==="repair")return ["need","يحتاج تثبيت","repeat"];
@@ -285,7 +291,7 @@ function render(){
     var st=weekStatus(n);
     var open=st[0]==="current"||st[0]==="need";
     var tag=open?"a":"div";
-    var href=open?" href='program.html?"+demoPrefix+"country="+country+"&subject=rights&start=1'":"";
+    var href=open?" href='student-path.html?lang=ar&session="+Math.max(1,(n-1)*5+1)+"'":"";
     return "<"+tag+href+" class='week "+st[0]+"'>"+
       "<span class='weekIcon'>"+icon(st[2])+"</span>"+
       "<b>الأسبوع "+n+"</b>"+
@@ -295,10 +301,10 @@ function render(){
   }).join("");
 
   var actionPrimary=course.completedProgram
-    ? "<a class='actionCard primary completeAction' href='program.html?"+demoPrefix+"country="+country+"&subject=rights&start=1'><span class='actionIcon'>🏆</span><span class='actionCopy'><b>عرض إنجازك النهائي</b><small>لقد أنهيت البرنامج بالكامل — افتح شاشة الفوز والإنهاء.</small></span></a>"
+    ? "<a class='actionCard primary completeAction' href='student-path.html?lang=ar'><span class='actionIcon'>🏆</span><span class='actionCopy'><b>عرض إنجازك النهائي</b><small>لقد أنهيت البرنامج بالكامل — افتح شاشة الفوز والإنهاء.</small></span></a>"
     : !result
       ? "<a class='actionCard primary' href='"+"diagnostic.html?lang=ar" + "'><span class='actionIcon'>"+icon("test")+"</span><span class='actionCopy'><b>بدء التشخيص أو استكماله</b><small>يفتح الاختبار مباشرة بدل الرجوع للصفحة الرئيسية.</small></span></a>"
-      : "<a class='actionCard primary' href='program.html?"+demoPrefix+"country="+country+"&subject=rights&start=1'><span class='actionIcon'>"+icon("play")+"</span><span class='actionCopy'><b>أكمل جلسة اليوم</b><small>يفتح التدريب الفعلي مباشرة.</small></span></a>";
+      : "<a class='actionCard primary' href='student-path.html?lang=ar'><span class='actionIcon'>"+icon("play")+"</span><span class='actionCopy'><b>أكمل جلسة اليوم</b><small>يفتح التدريب الفعلي مباشرة.</small></span></a>";
 
   var insight=studentInsight();
   var learningProfile=result
@@ -336,7 +342,7 @@ function render(){
         "<div class='heroSide studentHeroSide'><div class='heroVisual'>"+icon(course.completedProgram?"trophy":"compass")+"</div><h3>"+(course.completedProgram?"أحسنت! أنهيت البرنامج":"جاهز للجلسة التالية؟")+"</h3><p>"+(course.completedProgram?"يمكنك عرض إنجازك النهائي في أي وقت.":(result?"جلسة واحدة قصيرة، ومحتواها يتغير حسب مستواك.":"ابدأ التقييم القصير لنحدد أفضل بداية لك."))+"</p></div>"+
       "</section>"+
       "<section class='actionGrid singleAction'>"+actionPrimary+"</section>"+
-      (result?"<p style='margin-top:1rem'><a class='topbtn' href='diagnostic.html?lang=ar'>عرض نتيجة التشخيص المحفوظة ونسب المهارات</a></p>":"")+
+      (result?"<p style='margin-top:1rem'><a class='topbtn' href='student-path.html?lang=ar'>افتح الـ30 جلسة التكيفية</a> · <a class='topbtn' href='diagnostic.html?lang=ar'>عرض نتيجة التشخيص المحفوظة ونسب المهارات</a></p>":"")+
       "<div class='sectionHead'><div><h2>رحلتك</h2><p>كلما أنهيت مرحلة، تفتح التالية تلقائيًا.</p></div><span class='progressTag'>"+course.completed.length+" / 30</span></div>"+
       "<section class='weekGrid'>"+weeks+"</section>"+
       "<div class='sectionHead'><div><h2>مستواك ببساطة</h2><p>الحفظ: تذكّر القاعدة دون النص • الفهم: معرفة لماذا تعمل • التطبيق على الوقائع: استخدام القاعدة في واقعة قانونية جديدة.</p></div></div>"+
@@ -395,6 +401,18 @@ async function boot(){
         if(student.academicLevelOneAllowed&&officialLevel.saved)student.levelOneSavedCount=officialLevel.saved.length;
       }
       student.diagnosticStatus=status.status;
+       student.trainingUnlocked=0;
+       student.trainingCompleted=0;
+       if(result){
+         var training=await LEX_CLOUD.studentLifecycleRpc("trainingOverview",{courseId:"qa-qu-lawc101-rights"});
+         if(training&&training.allowed){
+           student.trainingUnlocked=training.unlocked;
+           student.trainingCompleted=training.completed_count;
+           course.session=Math.max(1,training.unlocked);
+           course.completed=Array.from({length:training.completed_count},function(_,i){return i+1;});
+           course.completedProgram=!!training.program_completed;
+         }
+       }
 
     }catch(e){
       APP.innerHTML="تعذر التحقق من الجلسة. <a href='student-login.html'>سجّل الدخول من جديد</a>.";
