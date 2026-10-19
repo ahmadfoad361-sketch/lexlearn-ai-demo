@@ -43,10 +43,10 @@ function plan(weak, lang) {
   };
   var explain = {
     type:"free",
-    title:pick(ar,"اشرح السبب لا النص فقط","Explain why, not just what"),
+    title:pick(ar,"لماذا نحتاج إلى هذا الشرط؟","Why does this condition matter?"),
     prompt:pick(ar,"اشرح بأسلوبك: إذا نشأ سبب حق للحمل لا يحتاج إلى قبول، فما أهمية شرط الولادة حية في تقرير ثبوت هذا الحق؟","In your own words: if the cause of a prenatal right does not require acceptance, why does live birth still matter for that right?"),
     comparison:pick(ar,"عدم احتياج سبب الحق إلى قبول لا يلغي الشرط الآخر الذي نص عليه القانون: تمام الولادة حية. إذا تخلف هذا الشرط، فلا يثبت الحق المذكور استنادًا إلى هذا الحكم.","The fact that a right's cause requires no acceptance does not remove the separate statutory condition of complete live birth. Without that condition, the specified right does not vest under this rule."),
-    lesson:pick(ar,"الشرح الجيد يربط السبب والشرط بالأثر القانوني، بدل إعادة ترديد الكلمات.","A good explanation connects the legal cause, condition, and consequence instead of repeating the wording.")
+    lesson:pick(ar,"اربط في شرحك بين شرط الولادة حيًا وثبوت الحق. يمكنك التعبير عن الفكرة بكلماتك.","Connect the live-birth condition to the right in your explanation. Use your own words.")
   };
   var capacity = {
     type:"choice",
@@ -69,7 +69,7 @@ function plan(weak, lang) {
     title:pick(ar,"أعد بناء القاعدة من دون النص","Rebuild the rule without the text"),
     prompt:pick(ar,"أخفينا القاعدة والمثال. استخدم المفاتيح التي كتبتها لتعيد صياغة بداية الشخصية ونهايتها وشرط الحقوق المذكورة للحمل.","The rule and example are hidden. Use your own cues to reconstruct the start and end of personality and the condition attached to the stated prenatal rights."),
     comparison:recall.comparison,
-    lesson:pick(ar,"هذه مقارنة ذاتية تدريبية. لم يُمنح نصك درجة آلية، ولا تعني المحاولة الآن تحقق الاحتفاظ طويل المدى.","This is guided self-comparison, not an automatically graded essay or evidence of long-term retention.")
+    lesson:pick(ar,"قارن إجابتك بالنموذج: ما الذي تذكرته؟ وما العنصر الذي تحتاج إلى إضافته؟ هذا تدريب ذاتي دون درجة آلية.","Compare your answer with the reference: what did you recall, and what could you add? This is self-practice without an automated score.")
   };
   var transfer = {
     type:"choice",
@@ -101,7 +101,7 @@ function plan(weak, lang) {
       "Yes. Personality begins at conception."
     ],
     correct:0,
-    feedback:pick(ar,"النتيجة تتغير بتغير شرط قانوني حاسم؛ لا يكفي تكرار نص المادة دون ملاحظة أثر هذا الشرط.","The outcome changes when a decisive legal condition changes. Repeating a provision alone is not enough.")
+    feedback:pick(ar,"لاحظ ما تغيّر في الواقعة، ثم اربطه بالشرط المطلوب في النص.","Notice what changed in the facts, then connect it to the condition in the rule.")
   };
   var worked = {
     type:"choice",
@@ -136,8 +136,8 @@ function run(options) {
     weak === "understanding" ?
     pick(ar,"ظهر الاسترجاع أقوى من الفهم في هذه المحاولة؛ سنستخدم القاعدة التي تتذكرها لتفسير الشروط وتطبيقها.","Recall appeared stronger than understanding in this attempt; use the recalled rule to explain and apply it.") :
     weak === "foundation" ?
-    pick(ar,"كانت مؤشرات الحفظ والفهم منخفضة في هذه المحاولة القصيرة. سنبدأ بمثال محلول ثم نتدرّب تدريجيًا دون افتراض وجود مهارة قوية ثابتة.","Both short-task indicators were low. Begin with a worked example and gradually practise independently; no permanent skill label is inferred.") :
-    pick(ar,"لا تسمح هذه المحاولة بتحديد مهارة أضعف بثقة. سنجمع الاسترجاع والشرح والتطبيق في مسار متوازن.","This attempt does not establish a weaker skill with confidence; follow a balanced practice path.");
+    pick(ar,"سنبدأ بمثال محلول، ثم نتدرّب خطوة خطوة على الفهم والتذكّر. هذه المحاولة القصيرة مجرد نقطة بداية.","Begin with a worked example, then build understanding and recall step by step. This short attempt is only a starting point.") :
+    pick(ar,"سنجرّب مسارًا يجمع التذكّر والشرح والتطبيق حتى تتضح الخطوة الأنسب لك.","Try a balanced mix of recall, explanation and application to explore your next useful step.");
   function stage(html) {
     options.stage(100,'<div class="learningCycle">'+html+'</div>');
   }
@@ -176,7 +176,7 @@ function run(options) {
         var field=document.getElementById("cycleAnswer"),value=field.value.trim();
         if(!value){document.getElementById("cycleFeedback").textContent=pick(ar,"اكتب محاولتك أولًا، حتى لو كانت غير مكتملة.","Write an attempt first, even if incomplete.");field.focus();return;}
         field.disabled=true;this.disabled=true;
-        feedback('<span class="cycleLabel">'+pick(ar,"نموذج للمقارنة الذاتية","Reference for self-comparison")+'</span><p>'+esc(task.comparison)+'</p><small>'+esc(task.lesson)+'</small><small>'+pick(ar,"لم تُجرَ مقارنة دلالية آلية لهذه الإجابة.","No automated semantic grading has been applied to this answer.")+'</small>',true);
+        feedback('<span class="cycleLabel">'+pick(ar,"نموذج للمقارنة الذاتية","Reference for self-comparison")+'</span><p>'+esc(task.comparison)+'</p><small>'+esc(task.lesson)+'</small><small>'+pick(ar,"هذه مقارنة ذاتية؛ لم يُمنح نصك درجة آلية.","This is self-comparison; your text has not received an automated score.")+'</small>',true);
       };
     } else {
       document.querySelectorAll("[data-cycle-choice]").forEach(function(btn){
@@ -208,7 +208,7 @@ function run(options) {
       '<h2>'+pick(ar,"من التشخيص إلى تدريب موجّه","From diagnosis to targeted practice")+'</h2>'+
       '<p class="cycleLead">'+pick(ar,"استخدمت معلومة أو مهارة أظهرتها محاولتك لتتدرّب على مهارة أخرى، ثم واجهت سؤالًا بواقعة مختلفة.","You used an observed strength to practise another skill, then addressed a changed fact pattern.")+'</p>'+
       '<div class="cycleSummary"><div><b>'+tasks.length+'</b><span>'+pick(ar,"خطوات تدريبية","Practice steps")+'</span></div><div><b>'+correct+' / '+choiceScores.length+'</b><span>'+pick(ar,"أسئلة اختيار صحيحة أثناء التدريب","Correct multiple-choice checks")+'</span></div></div>'+
-      '<p class="cycleSmall">'+pick(ar,"الكتابة الحرة كانت للمقارنة الذاتية ولم تدخل في العدد. لا تُقاس فاعلية التدريب أو الاحتفاظ طويل المدى في هذه المعاينة. يمكنك الآن معاينة الجلسة الأولى، لكن البرنامج الجامعي ما زال غير معتمد للطلاب.","Free-text comparisons were not scored. This preview does not measure learning gains or long-term retention. You can preview the first session; the academic pilot is not yet approved for students.")+'</p>'+
+      '<p class="cycleSmall">'+pick(ar,"الكتابة الحرة كانت للمقارنة الذاتية ولم تدخل في العدد. يمكنك الآن معاينة الجلسة الأولى. نتائج الديمو تدريبية، ولا تُضاف إلى حساب الطالب أو تُعد درجات جامعية معتمدة.","Free-text comparisons were not scored. Preview the first session next. Demo results are for practice; they do not enter student accounts or count as certified university marks.")+'</p>'+
       '<div class="demoActions"><a class="btn primary" id="cycleFirstStage" href="'+(ar?"showcase-level1.html":"showcase-level1-en.html")+'">'+pick(ar,"ابدأ معاينة المرحلة الأولى","Preview stage one")+'</a>'+
       '<button type="button" class="btn secondary" id="cycleAgain">'+pick(ar,"أعد دورة التدريب","Repeat practice")+'</button>'+backButton()+'</div>');
     document.getElementById("cycleAgain").onclick=function(){pos=0;choiceScores=[];intro();};

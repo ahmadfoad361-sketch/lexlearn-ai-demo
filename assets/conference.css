@@ -558,3 +558,16 @@ html[dir=rtl] .roadmap{padding-inline-start:68px;padding-inline-end:0}
  .contactFallback .contactButtons>.button{grid-column:1;width:100%}
  .contactFallback .contactButtons>.shareIcon{grid-row:1;grid-column:2;width:45px;height:45px}
 }
+
+/* Commercial context and an actionable contact route for a conference visitor. */
+.businessModel{margin:28px 0 32px;padding:24px;border:1px solid var(--line);border-radius:18px;background:#fffdfb}
+.businessModel>h3{font-size:14px;letter-spacing:.03em;color:var(--burgundy);margin:0 0 18px}
+.businessCards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px}
+.businessCards article{min-width:0}.businessCards h4{font-size:17px;margin:0 0 10px;line-height:1.6}
+.businessCards p,.businessNote{font-size:14px;line-height:1.85;color:var(--sub);margin:0}
+.businessNote{margin-top:18px;padding-top:14px;border-top:1px solid var(--line);font-size:12px}
+#leadForm [hidden]{display:none!important}
+#leadForm[data-mode="unavailable"]{padding:18px;margin-bottom:16px}
+#leadForm[data-mode="unavailable"] .leadStatus{margin:0}
+#leadForm[data-mode="unavailable"]+.contactFallback #waBusiness{background:var(--navy);color:white;border-color:var(--navy)}
+@media(max-width:700px){.businessModel{padding:20px}.businessCards{grid-template-columns:minmax(0,1fr);gap:20px}.businessCards article+article{padding-top:16px;border-top:1px solid var(--line)}}

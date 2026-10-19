@@ -44,7 +44,7 @@ for(const page of pages){
  const full=path.join(out,page);let html=fs.readFileSync(full,"utf8");
  const stamp='<footer id="lexBuild" hidden aria-hidden="true">LexLearn build '+buildId+'</footer>';
  html=html.replace("</body>",stamp+"</body>");
- html=html.replace(/(assets\/(?:program|program-en|student|student-en|student-login|student-login-en|cloud-data|official-diagnostic|server-diagnostic|official-level-one|student-practice|student-path|student-demo-guard|showcase|showcase-en|showcase-learning-cycle)\.js)(?:\?v=[^"']*)?/g,"$1?v="+buildId);
+ html=html.replace(/(assets\/[a-z0-9-]+\.(?:js|css))(?:\?v=[^"']*)?/g,"$1?v="+buildId);
  fs.writeFileSync(full,html);
 }
 

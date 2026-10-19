@@ -60,7 +60,7 @@ for(const lang of ["ar","en"]){
         els.cycleAnswer.value="المعلومة القانونية مع شرح الشرط والنتيجة. Reasoned comparison.";
         els.cycleCompare.onclick();
         assert(els.cycleFeedback.innerHTML.includes(asHtml(tasks[i].comparison)));
-        assert(els.cycleFeedback.innerHTML.includes(lang==="en"?"No automated semantic grading":"لم تُجرَ مقارنة دلالية"));
+        assert(els.cycleFeedback.innerHTML.includes(lang==="en"?"has not received an automated score":"لم يُمنح نصك درجة آلية"));
       }else{
         const right=els._choices.find(x=>x.getAttribute("data-cycle-choice")==="0");
         assert(right,"Expected an objective correct alternative");
@@ -81,7 +81,7 @@ for(const lang of ["ar","en"]){
     assert(Number.isFinite(complete.at),"completion timestamp required");
     assert(markup.includes((lang==="ar"?"showcase-level1.html":"showcase-level1-en.html")),
       "Stage-one CTA must not loop back to an unsigned official programme");
-    assert(markup.includes(lang==="ar"?"البرنامج الجامعي ما زال غير معتمد":"not yet approved for students"),
+    assert(markup.includes(lang==="ar"?"درجات جامعية معتمدة":"certified university marks"),
       "Academic pilot release status must be explicit");
     els.cycleBack.onclick();
     els.cycleAgain.onclick();

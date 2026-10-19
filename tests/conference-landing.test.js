@@ -65,9 +65,9 @@ const nav=read("assets/lexlearn-navigation.js"),navCss=read("assets/lexlearn-nav
 for(const key of ["toStudent","toUniversity","toInvestor","Opening the student demo","جاري عرض خطة التعاون الجامعي","lexlearnBack","lexlearnTransition"])assert.ok(nav.includes(key),"visitor navigation missing "+key);
 assert.ok(nav.includes('!\\/go')||nav.includes('go\\/?'),"back navigation must avoid /go redirect loops");
 assert.ok(navCss.includes("prefers-reduced-motion")&&navCss.includes("safe-area-inset-top"),"accessibility and iPhone back controls required");
-assert.ok(js.includes('flow4:"نقوّي المهارة الأضعف بالمهارة الأقوى"'),"flow must explicitly build on the stronger skill in Arabic");
-assert.ok(js.includes('flow4:"Strengthen the weaker skill using the stronger one"'),"flow must explicitly build on the stronger skill in English");
-assert.ok(html.includes('data-t="flow4">Strengthen the weaker skill using the stronger one'),"English default must match dynamic copy");
+assert.ok(js.includes('flow4:"نتدرّب انطلاقًا من نقاط قوتك"'),"flow must explicitly build on the stronger skill in Arabic");
+assert.ok(js.includes('flow4:"Build the next skill from a strength"'),"flow must explicitly build on the stronger skill in English");
+assert.ok(html.includes('data-t="flow4">Build the next skill from a strength'),"English default must match dynamic copy");
 for(const page of ["showcase.html","showcase-en.html","program.html","program-en.html","student.html","student-en.html"]) {
   assert.ok(read(page).includes("lexlearn-navigation.js"),"back arrow missing in "+page);
 }
@@ -89,13 +89,17 @@ const translatable=["heroTitle","skill1","skill2","skill3","skill4","skill5","fo
 const language={lang:"en",dir:"ltr"},doc={
  documentElement:language,title:"",
  getElementById:node,
- querySelectorAll(selector){return selector==="[data-t]"?translatable:[];}
+ querySelectorAll(selector){if(selector.startsWith("#leadForm .leadFields"))return [node("leadFields"),node("leadActions"),node("leadPrivacy")];return selector==="[data-t]"?translatable:[];}
 };
 const store=new Map();
 vm.runInNewContext(js,{document:doc,window:{},localStorage:{
  getItem:key=>store.get(key)||null,setItem:(key,val)=>store.set(key,val)
 },encodeURIComponent,console});
 assert.equal(language.lang,"en");
+assert.equal(node("leadFields").hidden,true,"unavailable secure intake must not invite users to fill an unusable form");
+assert.equal(node("leadActions").hidden,true,"hide the unavailable submit CTA while preserving working contact links");
+assert.equal(node("leadSubmit").disabled,true,"the hidden submit action must remain blocked");
+assert.ok(html.includes('class="businessModel"')&&html.includes('data-t="businessNote"'),"commercial approach must be explicitly labelled proposed");
 assert.equal(translatable.find(x=>x.key==="skill5").textContent,"Exam answer structure");
 node("langAR").handlers.click();
 assert.equal(language.lang,"ar");assert.equal(language.dir,"rtl");
@@ -342,7 +346,7 @@ assert.ok(html.includes('data-t="eyebrow">LEXLEARN · LEGAL LEARNING FOR STUDENT
 assert.ok(html.includes("Assess your legal learning skills. Build on your strengths."),"default English title must immediately describe what LexLearn does");
 assert.ok(js.includes('heroTitle:"قيّم مهاراتك القانونية، وطوّرها انطلاقًا من نقاط قوتك."'),"Arabic heading should explain student benefit in five seconds");
 assert.ok(js.includes('eyebrow:"ليكس ليرن · منصة تعليمية لطلاب القانون"'),"Arabic eyebrow must identify education and avoid Latin punctuation");
-assert.ok(js.includes('heroSubBefore:"يشخّص",heroSub:"نقاط قوتك في التفكير القانوني، ويبني مسارك لتقوية المهارات الأضعف."'),"Arabic subhead must use Modern Standard Arabic with brand isolated");
+assert.ok(js.includes('heroSubBefore:"يشخّص",heroSub:"نقاط قوتك في تعلّم القانون، ويقترح تدريبًا يساعدك على التقدّم خطوة خطوة."'),"Arabic subhead must use Modern Standard Arabic with brand isolated");
 assert.equal((html.match(/class="pathNo"/g)||[]).length,3,"three numbered visitor choices required");
 assert.ok(!html.includes('data-t="visitor"')&&!js.includes('visitor:"زائر"')&&!js.includes('visitor:"VISITOR"'),"remove redundant visitor label");
 assert.equal((html.match(/class="pathGlyph" aria-hidden="true"><svg viewBox=/g)||[]).length,3,"replace each visitor emoji with a branded SVG (carousel arrows are separate)");
@@ -383,8 +387,8 @@ assert.doesNotThrow(()=>new vm.Script(scEn,{filename:"assets/showcase-en.js"}),"
 for(const code of [sc,scEn]){
  assert.ok(code.includes('class="demoGhost demoBack" href="conference.html#paths"'),"single header Back instead of Home+floating Back");
  assert.ok(!code.includes("نفهم طريقة تفكيرك، ونبني طريقك."),"remove tagline beneath demo logo");
- assert.ok(code.includes("اقرأ قاعدة قصيرة، أجب عن 6 أسئلة، وتعرّف على نقاط قوتك."),"short intro must be exact");
- assert.ok(code.includes("إجابتك مجهولة الهوية وتُستخدم لتحسين التجربة فقط."),"privacy line immediately below Start");
+ assert.ok(code.includes("اقرأ قاعدة قصيرة، ثم أجب عن 6 أسئلة واكتب ما تتذكره. بعدها جرّب 4 أنشطة تدريبية تناسب نتيجة محاولتك."),"short intro must be exact");
+ assert.ok(code.includes("لا تحتاج إلى كتابة اسمك لتجربة الديمو."),"privacy line immediately below Start");
  assert.ok(code.includes('class="btn primary demoStart"'),"Start CTA enlarged");
 }
 assert.ok(nav.includes('showcase(?:-en)?'),"public demo must skip generic floating Back injection");
