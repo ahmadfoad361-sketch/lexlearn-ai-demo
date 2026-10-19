@@ -3,6 +3,7 @@
   "use strict";
   var doc = document, loc = window.location;
   var isConference = /(?:^|\/)conference\.html$/.test(loc.pathname);
+  var isStudentPath = /(?:^|\/)student-path\.html$/.test(loc.pathname);
   // Public demo renders its own responsive Back control inside its header.
   if (/(?:^|\/)showcase(?:-en)?\.html$/.test(loc.pathname)) return;
   var isArabic = function () { return doc.documentElement.lang === "ar"; };
@@ -12,7 +13,7 @@
   back.id = "lexlearnBack";
   back.setAttribute("aria-label", "Back");
   back.innerHTML = '<span class="ll-back-icon" aria-hidden="true">←</span><span class="ll-back-label">Back</span>';
-  var toolbar = isConference ? doc.querySelector(".site-header .top-actions") : null;
+  var toolbar = isConference ? doc.querySelector(".site-header .top-actions") : (isStudentPath ? doc.querySelector("main > header") : null);
   if (toolbar) {
     back.classList.add("ll-back-inline");
     toolbar.insertBefore(back, toolbar.firstChild);
@@ -73,7 +74,7 @@
       return;
     }
     if (internalHistory()) { window.history.back(); return; }
-    loc.assign("conference.html");
+    loc.assign(isStudentPath ? (isArabic() ? "student.html" : "student-en.html") : "conference.html");
   });
   window.addEventListener("pageshow", closeOverlay);
 
