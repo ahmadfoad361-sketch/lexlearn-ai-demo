@@ -54,7 +54,7 @@ function make(uid,lang,data,opts={}){
   await env.nodes.serverNext.onclick();
   assert.equal(env.redirects.length,0,"show verified result before any training navigation");
   assert.match(env.main.html,/diagnosticReport/,"student sees persisted result report");
-  assert.match(env.main.html,/program/,"result offers adaptive level CTA");
+  assert.match(env.main.html,/student-path\.html/,"result opens the server-side adaptive learning journey");
   assert.equal(env.calls.filter(c=>c==="draft").length,6);
   assert.deepEqual(env.calls.slice(-3),["complete","reviewDiagnostic","status"]);
   const returning=make(uid,lang,data);

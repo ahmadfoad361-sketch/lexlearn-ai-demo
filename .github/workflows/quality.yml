@@ -33,6 +33,7 @@ jobs:
           node --check assets/official-level-one.js
           node --check assets/server-diagnostic.js
           node --check assets/student-practice.js
+          node --check assets/student-path.js
           node --check assets/official-diagnostic.js
           node --check assets/program-en.js
           node --check assets/student-en.js
@@ -69,6 +70,7 @@ jobs:
           node tests/student-gate-source.test.js
           node tests/student-provisional-flow.test.js
           node tests/founder-pilot-release.test.js
+          node tests/student-full-path.test.js
           node tests/official-level-one-ui.test.js
       - name: Production boundary tests
         run: node tests/production-boundaries.test.js
@@ -201,3 +203,41 @@ jobs:
           psql -v ON_ERROR_STOP=1 -f tests/sql/founder-pilot-fixture.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261019_004_founder_authorized_pilot_release.sql
           psql -v ON_ERROR_STOP=1 -f tests/sql/founder-pilot-acceptance.sql
+
+  full-adaptive-postgres:
+    name: All thirty adaptive stages and confidential lesson feedback, PostgreSQL
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: lexlearn_full_path_ci
+          POSTGRES_DB: lexlearn_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres -d lexlearn_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: 5432
+      PGUSER: postgres
+      PGPASSWORD: lexlearn_full_path_ci
+      PGDATABASE: lexlearn_test
+    steps:
+      - uses: actions/checkout@v4
+      - name: Ensure psql
+        run: command -v psql || (sudo apt-get update -qq && sudo apt-get install -y postgresql-client)
+      - name: Check 30 authenticated adaptive sessions and stage gate in PostgreSQL
+        run: |
+          psql -v ON_ERROR_STOP=1 -f tests/sql/lifecycle-bootstrap.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261019_001_student_diagnostic_lifecycle.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261019_002_official_level_one.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261019_003_internal_provisional_essay_grading.sql
+          psql -v ON_ERROR_STOP=1 -f tests/sql/founder-pilot-fixture.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261019_004_founder_authorized_pilot_release.sql
+          psql -v ON_ERROR_STOP=1 -f tests/sql/full-adaptive-fixture.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261019_005_full_adaptive_internal_pilot.sql
+          psql -v ON_ERROR_STOP=1 -f tests/sql/full-adaptive-acceptance.sql

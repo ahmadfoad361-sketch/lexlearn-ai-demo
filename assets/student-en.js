@@ -92,7 +92,13 @@ function passedWeek(n){
   return !!(r&&(r.status==="mastered"||r.status==="completed"||r.status==="completed_with_support"));
 }
 function weekStatus(n){
-  if(session.cloud&&(n!==1||!student.academicLevelOneAllowed))return ["locked","Not released for this student","lock"];
+  if(session.cloud){
+    if(!result||!student.trainingUnlocked)return ["locked","Diagnostic required","lock"];
+    var current=Math.ceil(student.trainingUnlocked/5);
+    if(n<current)return ["done","Practice completed","check"];
+    if(n===current)return ["current","Available in adaptive path","play"];
+    return ["locked","Complete preceding sessions","lock"];
+  }
   var r=course.weekResults[n];
   if(!result)return ["locked",n===1?"Available after the diagnostic":"Locked until the previous stage is passed","lock"];
   if(r&&r.status==="repair")return ["need","Needs reinforcement","repeat"];
@@ -275,7 +281,7 @@ function render(){
     var st=weekStatus(n);
     var open=st[0]==="current"||st[0]==="need";
     var tag=open?"a":"div";
-    var href=open?" href='program-en.html?"+demoPrefix+"country="+country+"&subject=rights&start=1'":"";
+    var href=open?" href='student-path.html?lang=en&session="+Math.max(1,(n-1)*5+1)+"'":"";
     return "<"+tag+href+" class='week "+st[0]+"'>"+
       "<span class='weekIcon'>"+icon(st[2])+"</span>"+
       "<b>Week "+n+"</b>"+
@@ -285,10 +291,10 @@ function render(){
   }).join("");
 
   var actionPrimary=course.completedProgram
-    ? "<a class='actionCard primary completeAction' href='program-en.html?"+demoPrefix+"country="+country+"&subject=rights&start=1'><span class='actionIcon'>🏆</span><span class='actionCopy'><b>View your final achievement</b><small>You have completed the full program — open the final achievement screen.</small></span></a>"
+    ? "<a class='actionCard primary completeAction' href='student-path.html?lang=en'><span class='actionIcon'>🏆</span><span class='actionCopy'><b>View your final achievement</b><small>You have completed the full program — open the final achievement screen.</small></span></a>"
     : !result
       ? "<a class='actionCard primary' href='"+"diagnostic.html?lang=en" + "'><span class='actionIcon'>"+icon("test")+"</span><span class='actionCopy'><b>Start the diagnostic</b><small>Opens the diagnostic directly.</small></span></a>"
-      : "<a class='actionCard primary' href='program-en.html?"+demoPrefix+"country="+country+"&subject=rights&start=1'><span class='actionIcon'>"+icon("play")+"</span><span class='actionCopy'><b>Continue today's session</b><small>Opens the active training session directly.</small></span></a>";
+      : "<a class='actionCard primary' href='student-path.html?lang=en'><span class='actionIcon'>"+icon("play")+"</span><span class='actionCopy'><b>Continue today's session</b><small>Opens the active training session directly.</small></span></a>";
 
   var insight=studentInsight();
   var learningProfile=result
@@ -326,7 +332,7 @@ function render(){
         "<div class='heroSide studentHeroSide'><div class='heroVisual'>"+icon(course.completedProgram?"trophy":"compass")+"</div><h3>"+(course.completedProgram?"Well done! You completed the program":"Ready for the next session?")+"</h3><p>"+(course.completedProgram?"You can view your final achievement at any time.":(result?"One short session whose content changes with your performance.":"Start the short diagnostic so we can determine the best starting point."))+"</p></div>"+
       "</section>"+
       "<section class='actionGrid singleAction'>"+actionPrimary+"</section>"+
-      (result?"<p style='margin-top:1rem'><a class='topbtn' href='diagnostic.html?lang=en'>View saved diagnostic results and skill scores</a></p>":"")+
+      (result?"<p style='margin-top:1rem'><a class='topbtn' href='student-path.html?lang=en'>Open all 30 adaptive sessions</a> · <a class='topbtn' href='diagnostic.html?lang=en'>View saved diagnostic results and skill scores</a></p>":"")+
       "<div class='sectionHead'><div><h2>Your program</h2><p>Each stage unlocks after you complete the previous one.</p></div><span class='progressTag'>"+course.completed.length+" / 30</span></div>"+
       "<section class='weekGrid'>"+weeks+"</section>"+
       "<div class='sectionHead'><div><h2>Your level at a glance</h2><p>3 Simple indicators show where you currently stand.</p></div></div>"+
@@ -385,6 +391,18 @@ async function boot(){
         if(student.academicLevelOneAllowed&&officialLevel.saved)student.levelOneSavedCount=officialLevel.saved.length;
       }
       student.diagnosticStatus=status.status;
+       student.trainingUnlocked=0;
+       student.trainingCompleted=0;
+       if(result){
+         var training=await LEX_CLOUD.studentLifecycleRpc("trainingOverview",{courseId:"qa-qu-lawc101-rights"});
+         if(training&&training.allowed){
+           student.trainingUnlocked=training.unlocked;
+           student.trainingCompleted=training.completed_count;
+           course.session=Math.max(1,training.unlocked);
+           course.completed=Array.from({length:training.completed_count},function(_,i){return i+1;});
+           course.completedProgram=!!training.program_completed;
+         }
+       }
 
     }catch(e){
       APP.innerHTML="Unable to verify your session. Please <a href='student-login-en.html'>sign in again</a>.";
