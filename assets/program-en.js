@@ -306,9 +306,13 @@ function renderTask(t,assessment){
 }
 function nextTask(){if(state.task<state.queue.length-1){state.task++;render();}else{if(state.view==="assessment")finishAssessment();else finishTraining();}}
 function train(){
-  if(!DEMO&&STUDENT_SESSION&&STUDENT_SESSION.cloud&&!(state.levelAccess&&state.levelAccess.allowed&&state.course.session===1&&window.LEX_PILOT&&LEX_PILOT.isReleased(state.course.session))){
+  if(!DEMO&&STUDENT_SESSION&&STUDENT_SESSION.cloud&&!(state.levelAccess&&state.levelAccess.allowed&&state.course.session===1&&window.LEX_OFFICIAL_LEVEL_ONE)){
     var p=state.diag&&state.diag.trainingPlan;
     chrome('<section class="stage"><div class="taskCard"><span class="kicker">Session '+state.course.session+' · academic approval pending</span><h2>Your first-level adaptive plan is saved</h2><p>'+esc(p?p.reason_en:"Your diagnostic was saved.")+'</p><p>Proposed task order: '+esc(p?p.firstTasks.join(" → "):"Foundation and review")+'</p><div class="notice">Academic items are awaiting legal and university review; no unapproved material is available and no fictional progress is recorded.</div><a class="secondary" href="student-en.html">Student Portal</a></div></section>');return;
+  }
+  if(!DEMO&&STUDENT_SESSION&&STUDENT_SESSION.cloud){
+    chrome('<section class="stage"><div class="taskCard"><h2>Student account • Level One</h2><div id="officialLevelMount" role="region"></div></div></section>');
+    return LEX_OFFICIAL_LEVEL_ONE.mount(document.getElementById("officialLevelMount"),{lang:"en",cloud:LEX_CLOUD,courseId:COURSE_DB_ID});
   }
   if(window.LEX_PILOT&&LEX_PILOT.isReleased(state.course.session)){LEX_PILOT.mount(APP,state.course.session,'en',{course:state.course,onSave:save,onComplete:function(pilot){state.answers=[1,2,3,4,5].map(function(step){var a=pilot.attempts.filter(function(x){return x.step===step;}).slice(-1)[0];return {dimension:step===4?'recall':'application',score:a&&a.score,correct:!!(a&&a.score===1)};});finishTraining();},onExit:function(){state.view='home';render();}});return;}var t=state.queue[state.task]||buildQueue()[0];renderTask(t,false);}
 function finishTraining(){
@@ -353,7 +357,8 @@ function completion(){
  var r=state.course.weekResults[6]||{},score=r.score==null?"—":r.score+"%",date=state.course.completedAt?new Date(state.course.completedAt).toLocaleDateString("en-GB"):"Today";
  chrome('<section class="stage finalStage"><div class="finalCard professionalFinal"><div class="finalSeal">§</div><span class="kicker">Program completed</span><h1>You completed the LexLearn Theory of Rights program</h1><p>You completed all six weeks and the final assessment.</p><div class="finalStats"><div><span>Weeks</span><b>6 / 6</b></div><div><span>Sessions</span><b>30 / 30</b></div><div><span>Final assessment</span><b>'+score+'</b></div></div><div class="finalRibbon">Academic learning milestone • '+date+'</div><div class="choiceRow"><a class="primary finalLink" href="student-en.html">Return to Student Portal</a></div></div></section>');
 }
-function render(){if(state.view==="stagePreviewComplete")return stagePreviewComplete();if(state.view==="home")return home();if(state.view==="train")return train();if(state.view==="sessionResult")return sessionResult();if(state.view==="assessment")return assessment();if(state.view==="assessmentResult")return assessmentResult();if(state.view==="completion")return completion();}
+function render(){
+ if(!DEMO&&STUDENT_SESSION&&STUDENT_SESSION.cloud&&state.diag)return train();if(state.view==="stagePreviewComplete")return stagePreviewComplete();if(state.view==="home")return home();if(state.view==="train")return train();if(state.view==="sessionResult")return sessionResult();if(state.view==="assessment")return assessment();if(state.view==="assessmentResult")return assessmentResult();if(state.view==="completion")return completion();}
 
 async function boot(){
  if(!DEMO){
