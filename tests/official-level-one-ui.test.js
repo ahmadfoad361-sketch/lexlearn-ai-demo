@@ -19,7 +19,7 @@ function run(uid,lang,storage,opts={}){
     prompt_ar:"اشرح هذه الحالة وفق القانون القطري، مع بيان القاعدة والتطبيق والنتيجة.",
     prompt_en:"Explain this Qatari law question, applying its conditions and giving a conclusion."}));
   if(action==="submitLevelOne"){
-   if(!state.saved.some(x=>x.item_id===p.itemId))state.saved.push({item_id:p.itemId,answer_text:p.answer,review_status:"pending_human_review"});
+   if(!state.saved.some(x=>x.item_id===p.itemId))state.saved.push({item_id:p.itemId,answer_text:p.answer,review_status:"pending_human_review",evaluation:{status:"preliminary_internal",provisional_percent:74,criteria_met:["live_birth"],criteria_missing:["prenatal_conditional_rights"],needs_human_review:true}});
   }
   return {allowed:!opts.locked,reason:opts.locked?"academic_content_not_released":undefined,level:1,
    plan_mode:"recall-led",reason_ar:"الفهم يحتاج تدريبًا",reason_en:"Understanding practice first",
@@ -41,11 +41,13 @@ function run(uid,lang,storage,opts={}){
   env.nodes().officialEssayAnswer.value="Four elements of the relevant legal rule.";
   await env.nodes().officialSaveAnswer.onclick();
   assert.ok(env.host.html.includes("2 / 3"),"second task after durable save");
+  assert.match(env.host.html,/74%/,"the student must see the internal free-answer percentage after save");
   assert.equal(storage["student-"+lang].saved.length,1);
   // Reload/another language: current task must come from authoritative remote state.
   const fresh=run("student-"+lang,lang==="en"?"ar":"en",storage);
   await fresh.open();
   assert.ok(fresh.host.html.includes("2 / 3"),"re-login must resume without repeating saved answer");
+  assert.match(fresh.host.html,/74%/,"provisional percentages must be restored from server after re-login");
   for(let j=2;j<=3;j++){
    fresh.nodes().officialEssayAnswer.value="Legal elements, issue, rule, application and conclusion.";
    await fresh.nodes().officialSaveAnswer.onclick();
