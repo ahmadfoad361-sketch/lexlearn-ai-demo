@@ -23,6 +23,18 @@ jobs:
         with:
           node-version: "20"
       - uses: supabase/setup-cli@v3
+      - name: Normalize legacy filename versions only inside disposable CI checkout
+        run: |
+          # The historical YYYYMMDD_001 filenames collide in Supabase CLI's
+          # version parser. Rename only ephemeral CI working copies, never
+          # rewrite hosted production's migration history.
+          for file in supabase/migrations/????????_???_*.sql; do
+            [ -f "$file" ] || continue
+            base="${file##*/}"
+            new="${base:0:8}${base:9:3}000_${base:13}"
+            mv "$file" "supabase/migrations/$new"
+          done
+          ls supabase/migrations
       - name: Start isolated local Supabase Auth, REST, Postgres (NEVER production)
         run: |
           supabase --version
