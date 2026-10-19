@@ -20,6 +20,8 @@ create table public.content_items(id text primary key,course_id text references 
  prompt_ar text not null default '', rubric_json jsonb, options_json jsonb, answer_key_json jsonb,
  source_ids text[] not null default '{}');
 create table public.attempts(id uuid primary key default gen_random_uuid());
+-- Fixture metadata visibility; diagnostic rows have independent RLS rules.
+grant select on public.profiles to authenticated;
 create or replace function public.is_active_user() returns boolean language sql stable security definer as $$
  select exists(select 1 from public.profiles where id=auth.uid() and active);
 $$;
