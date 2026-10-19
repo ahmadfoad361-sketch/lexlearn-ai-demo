@@ -101,6 +101,7 @@ assert.equal(node("leadActions").hidden,true,"hide the unavailable submit CTA wh
 assert.equal(node("leadSubmit").disabled,true,"the hidden submit action must remain blocked");
 assert.ok(html.includes('class="businessModel"')&&html.includes('data-t="businessNote"'),"commercial approach must be explicitly labelled proposed");
 assert.equal(translatable.find(x=>x.key==="skill5").textContent,"Exam answer structure");
+assert.match(node("leadStatus").textContent,/WhatsApp/,"language rendering must retain the current unavailable-contact state");
 node("langAR").handlers.click();
 assert.equal(language.lang,"ar");assert.equal(language.dir,"rtl");
 assert.equal(translatable.find(x=>x.key==="pilotLexLearnRole").textContent,"تتولى LexLearn متابعة التجربة وتقييم نتائجها.");

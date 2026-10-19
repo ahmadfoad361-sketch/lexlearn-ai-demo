@@ -188,6 +188,9 @@ function setLang(next){
  if(leadPrivacyLink)leadPrivacyLink.href=privacy.href;
  const leadSaveButton=document.getElementById("leadSubmit");
  if(leadSaveButton)leadSaveButton.textContent=t.leadSaveSubmit;
+ const availability=document.getElementById("leadStatus");
+ if(availability&&leadMode==="unavailable")availability.textContent=t.leadUnavailable;
+ else if(availability&&leadMode==="checking")availability.textContent=t.leadChecking;
  const leadNote=typeof document.querySelector==="function"?document.querySelector(".leadForm .leadPrivacy"):null;
  if(leadNote)leadNote.textContent=t.leadLivePrivacy;
  deck.removeAttribute("download");
