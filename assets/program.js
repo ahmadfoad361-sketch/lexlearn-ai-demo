@@ -2,7 +2,7 @@
 "use strict";
 var APP=document.getElementById("programApp");
 var qs=new URLSearchParams(location.search);
-var SHOWCASE_PREVIEW=/\\/showcase-level1(?:-en)?\\.html$/.test(location.pathname||"");
+var SHOWCASE_PREVIEW=/\/showcase-level1(?:-en)?\.html$/.test(location.pathname||"");
 var TEST_DEMO=!!window.LEX_TEST_ALLOW_DEMO_PARAMS&&qs.get("demo")==="1";
 var AUTO_START=SHOWCASE_PREVIEW||(TEST_DEMO&&qs.get("start")==="1");
 var STUDENT_SESSION=SHOWCASE_PREVIEW?null:(function(){try{return JSON.parse(localStorage.getItem("lexlearn_student_session"))||null;}catch(e){return null;}})();
