@@ -33,6 +33,8 @@ jobs:
           node --check assets/official-diagnostic.js
           node --check assets/program-en.js
           node --check assets/student-en.js
+          node --check assets/server-diagnostic.js
+          node --check assets/program-en.js
           node --check assets/program.js
           node --check assets/cloud-data.js
           node --check assets/student-login.js
@@ -64,3 +66,35 @@ jobs:
         run: node tests/production-boundaries.test.js
       - name: Build public artifact
         run: node scripts/build-public.js
+
+  lifecycle-postgres:
+    name: Server diagnostic PostgreSQL + RLS tests
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: lexlearn_ci_only
+          POSTGRES_DB: lexlearn_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres -d lexlearn_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: 5432
+      PGUSER: postgres
+      PGPASSWORD: lexlearn_ci_only
+      PGDATABASE: lexlearn_test
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install PostgreSQL client
+        run: command -v psql || (sudo apt-get update -qq && sudo apt-get install -y postgresql-client)
+      - name: Boot isolated schema and verify proposed migration
+        run: |
+          psql -v ON_ERROR_STOP=1 -f tests/sql/lifecycle-bootstrap.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261019_001_student_diagnostic_lifecycle.sql
+          psql -v ON_ERROR_STOP=1 -f tests/sql/lifecycle-scenarios.sql
