@@ -92,7 +92,7 @@ function passedWeek(n){
   return !!(r&&(r.status==="mastered"||r.status==="completed"||r.status==="completed_with_support"));
 }
 function weekStatus(n){
-  if(session.cloud&&!student.academicLevelOneAllowed)return ["locked","Awaiting academic release","lock"];
+  if(session.cloud&&(n!==1||!student.academicLevelOneAllowed))return ["locked","Not released for this student","lock"];
   var r=course.weekResults[n];
   if(!result)return ["locked",n===1?"Available after the diagnostic":"Locked until the previous stage is passed","lock"];
   if(r&&r.status==="repair")return ["need","Needs reinforcement","repeat"];
@@ -287,7 +287,7 @@ function render(){
   var actionPrimary=course.completedProgram
     ? "<a class='actionCard primary completeAction' href='program-en.html?"+demoPrefix+"country="+country+"&subject=rights&start=1'><span class='actionIcon'>🏆</span><span class='actionCopy'><b>View your final achievement</b><small>You have completed the full program — open the final achievement screen.</small></span></a>"
     : !result
-      ? "<a class='actionCard primary' href='"+(session.cloud?"diagnostic.html?lang=en":"showcase-en.html?country="+country+"&subject=rights") + "'><span class='actionIcon'>"+icon("test")+"</span><span class='actionCopy'><b>Start the diagnostic</b><small>Opens the diagnostic directly.</small></span></a>"
+      ? "<a class='actionCard primary' href='"+"diagnostic.html?lang=en" + "'><span class='actionIcon'>"+icon("test")+"</span><span class='actionCopy'><b>Start the diagnostic</b><small>Opens the diagnostic directly.</small></span></a>"
       : "<a class='actionCard primary' href='program-en.html?"+demoPrefix+"country="+country+"&subject=rights&start=1'><span class='actionIcon'>"+icon("play")+"</span><span class='actionCopy'><b>Continue today's session</b><small>Opens the active training session directly.</small></span></a>";
 
   var insight=studentInsight();
