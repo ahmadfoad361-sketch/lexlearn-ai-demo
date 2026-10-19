@@ -12,6 +12,11 @@ function url(n){return "student-path.html?lang="+lang()+(n?"&session="+n:"");}
 function noHtmlScore(value){return typeof value==="number"&&isFinite(value)?Math.round(Math.max(0,Math.min(100,value)))+"%":t("غير قابل للتقدير","Not reliably measurable");}
 function weakName(s){return {recall:t("الاسترجاع","Recall"),understanding:t("الفهم","Understanding"),exam_execution:t("بناء الإجابة","Exam answer structure")}[s]||t("التأسيس","Foundations");}
 function byId(a,id){return (a||[]).find(function(x){return x.item_id===id;});}
+function previousAnswerTitle(item,task){
+  var dimension=(task&&task.dimension)||(item&&item.dimension);
+  var localizedTitle=task&&(lang()==="en"?task.title_en:task.title_ar);
+  return t("إجابتك السابقة — ","Your previous answer — ")+weakName(dimension)+(localizedTitle?" · "+String(localizedTitle):"");
+}
 function feedback(item){
  var ev=item&&item.evaluation||{},provisional=noHtmlScore(ev.provisional_percent);
  return "<div class='feedback' role='status'><b>"+t("تغطية مبدئية لعناصر القاعدة: ","Provisional legal-rule coverage: ")+esc(provisional)+"</b>"+
@@ -62,7 +67,8 @@ async function boot(){
    var why="<p>"+t("الأولوية الحالية حسب التشخيص والتدريب المحفوظ: ","Current priority from diagnostic and saved performance: ")+"<b>"+esc(weakName(data.weakest))+"</b>. "+
     t("لذلك يختلف ترتيب الأسئلة بين الطلاب، ويعاد حسابه في الجلسات التالية.","Task order changes with each learner's measured practice; it is recalculated for later sessions.")+"</p>";
    var completedFeedback=saved.map(function(v){
-    return "<details class='past'><summary>"+t("إجابتك السابقة: ","Saved answer: ")+esc(v.item_id)+"</summary><p style='white-space:pre-wrap'>"+esc(v.answer_text)+"</p>"+feedback(v)+"</details>";
+    var task=(data.tasks||[]).find(function(q){return q.id===v.item_id;});
+    return "<details class='past'><summary>"+esc(previousAnswerTitle(v,task))+"</summary><p style='white-space:pre-wrap'>"+esc(v.answer_text)+"</p>"+feedback(v)+"</details>";
    }).join("");
    var main="<section class='stage'><h1>"+esc(name)+"</h1>"+why+
     "<p>"+t("أُرسلت ","Saved ")+saved.length+" / "+data.tasks.length+t(" إجابات على الخادم."," answers on the server.")+"</p>"+
@@ -106,6 +112,6 @@ async function boot(){
   await open(selected);
  }catch(e){reportError(e);}
 }
-root.LEX_STUDENT_PATH={mount:boot,noHtmlScore:noHtmlScore};
+root.LEX_STUDENT_PATH={mount:boot,noHtmlScore:noHtmlScore,previousAnswerTitle:previousAnswerTitle};
 if(typeof module!=="undefined"&&module.exports)module.exports=root.LEX_STUDENT_PATH;
 })(typeof window!=="undefined"?window:globalThis);
