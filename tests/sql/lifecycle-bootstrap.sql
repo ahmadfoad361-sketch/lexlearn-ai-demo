@@ -15,6 +15,7 @@ create table public.enrollments(user_id uuid references public.profiles(id),cour
 create table public.consent_records(user_id uuid references public.profiles(id),
  notice_version text,consent_type text,accepted boolean);
 create table public.content_items(id text primary key,course_id text references public.courses(id),
+ unit_id text,concept_id text,dimension text,item_type text,
  metadata jsonb not null default '{}'::jsonb, status text not null default 'legal_review',
  reviewed_at timestamptz, legal_reviewer uuid references public.profiles(id),learning_reviewer uuid references public.profiles(id),
  prompt_ar text not null default '', rubric_json jsonb, options_json jsonb, answer_key_json jsonb,
