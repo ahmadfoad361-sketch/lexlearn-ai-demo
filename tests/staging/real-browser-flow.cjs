@@ -90,10 +90,45 @@ const base="http://127.0.0.1:18765/";
   for(const rpc of essential){
    assert.ok(requests.some(r=>r.rpc===rpc&&r.status>=200&&r.status<300),"Missing successful API call "+rpc+" "+JSON.stringify(requests));
   }
+  milestone("return to student portal, never repeat completed diagnostic");
+  await page.goto(base+"student.html",{waitUntil:"domcontentloaded"});
+  await page.locator('a[href*="program.html"]').first().waitFor({timeout:14000});
+  const portalText=await page.locator("body").innerText();
+  assert.ok(!portalText.includes("ابدأ التقييم القصير، وبعده"),"returning student must not be treated as unassessed");
+  milestone("returning student directly visits diagnostic URL; should redirect to saved plan");
+  await page.goto(base+"diagnostic.html?lang=ar",{waitUntil:"domcontentloaded"});
+  await page.waitForURL(/\/program\.html/,{timeout:16000});
+  await page.locator("#officialEssayAnswer").waitFor({timeout:16000});
+  assert.match(await page.locator("body").innerText(),/تم حفظ 1 \/ 3/);
+  milestone("switch to English Level1 with identical saved progress");
+  await page.goto(base+"program-en.html?country=qa&subject=rights",{waitUntil:"domcontentloaded"});
+  await page.locator("#officialEssayAnswer").waitFor({timeout:16000});
+  assert.match(await page.locator("body").innerText(),/Saved 1 \/ 3/);
+  assert.match(await page.locator("body").innerText(),/Preliminary internal assessment/);
+  const stageSnapshot=await page.locator("body").innerText();
+  assert.ok(stageSnapshot.includes("Student:"),"English official student identity must be visible");
+  milestone("sign out and deny unauthenticated direct official level access");
+  await page.locator("#programLogout").click();
+  await page.waitForURL(/student-login-en\.html/,{timeout:16000});
+  await page.goto(base+"program-en.html?country=qa&subject=rights&start=1",{waitUntil:"domcontentloaded"});
+  await page.locator('a[href="student-login-en.html"]').waitFor({timeout:16000});
+  assert.equal(await page.locator("#officialEssayAnswer").count(),0,"URL flag must never unlock official level");
+  milestone("visitor public demo stays separate from student data");
+  const anonContext=await browser.newContext({viewport:{width:390,height:844},isMobile:true});
+  try{
+   const visitor=await anonContext.newPage();
+   await visitor.goto(base+"showcase.html?country=qa&subject=rights",{waitUntil:"domcontentloaded"});
+   await visitor.waitForFunction(()=>document.body.innerText.includes("تجربة عرض"),{timeout:16000});
+   assert.match(await visitor.locator("body").innerText(),/لا تُحفظ النتائج في حساب الطالب/);
+   await visitor.goto(base+"program.html?demo=1&start=1&preview=stage1",{waitUntil:"domcontentloaded"});
+   await visitor.locator('a[href="student-login.html"]').waitFor({timeout:16000});
+   assert.equal(await visitor.locator("#officialEssayAnswer").count(),0,"public preview params cannot access student's course");
+  }finally{await anonContext.close();}
   assert.equal(jsErrors.length,0,"No browser runtime errors: "+jsErrors.join(" | "));
-  await page.screenshot({path:dir+"/stage-1-after-reload.png",fullPage:true});
+  await page.goto(base+"student-login-en.html",{waitUntil:"domcontentloaded"});
+  await page.screenshot({path:dir+"/after-logout.png",fullPage:true});
   fs.writeFileSync(dir+"/network-proof.json",JSON.stringify({case:"LOCAL STAGING ONLY",commit:process.env.GITHUB_SHA?.slice(0,12),requests},null,2));
-  console.log("PASS Chrome real-local authenticated LexLearn: login -> six questions -> server 2xx -> adapted Level1 -> preliminary grade -> reload, no loop. Network evidence stored.");
+  console.log("PASS Chrome real-local authenticated LexLearn: new+returning student, six saved questions, adaptive Level1 preliminary grade, reload, bilingual return, logout, public demo isolation, URL access denial. Network evidence stored.");
  }catch(e){
   console.error("Chrome stopped at step:",step,"page:",page? page.url():"browser_not_initialized");
   if(page)try{await page.screenshot({path:dir+"/failure.png",fullPage:true,timeout:4000});}catch(_){}
