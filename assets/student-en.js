@@ -326,6 +326,7 @@ function render(){
         "<div class='heroSide studentHeroSide'><div class='heroVisual'>"+icon(course.completedProgram?"trophy":"compass")+"</div><h3>"+(course.completedProgram?"Well done! You completed the program":"Ready for the next session?")+"</h3><p>"+(course.completedProgram?"You can view your final achievement at any time.":(result?"One short session whose content changes with your performance.":"Start the short diagnostic so we can determine the best starting point."))+"</p></div>"+
       "</section>"+
       "<section class='actionGrid singleAction'>"+actionPrimary+"</section>"+
+      (result?"<p style='margin-top:1rem'><a class='topbtn' href='diagnostic.html?lang=en'>View saved diagnostic results and skill scores</a></p>":"")+
       "<div class='sectionHead'><div><h2>Your program</h2><p>Each stage unlocks after you complete the previous one.</p></div><span class='progressTag'>"+course.completed.length+" / 30</span></div>"+
       "<section class='weekGrid'>"+weeks+"</section>"+
       "<div class='sectionHead'><div><h2>Your level at a glance</h2><p>3 Simple indicators show where you currently stand.</p></div></div>"+
