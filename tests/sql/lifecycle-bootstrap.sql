@@ -23,9 +23,16 @@ create table public.content_items(id text primary key,course_id text references 
 create table public.attempts(id uuid primary key default gen_random_uuid());
 -- Fixture metadata visibility; diagnostic rows have independent RLS rules.
 grant select on public.profiles to authenticated;
-create or replace function public.is_active_user() returns boolean language sql stable security definer as $$
+create or replace function public.is_active_user() returns boolean language sql stable security definer as $
  select exists(select 1 from public.profiles where id=auth.uid() and active);
-$$;
+$;
+create schema if not exists private;
+create or replace function private.is_active_user() returns boolean
+ language sql stable security definer set search_path='' as $
+ select public.is_active_user();
+$;
+grant usage on schema private to authenticated;
+grant execute on function private.is_active_user() to authenticated;
 insert into public.courses values ('qa-qu-lawc101-rights');
 insert into public.profiles(id,role,active,cohort_id,display_name) values
  ('10000000-0000-4000-8000-000000000001','student',true,'a0000000-0000-4000-8000-000000000001','Student A'),
