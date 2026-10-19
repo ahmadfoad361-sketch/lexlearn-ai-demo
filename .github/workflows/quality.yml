@@ -30,6 +30,7 @@ jobs:
           node --check assets/showcase.js
           node --check assets/showcase-learning-cycle.js
           node --check assets/showcase-en.js
+          node --check assets/official-level-one.js
           node --check assets/server-diagnostic.js
           node --check assets/official-diagnostic.js
           node --check assets/program-en.js
@@ -65,6 +66,7 @@ jobs:
           node tests/official-diagnostic-dom-flow.test.js
           node tests/server-diagnostic-ui.test.js
           node tests/student-gate-source.test.js
+          node tests/official-level-one-ui.test.js
       - name: Production boundary tests
         run: node tests/production-boundaries.test.js
       - name: Build public artifact
@@ -100,7 +102,9 @@ jobs:
         run: |
           psql -v ON_ERROR_STOP=1 -f tests/sql/lifecycle-bootstrap.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261019_001_student_diagnostic_lifecycle.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261019_002_official_level_one.sql
           psql -v ON_ERROR_STOP=1 -f tests/sql/lifecycle-scenarios.sql
+          psql -v ON_ERROR_STOP=1 -f tests/sql/level-one-acceptance.sql
 
   public-preview-chrome:
     name: Published-artifact-equivalent Chrome AR/EN and mobile/desktop
@@ -148,5 +152,8 @@ jobs:
         run: |
           psql -v ON_ERROR_STOP=1 -f tests/sql/lifecycle-bootstrap.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261019_001_student_diagnostic_lifecycle.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261019_002_official_level_one.sql
       - name: Run real PostgreSQL RLS, idempotency and level progression cases
-        run: psql -v ON_ERROR_STOP=1 -f tests/sql/lifecycle-acceptance.sql
+        run: |
+          psql -v ON_ERROR_STOP=1 -f tests/sql/lifecycle-acceptance.sql
+          psql -v ON_ERROR_STOP=1 -f tests/sql/level-one-acceptance.sql
