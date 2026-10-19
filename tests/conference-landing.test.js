@@ -480,8 +480,8 @@ assert.ok(js.includes('id="pilotWhatsApp"')===false,"pilot WhatsApp IDs belong i
 console.log("conference landing release test PASS");
 
 // A local, muted logo animation and attributed university scene are now part of the approved conference design.
-assert.equal((html.match(/<video\b/g)||[]).length,1);
+assert.equal((html.match(/<video\b/g)||[]).length,2);
 assert.match(html,/<video id="brandIntroVideo" muted playsinline preload="none"/);
-assert.ok(html.includes('no endorsement or signed partnership implied'));
+assert.ok(html.includes('Illustrative law faculty lecture theatre'));
 assert.ok(pub.includes('conference-media/logo-intro-navy.mp4'));
 assert.ok(pub.includes('conference-experience.js'));
