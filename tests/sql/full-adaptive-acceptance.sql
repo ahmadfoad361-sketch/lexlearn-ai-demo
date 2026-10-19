@@ -34,7 +34,7 @@ begin
  for n in 1..30 loop
   o:=public.lex_training_session_open('qa-qu-lawc101-rights',n);
   if o->>'allowed'<>'true' then raise exception 'session % inaccessible %',n,o;end if;
-  if jsonb_array_length(o->'tasks')<>case when n%5=0 then 4 else 3 end then
+  if ((n%5=0 and jsonb_array_length(o->'tasks')<>4) or (n%5<>0 and jsonb_array_length(o->'tasks')<>3)) then
    raise exception 'session % task count incorrect',n;end if;
   j:=0;
   for item in select value from jsonb_array_elements(o->'tasks') loop
