@@ -119,7 +119,7 @@ const base="http://127.0.0.1:18765/";
    const visitor=await anonContext.newPage();
    await visitor.goto(base+"showcase.html?country=qa&subject=rights",{waitUntil:"domcontentloaded"});
    await visitor.waitForFunction(()=>document.body.innerText.includes("تجربة عرض"),{timeout:16000});
-   assert.match(await visitor.locator("body").innerText(),/لا تُحفظ النتائج في حساب الطالب/);
+   assert.match(await visitor.locator("body").innerText(),/النتائج لا تُحفظ في حساب الطالب/);
    await visitor.goto(base+"program.html?demo=1&start=1&preview=stage1",{waitUntil:"domcontentloaded"});
    await visitor.locator('a[href="student-login.html"]').waitFor({timeout:16000});
    assert.equal(await visitor.locator("#officialEssayAnswer").count(),0,"public preview params cannot access student's course");
