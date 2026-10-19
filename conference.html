@@ -26,58 +26,8 @@
 <script src="assets/lexlearn-learning-lines.js?v=20261014.6" defer></script>
 <script src="assets/lexlearn-investor-quotes.js?v=20261017.7" defer></script>
 <script src="assets/lexlearn-navigation.js?v=20261015.2" defer></script>
-<style id="conference-exhibition-style">
-/* Conference exhibition layer: scoped to the conference, original learning app untouched. */
-#paths.first{max-width:1180px;position:relative;padding:30px 32px 25px;isolation:isolate;overflow:hidden}
-#paths:before{content:"";position:absolute;width:480px;height:480px;inset-inline-end:-180px;top:-160px;background:radial-gradient(circle,#8a1f3915,transparent 68%);pointer-events:none;z-index:-1}
-#paths .exhibit-intro{display:grid;grid-template-columns:minmax(0,1fr) 230px;gap:30px;align-items:center;margin-bottom:23px}
-#paths .exhibit-copy h1{font-size:clamp(30px,3.7vw,48px);max-width:800px;line-height:1.24;margin-bottom:13px}
-html[lang=ar] #paths .exhibit-copy h1{line-height:1.5;font-size:clamp(28px,3.3vw,43px)}
-#paths .heroSub{font-size:16px;line-height:1.75;max-width:650px;margin:0}
-.exhibit-mark{position:relative;display:grid;place-items:center;aspect-ratio:1;align-self:center}
-.exhibit-mark:before,.exhibit-mark:after{content:"";position:absolute;inset:9px;border:1px solid #8a1f3930;border-radius:50%}
-.exhibit-mark:after{inset:28px;border-color:#111d3120}
-.exhibit-mark img{width:76%;height:76%;object-fit:contain;animation:exhibit-enter 1.3s both}
-.exhibit-orbit{position:absolute;inset:8px;border-radius:50%;animation:exhibit-orbit 22s linear infinite}
-.exhibit-orbit:before{content:"";position:absolute;top:0;left:48%;width:10px;height:10px;border-radius:50%;background:#8a1f39;box-shadow:0 0 0 7px #8a1f3910}
-.exhibit-tagline{position:absolute;bottom:-3px;background:var(--cream);padding:0 8px;font-size:11px;font-weight:700;text-align:center;color:var(--burgundy)}
-#paths .paths{gap:18px}
-#paths .paths .path{display:flex;flex-direction:column;padding:22px;min-height:298px;border-radius:23px;overflow:hidden;box-shadow:0 14px 35px #111d310b;border:1px solid #111d3120;transition:transform .35s,box-shadow .35s,border-color .35s;isolation:isolate}
-#paths .path.student{background:linear-gradient(140deg,#1d304e,#111d31);color:#fff}
-#paths .path.university{background:linear-gradient(140deg,#fffdfb,#f0e2dc);color:#111d31}
-#paths .path.investor{background:linear-gradient(140deg,#922d48,#68162d);color:#fff}
-#paths .path h2{font-size:clamp(20px,2.1vw,27px);margin:5px 0 7px;line-height:1.4}
-#paths .path p{font-size:15px;line-height:1.6;margin-bottom:15px;max-width:30ch}
-#paths .path .pathCTA{font-size:13px;line-height:1.6;position:relative;z-index:1}
-#paths .path .pathNo{font-size:11px;letter-spacing:.13em;position:absolute;top:21px;inset-inline-start:22px}
-#paths .path .pathGlyph{position:absolute;top:17px;inset-inline-end:17px;width:33px;height:33px;border:1px solid currentColor;border-radius:50%;padding:7px;opacity:.8}
-#paths .path .exhibit-art{width:100%;height:128px;margin:8px 0 5px;overflow:visible;color:inherit;flex:none}
-#paths .path .exhibit-art .exhibit-drift{animation:exhibit-drift 5s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
-#paths .path:nth-child(2) .exhibit-drift{animation-delay:-1.5s}
-#paths .path:nth-child(3) .exhibit-drift{animation-delay:-3s}
-#paths .path:after{content:"";position:absolute;inset:0;pointer-events:none;border-radius:inherit;border:2px solid transparent;transition:border-color .4s}
-#paths .path:hover,#paths .path:focus-visible{transform:translateY(-6px);box-shadow:0 22px 40px #111d3124}
-#paths .path.is-spotlight:after{border-color:#b88b65}
-#paths .path.is-spotlight .pathGlyph{background:#ffffff22}
-.exhibit-toolbar{display:flex;align-items:center;justify-content:space-between;gap:15px;margin-top:21px;color:var(--sub);font-size:12px}
-.exhibit-invite{display:flex;align-items:center;gap:9px;font-weight:700}
-.exhibit-dot{width:7px;height:7px;border-radius:50%;background:var(--burgundy);box-shadow:0 0 0 5px #8a1f3910;flex:none}
-.exhibit-pause{background:transparent;color:var(--navy);border:1px solid #111d3130;border-radius:99px;min-height:44px;padding:8px 15px;cursor:pointer;font-size:12px}
-.exhibit-chapters{display:flex;flex-wrap:wrap;justify-content:center;gap:9px;padding:18px 12px 24px;max-width:1180px;margin:auto;border-bottom:1px solid var(--line)}
-.exhibit-chapters a{display:flex;align-items:center;gap:7px;padding:10px 17px;border-radius:99px;border:1px solid #d9ccc3;text-decoration:none;background:#fffaf6;font-size:13px;min-height:44px;font-weight:700;transition:background .2s,color .2s}
-.exhibit-chapters a:hover,.exhibit-chapters a:focus-visible{background:var(--navy);color:#fff}
-.exhibit-chapters a span:first-child{font-size:10px;color:#a46c7d}
-.exhibit-paused #paths *,.exhibit-paused #paths *:before,.exhibit-paused #paths *:after{animation-play-state:paused!important}
-@keyframes exhibit-orbit{to{transform:rotate(360deg)}}
-@keyframes exhibit-drift{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
-@keyframes exhibit-enter{from{opacity:0;transform:scale(.8) rotate(-9deg)}to{opacity:1;transform:scale(1) rotate(0)}}
-@media(min-width:761px){.site-header .topbar{max-width:1180px}.site-header .promo .frame{max-width:1180px}}
-@media(min-width:761px) and (max-height:800px){#paths.first{padding-top:20px}#paths .exhibit-intro{grid-template-columns:minmax(0,1fr) 160px;margin-bottom:18px}#paths .exhibit-copy h1{font-size:34px}html[lang=ar] #paths .exhibit-copy h1{font-size:31px}#paths .heroSub{font-size:14px}#paths .paths .path{min-height:255px;padding:18px}#paths .path .exhibit-art{height:98px}#paths .path p{font-size:14px;margin-bottom:10px}.exhibit-toolbar{margin-top:12px}}
-@media(min-width:600px) and (max-width:760px){#paths .paths{grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}#paths .paths .path{padding:17px;min-height:300px}#paths .path h2{font-size:20px}#paths .path p{font-size:13px}#paths .path .exhibit-art{height:112px}#paths .exhibit-intro{grid-template-columns:minmax(0,1fr) 150px;gap:18px}}
-@media(max-width:599px){#paths .exhibit-intro{display:block!important}#paths .exhibit-copy>.eyebrow{padding-inline-end:75px;min-height:58px;padding-top:15px}.exhibit-mark{position:absolute;top:22px;inset-inline-end:18px;width:70px;height:70px}#paths.first{padding:24px 18px 17px}#paths .exhibit-intro{grid-template-columns:minmax(0,1fr) 86px;gap:12px;align-items:start;margin-bottom:22px}#paths .exhibit-copy h1,html[lang=ar] #paths .exhibit-copy h1{font-size:26px;line-height:1.45}#paths .heroSub{font-size:14px;line-height:1.7}#paths .eyebrow{font-size:9px}.exhibit-tagline{display:none}.exhibit-mark:before{inset:0}.exhibit-mark:after{inset:12px}.exhibit-orbit{inset:0}#paths .paths{grid-template-columns:1fr;gap:12px}#paths .paths .path{min-height:166px;padding:22px 20px;padding-inline-end:125px;justify-content:center}#paths .path .exhibit-art{position:absolute;inset-inline-end:5px;top:30px;width:115px;height:110px;margin:0;opacity:.85}#paths .path .pathNo{display:none}#paths .path .pathGlyph{width:25px;height:25px;padding:5px;top:10px;inset-inline-end:12px}#paths .path h2{font-size:22px}#paths .path p{font-size:13px;margin-bottom:9px}#paths .path .pathCTA{font-size:12px}.exhibit-toolbar{align-items:start;font-size:11px}.exhibit-pause{font-size:11px;padding:8px 11px;flex:none}.exhibit-chapters{justify-content:flex-start;gap:7px;padding:12px 18px 20px}.exhibit-chapters a{padding:8px 12px;font-size:12px}}
-@media(prefers-reduced-motion:reduce){#paths *,#paths *:before,#paths *:after{animation:none!important;transition:none!important}}
-@media print{.exhibit-mark,.exhibit-art,.exhibit-toolbar,.exhibit-chapters{display:none!important}#paths .exhibit-intro{display:block}#paths .paths .path{min-height:0;background:white!important;color:#111d31!important}}
-</style>
+<link rel="stylesheet" href="assets/conference-experience.css?v=20261019.2">
+<script src="assets/conference-experience.js?v=20261019.2" defer></script>
 </head>
 <body>
 <a href="#main" class="skip" data-t="skip">Skip to content</a>
@@ -101,7 +51,7 @@ html[lang=ar] #paths .exhibit-copy h1{line-height:1.5;font-size:clamp(28px,3.3vw
   <a class="path student" id="studentCard" href="showcase-en.html?country=qa&amp;subject=rights">
    <span class="pathNo">01</span>
    <span class="pathGlyph" aria-hidden="true"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" focusable="false" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg></span>
-<svg class="exhibit-art" viewBox="0 0 250 130" aria-hidden="true" focusable="false" fill="none"><circle cx="125" cy="66" r="54" fill="none" stroke="currentColor" opacity=".12"/><circle cx="125" cy="66" r="43" fill="none" stroke="#d3aeb8" stroke-width="2" stroke-dasharray="130 140"/><g class="exhibit-drift"><rect x="55" y="27" width="88" height="79" rx="10" fill="#fff" fill-opacity=".1" stroke="#fff" stroke-opacity=".5"/><path d="M70 48h41m-41 11h56m-56 11h34" stroke="#fff" stroke-opacity=".65" stroke-width="3" stroke-linecap="round"/><circle cx="162" cy="48" r="16" fill="#e6c7b7"/><path d="M139 100V83a23 23 0 0 1 46 0v17" fill="#ab526b"/><path d="m75 86 8 8 15-17" fill="none" stroke="#d5b29b" stroke-width="4" stroke-linecap="round"/></g></svg>
+<img class="photo-cover" src="assets/conference-media/student-law.webp" alt="Illustrative law student in a library" width="600" height="400" decoding="async">
    <h2 data-t="studentTitle">Student</h2>
    <p data-t="studentDesc">Try the live legal-learning demo.</p>
    <span class="pathCTA"><span data-t="studentCTA">Open interactive experience</span></span>
@@ -109,7 +59,7 @@ html[lang=ar] #paths .exhibit-copy h1{line-height:1.5;font-size:clamp(28px,3.3vw
   <a class="path university" href="#pilot">
    <span class="pathNo">02</span>
    <span class="pathGlyph" aria-hidden="true"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" focusable="false" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg></span>
-<svg class="exhibit-art" viewBox="0 0 250 130" aria-hidden="true" focusable="false" fill="none"><circle cx="125" cy="67" r="55" fill="#8a1f39" fill-opacity=".05"/><g class="exhibit-drift" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="m63 49 62-29 62 29z" fill="#8a1f39" fill-opacity=".12"/><path d="M71 103h108M65 111h120M78 51v48m28-48v48m38-48v48m28-48v48" fill="none"/><path d="M75 55h100" opacity=".35"/><circle cx="125" cy="38" r="4" fill="#8a1f39" stroke="none"/></g><g fill="#8a1f39"><circle cx="56" cy="76" r="4"/><circle cx="196" cy="62" r="3"/></g></svg>
+<img class="photo-cover" src="assets/conference-media/qatar-law-campus.jpg" alt="College of Law at Qatar University" width="600" height="400" decoding="async">
    <h2 data-t="univTitle">University or institution</h2>
    <p data-t="univDesc">Explore a proposed supervised university pilot.</p>
    <span class="pathCTA"><span data-t="univCTA">Explore the university pilot plan</span></span>
@@ -117,19 +67,19 @@ html[lang=ar] #paths .exhibit-copy h1{line-height:1.5;font-size:clamp(28px,3.3vw
   <a class="path investor" href="#vision">
    <span class="pathNo">03</span>
    <span class="pathGlyph" aria-hidden="true"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" focusable="false" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg></span>
-<svg class="exhibit-art" viewBox="0 0 250 130" aria-hidden="true" focusable="false" fill="none"><circle cx="125" cy="65" r="54" fill="#fff" fill-opacity=".06"/><g class="exhibit-drift"><rect x="65" y="75" width="23" height="31" rx="5" fill="#fff" fill-opacity=".23"/><rect x="101" y="57" width="23" height="49" rx="5" fill="#fff" fill-opacity=".42"/><rect x="137" y="35" width="23" height="71" rx="5" fill="#ead2be"/><path d="m63 62 40-26 30 5 44-25m-17 0h17v17" fill="none" stroke="#ead2be" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="180" cy="88" r="16" fill="#fff" fill-opacity=".12" stroke="#fff" stroke-opacity=".4"/><path d="m173 88 5 5 9-10" fill="none" stroke="#fff" stroke-width="2"/></g></svg>
+<img class="photo-cover" src="assets/conference-media/investor-ideas.webp" alt="Illustrative early-stage investment discussion" width="600" height="400" decoding="async">
    <h2 data-t="invTitle">Investor or partner</h2>
    <p data-t="invDesc">See the vision and Qatar-first roadmap.</p>
    <span class="pathCTA"><span data-t="invCTA">View roadmap</span></span>
   </a>
  </div>
-<div class="exhibit-toolbar"><span class="exhibit-invite"><i class="exhibit-dot" aria-hidden="true"></i><span data-exhibit-en="Touch a card. Discover your next step." data-exhibit-ar="المس بطاقتك… واكتشف خطوتك التالية.">Touch a card. Discover your next step.</span></span><button class="exhibit-pause" id="exhibitPause" type="button" aria-pressed="false">Pause motion</button></div></section><nav class="exhibit-chapters" aria-label="Explore LexLearn"><a href="#how"><span>01</span><span data-exhibit-en="How it works" data-exhibit-ar="كيف تعمل؟">How it works</span></a><a href="#deck"><span>02</span><span data-exhibit-en="The idea in slides" data-exhibit-ar="الفكرة في شرائح">The idea in slides</span></a><a href="#pilot"><span>03</span><span data-exhibit-en="University collaboration" data-exhibit-ar="التعاون الجامعي">University collaboration</span></a><a href="#vision"><span>04</span><span data-exhibit-en="Vision & growth" data-exhibit-ar="الرؤية والنمو">Vision & growth</span></a></nav>
-<section id="problem" class="section frame">
+<div class="exhibit-toolbar"><span class="exhibit-invite"><i class="exhibit-dot" aria-hidden="true"></i><span data-exhibit-en="Touch a card. Discover your next step." data-exhibit-ar="المس بطاقتك… واكتشف خطوتك التالية.">Touch a card. Discover your next step.</span></span><div class="visual-tools"><button id="replayIntro" class="visual-replay" type="button" data-visual-en="Replay intro" data-visual-ar="عرض المقدمة">Replay intro</button><button class="exhibit-pause" id="exhibitPause" type="button" aria-pressed="false">Pause motion</button></div></div></section><nav class="exhibit-chapters" aria-label="Explore LexLearn"><a href="#how"><span>01</span><span data-exhibit-en="How it works" data-exhibit-ar="كيف تعمل؟">How it works</span></a><a href="#deck"><span>02</span><span data-exhibit-en="The idea in slides" data-exhibit-ar="الفكرة في شرائح">The idea in slides</span></a><a href="#pilot"><span>03</span><span data-exhibit-en="University collaboration" data-exhibit-ar="التعاون الجامعي">University collaboration</span></a><a href="#vision"><span>04</span><span data-exhibit-en="Vision & growth" data-exhibit-ar="الرؤية والنمو">Vision & growth</span></a></nav>
+<section id="problem" class="section frame"><details class="photo-details"><summary data-visual-en="The learning challenge — read more" data-visual-ar="تحدّي التعلّم — اعرف أكثر">The learning challenge — read more</summary><div class="photo-original-content">
  <div class="sectionhead"><p class="eyebrow" data-t="label01">01 / THE PROBLEM</p><h2 data-t="problemHeading">The same score can hide different learning problems.</h2></div>
  <div class="problemGrid"><p class="lead" data-t="problemLead">One student remembers a rule but struggles to explain it. Another understands the idea but cannot recall it during an exam. A single score does not reveal the next useful step.</p>
  <div class="solutionPanel"><span data-t="solutionLabel">THE LEXLEARN RESPONSE</span><h3 data-t="solutionHeading">Identify the gap. Build the weaker skill from the stronger one.</h3><p data-t="solutionBody">LexLearn guides skill diagnosis and practice, without replacing university teaching or independent academic assessment.</p></div></div>
-</section>
-<section id="how" class="section frame">
+</div></details></section>
+<section id="how" class="section frame"><details class="photo-details"><summary data-visual-en="How LexLearn works — explore the five skills" data-visual-ar="كيف تعمل LexLearn؟ — اكتشف المهارات الخمس">How LexLearn works — explore the five skills</summary><div class="photo-original-content">
  <div class="sectionhead"><p class="eyebrow" data-t="label02">02 / HOW IT WORKS</p><h2 data-t="howHeading">Five precise skills. One adaptable path.</h2><p data-t="howNote">The five-axis framework is the product vision; the public demo currently illustrates recall and understanding only.</p></div>
  <div class="skills">
   <article><span>01</span><h3 data-t="skill1">Recall</h3><p data-t="skill1D">Retrieve the legal rule accurately.</p></article>
@@ -140,12 +90,12 @@ html[lang=ar] #paths .exhibit-copy h1{line-height:1.5;font-size:clamp(28px,3.3vw
  </div>
  <div class="strength"><b data-t="strengthTitle">Example of the adaptive principle</b><p data-t="strengthBody">Strong recall + weaker understanding → practise explaining each element of the rule. Strong understanding + weaker recall → create memory cues from the concept already understood.</p></div>
 
-</section>
-<section id="demo" class="section frame demoBlock">
+</div></details></section>
+<section id="demo" class="section frame demoBlock"><figure class="visual-scene"><img class="scene-image" src="assets/conference-media/student-law.webp" alt="Illustrative student studying law" width="1200" height="800" loading="lazy" decoding="async"><figcaption><span class="scene-label" data-visual-en="A LEGAL RULE. A DIFFERENT WAY TO LEARN." data-visual-ar="قاعدة قانونية… وتجربة تعلّم مختلفة.">A LEGAL RULE. A DIFFERENT WAY TO LEARN.</span><h2 data-visual-en="Read. Think. Discover your next step." data-visual-ar="اقرأ. فكّر. واكتشف خطوتك التالية.">Read. Think. Discover your next step.</h2><ul class="scene-journey"><li data-visual-en="Read" data-visual-ar="اقرأ">Read</li><li data-visual-en="Answer" data-visual-ar="أجب">Answer</li><li data-visual-en="Discover" data-visual-ar="اكتشف">Discover</li><li data-visual-en="Practise" data-visual-ar="تدرّب">Practise</li></ul><div class="scene-actions"><a class="button visual-demo-link" href="showcase-en.html?country=qa&amp;subject=rights" data-visual-en="Start the interactive experience" data-visual-ar="ابدأ التجربة التفاعلية">Start the interactive experience</a></div><small class="scene-source" data-visual-en="Illustrative scene. The original interactive programme opens separately." data-visual-ar="مشهد توضيحي. يُفتح البرنامج التفاعلي الأصلي بصورة مستقلة.">Illustrative scene. The original interactive programme opens separately.</small></figcaption></figure><details class="photo-details"><summary data-visual-en="About the demo and what it measures" data-visual-ar="عن التجربة وما الذي تقيسه">About the demo and what it measures</summary><div class="photo-original-content">
  <div class="demoInfo"><p class="eyebrow" data-t="label03">03 / TRY IT YOURSELF</p><h2 data-t="demoTitle">Try the live experience.</h2><p data-t="demoBody">The interactive experience shows part of the idea—recall and understanding, with provisional local evaluation. It does not represent a validated five-skill diagnosis or a completed university pilot.</p>
  <a class="button buttonPrimary" id="demoLink" href="showcase-en.html?country=qa&amp;subject=rights" data-t="demoButton">Try the interactive experience ↗</a></div>
  <div class="demoDiagram" aria-label="Illustrative learning flow"><div data-t="flow1">Read a legal rule</div><span aria-hidden="true">↓</span><div data-t="flow2">Answer questions</div><span aria-hidden="true">↓</span><div class="emphasis" data-t="flow3">See a provisional analysis</div><span aria-hidden="true">↓</span><div data-t="flow4">Build the next skill from a strength</div></div>
-</section>
+</div></details></section>
 <section id="deck" class="section frame">
  <div class="deckHeader"><div><p class="eyebrow" data-t="label04">04 / PITCH DECK</p><h2 data-t="deckTitle">The idea, in slides.</h2><p data-t="deckDesc">The problem, learning approach and proposed university pilot in six slides.</p></div><div class="deckActions"><a class="button buttonSecondary" id="downloadDeck" download="LexLearn-Public-Pitch-EN.pdf" href="assets/lexlearn-public-pitch-en.pdf" data-t="download">Download PDF ↓</a></div></div>
  <div class="deckNav" aria-label="Pitch slides"><button type="button" class="deckArrow" id="deckPrev" aria-label="Previous slide"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m14 5-7 7 7 7"/></svg></button><div class="deckDots" id="deckDots" role="group" aria-label="Choose a slide"></div><button type="button" class="deckArrow" id="deckNext" aria-label="Next slide"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m10 5 7 7-7 7"/></svg></button></div>
@@ -160,7 +110,7 @@ html[lang=ar] #paths .exhibit-copy h1{line-height:1.5;font-size:clamp(28px,3.3vw
  <p class="deckSwipeHint" data-t="deckSwipeHint">Swipe sideways to see the other slides ↔</p>
  <p class="deckNote" data-t="deckNote">Public mobile summary rather than the full confidential investor presentation. Figures are a proposal, not completed pilot results.</p>
 </section>
-<section id="pilot" class="section frame pilot">
+<section id="pilot" class="section frame pilot"><figure class="visual-scene"><img class="scene-image" src="assets/conference-media/qatar-law-campus.jpg" alt="Qatar University College of Law" width="1200" height="800" loading="lazy" decoding="async"><figcaption><span class="scene-label" data-visual-en="UNIVERSITIES & LAW FACULTIES" data-visual-ar="الجامعات وكليات القانون">UNIVERSITIES & LAW FACULTIES</span><h2 data-visual-en="Ideas begin at university. Evidence grows through collaboration." data-visual-ar="الأفكار تبدأ في الجامعة… والدليل ينمو بالتعاون.">Ideas begin at university. Evidence grows through collaboration.</h2><ul class="scene-journey"><li data-visual-en="Collaborate" data-visual-ar="تعاون">Collaborate</li><li data-visual-en="Practise" data-visual-ar="تدريب">Practise</li><li data-visual-en="Evaluate" data-visual-ar="تقييم">Evaluate</li><li data-visual-en="Report" data-visual-ar="تقرير">Report</li></ul><div class="scene-actions"><a class="button" href="#leadForm" data-role="university" data-visual-en="Discuss a university pilot" data-visual-ar="ناقش تجربة لجامعتك">Discuss a university pilot</a></div><span class="scene-source" data-visual-en="Photo: College of Law, Qatar University. Context for proposed collaboration; no endorsement or signed partnership implied." data-visual-ar="الصورة: كلية القانون بجامعة قطر. سياق للتعاون المقترح، ولا تدل على اعتماد أو شراكة موقّعة.">Photo: College of Law, Qatar University. Context for proposed collaboration; no endorsement or signed partnership implied.</span><span class="scene-source"><a href="https://www.qu.edu.qa/en-us/colleges/law/" target="_blank" rel="noopener noreferrer" data-visual-en="Photo source" data-visual-ar="مصدر الصورة">Photo source</a></span></figcaption></figure><details class="photo-details"><summary data-visual-en="Pilot details, university roles and proposed figures" data-visual-ar="تفاصيل التجربة والأدوار والأعداد المقترحة">Pilot details, university roles and proposed figures</summary><div class="photo-original-content">
  <div><p class="eyebrow" data-t="label05">05 / UNIVERSITY PILOT</p><h2 data-t="pilotTitle">Measurable academic collaboration</h2><p class="pilotOffer" data-t="pilotOffer">A free, limited-duration pilot with no purchase commitment.</p><p data-t="pilotBody">The pilot is run in collaboration with the university. The measurement design is agreed jointly, and LexLearn handles follow-up and the report.</p></div>
  <div class="pilotStats"><div><strong><bdi dir="ltr">30–60</bdi></strong><span data-t="pilotStudents">students</span><small data-t="pilotStudentsHelp">Proposed number of law students taking part.</small></div><div><strong><bdi dir="ltr">6–8</bdi></strong><span data-t="pilotWeeks">weeks</span><small data-t="pilotWeeksHelp">Duration of practice and pre-/post-assessment.</small></div></div>
  <div class="pilotSteps" aria-label="Pilot stages"><p><b class="pilotStepNum">01</b><strong data-t="pilotBefore">Before</strong><span data-t="pilot1">Establish a baseline using skill-specific tasks.</span></p><p><b class="pilotStepNum">02</b><strong data-t="pilotDuring">During</strong><span data-t="pilot2">LexLearn delivers and supervises targeted practice and follow-up.</span></p><p><b class="pilotStepNum">03</b><strong data-t="pilotAfter">After</strong><span data-t="pilot3">Review usability, scoring agreement and early indicators.</span></p></div>
@@ -174,8 +124,8 @@ html[lang=ar] #paths .exhibit-copy h1{line-height:1.5;font-size:clamp(28px,3.3vw
  <a class="button buttonPrimary pilotAction" id="academicContact" href="#leadForm" data-role="university" data-t="pilotCTA">Discuss a university pilot</a>
  <a class="button buttonSecondary pilotWhatsApp" id="pilotWhatsApp" target="_blank" rel="noopener noreferrer" href="https://wa.me/201014408788?text=Hello%2C%20I%27d%20like%20to%20discuss%20a%20LexLearn%20university%20pilot." data-t="pilotWhatsApp">WhatsApp</a>
  </div>
-</section>
-<section id="vision" class="section frame vision">
+</div></details></section>
+<section id="vision" class="section frame vision"><figure class="visual-scene"><img class="scene-image" src="assets/conference-media/investor-ideas.webp" alt="Illustrative founders and investor discussing a new idea" width="1200" height="800" loading="lazy" decoding="async"><figcaption><span class="scene-label" data-visual-en="INVEST IN THE POSSIBILITY" data-visual-ar="استثمر في الإمكانات">INVEST IN THE POSSIBILITY</span><h2 data-visual-en="A promising idea deserves a measured next step." data-visual-ar="الفكرة الواعدة تستحق خطوة مدروسة.">A promising idea deserves a measured next step.</h2><p class="visual-quote" data-visual-quote>A promising idea starts with a question. It grows when someone believes in it.</p><small class="visual-quote-credit" data-visual-en="From the LexLearn founder’s vision" data-visual-ar="من رؤية مؤسس LexLearn">From the LexLearn founder’s vision</small><ul class="scene-journey"><li data-visual-en="Idea" data-visual-ar="فكرة">Idea</li><li data-visual-en="Pilot" data-visual-ar="تجربة">Pilot</li><li data-visual-en="Evidence" data-visual-ar="أثر">Evidence</li><li data-visual-en="Growth" data-visual-ar="نمو">Growth</li></ul><div class="scene-actions"><a class="button" href="#leadForm" data-role="investor" data-visual-en="Start a conversation" data-visual-ar="ابدأ الحوار">Start a conversation</a><a class="button buttonSecondary" href="#deck" data-visual-en="View the pitch & PDF" data-visual-ar="العرض والـPDF">View the pitch & PDF</a></div><small class="scene-source" data-visual-en="Illustrative scene. Pilot and commercial plans remain proposed." data-visual-ar="مشهد توضيحي. التجربة والخطة التجارية ما زالتا مقترحتين.">Illustrative scene. Pilot and commercial plans remain proposed.</small></figcaption></figure><details class="photo-details"><summary data-visual-en="Business model, roadmap and current status" data-visual-ar="نموذج العمل وخارطة الطريق والوضع الحالي">Business model, roadmap and current status</summary><div class="photo-original-content">
  <div class="sectionhead"><p class="eyebrow" data-t="label06">06 / INVESTORS & PARTNERS</p><h2 data-t="visionTitle">Qatar first. Proof before scale.</h2><p data-t="visionLead">The long-term vision is a diagnostic-first learning platform with explainable recommendations and meaningful faculty oversight.</p></div>
  <div id="investorQuote" class="visionInvestorQuote" aria-label="An original LexLearn investment insight"></div>
  <p class="investorAsk" data-t="investorAsk">We are seeking academic pilot partners, strategic support and early-stage funding discussions. Detailed figures are available on request.</p>
@@ -195,7 +145,7 @@ html[lang=ar] #paths .exhibit-copy h1{line-height:1.5;font-size:clamp(28px,3.3vw
  </ol>
  <a class="button buttonPrimary investorAction" id="investorContact" href="#leadForm" data-role="investor" data-t="investorCTA">Request the detailed pitch</a><p class="pitchNote" data-t="pitchNote">Leave your contact details and we will send you the pitch.</p>
  <p class="evidenceNote" data-t="evidenceNote">Learning impact has not yet been demonstrated; it will be evaluated through the proposed academic pilot.</p>
-</section>
+</div></details></section>
 <section id="contact" class="section frame contact">
  <p class="eyebrow" data-t="label07">07 / CONTACT</p>
  <h2 data-t="contactTitle">Let's explore what comes next.</h2>
@@ -233,23 +183,16 @@ html[lang=ar] #paths .exhibit-copy h1{line-height:1.5;font-size:clamp(28px,3.3vw
 </main>
 <a class="pathsReturn" id="pathsReturn" href="#paths" aria-label="Back to paths"><svg aria-hidden="true" focusable="false" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5m-7 7 7-7 7 7"/></svg></a>
 <footer class="foot"><div class="frame"><span>© LexLearn</span><nav><a href="privacy-en.html" id="privacyLink" data-t="privacy">Privacy</a><a href="index-en.html" id="footHome" data-t="home">Main site</a></nav><small data-t="footerNote">A working beta, not an accredited university assessment service.</small></div></footer>
-<script id="conference-exhibition-script">
-/* Presentation only: no evaluation, account, form or student state is read or changed. */
-(()=>{'use strict';
-const root=document.documentElement,first=document.getElementById('paths'),pause=document.getElementById('exhibitPause');
-const cards=Array.from(first.querySelectorAll('.path')),reduce=window.matchMedia('(prefers-reduced-motion: reduce)');
-let paused=false,engaged=false,index=-1;
-function translate(){const ar=root.lang==='ar';document.querySelectorAll('[data-exhibit-en]').forEach(el=>{el.textContent=el.getAttribute(ar?'data-exhibit-ar':'data-exhibit-en');});pause.textContent=ar?(paused?'تشغيل الحركة':'إيقاف الحركة'):(paused?'Resume motion':'Pause motion');}
-function clear(){cards.forEach(card=>card.classList.remove('is-spotlight'));}
-function tick(){if(paused||engaged||reduce.matches||document.hidden||first.getBoundingClientRect().bottom<100)return;clear();index=(index+1)%cards.length;cards[index].classList.add('is-spotlight');}
-pause.addEventListener('click',()=>{paused=!paused;root.classList.toggle('exhibit-paused',paused);pause.setAttribute('aria-pressed',String(paused));clear();translate();});
-function engage(){engaged=true;clear();}
-first.querySelector('.paths').addEventListener('pointerdown',engage,{passive:true});
-first.querySelector('.paths').addEventListener('focusin',engage);
-first.querySelector('.paths').addEventListener('pointerenter',engage,{once:true});
-new MutationObserver(translate).observe(root,{attributes:true,attributeFilter:['lang']});
-translate();tick();const timer=setInterval(tick,5000);window.addEventListener('pagehide',()=>clearInterval(timer),{once:true});
-})();
-</script>
+
+
+<dialog class="visual-modal" id="visitorScene" aria-labelledby="visitorSceneTitle">
+ <button type="button" class="visual-close" id="visitorSceneClose">Back to choices</button>
+ <figure class="visual-scene"><img class="scene-image" id="visitorSceneImage" src="assets/conference-media/student-law.webp" alt="" width="1200" height="800"><figcaption><span class="scene-label" id="visitorSceneLabel"></span><h2 id="visitorSceneTitle"></h2><p class="visual-quote" id="visitorSceneQuote" hidden></p><small class="visual-quote-credit" id="visitorQuoteCredit" data-visual-en="From the LexLearn founder’s vision" data-visual-ar="من رؤية مؤسس LexLearn" hidden>From the LexLearn founder’s vision</small><ul class="scene-journey" id="visitorJourney"></ul><div class="scene-actions"><a class="button" id="visitorSceneCTA" href="showcase-en.html?country=qa&amp;subject=rights">Start the interactive experience</a></div><p class="scene-source" id="visitorSceneNote"></p></figcaption></figure>
+</dialog>
+<dialog class="brand-intro" id="brandIntro" aria-labelledby="introName">
+ <button type="button" class="intro-skip" id="introSkip" data-visual-en="Skip intro" data-visual-ar="تخطي المقدمة">Skip intro</button>
+ <div class="brand-intro-inner"><video id="brandIntroVideo" muted playsinline preload="none" width="512" height="512" aria-hidden="true" tabindex="-1"><source src="assets/conference-media/logo-intro-navy.mp4" type="video/mp4"></video><div class="brand-intro-name" id="introName" dir="ltr">Lex<span>Learn</span></div><p class="brand-intro-tagline" data-visual-en="We understand how you think. We build your path." data-visual-ar="نفهم طريقة تفكيرك، ونبني طريقك.">We understand how you think. We build your path.</p></div>
+</dialog>
+
 </body>
 </html>

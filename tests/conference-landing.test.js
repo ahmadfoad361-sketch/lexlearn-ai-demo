@@ -9,7 +9,7 @@ for(const id of ["studentCard","pilot","vision","how","demo","deck","contact","l
 for(const skill of ["Recall","Understanding","Application","Legal precision","Exam answer structure"])assert.ok(js.includes(skill),"missing exact English skill "+skill);
 for(const skill of ["الحفظ","الفهم","التطبيق","الدقة القانونية","بناء الإجابة في الامتحان"])assert.ok(js.includes(skill),"missing exact Arabic skill "+skill);
 for(const phrase of ["Working beta","AI analysis of written answers: in progress","Learning impact not yet proven","30–60","6–8","Dr Ahmed Fouad El Feky","Founder & CEO","Qatari law faculties"])assert.ok(js.includes(phrase)||html.includes(phrase),"required public copy: "+phrase);
-for(const forbidden of ["Qatar University","Lusail University","HBKU","exam performance","QAR","USD","$49","Google Ads","gtag(","fbq(","pixel","<video"])assert.ok(!html.includes(forbidden)&&!js.includes(forbidden),"forbidden public item: "+forbidden);
+for(const forbidden of ["HBKU","exam performance","QAR","USD","$49","Google Ads","gtag(","fbq(","pixel"])assert.ok(!html.includes(forbidden)&&!js.includes(forbidden),"forbidden public item: "+forbidden);
 assert.ok(html.includes('<form id="leadForm"')&&html.includes('id="leadName"')&&html.includes('id="leadRole"')&&html.includes('id="leadContact"'),"conference contact form must contain opted-in contact fields");
 assert.ok(!/<script[^>]+src="https?:/i.test(html),"no third party scripts");
 assert.ok(html.includes("mailto:Ahmadfoad361@gmail.com"),"confirmed email must be a working mailto link");
@@ -466,7 +466,8 @@ assert.ok(js.includes("التقارير المسلَّمة للجامعة مجم
 assert.ok(pilotText.includes("id=\"academicContact\" href=\"#leadForm\""),"university pilot opens the contact form");
 assert.ok(pilotText.includes('id="pilotWhatsApp"')&&pilotText.includes("https://wa.me/201014408788"),"pilot has secondary WhatsApp channel");
 assert.ok(pilotText.indexOf('id="academicContact"') < pilotText.indexOf('id="pilotWhatsApp"'),"form is primary for the academic pilot");
-assert.ok(!pilotText.includes("Qatar University")&&!pilotText.includes("Lusail University")&&!pilotText.includes("HBKU"),"no university name");
+const pilotProposal=pilotText.slice(pilotText.indexOf('class="photo-original-content"'));
+assert.ok(!pilotProposal.includes("Qatar University")&&!pilotProposal.includes("Lusail University")&&!pilotProposal.includes("HBKU"),"proposal copy must not imply an institution is a partner");
 assert.ok((pilotText.match(/class="pilotStepNum"/g)||[]).length===3,"three pilot phases unchanged");
 assert.ok((pilotText.match(/<div><h3 data-t="pilot(?:LexLearnTitle|NeedsTitle|ValueTitle)"/g)||[]).length===3,"three role cards unchanged");
 assert.ok(pilotText.includes('30–60')&&pilotText.includes('6–8')&&pilotText.includes('data-t="pilotStudents"')&&pilotText.includes('data-t="pilotWeeks"'),"proposed ranges retained");
@@ -477,3 +478,10 @@ assert.ok(html.includes("assets/conference.js?v=20261017.11")&&html.includes("as
 assert.ok(js.includes('id="pilotWhatsApp"')===false,"pilot WhatsApp IDs belong in HTML, not generated markup");
 
 console.log("conference landing release test PASS");
+
+// A local, muted logo animation and attributed university scene are now part of the approved conference design.
+assert.equal((html.match(/<video\b/g)||[]).length,1);
+assert.match(html,/<video id="brandIntroVideo" muted playsinline preload="none"/);
+assert.ok(html.includes('no endorsement or signed partnership implied'));
+assert.ok(pub.includes('conference-media/logo-intro-navy.mp4'));
+assert.ok(pub.includes('conference-experience.js'));
