@@ -2,6 +2,17 @@
 -- Applies to an independently approved Level-1 bank only; not deployed to production.
 begin;
 alter table public.student_level_responses add column if not exists evaluation jsonb;
+drop policy if exists "level responses scoped instructor read" on public.student_level_responses;
+create policy "level responses scoped instructor read" on public.student_level_responses
+ for select to authenticated using (
+  exists (
+   select 1 from public.profiles staff
+   join public.profiles learner on learner.cohort_id=staff.cohort_id
+   where staff.id=auth.uid() and learner.id=user_id and staff.active
+    and staff.role in ('owner','admin','instructor') and staff.cohort_id is not null
+  )
+ );
+
 -- Internal v1: deterministic and grounded in the approved Qatar Arts 39-40 topic-one rubric.
 -- Percentage is *provisional legal-element assessment*, never university-certified semantic correctness.
 -- No API/model dependency. Conservative contradiction detection refuses ambiguous legal claims.
