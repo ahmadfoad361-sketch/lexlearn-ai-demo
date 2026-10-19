@@ -145,13 +145,27 @@ async function recordAttempt(row){
   row=Object.assign({},row,{user_id:u.data.user.id});
   var r=await c.from("attempts").insert(row).select().single();if(r.error)throw r.error;return r.data;
 }
+async function studentLifecycleRpc(action,params){
+ var c=db();if(!c)throw new Error("cloud_not_configured");
+ var calls={status:"lex_diagnostic_status",begin:"lex_diagnostic_begin",draft:"lex_diagnostic_draft",
+    complete:"lex_diagnostic_complete",level:"lex_level_access"};
+ if(!Object.prototype.hasOwnProperty.call(calls,action))throw new Error("unknown_lifecycle_action");
+ var args={p_course:params&&params.courseId||"qa-qu-lawc101-rights"};
+ if(action==="draft"||action==="complete")args.p_answers=params.answers;
+ if(action==="complete")args.p_free_text=params.freeText||"";
+ if(action==="level")args.p_level=params.level;
+ var r=await c.rpc(calls[action],args);
+ if(r.error)throw new Error(r.error.message||"lifecycle_server_unavailable");
+ if(!r.data||typeof r.data!=="object")throw new Error("unverified_lifecycle_response");
+ return r.data;
+}
 async function saveLearningPlan(row){
   var c=db();if(!c)return null;
   var u=await c.auth.getUser();if(u.error||!u.data.user)return null;
   row=Object.assign({},row,{user_id:u.data.user.id,updated_at:new Date().toISOString()});
   var r=await c.from("learning_plans").upsert(row,{onConflict:"user_id,course_id"}).select().single();if(r.error)throw r.error;return r.data;
 }
-root.LEX_CLOUD={isConfigured:isConfigured,db:db,rememberMe:rememberMe,setRememberMe:setRememberMe,studentEmail:studentEmail,profile:profile,signInStudent:signInStudent,signInAdmin:signInAdmin,signOut:signOut,requestPasswordReset:requestPasswordReset,loadSnapshot:loadSnapshot,saveSnapshot:saveSnapshot,listStudents:listStudents,listCohorts:listCohorts,listAudit:listAudit,listContentItems:listContentItems,reviewContent:reviewContent,createStudent:createStudent,manageStudent:manageStudent,createCohort:createCohort,setOwnPassword:setOwnPassword,updateOwnProfile:updateOwnProfile,gradeAnswer:gradeAnswer,gradePilot:gradePilot,getConsent:getConsent,recordConsent:recordConsent,logEvent:logEvent,recordAttempt:recordAttempt,saveLearningPlan:saveLearningPlan};
+root.LEX_CLOUD={isConfigured:isConfigured,db:db,rememberMe:rememberMe,setRememberMe:setRememberMe,studentEmail:studentEmail,profile:profile,signInStudent:signInStudent,signInAdmin:signInAdmin,signOut:signOut,requestPasswordReset:requestPasswordReset,loadSnapshot:loadSnapshot,saveSnapshot:saveSnapshot,listStudents:listStudents,listCohorts:listCohorts,listAudit:listAudit,listContentItems:listContentItems,reviewContent:reviewContent,createStudent:createStudent,manageStudent:manageStudent,createCohort:createCohort,setOwnPassword:setOwnPassword,updateOwnProfile:updateOwnProfile,studentLifecycleRpc:studentLifecycleRpc,gradeAnswer:gradeAnswer,gradePilot:gradePilot,getConsent:getConsent,recordConsent:recordConsent,logEvent:logEvent,recordAttempt:recordAttempt,saveLearningPlan:saveLearningPlan};
 if(typeof window!=="undefined"){
   window.addEventListener("error",function(ev){
     if(!isConfigured())return;
