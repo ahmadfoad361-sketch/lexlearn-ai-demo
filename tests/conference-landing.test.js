@@ -31,6 +31,8 @@ assert.ok(read("assets/lexlearn-x-transparent.svg").includes("clear-paper"));
 assert.ok(read("assets/lexlearn-public-pitch-en.pdf").startsWith("%PDF-1.4"),"downloadable public PDF required");
 assert.ok(js.includes('localStorage.setItem("lexlearn_conference_language"'),"remember language");
 assert.ok(css.includes("max-width:690px"),"mobile breakpoint required");
+assert.ok(!/\.honeypot\s*\{[^}]*left\s*:\s*-\d{3,}px/i.test(css),"Honeypot must never push RTL canvas thousands of pixels offscreen");
+assert.ok(/\.honeypot\s*\{[^}]*clip-path:inset\(50%\)/.test(css),"Keep anti-spam honeypot visually hidden without layout overflow");
 for(const phrase of ["تعاون أكاديمي قابل للقياس","تُنفَّذ التجربة بالتعاون مع الجامعة، ويُحدَّد تصميم القياس بالتشاور معها، وتتولى LexLearn المتابعة وإعداد التقرير.","التحقق من الأثر التعليمي سيتم عبر التجربة المقترحة"]){
   assert.ok(js.includes(phrase),"accurate Arabic conference copy missing: "+phrase);
 }
