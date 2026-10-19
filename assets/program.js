@@ -956,7 +956,7 @@ function train(){
   }
   if(!DEMO&&STUDENT_SESSION&&STUDENT_SESSION.cloud){
     chrome('<section class="stage"><div class="taskCard"><h2>حساب الطالب • المستوى الأول</h2><div id="officialLevelMount" role="region"></div></div></section>');
-    return LEX_OFFICIAL_LEVEL_ONE.mount(document.getElementById("officialLevelMount"),{lang:"ar",cloud:LEX_CLOUD,courseId:COURSE_DB_ID});
+    return LEX_OFFICIAL_LEVEL_ONE.mount(document.getElementById("officialLevelMount"),{lang:"ar",cloud:LEX_CLOUD,courseId:COURSE_DB_ID,diagnostic:state.diag});
   }
   if(window.LEX_PILOT&&LEX_PILOT.isReleased(state.course.session)){LEX_PILOT.mount(APP,state.course.session,'ar',{course:state.course,onSave:save,onComplete:function(pilot){state.answers=[1,2,3,4,5].map(function(step){var a=pilot.attempts.filter(function(x){return x.step===step;}).slice(-1)[0];return {dimension:step===4?'recall':'application',score:a&&a.score,correct:!!(a&&a.score===1)};});finishTraining();},onExit:function(){state.view='home';render();}});return;}
   var q=state.queue.length?state.queue:buildTrainingQueue(),t=q[state.task%q.length],meta=sessionMeta(state.course.session);
