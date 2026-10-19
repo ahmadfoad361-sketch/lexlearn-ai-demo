@@ -1,7 +1,7 @@
 const {chromium}=require("playwright-core");
 const fs=require("fs");
 const assert=require("node:assert/strict");
-const BASE="http://127.0.0.1:18765/";
+const BASE=(process.env.BASE_URL||"http://127.0.0.1:18765/").replace(/\/?$/,"/");
 const CHROME=[process.env.CHROME_BIN,"/usr/bin/google-chrome","/usr/bin/google-chrome-stable","/usr/bin/chromium"].find(p=>p&&fs.existsSync(p));
 (async()=>{
  assert.ok(CHROME,"Chrome/Chromium is required: never claim browser E2E without a browser");
@@ -10,7 +10,7 @@ const CHROME=[process.env.CHROME_BIN,"/usr/bin/google-chrome","/usr/bin/google-c
  try{
   for(const en of [false,true]){
    for(const mobile of [false,true]){
-    const ctx=await browser.newContext({viewport:mobile?{width:390,height:844}:{width:1440,height:900},isMobile:mobile,hasTouch:mobile});
+    const ctx=await browser.newContext({viewport:mobile?{width:390,height:844}:{width:1440,height:900},isMobile:mobile,hasTouch:mobile,...(process.env.LEX_VIDEO_DIR?{recordVideo:{dir:process.env.LEX_VIDEO_DIR}}:{})});
     const p=await ctx.newPage(),errors=[];
     p.on("pageerror",e=>errors.push(e.message));
     const program="program"+(en?"-en":"")+".html",showcase="showcase"+(en?"-en":"")+".html",level="showcase-level1"+(en?"-en":"")+".html";
@@ -19,6 +19,10 @@ const CHROME=[process.env.CHROME_BIN,"/usr/bin/google-chrome","/usr/bin/google-c
     assert.match(await p.locator("body").innerText(),en?/Student account only/:/هذا مسار الطالب المسجل/,"public program may not masquerade as student");
     assert.equal(await p.locator(".taskCard").count(),0,"public query parameters must never unlock student level");
     assert.ok(await p.locator("#lexBuild").innerText(),"build id must be visible");
+    if(process.env.EXPECTED_BUILD_SHA){
+      assert.ok((await p.locator("#lexBuild").innerText()).includes(process.env.EXPECTED_BUILD_SHA.slice(0,12)),
+      "Published build mismatch; GitHub Pages may still be serving an older commit");
+    }
     await p.goto(BASE+showcase,{waitUntil:"domcontentloaded"});
     assert.match(await p.locator("body").innerText(),en?/Public demo.*student accounts/:/تجربة عرض.*حساب الطالب/);
     assert.equal(await p.locator("#lexBuild").count(),1,"all screens must contain exact build");
