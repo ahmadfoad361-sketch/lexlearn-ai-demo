@@ -20,7 +20,7 @@ grant select on public.student_level_responses to authenticated;
 drop policy if exists "level responses own read" on public.student_level_responses;
 create policy "level responses own read" on public.student_level_responses
  for select to authenticated using (
-  user_id=auth.uid() and public.is_active_user()
+  user_id=auth.uid() and private.is_active_user()
  );
 -- No INSERT / UPDATE / DELETE grant or RLS policy for students.
 -- All writes go through authenticated, server-authorised RPC.
