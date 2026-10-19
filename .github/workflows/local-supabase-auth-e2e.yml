@@ -59,7 +59,10 @@ jobs:
           python3 -m http.server 18765 --bind 127.0.0.1 --directory dist-site >/tmp/lexlearn-local-http.log 2>&1 &
           sleep 2
       - name: Real mobile Chrome student journey and saved grade after reload
-        run: node tests/staging/real-browser-flow.cjs /tmp/lexlearn-local.env
+        timeout-minutes: 4
+        run: |
+          # A hung browser is a FAILED test, never evidence of a working learner journey.
+          timeout --signal=TERM --kill-after=10s 210s node tests/staging/real-browser-flow.cjs /tmp/lexlearn-local.env
       - name: Keep browser movie, screenshot and sanitized REST status evidence
         if: always()
         uses: actions/upload-artifact@v4
