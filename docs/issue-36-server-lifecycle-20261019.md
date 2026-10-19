@@ -29,9 +29,10 @@ The current GitHub Pages \`main\` anonymous \`program.html\` still sends "ابد
 
 ## 3. Actual passing tests — evidence, not assumptions
 
-[GitHub Actions run 39190712974](https://github.com/ahmadfoad361-sketch/lexlearn-ai-demo/actions/runs/39190712974) completed **successfully**, at tested commit \`724636f69dbe8d25f18ba8d96d0d4eb43928fee5\`.
+[GitHub Actions run 39191108966](https://github.com/ahmadfoad361-sketch/lexlearn-ai-demo/actions/runs/39191108966) completed **successfully**, at tested commit \`f5c168071238ea0c65994fd2ac683d27f8d6b0d9\`.
 
 - CI existing JavaScript diagnostics and showcase tests: **pass**.
+- AR/EN UI simulation additionally verified six sequential server-confirmed answers through free recall. This uncovered a stuck `saving` latch after the first question; it was repaired before the green run. Tests include resume, retry, network failure and unapproved-content gates.
 - **Actual PostgreSQL 16 and 17 isolated runner services:** proposed migration applied to a temporary fixture, with real PostgreSQL RLS and RPC execution. Three test principals exercised recognition-led, understanding-led and insufficient-evidence outcomes; draft/readback/repeat completion; expected null free-recall; strict cross-user reads, instructor cohort restrictions, idempotence and refusal to open direct Level 2. **Pass.**
 - **Actual Chrome headless browser against locally served production build artifact (NOT live GitHub Pages):** Arabic/English × desktop/mobile public program requires login; demo badge visible; preview level one task actually renders; no uncaught JS errors. **Pass.**
 - Some earlier runs failed on test-fixture permission or outdated badge assertion and were corrected; the passing run above is the acceptance evidence.
