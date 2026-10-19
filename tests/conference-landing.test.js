@@ -397,7 +397,7 @@ for(const code of [sc,scEn]){
 assert.ok(nav.includes('showcase(?:-en)?'),"public demo must skip generic floating Back injection");
 assert.ok(scCss.includes(".demoIntro .demoStart{display:block;width:min(100%,485px)")&&scCss.includes(".demoIntro .stageCard:before{display:none}"),"wide CTA and no abrupt colored stripe");
 assert.ok(!read("showcase.html").includes("fonts.googleapis.com")&&!read("showcase-en.html").includes("fonts.googleapis.com"),"remove blocking remote Google fonts");
-assert.ok(html.includes("assets/conference.css?v=20261017.11")&&html.includes("assets/conference.js?v=20261017.11"),"bump CSS/JS cache");
+assert.ok(html.includes("assets/conference.css?v=20261019.12")&&html.includes("assets/conference.js?v=20261017.11"),"bump CSS/JS cache");
 
 
 /* Conversion UX: direct email and WhatsApp, without any visitor data collection. */
@@ -473,7 +473,7 @@ assert.ok(pilotText.includes('30–60')&&pilotText.includes('6–8')&&pilotText.
 assert.ok(css.includes(".pilotExchange>div{background:#fffdfb!important"),"all three role cards must have identical background and border");
 assert.ok(css.includes(".pilotOffer{display:inline-block"),"free pilot line receives visible highlighting");
 assert.ok(css.includes(".pilotActions{grid-column:1/-1;display:grid"),"two direct-contact pilot buttons align responsively");
-assert.ok(html.includes("assets/conference.js?v=20261017.11")&&html.includes("assets/conference.css?v=20261017.11"),"invalidate conference client cache");
+assert.ok(html.includes("assets/conference.js?v=20261017.11")&&html.includes("assets/conference.css?v=20261019.12"),"invalidate conference client cache");
 assert.ok(js.includes('id="pilotWhatsApp"')===false,"pilot WhatsApp IDs belong in HTML, not generated markup");
 
 console.log("conference landing release test PASS");
