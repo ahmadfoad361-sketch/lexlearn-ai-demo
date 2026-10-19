@@ -36,7 +36,7 @@ function pct(type){var a=answers.filter(function(x){return x.type===type;});retu
 function metric(k,v){return '<div class="metric"><span>'+Q.labels[lang][k]+'</span><b>'+(v==null?tr('لم يُقَس','Not assessed'):v+'%')+'</b></div>';}
 var lastDemo=null;
 function analysisPage(){
- stage(97,'<div class="analysisScreen" role="status" aria-live="polite" aria-busy="true"><img class="analysisFaces" src="assets/analysis-faces.svg" alt="'+tr('وجوه متعلمين','Learner portraits')+'"><h2>'+tr('جارٍ التحميل وتحليل إجابتك…','Loading and analysing your answer…')+'</h2><p>'+tr('نراجع عناصر إجابتك ونجهّز مؤشرات الحفظ والفهم.','Reviewing your answer and preparing recall and understanding indicators.')+'</p><div class="analysisProgress" aria-hidden="true"><i></i></div></div>');
+ stage(97,'<div class="analysisScreen" role="status" aria-live="polite" aria-busy="true"><img class="analysisFaces" src="assets/analysis-faces.svg" width="480" height="200" alt="'+tr('وجوه متعلمين','Learner portraits')+'"><h2>'+tr('جارٍ التحميل وتحليل إجابتك…','Loading and analysing your answer…')+'</h2><p>'+tr('نراجع عناصر إجابتك ونجهّز مؤشرات الحفظ والفهم.','Reviewing your answer and preparing recall and understanding indicators.')+'</p><div class="analysisProgress" aria-hidden="true"><i></i></div></div>');
 }
 
 async function sendDemo(){

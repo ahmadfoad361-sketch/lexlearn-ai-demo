@@ -1,5 +1,6 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
 const R=require('../assets/showcase-recall.js');
+for(const name of ['showcase.html','showcase-en.html'])assert.ok(fs.readFileSync(name,'utf8').includes('rel="preload" as="image" href="assets/analysis-faces.svg"'),'load portraits before analysis so cold-cache results cannot skip the illustration');
 async function run(lang,answer,expected,serverNull=false){
  const nodes=new Map(),store=new Map();let release;
  const app={_html:'',set innerHTML(v){this._html=v;nodes.clear();for(const m of v.matchAll(/id="([^"]+)"/g))nodes.set(m[1],{value:'',textContent:'',onclick:null});},get innerHTML(){return this._html;}};
