@@ -20,18 +20,19 @@ begin
  if length(trim(t))<4 then
    return jsonb_build_object('status','needs_human_review','provisional_percent',null,'reason','empty_or_short');end if;
  -- Evaluate legal *relationships*, not merely answer length or the presence of a single keyword.
- b:=t~'(ولد|ولاد|birth|born)' and t~'(حي|live|alive)' and t~'(شخص|personality)'
-   and t~'(تبدا|بدا|البدايه|begin|start)';
+ b:=(t~'(تبدا|يبدا|بدايه).{0,80}(شخص|personality).{0,60}(ولاد|ولد|birth|born).{0,18}(حي|live|alive)'
+   or t~'(شخص|personality).{0,50}(تبدا|بدايه|starts|begins).{0,55}(ولاد|ولد|birth|born).{0,18}(حي|live|alive)'
+   or t~'(ولاد|ولد|birth|born).{0,18}(حي|live|alive).{0,50}(تبدا|بدايه|starts|begins).{0,38}(شخص|personality)');
  d:=t~'(وفا|موت|death|died)' and t~'(تنتهي|نهايه|end|ends)'
    and t~'(شخص|personality)';
  u:=t~'(حمل|جنين|unborn|prenatal)' and t~'(حق|حقوق|rights?)'
    and t~'(شرط|مشروط|بشرط|conditional|depends|subject to)'
    and t~'(ولاد|ولد|born|birth)' and t~'(حي|live|alive)';
- a:=t~'(قبول|accept)' and t~'(لا يحتاج|لا تتطلب|بدون|دون|no acceptance|does not require|without|not require)';
+ a:=t~'(قبول|accept)' and t~'(لا يحتاج|لا تحتاج|لا تتطلب|بدون|دون|no acceptance|does not require|without|not require)';
  links:=t~'(لان|لذلك|حيث|اذا|بسبب|لأن|نتيجه|فان|because|therefore|since|thus|so that|if)';
  -- The examination's wrong comparison example is not treated as the learner's conclusion
  -- when explicitly identified as incorrect.
- has_wrong:=t~'(الشخصيه.{0,45}(تبدا|بدا).{0,30}(بالحمل|من الحمل|عند الحمل)|personality.{0,30}(starts|begins).{0,30}(conception|pregnancy)|الولاده.{0,30}تنهي.{0,20}الشخصيه|birth ends personality|الحمل.{0,35}كامل.{0,20}اهليه)';
+ has_wrong:=t~'((تبدا|يبدا).{0,30}الشخصيه.{0,30}(بالحمل|من الحمل|عند الحمل)|الشخصيه.{0,45}(تبدا|بدا).{0,30}(بالحمل|من الحمل|عند الحمل)|personality.{0,30}(starts|begins).{0,30}(conception|pregnancy)|الولاده.{0,30}تنهي.{0,20}الشخصيه|birth ends personality|الحمل.{0,35}كامل.{0,20}اهليه)';
  denied_wrong:=t~'(خطا|خاطئ|غير دقيق|غير صحيح|لا تبدا.{0,30}الحمل|incorrect|false|wrong|not true|does not begin at conception)';
  if has_wrong and not denied_wrong then
    return jsonb_build_object('status','needs_human_review','provisional_percent',null,
