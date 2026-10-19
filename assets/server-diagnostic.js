@@ -35,7 +35,7 @@ async function startUI(){
   if(status.status==="completed"){root.location.replace(program());return;}
   if(!await D.academicItemsApproved(cloud))throw new Error("diagnostic_academic_approval_pending");
   if(status.status==="not_started"){
-   render("<p>"+tr("سيُحفظ كل سؤال على الخادم. لن تُحسب المهارة غير المقاسة صفرًا، ولن تُمنح الإجابة الحرة درجة دلالية آلية.","Each answer is saved on the server. Unmeasured skills are not zero and free text is not graded automatically.")+"</p>"+
+   render("<p>"+tr("سيُحفظ كل سؤال على الخادم. تحلل الإجابة الحرة داخليًا إلى نسبة مبدئية إذا توفرت أدلة كافية، وإلا تظهر غير مكتملة دون صفر وهمي.","Each answer is saved on the server. Free text gets a provisional internal percentage when assessable; otherwise it stays ungraded, never a fabricated zero.")+"</p>"+
     "<button id='beginDiagnostic'>"+tr("ابدأ التشخيص الرسمي","Begin official diagnostic")+"</button><p id='startError' role='alert'></p>");
    root.document.getElementById("beginDiagnostic").onclick=async function(){
     this.disabled=true;
@@ -80,6 +80,12 @@ async function startUI(){
      }else{
       var reply=await cloud.studentLifecycleRpc("complete",{courseId:COURSE_ID,answers:answers,freeText:root.document.getElementById("ungradedText").value||""});
       if(reply.status!=="completed"||!reply.result||reply.result.source!=="server_finalized_diagnostic"||reply.result.student_id!==student||!reply.training_plan)throw new Error("completion_not_confirmed");
+      // Give the optional free recall an internally generated preliminary percentage;
+      // if interpretation is inconclusive, preserve pending review rather than invent success.
+      if((root.document.getElementById("ungradedText")&&root.document.getElementById("ungradedText").value||"").trim()){
+       try{await cloud.studentLifecycleRpc("reviewDiagnostic",{courseId:COURSE_ID});}
+       catch(e){if(root.console&&root.console.warn)root.console.warn("Provisional diagnostic review pending:",String(e&&e.message||e));}
+      }
       var check=await cloud.studentLifecycleRpc("status",{courseId:COURSE_ID});
       if(check.status!=="completed"||check.attempt_id!==reply.attempt_id)throw new Error("completion_readback_failed");
       root.location.replace(program());
