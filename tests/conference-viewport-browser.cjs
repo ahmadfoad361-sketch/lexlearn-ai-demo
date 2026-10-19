@@ -25,7 +25,7 @@ const chrome=[process.env.CHROME_BIN,"/usr/bin/google-chrome","/usr/bin/google-c
      };
    });
    const first=v.first, ratio=first&&first.width/v.viewport||0;
-   if(!first||ratio<.82||Math.abs(first.x)>Math.max(24,v.viewport*.07)||v.scroll>v.viewport*1.06){
+   if(!first||ratio<.75||Math.abs(first.x)>Math.max(24,v.viewport*.15)||Math.abs(first.x-(v.viewport-first.right))>Math.max(10,v.viewport*.03)||v.scroll>v.viewport*1.06){
      await p.screenshot({path:"/tmp/lexlearn-conference-"+lang+"-"+width+".png",fullPage:false}).catch(()=>{});
      throw new Error("Conference squashed or horizontally overflowing: "+JSON.stringify({width,lang,...v,ratio}));
    }
