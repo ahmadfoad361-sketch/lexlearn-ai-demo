@@ -51,6 +51,10 @@ jobs:
           node tests/pilot-supervisor-audit.test.js
           node scripts/validate-pilot-grading.js
           node tests/program-flow.test.js
+          node tests/official-diagnostic.test.js
+          node tests/official-diagnostic-dom-flow.test.js
+          node tests/server-diagnostic-ui.test.js
+          node tests/student-gate-source.test.js
           node tests/public-showcase.test.js
           node tests/showcase-revision.test.js
           node tests/showcase-learning-cycle.test.js
@@ -69,7 +73,7 @@ jobs:
 
   deploy:
     needs: test
-    if: github.event_name != 'pull_request'
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     permissions:
       contents: read
       pages: write
@@ -96,3 +100,30 @@ jobs:
       - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v4
+      - name: Setup Node for deployed-site smoke
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Install local Playwright driver
+        run: npm install --no-save --no-package-lock playwright-core@1.56.1
+      - name: Confirm actual published build and public learning routes
+        env:
+          BASE_URL: ${{ steps.deployment.outputs.page_url }}
+          EXPECTED_BUILD_SHA: ${{ github.sha }}
+          LEX_VIDEO_DIR: published-browser-evidence
+        run: |
+          mkdir -p published-browser-evidence
+          for i in 1 2 3 4 5 6; do
+            echo "Checking deployed page URL, round $i"
+            if node tests/student-path-browser.cjs; then exit 0; fi
+            sleep 15
+          done
+          exit 1
+      - name: Keep published public-browser recordings
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lexlearn-live-public-browser-${{ github.sha }}
+          path: published-browser-evidence/
+          if-no-files-found: ignore
+          retention-days: 14

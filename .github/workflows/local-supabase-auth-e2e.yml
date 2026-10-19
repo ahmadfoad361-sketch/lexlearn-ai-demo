@@ -1,0 +1,82 @@
+name: LexLearn real Auth local Supabase E2E
+
+on:
+  push:
+    branches:
+      - fix/student-lifecycle-server-gated-20261019
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lexlearn-free-supabase-local-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  authenticated-local-stage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Validate real-auth E2E test script before Docker downloads
+        run: |
+          node --check tests/staging/real-auth-e2e.mjs
+          node --check tests/staging/real-browser-flow.cjs
+      - uses: supabase/setup-cli@v3
+      - name: Normalize legacy filename versions only inside disposable CI checkout
+        run: |
+          # The historical YYYYMMDD_001 filenames collide in Supabase CLI's
+          # version parser. Rename only ephemeral CI working copies, never
+          # rewrite hosted production's migration history.
+          for file in supabase/migrations/????????_???_*.sql; do
+            [ -f "$file" ] || continue
+            base="${file##*/}"
+            new="${base:0:8}${base:9:3}000_${base:13}"
+            mv "$file" "supabase/migrations/$new"
+          done
+          ls supabase/migrations
+      - name: Start isolated local Supabase Auth, REST, Postgres (NEVER production)
+        run: |
+          supabase --version
+          supabase start --exclude realtime,storage-api,imgproxy,mailpit,studio,edge-runtime,postgres-meta,logflare,vector,supavisor
+      - name: Get ephemeral local keys without publishing them
+        run: |
+          supabase status -o env > /tmp/lexlearn-local.env
+          test -s /tmp/lexlearn-local.env
+      - name: Test real local GoTrue sign-in, signed PostgREST requests and adaptive lesson
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y postgresql-client
+          node tests/staging/real-auth-e2e.mjs /tmp/lexlearn-local.env
+      - name: Browser driver and build (LOCAL only, config overwritten)
+        run: |
+          npm install --no-save --no-package-lock playwright-core@1.56.1
+          # Use the installer bundled with the exact pinned playwright-core version.
+          # A floating npx playwright fetched FFmpeg v1013 but our pinned driver
+          # requires v1011, causing Chrome.newPage to fail before any student action.
+          node node_modules/playwright-core/cli.js install ffmpeg
+          node scripts/build-public.js
+          python3 -m http.server 18765 --bind 127.0.0.1 --directory dist-site >/tmp/lexlearn-local-http.log 2>&1 &
+          sleep 2
+      - name: Real mobile Chrome student journey and saved grade after reload
+        timeout-minutes: 4
+        run: |
+          # A hung browser is a FAILED test, never evidence of a working learner journey.
+          timeout --signal=TERM --kill-after=10s 210s node tests/staging/real-browser-flow.cjs /tmp/lexlearn-local.env
+      - name: Keep browser movie, screenshot and sanitized REST status evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lexlearn-local-auth-e2e-${{ github.sha }}
+          path: ci-artifacts/local-staging-browser/
+          retention-days: 7
+          if-no-files-found: ignore
+      - name: Clear local credentials and shut down disposable stack
+        if: always()
+        run: |
+          rm -f /tmp/lexlearn-local.env
+          supabase stop --no-backup || true

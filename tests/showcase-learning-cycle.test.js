@@ -79,7 +79,7 @@ for(const lang of ["ar","en"]){
     assert.equal(complete.completed,true,"practice is marked complete after fourth activity");
     assert.equal(complete.lang,lang);
     assert(Number.isFinite(complete.at),"completion timestamp required");
-    assert(markup.includes((lang==="ar"?"program.html":"program-en.html")+"?demo=1&start=1&preview=stage1&country=qa&subject=rights"),
+    assert(markup.includes((lang==="ar"?"showcase-level1.html":"showcase-level1-en.html")),
       "Stage-one CTA must not loop back to an unsigned official programme");
     assert(markup.includes(lang==="ar"?"البرنامج الجامعي ما زال غير معتمد":"not yet approved for students"),
       "Academic pilot release status must be explicit");
