@@ -31,7 +31,7 @@ grant select on public.student_diagnostic_runs to authenticated;
 drop policy if exists "diagnostic student read only" on public.student_diagnostic_runs;
 create policy "diagnostic student read only" on public.student_diagnostic_runs
   for select to authenticated using (
-    user_id=auth.uid() and public.is_active_user()
+    user_id=auth.uid() and private.is_active_user()
   );
 drop policy if exists "diagnostic instructor cohort read" on public.student_diagnostic_runs;
 create policy "diagnostic instructor cohort read" on public.student_diagnostic_runs
