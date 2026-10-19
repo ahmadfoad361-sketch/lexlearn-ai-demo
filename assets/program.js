@@ -765,6 +765,7 @@ function chrome(inner){
    if(window.LEX_PILOT&&['home','sessionResult','completion'].indexOf(state.view)>=0)LEX_PILOT.dashboard(document.querySelector('.courseWrap'),state.course,'ar',save,function(){state.view='home';render();},!!(STUDENT_SESSION&&STUDENT_SESSION.cloud));
 }
 function render(){
+ if(!DEMO&&STUDENT_SESSION&&STUDENT_SESSION.cloud&&state.diag)return train();
    if(state.view==="stagePreviewComplete")return stagePreviewComplete();
    if(state.view==="notebook")return notebookPage();
    if(state.view==="home")return home();
@@ -949,9 +950,13 @@ function taskStatusBox(correct,label,provisional){
 function orderedOptions(t,salt){return LEX_QUALITY.shuffleOptions(t);}
 
 function train(){
-  if(!DEMO&&STUDENT_SESSION&&STUDENT_SESSION.cloud&&!(state.levelAccess&&state.levelAccess.allowed&&state.course.session===1&&window.LEX_PILOT&&LEX_PILOT.isReleased(state.course.session))){
+  if(!DEMO&&STUDENT_SESSION&&STUDENT_SESSION.cloud&&!(state.levelAccess&&state.levelAccess.allowed&&state.course.session===1&&window.LEX_OFFICIAL_LEVEL_ONE)){
     var p=state.diag&&state.diag.trainingPlan;
     chrome('<section class="stage"><div class="taskCard"><span class="kicker">الجلسة '+state.course.session+' • بانتظار الاعتماد الأكاديمي</span><h2>خطة المستوى الأول جاهزة ومحفوظة</h2><p>'+esc(p?p.reason_ar:"تم حفظ التشخيص بنجاح.")+'</p><p>ترتيب التدريب المقترح: '+esc(p?p.firstTasks.join(" ← "):"تأسيس ثم قياس")+'</p><div class="notice">عناصر المقرر لم تحصل بعد على الاعتماد القانوني والأكاديمي. لن نفتحها أو نحسب تقدّمًا وهميًا.</div><a class="secondary" href="student.html">حساب الطالب</a></div></section>');return;
+  }
+  if(!DEMO&&STUDENT_SESSION&&STUDENT_SESSION.cloud){
+    chrome('<section class="stage"><div class="taskCard"><h2>حساب الطالب • المستوى الأول</h2><div id="officialLevelMount" role="region"></div></div></section>');
+    return LEX_OFFICIAL_LEVEL_ONE.mount(document.getElementById("officialLevelMount"),{lang:"ar",cloud:LEX_CLOUD,courseId:COURSE_DB_ID});
   }
   if(window.LEX_PILOT&&LEX_PILOT.isReleased(state.course.session)){LEX_PILOT.mount(APP,state.course.session,'ar',{course:state.course,onSave:save,onComplete:function(pilot){state.answers=[1,2,3,4,5].map(function(step){var a=pilot.attempts.filter(function(x){return x.step===step;}).slice(-1)[0];return {dimension:step===4?'recall':'application',score:a&&a.score,correct:!!(a&&a.score===1)};});finishTraining();},onExit:function(){state.view='home';render();}});return;}
   var q=state.queue.length?state.queue:buildTrainingQueue(),t=q[state.task%q.length],meta=sessionMeta(state.course.session);
