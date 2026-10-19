@@ -35,7 +35,7 @@ begin
  -- The examination's wrong comparison example is not treated as the learner's conclusion
  -- when explicitly identified as incorrect.
  has_wrong:=t~'((تبدا|يبدا).{0,30}الشخصيه.{0,30}(بالحمل|من الحمل|عند الحمل)|الشخصيه.{0,45}(تبدا|بدا).{0,30}(بالحمل|من الحمل|عند الحمل)|personality.{0,30}(starts|begins).{0,30}(conception|pregnancy)|الولاده.{0,30}تنهي.{0,20}الشخصيه|birth ends personality|الحمل.{0,35}كامل.{0,20}اهليه)';
- denied_wrong:=t~'(خطا|خاطئ|غير دقيق|غير صحيح|لا تبدا.{0,30}الحمل|incorrect|false|wrong|not true|does not begin at conception)';
+ denied_wrong:=t~'(خطا|خاطي|غير دقيق|غير صحيح|لا تبدا.{0,30}الحمل|incorrect|false|wrong|not true|does not begin at conception)';
  if has_wrong and not denied_wrong then
    return jsonb_build_object('status','needs_human_review','provisional_percent',null,
     'reason','possible_legal_contradiction','confidence','low',
@@ -58,7 +58,7 @@ begin
    if cue_links then pts:=pts+1;met:=array_append(met,'cues_with_meaning');else missed:=array_append(missed,'cues_with_meaning');end if;
  elsif p_item='rights-v1-s1-understanding' then
    maximum:=7;
-   correct:=t~'(خطا|خاطئ|غير دقيق|غير صحيح|لا تبدا|ليس|الفرق|تمييز|incorrect|wrong|distinguish|not)'
+   correct:=t~'(خطا|خاطي|غير دقيق|غير صحيح|لا تبدا|ليس|الفرق|تمييز|incorrect|wrong|distinguish|not)'
      and t~'(حمل|unborn|prenatal|conception)' and b;
    if b and links then pts:=pts+2;met:=array_append(met,'explain_live_birth');else missed:=array_append(missed,'explain_live_birth');end if;
    if d and links then pts:=pts+2;met:=array_append(met,'explain_death');else missed:=array_append(missed,'explain_death');end if;
