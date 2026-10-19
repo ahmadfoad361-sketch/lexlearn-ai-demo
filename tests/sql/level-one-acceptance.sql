@@ -38,7 +38,10 @@ begin
  r:=public.lex_level_one_submit('qa-qu-lawc101-rights','rights-v1-s1-recall','Unaided retrieval of statutory rule.');
  if r->>'status'<>'practice_completed_pending_review' or jsonb_array_length(r->'saved')<>3
  then raise exception 'A practice completion missing';end if;
- if r->>'review_status'<>'not_auto_graded' then raise exception 'Free answer has fake grade';end if;
+ if r->>'review_status'<>'provisional_internal_grading' or
+ (r->'saved'->0->'evaluation'->>'status') is null or
+ r->'saved'->0->'evaluation'->>'grade_type'<>'provisional_rule_coverage_not_final_legal_grade'
+ then raise exception 'Free answer must retain provisional grade provenance and human review: %',r->'saved'->0->'evaluation';end if;
  if (public.lex_level_access('qa-qu-lawc101-rights',2))->>'allowed'<>'false'
  then raise exception 'Pending first-level essays unlocked level two';end if;
  if (select count(*) from public.student_level_responses)<>3 then raise exception 'A saved count wrong';end if;
