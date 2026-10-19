@@ -5,12 +5,12 @@ for(const page of ["showcase","showcase-en"]){
  const js=fs.readFileSync("assets/"+page+".js","utf8");
  const html=fs.readFileSync(page+".html","utf8");
  assert(js.includes('analysisPage()'),'AI analysis stage must appear before results');
- assert(js.includes('demoDeliveryWarning')&&js.includes('unconfirmed?null:g.recall_score'),
-   'If anonymous sign-in fails, result must warn before the cards and no recall grade can be shown');
+ assert(js.includes('demoDeliveryWarning')&&js.includes('recall=g.recall_score'),
+   'If saving fails, keep the provisional local estimate and warn that it was not saved');
  assert(js.includes("!r.received")&&js.includes("errorLabel(r.error)"),
    'Unconfirmed receipt must explicitly display the server delivery/auth error');
- assert(js.includes('Automated grading and saving could not be completed'),
-   'Bilingual failure disclosure must say grading and saving both failed');
+ assert(js.includes('The supervisor could not receive this attempt'),
+   'Bilingual failure disclosure must truthfully report the failed save');
 
  assert(js.includes('receiptScreen()')||js.includes('receiptScreen'),'A branded completion screen is required');
  assert(js.includes('assets/lexlearn-logo.svg'),'Must use the approved logo');
@@ -35,3 +35,5 @@ assert(server.includes("save_demo_submission"),"Server must cap provider calls")
 const build=fs.readFileSync("scripts/build-public.js","utf8");
 assert(build.includes("demo-supervisor.html"),"Supervisor queue must be published");
 console.log("Public showcase separation, score states, and branded receipt: PASS");
+
+require("./demo-loading-and-local-score.test.js");

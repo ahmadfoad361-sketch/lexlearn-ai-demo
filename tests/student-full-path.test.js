@@ -34,3 +34,4 @@ assert.ok(migration.includes("p_session%5=0"),"six review checkpoints missing");
 const build=fs.readFileSync("scripts/build-public.js","utf8");
 assert.ok(build.includes('"student-path.html"')&&build.includes('"student-path.js"'));
 console.log("Full-session client boundaries and provisional grades: PASS");
+require("./student-progress-ui.test.js");

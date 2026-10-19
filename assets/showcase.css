@@ -247,3 +247,5 @@ html[lang=en] .demoIntro .demoPrivacy{text-align:center}
 .demoDeliveryWarning p{font-size:14px;line-height:1.75;margin:8px 0 0;color:#3b4557}
 .demoDeliveryWarning~.resultInfographic .skill-recall .skillValue{font-size:clamp(18px,2.6vw,27px);line-height:1.55}
 @media(max-width:600px){.demoDeliveryWarning{padding:13px 14px}.demoDeliveryWarning strong{font-size:16px}.demoDeliveryWarning p{font-size:13px}}
+
+.analysisFaces{display:block;width:min(100%,400px);height:auto;margin:0 auto 24px}.analysisScreen{min-height:330px}.analysisScreen h2{font-size:clamp(1.35rem,4vw,2rem)}

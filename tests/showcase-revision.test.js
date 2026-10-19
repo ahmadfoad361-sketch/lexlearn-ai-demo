@@ -67,7 +67,7 @@ async function check(lang){
  const sameTextPending=JSON.parse(store.get("lexlearn-demo-v3-"+lang));
  assert.equal(sameTextPending.receipt,null,"old saved result must not be reused when rechecking identical text");
  assert.notEqual(sameTextPending.requestId,"00000000-0000-4000-8000-000000000099");
- await new Promise(ok=>setTimeout(ok,10));
+ await new Promise(ok=>setTimeout(ok,1500));
  assert.equal(sent.length,1,"regrading unchanged text sends a new, auditable submission");
  assert.equal(sent[0].answer,"الولادة حيا");
  assert.equal(sent[0].request_id,sameTextPending.requestId);
@@ -81,7 +81,7 @@ async function check(lang){
  assert.equal(pending.receipt,null,"old receipt must not be reused with revised request id");
  assert.equal(pending.free,improved);
  assert.notEqual(pending.requestId,"00000000-0000-4000-8000-000000000099");
- await new Promise(ok=>setTimeout(ok,10));
+ await new Promise(ok=>setTimeout(ok,1500));
  assert.equal(sent.length,2,"edited answer should create a second, separate submission");
  assert.equal(sent[1].answer,improved);
  assert.equal(sent[1].request_id,pending.requestId);
