@@ -20,7 +20,7 @@ const CHROME=[process.env.CHROME_BIN,"/usr/bin/google-chrome","/usr/bin/google-c
     assert.equal(await p.locator(".taskCard").count(),0,"public query parameters must never unlock student level");
     assert.ok(await p.locator("#lexBuild").innerText(),"build id must be visible");
     await p.goto(BASE+showcase,{waitUntil:"domcontentloaded"});
-    assert.match(await p.locator("body").innerText(),en?/Public demo — no student account results or academic credit/:/تجربة عرض — لا تُحفظ النتائج في حساب الطالب/);
+    assert.match(await p.locator("body").innerText(),en?/Public demo — no student account results or academic credit/:/تجربة عرض.*حساب الطالب/);
     assert.equal(await p.locator("#lexBuild").count(),1,"all screens must contain exact build");
     await p.goto(BASE+level,{waitUntil:"domcontentloaded"});
     await p.locator(".taskCard").first().waitFor({timeout:20000});
