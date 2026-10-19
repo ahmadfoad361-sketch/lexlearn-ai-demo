@@ -368,7 +368,7 @@ assert.ok(js.includes('promo:"\\u2066LexLearn\\u2069 في مؤتمر \\u2066Web 
 assert.ok(!js.includes("ويب ساميت قطر ٢٠٢٧")&&!js.includes("ليكس ليرن · ويب ساميت"),"do not localize the event or project brand names in event strip");
 assert.ok(js.includes('promoShort:"LexLearn · Web Summit Qatar 2027 · ALPHA"'),"English banner retains official event identity");
 assert.ok(html.includes('title="Web Summit Qatar 2027 · ALPHA"')&&pub.includes('"go/index.html"')&&pub.includes('"lexlearn-go-qr.svg"'),"translated strip and permanent printed QR retained without visitor download");
-assert.ok(html.includes("assets/conference.css?v=20261017.11")&&html.includes("assets/conference.js?v=20261017.11"),"invalidate mobile first-fold UI cache");
+assert.ok(html.includes("assets/conference.css?v=20261019.12")&&html.includes("assets/conference.js?v=20261017.11"),"invalidate mobile first-fold UI cache");
 
 
 /* Follow-up UX contract: conference, pilot, investor and student demo. */
@@ -397,7 +397,7 @@ for(const code of [sc,scEn]){
 assert.ok(nav.includes('showcase(?:-en)?'),"public demo must skip generic floating Back injection");
 assert.ok(scCss.includes(".demoIntro .demoStart{display:block;width:min(100%,485px)")&&scCss.includes(".demoIntro .stageCard:before{display:none}"),"wide CTA and no abrupt colored stripe");
 assert.ok(!read("showcase.html").includes("fonts.googleapis.com")&&!read("showcase-en.html").includes("fonts.googleapis.com"),"remove blocking remote Google fonts");
-assert.ok(html.includes("assets/conference.css?v=20261017.11")&&html.includes("assets/conference.js?v=20261017.11"),"bump CSS/JS cache");
+assert.ok(html.includes("assets/conference.css?v=20261019.12")&&html.includes("assets/conference.js?v=20261017.11"),"bump CSS/JS cache");
 
 
 /* Conversion UX: direct email and WhatsApp, without any visitor data collection. */
@@ -473,7 +473,7 @@ assert.ok(pilotText.includes('30–60')&&pilotText.includes('6–8')&&pilotText.
 assert.ok(css.includes(".pilotExchange>div{background:#fffdfb!important"),"all three role cards must have identical background and border");
 assert.ok(css.includes(".pilotOffer{display:inline-block"),"free pilot line receives visible highlighting");
 assert.ok(css.includes(".pilotActions{grid-column:1/-1;display:grid"),"two direct-contact pilot buttons align responsively");
-assert.ok(html.includes("assets/conference.js?v=20261017.11")&&html.includes("assets/conference.css?v=20261017.11"),"invalidate conference client cache");
+assert.ok(html.includes("assets/conference.js?v=20261017.11")&&html.includes("assets/conference.css?v=20261019.12"),"invalidate conference client cache");
 assert.ok(js.includes('id="pilotWhatsApp"')===false,"pilot WhatsApp IDs belong in HTML, not generated markup");
 
 console.log("conference landing release test PASS");
