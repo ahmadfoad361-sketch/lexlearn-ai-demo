@@ -55,7 +55,10 @@ jobs:
       - name: Browser driver and build (LOCAL only, config overwritten)
         run: |
           npm install --no-save --no-package-lock playwright-core@1.56.1
-          npx playwright install ffmpeg
+          # Use the installer bundled with the exact pinned playwright-core version.
+          # A floating npx playwright fetched FFmpeg v1013 but our pinned driver
+          # requires v1011, causing Chrome.newPage to fail before any student action.
+          node node_modules/playwright-core/cli.js install ffmpeg
           node scripts/build-public.js
           python3 -m http.server 18765 --bind 127.0.0.1 --directory dist-site >/tmp/lexlearn-local-http.log 2>&1 &
           sleep 2
