@@ -15,7 +15,7 @@ declare
  met text[]:=array[]::text[]; missed text[]:=array[]::text[];
  pts integer:=0; maximum integer:=0; pct integer; reason text; label text;
 begin
- if p_item not in ('rights-v1-s1-recall','rights-v1-s1-understanding','rights-v1-s1-exam')
+ if p_item not in ('diagnostic-legal-personality','rights-v1-s1-recall','rights-v1-s1-understanding','rights-v1-s1-exam')
  then return jsonb_build_object('status','needs_human_review','provisional_percent',null,'reason','unsupported_task');end if;
  if length(trim(t))<4 then
    return jsonb_build_object('status','needs_human_review','provisional_percent',null,'reason','empty_or_short');end if;
@@ -40,7 +40,11 @@ begin
     'warning_en','The answer may assert a legally inconsistent conclusion; meaning requires review.',
     'method','internal_qatar_rights_rules_v1');
  end if;
- if p_item='rights-v1-s1-recall' then
+ if p_item='diagnostic-legal-personality' then
+   maximum:=1;
+   if b then pts:=1;met:=array_append(met,'live_birth');
+   else missed:=array_append(missed,'live_birth');end if;
+ elsif p_item='rights-v1-s1-recall' then
    maximum:=8;
    cues:=t~'(مفتاح|مفاتيح|←|->|=>|cue|remember|key word|keyword)';
    cue_links:=cues and b and d and u;
@@ -67,6 +71,10 @@ begin
    if r then pts:=pts+1;met:=array_append(met,'relevant_legal_rule');else missed:=array_append(missed,'relevant_legal_rule');end if;
    if application and issue then pts:=pts+1;met:=array_append(met,'connect_facts_to_rule');else missed:=array_append(missed,'connect_facts_to_rule');end if;
    if outcome then pts:=pts+1;met:=array_append(met,'direct_legal_conclusion');else missed:=array_append(missed,'direct_legal_conclusion');end if;
+ end if;
+ if p_item='diagnostic-legal-personality' and not b and length(regexp_replace(t,'[^ ]','','g'))<7 then
+  return jsonb_build_object('status','needs_human_review','provisional_percent',null,
+   'reason','insufficient_diagnostic_evidence','method','internal_qatar_rights_rules_v1');
  end if;
  pct:=round(100.0*pts/maximum)::integer;
  return jsonb_build_object('status','preliminary_internal','provisional_percent',pct,
