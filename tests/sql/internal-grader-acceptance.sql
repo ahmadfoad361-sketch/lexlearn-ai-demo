@@ -39,4 +39,32 @@ begin
  select count(*),count(*) filter(where evaluation is not null) into n,m from public.student_level_responses;
  if n<1 or m<1 then raise exception 'Official answers must have server-computed evaluation';end if;
 end $;
+-- The free answer from a completed diagnostic is checked by the same internal
+-- rules but cannot be marked a validated recall metric.
+set role authenticated;
+select set_config('request.jwt.claim.sub','10000000-0000-4000-8000-000000000001',false);
+do $
+declare v jsonb; first_score jsonb;
+begin
+ v:=public.lex_diagnostic_internal_assess('qa-qu-lawc101-rights');
+ first_score:=v->'result'->'measurements'->'recall'->'internal_grade';
+ if first_score is null then raise exception 'Diagnostic internal evaluation was not saved';end if;
+ if v->'result'->'metrics'->>'recall' is not null then
+  raise exception 'Preliminary percentage improperly certified a recall metric';end if;
+ v:=public.lex_diagnostic_internal_assess('qa-qu-lawc101-rights');
+ if v->'result'->'measurements'->'recall'->'internal_grade'<>first_score
+ then raise exception 'Diagnostic retry changed the internal result';end if;
+end $;
+-- Staff may inspect scores only for their own cohorts.
+select set_config('request.jwt.claim.sub','30000000-0000-4000-8000-000000000001',false);
+do $ begin
+ if (select count(*) from public.student_level_responses)<>3 then
+  raise exception 'Cohort A instructor cannot view all of learner A practice results';end if;
+end $;
+select set_config('request.jwt.claim.sub','30000000-0000-4000-8000-000000000002',false);
+do $ begin
+ if (select count(*) from public.student_level_responses)<>1 then
+  raise exception 'Cohort B instructor saw data outside cohort';end if;
+end $;
+reset role;
 \echo 'PASS: internal rubric-grounded preliminary percentages, contradiction guard, no keyword-only structural credits, bilingual legal meaning'
