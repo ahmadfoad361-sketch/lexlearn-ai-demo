@@ -499,3 +499,26 @@ assert.ok(pub.includes('conference-experience.js'));
  browser.scrollY=9000;listeners.pageshow();assert.ok(visible,'restore return on browser back');
  assert.ok(html.includes('class="visitor-return-bar"'),'audience dialogs must retain their sticky home control');
 }
+
+// Appearance stays conference-only and remains usable when storage is blocked.
+{
+ const themeCode=read('assets/conference-theme.js');
+ function appearance(saved,blocked=false){
+   const attrs={},handlers={},events={},labels={};let observer;
+   const root={lang:'ar',setAttribute(k,v){attrs[k]=v;},getAttribute(k){return attrs[k];}};
+   const button={hidden:true,setAttribute(k,v){labels[k]=v;},querySelector(s){return labels[s]||(labels[s]={textContent:''});},addEventListener(k,fn){handlers[k]=fn;}};
+   const storage=new Map(saved===null?[]:[['lexlearn_conference_theme',saved]]);
+   vm.runInNewContext(themeCode,{document:{documentElement:root,getElementById(){return button;},addEventListener(k,fn){events[k]=fn;}},window:{addEventListener(k,fn){events[k]=fn;}},localStorage:{getItem(k){if(blocked)throw Error('blocked');return storage.get(k);},setItem(k,v){if(blocked)throw Error('blocked');storage.set(k,v);}},MutationObserver:function(fn){observer=fn;this.observe=()=>{};}});
+   return {attrs,labels,root,button,storage,handlers,events,observe:()=>observer()};
+ }
+ const dark=appearance('dark');assert.equal(dark.attrs['data-theme'],'dark','apply saved appearance before DOM is ready');
+ dark.events.DOMContentLoaded();assert.equal(dark.button.hidden,false);assert.equal(dark.labels['aria-label'],'الوضع الفاتح');
+ dark.handlers.click();assert.equal(dark.attrs['data-theme'],'light');assert.equal(dark.storage.get('lexlearn_conference_theme'),'light');
+ dark.root.lang='en';dark.observe();assert.equal(dark.labels['aria-label'],'Dark mode');
+ dark.events.storage({key:'lexlearn_conference_theme',newValue:'dark'});assert.equal(dark.attrs['data-theme'],'dark');
+ dark.events.storage({key:'lexlearn_conference_theme',newValue:null});assert.equal(dark.attrs['data-theme'],'light');
+ for(const saved of [null,'invalid'])assert.equal(appearance(saved).attrs['data-theme'],'light');
+ const blocked=appearance(null,true);blocked.events.DOMContentLoaded();blocked.handlers.click();assert.equal(blocked.attrs['data-theme'],'dark','toggle works without storage permissions');
+ assert.ok(html.indexOf('assets/conference-theme.js')<html.indexOf('assets/conference.css'),'restore appearance before CSS');
+ assert.ok(pub.includes('"conference-theme.js"')&&pub.includes('"conference-theme.css"'),'ship appearance assets');
+}

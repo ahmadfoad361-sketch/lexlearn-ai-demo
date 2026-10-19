@@ -1,0 +1,69 @@
+/* Scoped to the conference: brand background colours stay separate from text. */
+.theme-toggle{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:44px;min-width:44px;padding:7px 12px;border:1px solid var(--line);border-radius:999px;background:var(--paper);color:var(--navy);cursor:pointer;font-size:12px;font-weight:750;white-space:nowrap}
+.theme-toggle[hidden]{display:none}
+.theme-toggle [data-theme-icon]{font:24px/1 Arial,sans-serif}
+.theme-toggle:hover{border-color:#8A1F39}
+@media(max-width:760px){.theme-toggle{padding:6px;flex:none}.theme-toggle [data-theme-label]{display:none}}
+@media(max-width:599px){.site-header .identity{gap:8px}.header-logo-orbit{width:40px;height:40px}.site-header .identity .header-logo-orbit img{width:31px;height:29px}.identity b{font-size:18px}.top-actions{gap:6px}.top-actions>a{display:none}.topbar{gap:8px}.lang-switch button{padding-inline:9px}}
+@media screen{
+html[data-theme=light]{color-scheme:light}
+html[data-theme=dark]{color-scheme:dark;--cream:#111D31;--paper:#1b2a40;--ink:#f9f4ef;--sub:#bdc8d9;--line:#50617a;--theme-text:#f9f4ef;--theme-accent:#f0a9ba;--theme-surface:#1b2a40;--theme-raised:#243650;--glow:0 18px 52px #0003;background:#111D31}
+html[data-theme=dark] body{background:#111D31;color:var(--theme-text)}
+html[data-theme=dark] .site-header{background:#111d31f7;border-bottom:1px solid var(--line);box-shadow:0 4px 20px #0003}
+html[data-theme=dark] .promo{background:#0a1424;color:#f9f4ef}
+html[data-theme=dark] :is(.identity b span,.eyebrow,.heroBrand,.solutionPanel>span,.skills article>span,.slideBody small,.textLink,.founderEmail,.roadmapDemoLink,.businessModel>h3,.pilotSteps strong,.leadConsentGroup>a,.pilotActions .pilotWhatsApp,.exhibit-chapters a span:first-child){color:var(--theme-accent)}
+html[data-theme=dark] .exhibit-tagline{background:#111D31;color:var(--theme-accent)}
+html[data-theme=dark] .exhibit-orbit{border-color:#f0a9ba66}
+html[data-theme=dark] .exhibit-orbit:before,html[data-theme=dark] .exhibit-dot{background:#f0a9ba}
+html[data-theme=dark] :is(.solutionPanel,.skills article,.photo-details,.pilotSteps>p,.roadmap li,.businessModel,.leadForm,.slideCard){background:var(--theme-surface);border-color:var(--line);color:var(--theme-text)}
+html[data-theme=dark] .pilotExchange>div{background:var(--theme-surface)!important;border-color:var(--line)!important}
+html[data-theme=dark] .pilotExchange>div h3{color:var(--theme-accent)!important}
+html[data-theme=dark] .pilotOffer{background:#3d253b;color:#ffd6e1!important;border-color:#f0a9ba}
+html[data-theme=dark] :is(.lead,.photo-details>summary,.leadForm h3,.leadFields label){color:var(--theme-text)}
+html[data-theme=dark] .photo-details[open]>summary,html[data-theme=dark] .photo-details>summary:hover{background:var(--theme-raised);border-color:var(--line)}
+html[data-theme=dark] .slideCard:nth-child(4) .slideBody,html[data-theme=dark] .slideCard:nth-child(6) .slideBody{background:var(--theme-raised)}
+html[data-theme=dark] :is(.slideBody p,.leadForm .leadPrivacy,.vision .evidenceNote){color:var(--sub)}
+html[data-theme=dark] :is(.slideMeta,.strength,.demoDiagram,.pilotStats>div,.honesty){background:#0a1424}
+html[data-theme=dark] .vision .evidenceNote{background:#243650;border-color:#f0a9ba}
+html[data-theme=dark] .roadmap .pilotNumbers bdi{color:var(--theme-accent)}
+html[data-theme=dark] .roadmapStatus.statusReady{background:#173d32;color:#a1e8c4}
+html[data-theme=dark] .roadmapStatus.statusProgress{background:#3d2c4d;color:#e6bef5}
+html[data-theme=dark] .roadmapStatus.statusUpcoming{background:#303e53;color:#d7dfed}
+html[data-theme=dark] .roadmap::before{background:#8f7685}
+html[data-theme=dark] .roadmap li.roadmapReady .roadmapMarker{background:#f0a9ba}
+html[data-theme=dark] .roadmap li.roadmapProgress .roadmapMarker{background:conic-gradient(#f0a9ba 0deg 180deg,#1b2a40 180deg 360deg);box-shadow:0 0 0 2px #f0a9ba}
+html[data-theme=dark] .roadmap li.roadmapUpcoming .roadmapMarker{background:#1b2a40;box-shadow:0 0 0 2px #c0abba}
+html[data-theme=dark] .visionInvestorQuote[data-quote-bank]{background:var(--theme-raised);border-color:var(--line);color:var(--theme-text)}
+html[data-theme=dark] .visionInvestorQuote[data-quote-bank] .visual-quote{color:var(--theme-text)}
+html[data-theme=dark] .visionInvestorQuote[data-quote-bank] .quote-attribution{color:#eed0db}
+html[data-theme=dark] :is(.exhibit-chapters a,.buttonSecondary,.deckArrow,.contactButtons>.shareIcon,.theme-toggle){background:var(--theme-surface);border-color:#8290a6;color:var(--theme-text)}
+html[data-theme=dark] :is(.exhibit-chapters a:hover,.buttonSecondary:hover,.deckArrow:not(:disabled):hover,.theme-toggle:hover){background:var(--theme-raised)}
+html[data-theme=dark] .scene-actions .buttonSecondary{background:#111d31aa;color:#fff;border-color:#c6cbd5}
+html[data-theme=dark] .contactFallback .contactButtons>.button{background:transparent;border-color:#bd8796;color:#ffd6e1}
+html[data-theme=dark] .contactFallback .contactButtons>.button:hover{background:var(--theme-raised)}
+html[data-theme=dark] #leadForm[data-mode=unavailable]+.contactFallback #waBusiness{background:#8A1F39;color:white;border-color:#bd8796}
+html[data-theme=dark] :is(.buttonPrimary,.scene-actions .button:not(.buttonSecondary)){background:#8A1F39;color:#fff;border-color:#c2798d}
+html[data-theme=dark] :is(.buttonPrimary:active,.scene-actions .button:active,.pathsReturn:active){background:#111D31;color:#fff;border-color:#b9c7de}
+html[data-theme=dark] .pathsReturn{border-color:#c2798d}
+html[data-theme=dark] .deckDot{background:#9aabc1}
+html[data-theme=dark] .deckDot[aria-current=true]{background:#f0a9ba}
+html[data-theme=dark] .lang-switch{background:var(--theme-surface);border-color:#8290a6}
+html[data-theme=dark] .lang-switch button{color:var(--theme-text)}
+html[data-theme=dark] .lang-switch [aria-pressed=true]{background:#8A1F39;color:#fff}
+html[data-theme=dark] .leadFields :is(input,select){background:#111D31;color:#f9f4ef;border-color:#8290a6;caret-color:#ffd6e1}
+html[data-theme=dark] .leadFields input::placeholder{color:#bdc8d9;opacity:1}
+html[data-theme=dark] .leadFields option{background:#111D31;color:#f9f4ef}
+html[data-theme=dark] .leadFields input:autofill{-webkit-text-fill-color:#f9f4ef;box-shadow:0 0 0 1000px #111D31 inset}
+html[data-theme=dark] .leadConsent input{accent-color:#8A1F39}
+html[data-theme=dark] .leadForm .leadStatus[data-state=info]{color:#bdc8d9}
+html[data-theme=dark] .leadForm .leadStatus[data-state=error]{color:#ffb9c7}
+html[data-theme=dark] .leadForm .leadStatus[data-state=success]{color:#a1e8c4}
+html[data-theme=dark] .founderPhoto{background:#243650;border-color:#8290a6}
+html[data-theme=dark] .founderPhoto img{filter:drop-shadow(0 0 6px #fff5)}
+html[data-theme=dark] .header-logo-orbit img,html[data-theme=dark] .exhibit-mark img{filter:drop-shadow(0 0 7px #fff5)}
+html[data-theme=dark] .foot{background:#0a1424;border-top:1px solid var(--line)}
+html[data-theme=dark] :is(a,button,input,select,summary):focus-visible{outline:3px solid #ffd6e1;outline-offset:3px}
+html[data-theme=dark] ::selection{background:#f0a9ba;color:#111D31}
+html[data-theme=dark] .skip{background:#1b2a40;color:#f9f4ef}
+}
+@media print{.theme-toggle{display:none!important}}
