@@ -2,17 +2,7 @@
 "use strict";
 var KEY="lexlearn_students_v2",SESSION="lexlearn_student_session";
 var params=new URLSearchParams(location.search),ENTRY_COUNTRY=(params.get("country")||"").toLowerCase();
-function seed(){
-  var a=[];try{a=JSON.parse(localStorage.getItem(KEY)||"[]");}catch(e){}
-  var demo1={id:"stu-demo-001",name:"طالب تجريبي 01",username:"student01",password:"Learn2027!",cohort:"Pilot A",university:"Qatar University",year:"السنة الأولى",subject:"rights",country:null,active:true,createdAt:Date.now()};
-  var demo2={id:"stu-demo-002",name:"طالب تجريبي 02",username:"student02",password:"Learn2027!",cohort:"Pilot A",university:"Qatar University",year:"السنة الأولى",subject:"rights",country:null,active:true,createdAt:Date.now()};
-  if(!a.some(function(x){return x.id===demo1.id||x.username==="student01";}))a.unshift(demo1);
-  if(!a.some(function(x){return x.id===demo2.id||x.username==="student02";}))a.push(demo2);
-  a.forEach(function(x){if(x.country===undefined)x.country=null;});
-  localStorage.setItem(KEY,JSON.stringify(a));
-  return a;
-}
-var students=seed(),err=document.getElementById("studentError");
+var err=document.getElementById("studentError");
 try{var lastUsername=localStorage.getItem("lexlearn_last_student_username");if(lastUsername)document.getElementById("studentUser").value=lastUsername;}catch(_){}
 async function login(u,p){
   err.style.display="none";
@@ -31,22 +21,11 @@ async function login(u,p){
       err.style.display="block";return;
     }
   }
-  var st=students.find(function(x){return x.active!==false&&x.username.toLowerCase()===String(u).toLowerCase()&&x.password===p;});
-  if(!st){err.textContent="اسم المستخدم أو كلمة المرور غير صحيحة، أو الحساب غير نشط.";err.style.display="block";return;}
-  var chosen=ENTRY_COUNTRY==="qa"?"qa":(st.country||null);
-  localStorage.setItem(SESSION,JSON.stringify({studentId:st.id,name:st.name,username:st.username,country:chosen,cloud:false,at:Date.now()}));
-  if(ENTRY_COUNTRY==="qa")localStorage.setItem("lexlearn_country_setup_v2_rights_"+st.id,"true");
-  location.href="student.html";
+  err.textContent="تعذر تسجيل الدخول السحابي؛ لا يُسمح بدخول حساب تجريبي محلي.";err.style.display="block";return;
 }
 document.getElementById("studentLogin").addEventListener("submit",function(e){
   e.preventDefault();login(document.getElementById("studentUser").value.trim(),document.getElementById("studentPassword").value);
 });
 var demoButton=document.getElementById("demoStudent");
-if(demoButton&&window.LEX_CLOUD&&LEX_CLOUD.isConfigured&&LEX_CLOUD.isConfigured())demoButton.style.display="none";
-demoButton.onclick=function(){
-  if(window.LEX_CLOUD&&LEX_CLOUD.isConfigured&&LEX_CLOUD.isConfigured()){
-    err.textContent="الحساب التجريبي المحلي غير متاح في وضع الإنتاج.";err.style.display="block";return;
-  }
-  login("student01","Learn2027!");
-};
+if(demoButton)demoButton.onclick=function(){location.href="showcase.html";};
 })();

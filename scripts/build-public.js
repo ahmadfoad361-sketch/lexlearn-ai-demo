@@ -4,8 +4,8 @@ fs.rmSync(out,{recursive:true,force:true});
 fs.mkdirSync(path.join(out,"assets"),{recursive:true});
 
 const pages=[
-  "index.html","conference.html","go/index.html","showcase.html","program.html","diagnostic.html",
-  "index-en.html","showcase-en.html","program-en.html",
+  "index.html","conference.html","go/index.html","showcase.html","showcase-level1.html","program.html","diagnostic.html",
+  "index-en.html","showcase-en.html","showcase-level1-en.html","program-en.html",
   "student-login.html","student-register.html","student.html","student-login-en.html","student-register-en.html","student-en.html",
   "admin-login.html","admin.html","demo-supervisor.html","pilot-review.html","pilot-qa.html",
   "privacy.html","privacy-en.html","terms.html","terms-en.html","reset-password.html",".nojekyll"
@@ -14,8 +14,8 @@ const assets=[
   "lexlearn-logo.svg","lexlearn-x-transparent.svg","lexlearn-og.jpg","lexlearn-public-pitch-en.pdf","lexlearn-go-qr.svg","conference.css","conference.js","conference-pdf.js","lexlearn-navigation.css","lexlearn-navigation.js","lexlearn-learning-lines.js","lexlearn-investor-quotes.js","conference-promo.css","brand-intro.js","training-carousel.js",
   "v9-law.css","v9-law-content.js","v9-law.js",
   "adaptive-engine.js","learning-quality.js","pilot-learning.js","pilot-review.js","pilot-qa.js","quality.css",
-  "showcase-recall.js","showcase.css","showcase-learning-cycle.css","showcase-learning-cycle.js","showcase.js","showcase-en.js",
-  "program.css","program.js","program-en.js","official-diagnostic.js",
+  "student-demo-guard.js","showcase-recall.js","showcase.css","showcase-learning-cycle.css","showcase-learning-cycle.js","showcase.js","showcase-en.js",
+  "program.css","program.js","program-en.js","official-diagnostic.js","server-diagnostic.js","official-level-one.js",
   "portal.css","register.css","auth-controls.js","student-register.js","student-login.js","student-login-en.js","admin-login-v2.js",
   "student.css","student.js","student-en.js",
   "english.css",
@@ -30,6 +30,23 @@ function cp(src,dst){
 }
 for(const p of pages)cp(p,path.join(out,p));
 for(const p of assets)cp(path.join("assets",p),path.join(out,"assets",p));
+
+// Visible build identification is generated from the exact reviewed commit.
+const {execFileSync}=require("child_process");
+let sha=(process.env.GITHUB_SHA||"").match(/^[a-f0-9]{40}$/)?.[0];
+if(!sha){
+ try{sha=execFileSync("git",["rev-parse","HEAD"],{encoding:"utf8"}).trim();}
+ catch(_){sha="unknown";}
+}
+const buildId=(sha||"unknown").slice(0,12);
+for(const page of pages){
+ if(!page.endsWith(".html"))continue;
+ const full=path.join(out,page);let html=fs.readFileSync(full,"utf8");
+ const stamp='<footer id="lexBuild" role="contentinfo" style="position:fixed;bottom:0;left:0;z-index:999;background:#111d31;color:white;opacity:.92;font:11px sans-serif;padding:3px 8px;border-top-right-radius:7px">LexLearn build '+buildId+'</footer>';
+ html=html.replace("</body>",stamp+"</body>");
+ html=html.replace(/(assets\/(?:program|program-en|student|student-en|student-login|student-login-en|cloud-data|official-diagnostic|server-diagnostic|official-level-one|student-demo-guard|showcase|showcase-en|showcase-learning-cycle)\.js)(?:\?v=[^"']*)?/g,"$1?v="+buildId);
+ fs.writeFileSync(full,html);
+}
 
 // Keep a consistent back arrow across every public subpage (including login,
 // student, university and supervisor views), without injecting it on home or /go.
@@ -55,7 +72,7 @@ for(const page of pages){
 // Silent omissions caused valid GitHub source changes to be absent from the live site.
 for(const required of [
   "conference.html","go/index.html","assets/conference.js","assets/conference-pdf.js","assets/conference.css","assets/lexlearn-navigation.js","assets/lexlearn-navigation.css","assets/lexlearn-learning-lines.js","assets/lexlearn-investor-quotes.js","assets/lexlearn-go-qr.svg","assets/lexlearn-public-pitch-en.pdf",
-  "student-register.html","student-register-en.html","diagnostic.html","assets/official-diagnostic.js",
+  "student-register.html","student-register-en.html","diagnostic.html","assets/official-diagnostic.js","assets/server-diagnostic.js","assets/official-level-one.js","showcase-level1.html","showcase-level1-en.html",
   "privacy-en.html","terms-en.html",
   "assets/student-register.js","assets/register.css","assets/auth-controls.js","assets/student-report.js",
   "assets/showcase-learning-cycle.js","assets/showcase-learning-cycle.css"

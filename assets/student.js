@@ -30,55 +30,26 @@ function icon(name){
   var symbols={lock:"▣",check:"✓",play:"▶",test:"◎",brain:"◉",bulb:"◇",scale:"§",repeat:"↻",pen:"✎",trophy:"◆",compass:"⌖",target:"◎",book:"▤",chart:"▥"};
   return symbols[name]||"•";
 }
-function ensureDemoStudent(){
-  var list=read(STUDENTS_KEY,[]);
-  var demo=list.find(function(x){return x.id==="stu-demo-001"||x.username==="student01";});
-  if(!demo){
-    demo={
-      id:"stu-demo-001",
-      name:"طالب تجريبي 01",
-      username:"student01",
-      password:"Learn2027!",
-      cohort:"Pilot A",
-      university:"Qatar University",
-      year:"السنة الأولى",
-      subject:"rights",
-      country:"qa",
-      active:true,
-      createdAt:Date.now()
-    };
-    list.unshift(demo);
-    write(STUDENTS_KEY,list);
-  }
-  return {list:list,demo:demo};
-}
-
-var seeded=ensureDemoStudent();
-var students=seeded.list;
+// Production student accounts must be real authenticated users. No local demo identities.
+var students=read(STUDENTS_KEY,[]);
 var params=new URLSearchParams(location.search);
 var session=read(SESSION_KEY,null);
 var CONSENT_VERSION="2026-10-06-v1",consentOk=true;
 
 if(params.get("demo")==="1"){
-  session={studentId:seeded.demo.id,name:seeded.demo.name,username:seeded.demo.username,at:Date.now()};
-  write(SESSION_KEY,session);
+  location.replace("showcase.html");return;
 }
 
-if(!session){
+if(!session||!session.cloud){
   location.replace("student-login.html");
   return;
 }
 
 var student=students.find(function(x){return x.id===session.studentId;});
 if(!student){
-  if(session.cloud){
-    student={id:session.studentId,name:session.name||session.username,username:session.username,cohort:"",university:"Qatar University",year:"السنة الأولى",subject:"rights",country:session.country||"qa",active:true,cloud:true,createdAt:Date.now()};
-    students.unshift(student);write(STUDENTS_KEY,students);
-  }else{
-    session={studentId:seeded.demo.id,name:seeded.demo.name,username:seeded.demo.username,at:Date.now()};
-    write(SESSION_KEY,session);
-    student=seeded.demo;
-  }
+ student={id:session.studentId,name:session.name||session.username,username:session.username,
+   cohort:"",university:"",year:"",subject:"rights",country:session.country||"qa",
+   active:true,cloud:true,createdAt:Date.now()};
 }
 
 var country=student.country||session.country||null;
@@ -121,6 +92,7 @@ function passedWeek(n){
   return !!(r&&(r.status==="mastered"||r.status==="completed"||r.status==="completed_with_support"));
 }
 function weekStatus(n){
+  if(session.cloud&&(n!==1||!student.academicLevelOneAllowed))return ["locked","المستوى غير منشور لهذا الطالب","lock"];
   var r=course.weekResults[n];
   if(!result)return ["locked",n===1?"يتاح بعد التقييم التشخيصي":"مغلق حتى اجتياز المرحلة السابقة","lock"];
   if(r&&r.status==="repair")return ["need","يحتاج تثبيت","repeat"];
@@ -307,7 +279,7 @@ function render(){
   if(session.cloud&&!consentOk){consentGateView();return;}
   country=student.country;
   var w=currentWeek();
-  var demoPrefix=session.cloud?"":"demo=1&";
+  var demoPrefix="";
   var weeks=weekTitles.map(function(title,i){
     var n=i+1;
     var st=weekStatus(n);
@@ -325,7 +297,7 @@ function render(){
   var actionPrimary=course.completedProgram
     ? "<a class='actionCard primary completeAction' href='program.html?"+demoPrefix+"country="+country+"&subject=rights&start=1'><span class='actionIcon'>🏆</span><span class='actionCopy'><b>عرض إنجازك النهائي</b><small>لقد أنهيت البرنامج بالكامل — افتح شاشة الفوز والإنهاء.</small></span></a>"
     : !result
-      ? "<a class='actionCard primary' href='"+(session.cloud?"diagnostic.html?lang=ar":"showcase.html?country="+country+"&subject=rights") + "'><span class='actionIcon'>"+icon("test")+"</span><span class='actionCopy'><b>ابدأ التقييم التشخيصي</b><small>يفتح الاختبار مباشرة بدل الرجوع للصفحة الرئيسية.</small></span></a>"
+      ? "<a class='actionCard primary' href='"+"diagnostic.html?lang=ar" + "'><span class='actionIcon'>"+icon("test")+"</span><span class='actionCopy'><b>بدء التشخيص أو استكماله</b><small>يفتح الاختبار مباشرة بدل الرجوع للصفحة الرئيسية.</small></span></a>"
       : "<a class='actionCard primary' href='program.html?"+demoPrefix+"country="+country+"&subject=rights&start=1'><span class='actionIcon'>"+icon("play")+"</span><span class='actionCopy'><b>أكمل جلسة اليوم</b><small>يفتح التدريب الفعلي مباشرة.</small></span></a>";
 
   var insight=studentInsight();
@@ -355,7 +327,7 @@ function render(){
   APP.innerHTML=
     "<header class='top'><div class='topin'>"+
       "<div class='brand'><div class='mark'><img src='assets/lexlearn-logo.svg' alt='LexLearn'></div><div><b>LexLearn</b><small>حساب الطالب • نفهم طريقة تفكيرك، ونبني طريقك.</small></div></div>"+
-      "<div class='topactions'><span class='topbtn countryTop staticCountry'>🇶🇦 قطر</span><a class='topbtn' href='student-en.html'>English</a><button class='topbtn' id='changePass'>تغيير كلمة المرور</button><a class='topbtn' href='index.html'>الموقع</a><button class='topbtn' id='logout'>خروج</button></div>"+
+      "<div class='topactions'><span class='topbtn countryTop staticCountry'>🇶🇦 قطر</span><a class='topbtn' href='student-en.html'>English</a><button class='topbtn' id='changePass'>تغيير كلمة المرور</button><span class='topbtn' aria-disabled='true' title='الديمو مخصص للزوار ولا يؤثر على درجات الطلاب' style='opacity:.42;cursor:not-allowed;filter:grayscale(1);pointer-events:none' tabindex='-1'>◈ الديمو · للزوار فقط</span><a class='topbtn' href='index.html'>الموقع</a><button class='topbtn' id='logout'>خروج</button></div>"+
     "</div></header>"+
     "<main class='wrap'>"+
       "<section class='hero "+(course.completedProgram?"heroComplete":"")+"'>"+
@@ -408,23 +380,21 @@ async function boot(){
       country=student.country||session.country||"qa";
       PROFILE_KEY="lexlearn_v9_profile_"+student.id;
       COURSE_KEY="lexlearn_course_v2_"+country+"_"+(country==="qa"?"rights":"sources")+"_"+student.id;
-      var ps=await LEX_CLOUD.loadSnapshot({courseId:country+"-"+(country==="qa"?"rights":"sources"),snapshotType:"profile"});
-      if(ps&&ps.state){
-        profile=ps.state;write(PROFILE_KEY,profile);result=profile.results&&profile.results[country+"-"+(country==="qa"?"rights":"sources")]||null;
-      }else if(profile&&profile.results&&profile.results[country+"-"+(country==="qa"?"rights":"sources")]){
-        // Untrusted browser cache is not an official diagnostic. Never promote it to cloud.
-        result=null;
+      // Authoritative state comes ONLY from the server lifecycle RPC.
+      var status=await LEX_CLOUD.studentLifecycleRpc("status",{courseId:"qa-qu-lawc101-rights"});
+      result=status.status==="completed"&&status.result&&status.result.source==="server_finalized_diagnostic"&&status.result.student_id===student.id?status.result:null;
+      if(result)result.trainingPlan=status.training_plan;
+      course={session:1,completed:[],weekResults:{},achievements:[],adminOverrideWeeks:{},completedProgram:false,repairRequired:false};
+      var level=await LEX_CLOUD.studentLifecycleRpc("level",{courseId:"qa-qu-lawc101-rights",level:1});
+      student.academicLevelOneAllowed=false;
+      student.levelOneSavedCount=0;
+      if(result&&level.allowed){
+        var officialLevel=await LEX_CLOUD.studentLifecycleRpc("firstLevel",{courseId:"qa-qu-lawc101-rights"});
+        student.academicLevelOneAllowed=!!(officialLevel&&officialLevel.allowed&&officialLevel.tasks&&officialLevel.tasks.length===3);
+        if(student.academicLevelOneAllowed&&officialLevel.saved)student.levelOneSavedCount=officialLevel.saved.length;
       }
-      result=window.LEX_OFFICIAL_DIAGNOSTIC&&LEX_OFFICIAL_DIAGNOSTIC.valid(result,student.id)?result:null;
-      if(result)await LEX_OFFICIAL_DIAGNOSTIC.restore(LEX_CLOUD,student.id);
-      var cs=await LEX_CLOUD.loadSnapshot({courseId:country+"-"+(country==="qa"?"rights":"sources"),snapshotType:"course"});
-      if(cs&&cs.state){
-        course=cs.state;write(COURSE_KEY,course);
-        if(result&&course.diagnosticAttemptId!==result.attempt_id)result=null;
-      }else if(course&&((course.completed&&course.completed.length)||(course.evidence&&course.evidence.length)||Number(course.session)>1)){
-        // Never upload an unsigned local course to replace authenticated cloud progress.
-        course={session:1,completed:[],weekResults:{},achievements:[],adminOverrideWeeks:{}};
-      }
+      student.diagnosticStatus=status.status;
+
     }catch(e){
       APP.innerHTML="تعذر التحقق من الجلسة. <a href='student-login.html'>سجّل الدخول من جديد</a>.";
       return;

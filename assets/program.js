@@ -2,11 +2,12 @@
 "use strict";
 var APP=document.getElementById("programApp");
 var qs=new URLSearchParams(location.search);
-var AUTO_START=qs.get("start")==="1";
-var STUDENT_SESSION=(function(){try{return JSON.parse(localStorage.getItem("lexlearn_student_session"))||null;}catch(e){return null;}})();
-// A signed-in cloud student must always use the real tracked path, even if an old demo=1 link is opened.
-var DEMO=qs.get("demo")==="1"&&!(STUDENT_SESSION&&STUDENT_SESSION.cloud&&STUDENT_SESSION.studentId);
-var FIRST_STAGE_PREVIEW=DEMO&&AUTO_START&&qs.get("preview")==="stage1";
+var SHOWCASE_PREVIEW=/\/showcase-level1(?:-en)?\.html$/.test(location.pathname||"");
+var TEST_DEMO=!!window.LEX_TEST_ALLOW_DEMO_PARAMS&&qs.get("demo")==="1";
+var AUTO_START=SHOWCASE_PREVIEW||(TEST_DEMO&&qs.get("start")==="1");
+var STUDENT_SESSION=SHOWCASE_PREVIEW?null:(function(){try{return JSON.parse(localStorage.getItem("lexlearn_student_session"))||null;}catch(e){return null;}})();
+var DEMO=SHOWCASE_PREVIEW||(TEST_DEMO&&!(STUDENT_SESSION&&STUDENT_SESSION.cloud&&STUDENT_SESSION.studentId));
+var FIRST_STAGE_PREVIEW=DEMO&&AUTO_START&&(SHOWCASE_PREVIEW||TEST_DEMO&&qs.get("preview")==="stage1");
 // The first release is restricted to Qatar law, including old country query links.
 var COUNTRY="qa",SUBJECT="rights";
 var COURSE_DB_ID="qa-qu-lawc101-rights";
@@ -558,6 +559,7 @@ function adaptiveTeachingPlan(model){
   return {weakest:weak,strongest:strong,bridge_mode:bridge.mode||"evidence_bridge",method:method,tasks:tasks,error:topError?topError.label:null,updatedAt:Date.now()};
 }
 function save(){
+ if(!DEMO&&STUDENT_SESSION&&STUDENT_SESSION.cloud){syncNote(true);return;}
    if(window.LEX_KEYS)LEX_KEYS.ingestPilot(state.course);
    if(window.LEX_ENGINE){
     var m=(state.diag&&state.diag.metrics)||{},model=LEX_ENGINE.learnerModel({metrics:m,events:state.course.evidence||[]});
@@ -750,13 +752,20 @@ function syncNote(error){var el=document.getElementById("qualitySync");if(el)el.
 function chrome(inner){
   APP.innerHTML='<div class="courseShell"><header class="courseTop"><div class="courseTopIn">'+
     '<div class="brand"><div class="mark"><img src="assets/lexlearn-logo.svg" alt="LexLearn"></div><div><b>Lex<span class="brandLearn">Learn</span></b><small>'+countryLabel()+' • نظرية الحق • نفهم طريقة تفكيرك، ونبني طريقك.</small></div></div>'+
-    '<div class="topActions">'+(['home','sessionResult','achievement','weekSummary','completion','notebook'].indexOf(state.view)>=0?'<button class="topBtn" type="button" id="openLearningKeys">نوتة المفاتيح</button>':'')+'<a class="topBtn" href="program-en.html?country=qa&subject=rights'+(DEMO?'&demo=1':'')+'">English</a><a class="topBtn" href="showcase.html?country='+COUNTRY+'">الديمو العام</a><a class="topBtn" href="index.html">الرئيسية</a></div>'+
-  '</div></header><main class="courseWrap">'+(FIRST_STAGE_PREVIEW?'<div class="notice" role="note">معاينة الجلسة الأولى فقط. هذه ليست تجربة جامعية معتمدة، ولم تُنقل درجات التشخيص أو إجابتك إلى ملف أكاديمي.</div>':'')+inner+(STUDENT_SESSION&&STUDENT_SESSION.cloud?'<p id="qualitySync" role="status">التقدم المحلي محفوظ؛ الحفظ المركزي يُؤكد بعد إتمام المزامنة.</p>':'')+'</main></div>';
+    '<div class="topActions">'+(DEMO?'<span class="topBtn" role="status">تجربة عرض — لا تُحتسب درجات طالب</span><a class="topBtn" href="showcase.html">الديمو العام</a><a class="topBtn" href="showcase-level1-en.html">English</a>':'<span class="topBtn" role="status">حساب الطالب: '+esc(state.studentLabel||"حساب موثّق")+'</span><a class="topBtn" href="student.html">حساب الطالب</a><a class="topBtn" href="program-en.html">English</a><button class="topBtn" id="programLogout">خروج</button>')+'</div>'+
+  '</div></header><main class="courseWrap">'+(FIRST_STAGE_PREVIEW?'<div class="notice" role="note">معاينة الجلسة الأولى فقط. هذه ليست تجربة جامعية معتمدة، ولم تُنقل درجات التشخيص أو إجابتك إلى ملف أكاديمي.</div>':'')+inner+(STUDENT_SESSION&&STUDENT_SESSION.cloud?'<p id="qualitySync" role="status">التقدم الأكاديمي يُحدده الخادم؛ لا تمنح الإجابات الأولية فتحًا تلقائيًا للمستوى.</p>':'')+'</main></div>';
+  var outButton=document.getElementById("programLogout");
+  if(outButton)outButton.onclick=async function(){
+   outButton.disabled=true;try{await LEX_CLOUD.signOut();}finally{
+    localStorage.removeItem("lexlearn_student_session");location.replace("student-login.html");
+   }
+  };
   var keysNav=document.getElementById("openLearningKeys");
    if(keysNav)keysNav.onclick=function(){state.view="notebook";render();};
    if(window.LEX_PILOT&&['home','sessionResult','completion'].indexOf(state.view)>=0)LEX_PILOT.dashboard(document.querySelector('.courseWrap'),state.course,'ar',save,function(){state.view='home';render();},!!(STUDENT_SESSION&&STUDENT_SESSION.cloud));
 }
 function render(){
+ if(!DEMO&&STUDENT_SESSION&&STUDENT_SESSION.cloud&&state.diag)return train();
    if(state.view==="stagePreviewComplete")return stagePreviewComplete();
    if(state.view==="notebook")return notebookPage();
    if(state.view==="home")return home();
@@ -941,9 +950,13 @@ function taskStatusBox(correct,label,provisional){
 function orderedOptions(t,salt){return LEX_QUALITY.shuffleOptions(t);}
 
 function train(){
-  if(!DEMO&&STUDENT_SESSION&&STUDENT_SESSION.cloud&&(!window.LEX_PILOT||!LEX_PILOT.isReleased(state.course.session))){
+  if(!DEMO&&STUDENT_SESSION&&STUDENT_SESSION.cloud&&!(state.levelAccess&&state.levelAccess.allowed&&state.course.session===1&&window.LEX_OFFICIAL_LEVEL_ONE)){
     var p=state.diag&&state.diag.trainingPlan;
     chrome('<section class="stage"><div class="taskCard"><span class="kicker">الجلسة '+state.course.session+' • بانتظار الاعتماد الأكاديمي</span><h2>خطة المستوى الأول جاهزة ومحفوظة</h2><p>'+esc(p?p.reason_ar:"تم حفظ التشخيص بنجاح.")+'</p><p>ترتيب التدريب المقترح: '+esc(p?p.firstTasks.join(" ← "):"تأسيس ثم قياس")+'</p><div class="notice">عناصر المقرر لم تحصل بعد على الاعتماد القانوني والأكاديمي. لن نفتحها أو نحسب تقدّمًا وهميًا.</div><a class="secondary" href="student.html">حساب الطالب</a></div></section>');return;
+  }
+  if(!DEMO&&STUDENT_SESSION&&STUDENT_SESSION.cloud){
+    chrome('<section class="stage"><div class="taskCard"><h2>حساب الطالب • المستوى الأول</h2><div id="officialLevelMount" role="region"></div></div></section>');
+    return LEX_OFFICIAL_LEVEL_ONE.mount(document.getElementById("officialLevelMount"),{lang:"ar",cloud:LEX_CLOUD,courseId:COURSE_DB_ID,diagnostic:state.diag});
   }
   if(window.LEX_PILOT&&LEX_PILOT.isReleased(state.course.session)){LEX_PILOT.mount(APP,state.course.session,'ar',{course:state.course,onSave:save,onComplete:function(pilot){state.answers=[1,2,3,4,5].map(function(step){var a=pilot.attempts.filter(function(x){return x.step===step;}).slice(-1)[0];return {dimension:step===4?'recall':'application',score:a&&a.score,correct:!!(a&&a.score===1)};});finishTraining();},onExit:function(){state.view='home';render();}});return;}
   var q=state.queue.length?state.queue:buildTrainingQueue(),t=q[state.task%q.length],meta=sessionMeta(state.course.session);
@@ -1113,7 +1126,7 @@ function recordAssessmentEvidence(q,correct,confidence,repair){
   return {skill:q.skill,dimension:dim,correct:correct,confidence:confidence||null,score:score};
 }
 function assessment(){
-  if(!DEMO&&STUDENT_SESSION&&STUDENT_SESSION.cloud&&(!window.LEX_PILOT||!LEX_PILOT.isReleased(state.course.session))){state.view="train";return train();}
+  if(!DEMO&&STUDENT_SESSION&&STUDENT_SESSION.cloud&&!(state.levelAccess&&state.levelAccess.allowed&&state.course.session===1&&window.LEX_PILOT&&LEX_PILOT.isReleased(state.course.session))){state.view="train";return train();}
   var week=sessionMeta(state.course.session).week,bank=assessmentBankForWeek(week),q=bank[state.task%bank.length],ordered=q.mode==="free"?[]:orderedOptions(q,7);
   state.taskStartedAt=Date.now();
   if(q.mode==="free"){
@@ -1235,7 +1248,7 @@ function achievementBoard(){
   var bh=document.getElementById("backHome");if(bh)bh.onclick=function(){state.view="home";render();};
 }
 function repairAssessment(){
-  if(!DEMO&&STUDENT_SESSION&&STUDENT_SESSION.cloud&&(!window.LEX_PILOT||!LEX_PILOT.isReleased(state.course.session))){state.view="train";return train();}
+  if(!DEMO&&STUDENT_SESSION&&STUDENT_SESSION.cloud&&!(state.levelAccess&&state.levelAccess.allowed&&state.course.session===1&&window.LEX_PILOT&&LEX_PILOT.isReleased(state.course.session))){state.view="train";return train();}
   var week=state.course.repairWeek||sessionMeta(state.course.session).week,full=assessmentBankForWeek(week);
   var weakest=state.course.adaptiveModel&&state.course.adaptiveModel.weakest;
   var orderedBank=full.slice().sort(function(x,y){return (x.dimension===weakest?-1:0)-(y.dimension===weakest?-1:0);});
@@ -1288,37 +1301,41 @@ function completion(){
 }
 function assessmentResult(){state.view="achievement";render();}
 async function boot(){
-  if(!DEMO){
-    if(!STUDENT_SESSION||!STUDENT_SESSION.cloud||!STUDENT_SESSION.studentId||!window.LEX_CLOUD||!LEX_CLOUD.isConfigured()){
-      location.replace("student-login.html");return;
-    }
-    try{
-      var verifiedStudentId=await LEX_OFFICIAL_DIAGNOSTIC.identity(LEX_CLOUD);
-      if(verifiedStudentId!==STUDENT_SESSION.studentId)throw new Error("student_session_mismatch");
-      var ps=await LEX_CLOUD.loadSnapshot({courseId:COUNTRY+"-"+SUBJECT,snapshotType:"profile"});
-      var result=ps&&ps.state&&ps.state.results&&ps.state.results[COUNTRY+"-"+SUBJECT];
-      if(!window.LEX_OFFICIAL_DIAGNOSTIC||!LEX_OFFICIAL_DIAGNOSTIC.valid(result,verifiedStudentId)){
-        location.replace("diagnostic.html?lang=ar");return;
-      }
-      localStorage.setItem(PROFILE_KEY,JSON.stringify(ps.state));
-      var cs=await LEX_CLOUD.loadSnapshot({courseId:COUNTRY+"-"+SUBJECT,snapshotType:"course"});
-      if(!cs||!cs.state||cs.state.diagnosticAttemptId!==result.attempt_id)throw new Error("diagnostic_course_sync_required");
-      localStorage.setItem(COURSE_KEY,JSON.stringify(cs.state));state.course=loadCourse();
-      state.diag=result;
-    }catch(e){
-      APP.textContent="تعذر تأكيد ملف الطالب والتقدم السحابي ("+String(e.message||e)+"). ارجع إلى حساب الطالب وأعد المحاولة.";
-      return;
-    }
+ if(!DEMO){
+  if(!STUDENT_SESSION||!STUDENT_SESSION.cloud||!STUDENT_SESSION.studentId||!window.LEX_CLOUD||!LEX_CLOUD.isConfigured()){
+   APP.innerHTML='<main class="courseWrap"><h1>هذا مسار الطالب المسجل</h1><p>سجّل الدخول لبدء التشخيص الحقيقي. الديمو العام مسار منفصل ولا ينقل أي درجات.</p><a class="primary" href="student-login.html">دخول الطالب</a><a class="secondary" href="showcase.html">الديمو العام</a></main>';return;
   }
-  if(FIRST_STAGE_PREVIEW){
-    state.diag={metrics:{recall:null,understanding:null,application:null,legal_precision:null,exam:null,retention:null},pendingRecall:true,profileType:"insufficient_evidence",source:"public_stage_one_preview"};
-    state.course=defaultCourse();
+  try{
+   var uid=await LEX_OFFICIAL_DIAGNOSTIC.identity(LEX_CLOUD);
+   if(uid!==STUDENT_SESSION.studentId)throw new Error("student_session_mismatch");
+   var p=await LEX_CLOUD.profile();state.studentLabel=p.display_name||p.username||uid;
+   var status=await LEX_CLOUD.studentLifecycleRpc("status",{courseId:COURSE_DB_ID});
+   state.course=defaultCourse();state.diag=null;state.levelAccess={allowed:false,reason:"diagnostic_not_completed"};
+   if(status.status==="completed"&&status.result&&status.result.source==="server_finalized_diagnostic"&&status.result.student_id===uid){
+    state.diag=status.result;state.diag.trainingPlan=status.training_plan;
+    state.course.officialTrainingPlan=status.training_plan;
+    state.course.diagnosticAttemptId=status.attempt_id;
+    state.levelAccess=await LEX_CLOUD.studentLifecycleRpc("level",{courseId:COURSE_DB_ID,level:1});
+    // Route from verified server completion, never from a URL parameter.
+    // Pending academic release shows the saved plan without exposing lesson content.
+    state.view="train";
+    state.answers=[];state.assessmentAnswers=[];state.task=0;
+    state.queue=buildTrainingQueue();
+   }else if(status.status==="in_progress"){
+    APP.innerHTML='<main class="courseWrap"><h1>استكمال التشخيص</h1><p>إجاباتك محفوظة على الخادم؛ استكمل من حيث توقفت دون إعادة الاختبار.</p><a class="primary" href="diagnostic.html?lang=ar">استكمال التشخيص</a></main>';return;
+   }else if(status.status!=="not_started")throw new Error("unrecognized_diagnostic_status");
+  }catch(e){
+   APP.innerHTML='<main class="courseWrap"><h1>تعذر التحقق من حالة الطالب</h1><p>لم يُفتح أي تقدم أكاديمي.</p><p role="alert">'+String(e&&e.message||e).replace(/[<>]/g,"")+'</p><a href="student.html">حساب الطالب</a></main>';return;
   }
-  if(DEMO&&AUTO_START&&state.diag||!DEMO&&AUTO_START&&state.diag){
-    if(state.course.completedProgram)state.view="completion";
-    else{var meta=sessionMeta(state.course.session);state.answers=[];state.assessmentAnswers=[];state.task=0;state.queue=buildTrainingQueue();state.view=meta.kind==="assessment"?"assessment":"train";}
-  }
-  render();
+ }
+ if(FIRST_STAGE_PREVIEW){
+  state.diag={metrics:{recall:null,understanding:null,application:null,legal_precision:null,exam:null,retention:null},pendingRecall:true,profileType:"insufficient_evidence",source:"public_stage_one_preview"};
+  state.course=defaultCourse();
+ }
+ if(AUTO_START&&state.diag&&!state.course.completedProgram){
+  state.task=0;state.answers=[];state.assessmentAnswers=[];state.queue=buildTrainingQueue();state.view="train";
+ }
+ render();
 }
 boot();
 })();
