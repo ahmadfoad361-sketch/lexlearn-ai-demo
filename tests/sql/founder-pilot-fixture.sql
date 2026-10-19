@@ -4,6 +4,7 @@ alter table public.content_items add column difficulty smallint not null default
 alter table public.content_items add column exam_frequency_tag text not null default 'unknown';
 alter table public.content_items add column exam_importance_weight numeric not null default 0.5;
 alter table public.content_items add column version integer not null default 1;
+alter table public.content_items add column updated_at timestamptz not null default now();
 insert into public.profiles(id,role,active,display_name) values
 ('40000000-0000-4000-8000-000000000001','owner',true,'Test founder');
 delete from public.content_items where id like 'test-q%';
