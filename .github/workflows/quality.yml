@@ -63,6 +63,7 @@ jobs:
           node tests/program-flow.test.js
           node tests/official-diagnostic.test.js
           node tests/official-diagnostic-dom-flow.test.js
+          node tests/server-diagnostic-ui.test.js
       - name: Production boundary tests
         run: node tests/production-boundaries.test.js
       - name: Build public artifact
