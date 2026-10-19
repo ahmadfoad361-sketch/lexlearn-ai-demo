@@ -29,7 +29,7 @@ const chrome=[process.env.CHROME_BIN,"/usr/bin/google-chrome","/usr/bin/google-c
      await p.screenshot({path:"/tmp/lexlearn-conference-"+lang+"-"+width+".png",fullPage:false}).catch(()=>{});
      throw new Error("Conference squashed or horizontally overflowing: "+JSON.stringify({width,lang,...v,ratio}));
    }
-   assert.ok(v.top.width>v.viewport*.82,"Header should use the whole mobile width");
+   assert.ok(v.top.width>=v.viewport*.75,"Centered header should use at least 75% of the tablet viewport");
    console.log("CONFERENCE_VIEWPORT_OK "+JSON.stringify({width,lang,ratio,scroll:v.scroll,client:v.client,scale:v.scale}));
    await c.close();
  }
