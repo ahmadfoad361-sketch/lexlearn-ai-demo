@@ -66,7 +66,7 @@ html[lang=ar] .visual-scene h2,html[lang=ar] .visual-scene h3{line-height:1.55}
 .brand-intro-inner{width:100%;text-align:center;position:relative;padding:25px}
 .brand-intro video{display:block;width:min(62vw,410px);height:min(62vw,410px);object-fit:contain;margin:0 auto;background:#111d31}
 .brand-intro-name{font-size:clamp(29px,5vw,48px);font-weight:750;letter-spacing:-1.5px;line-height:1.25;margin-top:-12px}
-.brand-intro-name span{color:#dca589}.brand-intro-tagline{margin:12px auto 0;font-size:clamp(14px,2vw,19px);color:#e4d6c7;line-height:1.8}
+.brand-intro-name span{color:#8A1F39}.brand-intro-tagline{margin:12px auto 0;font-size:clamp(14px,2vw,19px);color:#e4d6c7;line-height:1.8}
 .intro-skip{position:absolute;inset-inline-end:24px;top:22px;border:1px solid #ffffff50;background:transparent;color:#fff;border-radius:99px;padding:10px 19px;min-height:44px;cursor:pointer}
 .visual-motion-paused .exhibit-orbit,.visual-motion-paused .scene-image,.visual-motion-paused .scene-journey li{animation-play-state:paused!important}
 .visual-motion-paused #paths .path,.visual-motion-paused #paths .photo-cover{transition:none}
