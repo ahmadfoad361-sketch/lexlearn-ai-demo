@@ -109,9 +109,13 @@ var LAW_SOURCES={
 };
 function exactApprovedQuestion(item,q){
  var x=item||{},metadata=x.metadata||{},opts=x.options_json||{},key=x.answer_key_json||{},rubric=x.rubric_json||{},sources=x.source_ids||[];
- return x.status==="approved"&&!!x.reviewed_at&&
-  !!x.legal_reviewer&&!!x.learning_reviewer&&x.legal_reviewer!==x.learning_reviewer&&
-  metadata.legal_approval===true&&metadata.learning_approval===true&&
+ var independentlyApproved=!!x.reviewed_at&&!!x.legal_reviewer&&!!x.learning_reviewer&&
+  x.legal_reviewer!==x.learning_reviewer&&metadata.legal_approval===true&&metadata.learning_approval===true;
+ var founderPilot=metadata.owner_pilot_approved===true&&
+  metadata.pilot_review_mode==="founder_authorized_ai_assisted_20261019"&&
+  metadata.legal_approval===false&&metadata.learning_approval===false&&
+  !x.legal_reviewer&&!x.learning_reviewer;
+ return x.status==="approved"&&(independentlyApproved||founderPilot)&&
   metadata.official_diagnostic_v2_id===q.id&&x.prompt_ar===q.ar&&rubric.prompt_en===q.en&&
   JSON.stringify(opts.ar)===JSON.stringify(q.arOptions)&&
   JSON.stringify(opts.en)===JSON.stringify(q.enOptions)&&
