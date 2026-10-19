@@ -22,6 +22,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
+      - name: Validate real-auth E2E test script before Docker downloads
+        run: node --check tests/staging/real-auth-e2e.mjs
       - uses: supabase/setup-cli@v3
       - name: Normalize legacy filename versions only inside disposable CI checkout
         run: |
