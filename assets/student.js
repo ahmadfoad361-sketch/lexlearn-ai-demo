@@ -386,7 +386,13 @@ async function boot(){
       if(result)result.trainingPlan=status.training_plan;
       course={session:1,completed:[],weekResults:{},achievements:[],adminOverrideWeeks:{},completedProgram:false,repairRequired:false};
       var level=await LEX_CLOUD.studentLifecycleRpc("level",{courseId:"qa-qu-lawc101-rights",level:1});
-      student.academicLevelOneAllowed=!!level.allowed;
+      student.academicLevelOneAllowed=false;
+      student.levelOneSavedCount=0;
+      if(result&&level.allowed){
+        var officialLevel=await LEX_CLOUD.studentLifecycleRpc("firstLevel",{courseId:"qa-qu-lawc101-rights"});
+        student.academicLevelOneAllowed=!!(officialLevel&&officialLevel.allowed&&officialLevel.tasks&&officialLevel.tasks.length===3);
+        if(student.academicLevelOneAllowed&&officialLevel.saved)student.levelOneSavedCount=officialLevel.saved.length;
+      }
       student.diagnosticStatus=status.status;
 
     }catch(e){
