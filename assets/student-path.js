@@ -54,6 +54,29 @@ function progressHtml(rows,session,historyAvailable){
  (!historyAvailable?"<p>"+t("تعذر تحميل المقارنة السابقة؛ المعروض هنا من إجابات هذه الجلسة المحفوظة فقط.","Earlier comparison could not load; the results shown use only this session's saved answers.")+"</p>":"")+
  "<small>"+t("النسب مؤشرات أولية لتغطية عناصر الإجابة، وليست درجات إتقان معتمدة. المقارنة بين مهام مختلفة لا تثبت وحدها تحسن التعلم. نوصي بالمراجعة إذا قل المؤشر عن 70% أو بقيت إجابات دون تقدير.","Percentages are preliminary answer-coverage indicators, not certified mastery scores. Comparing different tasks alone does not establish learning gains. Review is recommended below 70% or when answers remain ungraded.")+"</small></section>";
 }
+
+/* Optional, ungraded legal reflection after each verified weekly checkpoint. */
+var qChallenges=[
+["الطفل وُلد حيًا؛ ثم غيّرنا الحقيقة إلى أنه لم يولد حيًا. هل ينبغي إعادة فحص أثر ذلك في حقوق الحمل؟","نعم، لأن الولادة حية قد تؤثر في ثبوت بعض الحقوق","لا، لا يغيّر ذلك أي أثر قانوني","A child was born alive; change that fact to no live birth. Must prenatal rights be reconsidered?","Yes, live birth may affect conditional rights","No, no legal consequence can change"],
+["تغيّر عمر أحد المتعاقدين من بالغ كامل الأهلية إلى قاصر. ما الخطوة الصحيحة؟","إعادة تقييم الأهلية وطبيعة التصرف","الجزم ببطلان كل تصرف دون بحث","A contracting party changes from a fully capable adult to a minor. What next?","Reassess capacity and the transaction","Assume every transaction is void"],
+["كان تحقق الضرر ثابتًا ثم أصبح غير ثابت. هل تبقى نتيجة المسؤولية دون مراجعة؟","لا، يجب فحص الأركان والأدلة من جديد","نعم، لا أثر لتغيّر الوقائع","Proven damage becomes unproven. Can the liability analysis remain unchanged?","No, revisit elements and evidence","Yes, facts never affect the result"],
+["تغيّر تاريخ الواقعة القانونية. ما أول ما ينبغي بحثه؟","تأثير التاريخ في القانون والمواعيد","اعتبار التاريخ غير مهم دائمًا","The date of a legal event changes. What should be checked first?","Its effect on applicable rules and deadlines","Dates are always irrelevant"],
+["ظهرت معلومة ناقصة في ملف القضية. ما التصرف المهني؟","طلب توضيحها قبل الجزم بالرأي","اختراع الحقيقة الناقصة","A relevant case fact is missing. What is the professional response?","Clarify it before concluding","Invent the missing fact"],
+["تغيّر النص القانوني المستخدم في حجة مكتوبة. ماذا تفعل؟","أراجع انطباق النص على الوقائع","أكرر الحجة دون مراجعة","The provision supporting an argument changes. What should you do?","Recheck the rule against the facts","Repeat the argument unchanged"]
+];
+function qChallengeHtml(level){
+ var q=qChallenges[level-1],en=lang()==="en";if(!q)return "";
+ return "<aside class='qatariChallenge' aria-label='"+t("تحدٍّ قانوني اختياري","Optional legal challenge")+"'><div class='qEyebrow'>✦ "+t("تحديك القانوني","Your legal challenge")+" · "+t("المستوى ","Level ")+level+"</div><h2>"+t("غيّر حقيقة واحدة","Change one fact")+"</h2><p>"+esc(q[en?3:0])+"</p><div class='qChoices'><button type='button' data-qchoice='0'>"+esc(q[en?4:1])+"</button><button type='button' data-qchoice='1'>"+esc(q[en?5:2])+"</button></div><p class='qOutcome' role='status' aria-live='polite'></p><small>"+t("اختياري، لا يؤثر على درجاتك أو انتقالك. الوقائع افتراضية وتخضع للقانون المعمول به.","Optional and ungraded. Fictional facts; conclusions depend on applicable law.")+"</small></aside>";
+}
+function bindQChallenge(){
+ var area=host.querySelector(".qatariChallenge");if(!area)return;
+ Array.prototype.forEach.call(area.querySelectorAll("[data-qchoice]"),function(btn){btn.onclick=function(){
+  var correct=btn.getAttribute("data-qchoice")==="0";
+  area.querySelector(".qOutcome").textContent=correct?t("أحسنت: تغيّر الحقيقة قد يغيّر التحليل القانوني. استمر في ربط القاعدة بالوقائع.","Correct: a changed fact may alter the legal analysis."):t("راجع كيف يؤثر تغيّر الواقعة في تطبيق القاعدة القانونية. الإجابة الأدق هي الخيار الأول.","Reconsider how a fact changes the application of the rule. The first option is stronger.");
+  Array.prototype.forEach.call(area.querySelectorAll("[data-qchoice]"),function(b){b.disabled=true;});
+ };});
+}
+
 async function boot(){
  if(!host)return;
  var cloud=root.LEX_CLOUD;
@@ -119,6 +142,7 @@ async function boot(){
     completedFeedback;
    if(completed){
     main+=progressHtml(progressRows,selected,historyAvailable);
+     if(selected%5===0)main+=qChallengeHtml(Math.ceil(selected/5));
     main+="<h2>"+t("اكتملت تدريبات الجلسة","Practice session completed")+"</h2>"+
     "<p>"+t("أتممت تدريب هذه الجلسة وحُفظت إجاباتك. يمكنك متابعة الجلسة التالية ومراجعة ملاحظاتك في أي وقت.","Your practice and answers are saved. Continue to the next session and revisit your feedback at any time.")+"</p>"+
     (selected<30?"<button type='button' id='nextSession'>"+(selected%5===0?t("انتقل إلى المستوى ","Continue to level ")+(Math.ceil(selected/5)+1):t("انتقل للجلسة التالية","Continue to next session"))+"</button>":
@@ -135,6 +159,7 @@ async function boot(){
    }
    main+="</section>";
    show(nav()+main);
+    if(completed&&selected%5===0)bindQChallenge();
    var nextButton=host.querySelector("#nextSession");
    if(nextButton)nextButton.onclick=function(){if(!busy){root.location.href=url(selected+1);}};
    var submit=host.querySelector("#adaptiveSubmit");
