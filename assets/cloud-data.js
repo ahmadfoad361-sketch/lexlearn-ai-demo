@@ -29,7 +29,7 @@ function studentEmail(username){return String(username||"").trim().toLowerCase()
 async function profile(){
   var c=db();if(!c)return null;
   var u=await c.auth.getUser();if(u.error||!u.data.user)return null;
-  var p=await c.from("profiles").select("id,role,username,display_name,active,account_status,whatsapp_e164,must_change_password,university,year_label,cohort_id,locale,country_code").eq("id",u.data.user.id).single();
+  var p=await c.from("profiles").select("id,role,username,display_name,active,account_status,whatsapp_e164,must_change_password,university,year_label,cohort_id,locale,country_code,faculty,academic_title").eq("id",u.data.user.id).single();
   if(p.error)throw p.error;return p.data;
 }
 async function signInStudent(username,password){
@@ -81,7 +81,7 @@ async function listStudents(){
   var c=db();if(!c)return [];
   var r=await c.from("profiles").select("id,username,display_name,active,account_status,whatsapp_e164,whatsapp_verified_at,registration_track,institutional_email,institutional_email_verified_at,faculty,student_registration_number,must_change_password,university,year_label,country_code,cohort_id,created_at,cohorts(name)").eq("role","student").order("created_at",{ascending:false});
   if(r.error)throw r.error;
-  return (r.data||[]).map(function(x){return{id:x.id,name:x.display_name,username:x.username,active:x.active,accountStatus:x.account_status||(x.active?"active":"disabled"),whatsapp:x.whatsapp_e164,whatsappVerified:!!x.whatsapp_verified_at,registrationTrack:x.registration_track||"conference",institutionalEmail:x.institutional_email||"",institutionalEmailVerified:!!x.institutional_email_verified_at,faculty:x.faculty||"",studentRegistrationNumber:x.student_registration_number||"",mustChangePassword:x.must_change_password,university:x.university,year:x.year_label,country:x.country_code||"qa",cohort:x.cohorts&&x.cohorts.name||"",createdAt:x.created_at,cloud:true};});
+  return (r.data||[]).map(function(x){return{id:x.id,name:x.display_name,username:x.username,active:x.active,accountStatus:x.account_status||(x.active?"active":"disabled"),whatsapp:x.whatsapp_e164,whatsappVerified:!!x.whatsapp_verified_at,registrationTrack:x.registration_track||"conference",institutionalEmail:x.institutional_email||"",institutionalEmailVerified:!!x.institutional_email_verified_at,faculty:x.faculty||"",studentRegistrationNumber:x.student_registration_number||"",mustChangePassword:x.must_change_password,university:x.university,year:x.year_label,country:x.country_code||"qa",cohort:x.cohorts&&x.cohorts.name||"",cohortId:x.cohort_id||null,createdAt:x.created_at,cloud:true};});
 }
 async function listCohorts(){
   var c=db();if(!c)return[];
@@ -99,6 +99,7 @@ async function invoke(name,body){
   if(r.error)throw r.error;return r.data;
 }
 async function createStudent(data){return invoke("admin-create-student",data);}
+async function facultyStaff(data){return invoke("admin-faculty-staff",data);}
 async function manageStudent(data){return invoke("admin-manage-student",data);}
 async function listContentItems(courseId){
   var c=db();if(!c)return[];
@@ -168,7 +169,7 @@ async function saveLearningPlan(row){
   row=Object.assign({},row,{user_id:u.data.user.id,updated_at:new Date().toISOString()});
   var r=await c.from("learning_plans").upsert(row,{onConflict:"user_id,course_id"}).select().single();if(r.error)throw r.error;return r.data;
 }
-root.LEX_CLOUD={isConfigured:isConfigured,db:db,rememberMe:rememberMe,setRememberMe:setRememberMe,studentEmail:studentEmail,profile:profile,signInStudent:signInStudent,signInAdmin:signInAdmin,signOut:signOut,requestPasswordReset:requestPasswordReset,loadSnapshot:loadSnapshot,saveSnapshot:saveSnapshot,listStudents:listStudents,listCohorts:listCohorts,listAudit:listAudit,listContentItems:listContentItems,reviewContent:reviewContent,createStudent:createStudent,manageStudent:manageStudent,createCohort:createCohort,setOwnPassword:setOwnPassword,updateOwnProfile:updateOwnProfile,studentLifecycleRpc:studentLifecycleRpc,gradeAnswer:gradeAnswer,gradePilot:gradePilot,getConsent:getConsent,recordConsent:recordConsent,logEvent:logEvent,recordAttempt:recordAttempt,saveLearningPlan:saveLearningPlan};
+root.LEX_CLOUD={isConfigured:isConfigured,db:db,rememberMe:rememberMe,setRememberMe:setRememberMe,studentEmail:studentEmail,profile:profile,signInStudent:signInStudent,signInAdmin:signInAdmin,signOut:signOut,requestPasswordReset:requestPasswordReset,loadSnapshot:loadSnapshot,saveSnapshot:saveSnapshot,listStudents:listStudents,listCohorts:listCohorts,listAudit:listAudit,listContentItems:listContentItems,reviewContent:reviewContent,createStudent:createStudent,facultyStaff:facultyStaff,manageStudent:manageStudent,createCohort:createCohort,setOwnPassword:setOwnPassword,updateOwnProfile:updateOwnProfile,studentLifecycleRpc:studentLifecycleRpc,gradeAnswer:gradeAnswer,gradePilot:gradePilot,getConsent:getConsent,recordConsent:recordConsent,logEvent:logEvent,recordAttempt:recordAttempt,saveLearningPlan:saveLearningPlan};
 if(typeof window!=="undefined"){
   window.addEventListener("error",function(ev){
     if(!isConfigured())return;
