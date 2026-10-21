@@ -1,4 +1,5 @@
 import { corsHeaders,json,requireStaff } from "../_shared/auth.ts";
+import {facultyCohort} from "../_shared/faculty.ts";
 
 function temporaryPassword(){
   const bytes=crypto.getRandomValues(new Uint8Array(12));
@@ -106,9 +107,19 @@ Deno.serve(async(req)=>{
       await admin.from("admin_audit").insert({actor_user_id:user.id,target_user_id:null,action:"DELETE_STUDENT_COMPLETED",details:{former_user_id:target,username:student.username}});
       return json({ok:true,deleted:true});
     }else if(action==="update_profile"){
+      if(!["owner","admin"].includes(profile.role))return json({error:"profile_update_requires_admin"},403);
       const allowed:any={};
       for(const k of ["display_name","university","year_label","cohort_id","locale"])if(k in b.patch)allowed[k]=b.patch[k];
       const r=await admin.from("profiles").update(allowed).eq("id",target);if(r.error)throw r.error;
+    }else if(action==="assign_faculty"){
+      if(!["owner","admin"].includes(profile.role))return json({error:"faculty_assignment_requires_admin"},403);
+      const university=String(b.university||"").trim().slice(0,160),faculty=String(b.faculty||"").trim().slice(0,160);
+      if(!university||!faculty)return json({error:"university_and_faculty_required"},400);
+      const group=await facultyCohort(admin,university,faculty);
+      const changed=await admin.from("profiles").update({university,faculty,cohort_id:group}).eq("id",target).eq("role","student");
+      if(changed.error)throw changed.error;
+      b.details={university,faculty,cohort_id:group,reason:String(b.reason||"").slice(0,500),
+        note:"Affiliation assignment preserves historic results, account status and original research consent status."};
     }else if(action==="save_snapshot"){
       if(!b.course_id||!b.snapshot_type)return json({error:"snapshot_fields_required"},400);
       const r=await admin.from("learner_snapshots").upsert({user_id:target,course_id:b.course_id,snapshot_type:b.snapshot_type,state:b.state||{},version:Number(b.version)||1,updated_at:new Date().toISOString()},{onConflict:"user_id,course_id,snapshot_type"});
