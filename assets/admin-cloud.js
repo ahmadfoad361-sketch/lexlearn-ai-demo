@@ -131,7 +131,7 @@ function detail(v){
  essayAttempts(v)+
  '</section>'+
  '<section class="twoCols"><div class="panel"><h3>التقدم</h3><div class="progressWrap"><div class="progressLine"><i style="width:'+Math.round(v.completed/30*100)+'%"></i></div><b>'+v.completed+'/30</b></div><p>الجلسة الحالية: '+v.session+' • '+(v.course.completedProgram?"البرنامج مكتمل":"البرنامج مستمر")+'</p><div class="recommend"><b>التدخل المقترح</b><span>'+esc(modelText(v))+'</span></div></div>'+
- '<div class="panel studentManagement"><h3>إدارة حساب الطالب</h3><p class="managementHint">إيقاف مؤقت أو تعطيل دون حذف نتائج التدريب. يمكنك استخراج ملف PDF أو نص كامل للتوثيق قبل أي حذف نهائي.</p><div class="accountState '+(s.accountStatus||"active")+'">حالة الحساب: '+({"active":"نشط","paused":"موقوف مؤقتًا","disabled":"معطّل","pending":"بانتظار الاعتماد"}[s.accountStatus||"active"]||"غير محددة")+'</div><div class="adminActions"><button class="reportBtn" data-report="'+s.id+'">'+ico("audit")+' تصدير ملف الطالب / PDF</button><button data-reset="'+s.id+'">'+ico("key")+' كلمة مرور مؤقتة</button>'+(s.accountStatus!=="paused"&&s.active!==false?'<button data-set-status="paused" data-user="'+s.id+'">إيقاف مؤقت</button>':'')+(s.accountStatus!=="disabled"?'<button data-set-status="disabled" data-user="'+s.id+'">تعطيل الحساب</button>':'')+(s.active===false?'<button data-set-status="active" data-user="'+s.id+'">'+(s.accountStatus==="pending"?"اعتماد الطالب وتفعيل حسابه":"إعادة التفعيل")+'</button>':'')+'<button data-unlock="'+s.id+'">فتح الأسبوع التالي</button><button data-repair="'+s.id+'">جلسة تثبيت</button>'+(["owner","admin"].indexOf(state.staffRole)>=0?'<button class="deleteStudentButton" data-delete-student="'+s.id+'">حذف الحساب نهائيًا</button>':'')+'</div></div></section>'+
+ '<div class="panel studentManagement"><h3>إدارة حساب الطالب</h3><p class="managementHint">إيقاف مؤقت أو تعطيل دون حذف نتائج التدريب. يمكنك استخراج ملف PDF أو نص كامل للتوثيق قبل أي حذف نهائي.</p><div class="accountState '+(s.accountStatus||"active")+'">حالة الحساب: '+({"active":"نشط","paused":"موقوف مؤقتًا","disabled":"معطّل","pending":"بانتظار الاعتماد"}[s.accountStatus||"active"]||"غير محددة")+'</div><div class="adminActions">'+(["owner","admin"].includes(state.staffRole)?'<button data-assign-faculty="'+s.id+'">ربط الطالب بكلية جامعية</button>':"")+'<button class="reportBtn" data-report="'+s.id+'">'+ico("audit")+' تصدير ملف الطالب / PDF</button><button data-reset="'+s.id+'">'+ico("key")+' كلمة مرور مؤقتة</button>'+(s.accountStatus!=="paused"&&s.active!==false?'<button data-set-status="paused" data-user="'+s.id+'">إيقاف مؤقت</button>':'')+(s.accountStatus!=="disabled"?'<button data-set-status="disabled" data-user="'+s.id+'">تعطيل الحساب</button>':'')+(s.active===false?'<button data-set-status="active" data-user="'+s.id+'">'+(s.accountStatus==="pending"?"اعتماد الطالب وتفعيل حسابه":"إعادة التفعيل")+'</button>':'')+'<button data-unlock="'+s.id+'">فتح الأسبوع التالي</button><button data-repair="'+s.id+'">جلسة تثبيت</button>'+(["owner","admin"].indexOf(state.staffRole)>=0?'<button class="deleteStudentButton" data-delete-student="'+s.id+'">حذف الحساب نهائيًا</button>':'')+'</div></div></section>'+
  '<section class="panel evidence"><h3>لماذا اتخذ النظام هذا القرار؟</h3><div class="evidenceGrid">'+["recall","understanding","application","legal_precision","retention","exam"].map(function(k){var a=axes[k];return '<div><b>'+label(k)+'</b><span>'+(a?("تقدير "+a.value+"% • عدم يقين ±"+a.uncertainty+" • اتجاه "+(a.trend>0?"+":"")+a.trend):"لا توجد أدلة كافية بعد")+'</span></div>';}).join("")+'</div></section>';
 }
 function essayAttempts(v){
@@ -318,6 +318,19 @@ function bind(){
    }
    catch(e){button.disabled=false;alert("تعذر تغيير حالة الحساب: "+(e&&e.message||e));}
   };});
+ document.querySelectorAll("[data-assign-faculty]").forEach(function(button){button.onclick=async function(){
+   var student=state.students.find(function(x){return x.id===button.dataset.assignFaculty;});if(!student)return;
+   var uni=prompt("اسم الجامعة للطالب:",student.university||"");if(uni===null)return;
+   var faculty=prompt("اسم الكلية:",student.faculty||"كلية الحقوق");if(faculty===null)return;
+   if(!uni.trim()||!faculty.trim()){alert("اكتب اسم الجامعة والكلية.");return;}
+   var reason=prompt("سبب ربط الطالب بالكلية (للسجل البحثي):","تصحيح تبعية الطالب الجامعية");if(reason===null)return;
+   try{
+    var r=await LEX_CLOUD.manageStudent({action:"assign_faculty",user_id:student.id,
+      university:uni.trim(),faculty:faculty.trim(),reason:reason});
+    if(!r||r.ok!==true)throw new Error(r&&r.error||"تعذر حفظ التبعية");
+    await load();render();
+   }catch(e){alert("تعذر ربط الطالب بالكلية: "+(e.message||e));}
+ };});
  document.querySelectorAll("[data-report]").forEach(function(button){button.onclick=function(){
    if(!window.LEX_STUDENT_REPORT){alert("مكون تصدير التقرير لم يتم تحميله، أعد فتح الصفحة.");return;}
    window.LEX_STUDENT_REPORT.open(button.dataset.report);
