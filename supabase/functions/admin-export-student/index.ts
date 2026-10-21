@@ -9,21 +9,27 @@ Deno.serve(async(req)=>{
   const body=await req.json();
   const uid=String(body.user_id||"");
   if(!/^[a-f0-9-]{36}$/i.test(uid))return reply({error:"invalid_student_id"},400);
-  const prof=await admin.from("profiles").select("id,role,username,display_name,university,year_label,country_code,cohort_id,active,account_status,created_at").eq("id",uid).single();
+  const prof=await admin.from("profiles").select("id,role,username,display_name,university,year_label,country_code,cohort_id,active,account_status,created_at,registration_track,faculty,institutional_email,institutional_email_verified_at,student_registration_number").eq("id",uid).single();
   if(prof.error||!prof.data||prof.data.role!=="student")return reply({error:"student_not_found"},404);
   if(profile.role==="instructor"){
     const scoped=await admin.from("profiles").select("cohort_id").eq("id",user.id).single();
     if(scoped.error||!scoped.data.cohort_id||scoped.data.cohort_id!==prof.data.cohort_id)
       return reply({error:"student_outside_instructor_scope"},403);
   }
-  const tables=["enrollments","attempts","learner_snapshots","learning_plans","mastery_evidence","reviews","pilot_ai_grades","ai_grading_runs"];
+  const tables=["enrollments","attempts","learner_snapshots","learning_plans","mastery_evidence","reviews","pilot_ai_grades","ai_grading_runs",
+    "student_diagnostic_runs","student_training_sessions","student_training_answers","student_level_responses","consent_records","admin_audit"];
   async function pageTable(table:string,key="user_id"){
    const output:Record<string,unknown>[]=[];
    let page=0,more=true;
    while(more&&page<40){
     const a=page*500,b=a+499;
-    const orderField=table==="enrollments"?"course_id":table==="pilot_ai_grades"?"attempt_id":"id";
-    const q=await admin.from(table).select("*").eq(key,uid).order(orderField,{ascending:true}).range(a,b);
+    const orderField=table==="enrollments"?"course_id":table==="pilot_ai_grades"?"attempt_id":
+      table==="student_diagnostic_runs"?"created_at":table==="student_training_sessions"?"session_number":
+      table==="student_training_answers"||table==="student_level_responses"?"session_number":
+      table==="consent_records"?"created_at":"id";
+    const order=table==="student_level_responses"?"level_number":orderField;
+    const filter=table==="admin_audit"?"target_user_id":key;
+    const q=await admin.from(table).select("*").eq(filter,uid).order(order,{ascending:true}).range(a,b);
     if(q.error)throw new Error(table+"_fetch_failed: "+q.error.message);
     const entries=q.data||[];
     output.push(...entries);
