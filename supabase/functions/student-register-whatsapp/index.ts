@@ -1,6 +1,6 @@
 import {adminClient,corsHeaders,json} from "../_shared/auth.ts";
 
-// Conference registration: no contact verification. All accounts are students.
+// Conference: immediate access. Academic research: university email is recorded as UNVERIFIED; staff approval required.
 // Email and WhatsApp are OPTIONAL and are never linked to Supabase Auth as
 // verified identities. Students authenticate with a generated username.
 function clean(value:unknown,max:number){return String(value??"").trim().slice(0,max);}
@@ -23,12 +23,17 @@ Deno.serve(async(req)=>{
  try{
   const body=await req.json();
   if(clean(body.website,120))return json({error:"registration_not_completed"},400);
+  const registrationTrack=body.registration_track==="academic"?"academic":"conference";
+  const academic=registrationTrack==="academic";
+  const institutionalEmail=clean(body.institutional_email,254).toLowerCase(),faculty=clean(body.faculty,160),
+   studentNumber=clean(body.student_registration_number,64);
   const name=clean(body.name,160),password=String(body.password||""),
    whatsapp=phoneNumber(body.whatsapp_e164),email=clean(body.email,254).toLowerCase(),
    country=clean(body.country_code,8),university=clean(body.university,160),year=clean(body.year_label,80);
   if(!name||!university||!year||whatsapp===undefined||password.length<10||password.length>72||
      !["qa","eg","sa","ae","other"].includes(country)||
-     (email&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)))
+     (email&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))||
+     (academic&&(!faculty||!institutionalEmail||!/^\S+@\S+\.\S+$/.test(institutionalEmail)||body.accepted_research!==true)))
    return json({error:"invalid_registration_details"},400);
   if(body.accepted_privacy!==true)return json({error:"consent_required"},400);
   const admin=adminClient();
@@ -42,7 +47,8 @@ Deno.serve(async(req)=>{
    user_metadata:{
     username,display_name:name,university,year_label:year,country_code:country,
     whatsapp_e164:whatsapp,contact_email:email||null,
-    registration_channel:"conference_self",
+    registration_channel:academic?"academic_pilot_self":"conference_self",
+    faculty:academic?faculty:null,institutional_email:academic?institutionalEmail:null,
     privacy_notice_version:"2026-10-12-v4",
     must_change_password:false
    }
@@ -53,12 +59,24 @@ Deno.serve(async(req)=>{
    const p=await admin.from("profiles").select("id,role,active,account_status,username").eq("id",uid).single();
    if(p.error||p.data?.role!=="student"||p.data?.active!==false||p.data?.account_status!=="pending"||
        p.data?.username!==username)throw new Error("profile_creation_inconsistent");
+   if(academic){
+    const details=await admin.from("profiles").update({
+      registration_track:"academic",faculty,institutional_email:institutionalEmail,
+      student_registration_number:studentNumber||null
+    }).eq("id",uid);
+    if(details.error)throw details.error;
+    const consent=await admin.from("consent_records").insert({
+      user_id:uid,notice_version:"2026-10-21-academic-v1",consent_type:"research_participation",accepted:true
+    });
+    if(consent.error)throw consent.error;
+   }
    if(country==="qa"){
     const enrolled=await admin.from("enrollments").upsert({
      user_id:uid,course_id:"qa-qu-lawc101-rights",status:"active"
     },{onConflict:"user_id,course_id"});
     if(enrolled.error)throw enrolled.error;
    }
+   if(academic)return json({ok:true,username,can_sign_in:false,confirmation_required:true,verification:"pending_manual"});
    const activated=await admin.from("profiles").update({active:true,account_status:"active"})
      .eq("id",uid).eq("role","student").eq("account_status","pending").select("id").single();
    if(activated.error||!activated.data)throw new Error("student_activation_failed");
