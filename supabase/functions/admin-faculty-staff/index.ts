@@ -11,7 +11,7 @@ Deno.serve(async(req)=>{
   if(!["owner","admin"].includes(profile.role))return json({error:"admin_only"},403);
   const b=await req.json(),action=str(b.action,32);
   if(action==="list"){
-    const r=await admin.from("profiles").select("id,display_name,username,university,faculty,academic_title,cohort_id,active,account_status,created_at")
+    const r=await admin.from("profiles").select("id,display_name,username,contact_email,university,faculty,academic_title,cohort_id,active,account_status,created_at")
       .eq("role","instructor").order("created_at",{ascending:false});
     if(r.error)throw r.error;
     return json({ok:true,staff:r.data||[]});
@@ -29,7 +29,7 @@ Deno.serve(async(req)=>{
     const uid=created.data.user.id;
     const updated=await admin.from("profiles").update({
       role:"instructor",active:true,account_status:"active",must_change_password:true,
-      display_name:name,username,cohort_id:cohortId,university,faculty,academic_title:title||null
+      display_name:name,username,contact_email:email,cohort_id:cohortId,university,faculty,academic_title:title||null
     }).eq("id",uid).eq("role","student").select("id").single();
     if(updated.error||!updated.data){
       await admin.auth.admin.deleteUser(uid);
