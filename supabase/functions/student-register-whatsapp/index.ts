@@ -37,6 +37,18 @@ Deno.serve(async(req)=>{
    return json({error:"invalid_registration_details"},400);
   if(body.accepted_privacy!==true)return json({error:"consent_required"},400);
   const admin=adminClient();
+  if(academic){
+    const policy=await admin.from("academic_registration_policies")
+      .select("require_student_number,allowed_email_domains").eq("university",university).eq("faculty",faculty).maybeSingle();
+    if(policy.error)return json({error:"academic_policy_unavailable"},503);
+    if(policy.data?.require_student_number&&!studentNumber)return json({error:"student_number_required_by_faculty"},400);
+    const domains=Array.isArray(policy.data?.allowed_email_domains)?policy.data.allowed_email_domains:[];
+    const emailDomain=institutionalEmail.split("@").pop()||"";
+    if(domains.length&&!domains.some((domain:string)=>{
+      const allowed=domain.toLowerCase().trim().replace(/^@/,"");
+      return allowed&&(emailDomain===allowed||emailDomain.endsWith("."+allowed));
+    }))return json({error:"university_email_domain_not_allowed"},400);
+  }
   const rate=await admin.rpc("consume_student_signup_slot",await rateKey(req));
   if(rate.error)return json({error:"registration_temporarily_unavailable"},503);
   if(rate.data!==true)return json({error:"too_many_registrations"},429);
