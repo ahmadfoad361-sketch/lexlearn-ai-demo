@@ -1,6 +1,7 @@
 (function(){
 "use strict";
 var ar=document.documentElement.lang==="ar",
+ academic=new URLSearchParams(location.search).get("mode")==="academic",
  form=document.getElementById("registerForm"),
  status=document.getElementById("status"),
  button=document.getElementById("registerBtn"),
@@ -10,6 +11,18 @@ var ar=document.documentElement.lang==="ar",
  copyButton=document.getElementById("copyUsername"),
  startButton=document.getElementById("startTraining");
 function say(a,b){return ar?a:b;}
+if(academic){
+ var academicFields=document.getElementById("academicFields"),academicTitle=document.querySelector(".formCard h2"),academicIntro=document.querySelector(".intro p"),contactEmail=document.getElementById("email");
+ academicFields.hidden=false;
+ ["faculty","institutionalEmail","researchConsent"].forEach(function(id){document.getElementById(id).required=true;});
+ if(contactEmail)contactEmail.closest("label").hidden=true;
+ if(academicTitle)academicTitle.textContent=say("تسجيل المشاركة البحثية الجامعية","University research pilot registration");
+ var formHint=document.querySelector(".formCard > p");if(formHint)formHint.textContent=say("البريد الجامعي مطلوب للمشاركة البحثية ولا يُعد موثقًا إلا بعد مراجعة المشرف. رقم القيد حسب شرط الكلية.","University email is required but is not considered verified until staff review. Student number depends on faculty policy.");
+ var steps=document.querySelectorAll(".intro .steps li");if(steps&&steps.length===3){steps[0].textContent=say("1 — أدخل بيانات الانتساب والموافقة البحثية","1 — Enter affiliation and research consent");steps[1].textContent=say("2 — استلم اسم المستخدم الخاص بك","2 — Receive your username");steps[2].textContent=say("3 — انتظر اعتماد المشرف ثم ابدأ","3 — Await supervisor approval before training");}
+ if(academicIntro)academicIntro.textContent=say("تُراجع بياناتك الجامعية قبل بدء المشاركة في التجربة البحثية.","Your university details will be reviewed before research participation begins.");
+ var switchLanguage=document.getElementById("switchLanguage");if(switchLanguage)switchLanguage.href+="?mode=academic";
+}
+
 function show(message,error){status.textContent=message;status.className=error?"error":"ok";}
 function normalizePhone(value){
  var phone=String(value||"").trim().replace(/[\s().-]/g,"");
@@ -35,10 +48,14 @@ form.addEventListener("submit",async function(ev){
   password=document.getElementById("password").value,
   university=document.getElementById("university").value.trim(),
   year=document.getElementById("year").value,
-  country=document.getElementById("country").value;
- if(!name||!university||!year||!country||password.length<10||password.length>72){
+  country=document.getElementById("country").value,
+  institutionalEmail=academic?document.getElementById("institutionalEmail").value.trim().toLowerCase():"",
+  faculty=academic?document.getElementById("faculty").value.trim():"",
+  studentNumber=academic?document.getElementById("studentNumber").value.trim():"";
+ if(!name||!university||!year||!country||password.length<10||password.length>72||academic&&(!institutionalEmail||!faculty||!document.getElementById("researchConsent").checked)){
   show(say("أكمل البيانات الأساسية، وكلمة مرور من 10 إلى 72 حرفًا.","Complete your basic details and enter a password of 10–72 characters."),true);return;
  }
+ if(academic&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(institutionalEmail)){show(say("يرجى كتابة بريد جامعي صحيح.","Enter a valid university email address."),true);return;}
  if(whatsapp&&!/^\+[1-9][0-9]{7,14}$/.test(whatsapp)){
   show(say("إذا كتبت الواتساب فأدخله مع مفتاح الدولة مثل +974 أو +20، أو اتركه فارغًا.","If you add WhatsApp, include the country code such as +974 or +20, or leave it blank."),true);return;
  }
@@ -58,6 +75,8 @@ form.addEventListener("submit",async function(ev){
   var db=LEX_CLOUD.db();
   var response=await db.functions.invoke("student-register-whatsapp",{body:{
    name:name,email:email||null,whatsapp_e164:whatsapp||null,
+   registration_track:academic?"academic":"conference",institutional_email:institutionalEmail||null,
+   faculty:faculty||null,student_registration_number:studentNumber||null,accepted_research:academic,
    password:password,university:university,year_label:year,
    country_code:country,accepted_privacy:true,website:""
   }});
@@ -67,6 +86,8 @@ form.addEventListener("submit",async function(ev){
   }
   if(response.error||!response.data||response.data.ok!==true||!response.data.username){
    if(code==="too_many_registrations")throw new Error("rate_limit");
+   if(code==="student_number_required_by_faculty")throw new Error("student_number_required");
+   if(code==="university_email_domain_not_allowed")throw new Error("institutional_domain_required");
    throw new Error("registration_failed");
   }
   var username=String(response.data.username);
@@ -79,6 +100,12 @@ form.addEventListener("submit",async function(ev){
   copyButton.textContent=say("نسخ اسم المستخدم","Copy username");
   // Supabase Auth is based on the generated username, not unverified contact data.
   try{
+   if(academic){
+    startButton.href=ar?"student-login.html":"student-login-en.html";
+    startButton.textContent=say("الدخول بعد اعتماد المشرف","Sign in after supervisor approval");
+    show(say("تم إنشاء حساب المشاركة. بيانات البريد الجامعي قيد التحقق والمراجعة، ولن تبدأ التجربة حتى اعتمادها.","Research account created. University details await manual verification and approval before participation."),false);
+    form.reset();return;
+   }
    var signed=await LEX_CLOUD.signInStudent(username,password);
    var profile=signed.profile;
    localStorage.setItem("lexlearn_student_session",JSON.stringify({
@@ -95,7 +122,9 @@ form.addEventListener("submit",async function(ev){
   }
   form.reset();
  }catch(e){
-  show(e.message==="rate_limit"?
+  show(e.message==="student_number_required"?say("الكلية تشترط رقم القيد، يرجى إدخاله.","Your faculty requires your student number. Please provide it."):
+   e.message==="institutional_domain_required"?say("استخدم نطاق البريد الجامعي المعتمد لدى الكلية.","Use an email address from your faculty’s approved university domain."):
+   e.message==="rate_limit"?
    say("طلبات التسجيل من هذه الشبكة كثيرة الآن. حاول لاحقًا أو استخدم شبكة أخرى.","Too many registrations on this network. Try later or use another connection."):
    say("تعذر إنشاء الحساب الآن. حاول مجددًا أو اطلب مساعدة المشرف.","Unable to create an account right now. Please try again or ask a supervisor for help."),true);
  }finally{button.disabled=false;}

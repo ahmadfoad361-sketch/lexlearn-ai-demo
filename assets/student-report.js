@@ -8,7 +8,7 @@ function score(v){if(v==null)return "غير محدد";var n=Number(v);return Num
 function buildText(d){
  var p=d.student,r=d.records||{},A=Array.isArray(r.attempts)?r.attempts:[],human=new Map((r.pilot_human_grades||[]).map(function(x){return[x.attempt_id,x];})),ai=new Map((r.pilot_ai_grades||[]).map(function(x){return[x.attempt_id,x];})),questions=new Map((r.questions||[]).map(function(x){return[x.id,x];}));
  var lines=["LexLearn | ملف الطالب التعليمي","تاريخ إصدار التقرير: "+fmtDate(d.generated_at),"التقرير للاستخدام الإداري والتوثيق؛ النتائج الآلية لا تمثل اعتمادًا جامعيًا.","","=== البيانات الأساسية ===",
- "الاسم: "+str(p.display_name),"اسم المستخدم: "+str(p.username),"رقم الحساب: "+str(p.id),"الدولة: "+str(p.country_code),"الجامعة: "+str(p.university),"السنة الدراسية: "+str(p.year_label),"حالة الحساب: "+str(p.account_status),"تاريخ التسجيل: "+fmtDate(p.created_at),
+ "الاسم: "+str(p.display_name),"اسم المستخدم: "+str(p.username),"رقم الحساب: "+str(p.id),"الدولة: "+str(p.country_code),"الجامعة: "+str(p.university),"السنة الدراسية: "+str(p.year_label),"الكلية: "+str(p.faculty),"البريد الجامعي: "+str(p.institutional_email),"التحقق من البريد الجامعي: "+(p.institutional_email_verified_at?"مراجعة يدوية في "+fmtDate(p.institutional_email_verified_at):"لم يتحقق"),"رقم القيد الجامعي: "+str(p.student_registration_number),"حالة الحساب: "+str(p.account_status),"تاريخ التسجيل: "+fmtDate(p.created_at),
  "","=== المقررات ==="];
  (r.enrollments||[]).forEach(function(x){lines.push(str(x.course_id)+" | "+str(x.status)+" | "+fmtDate(x.assigned_at));});
  if(!(r.enrollments||[]).length)lines.push("لا توجد مقررات مسجلة");
@@ -27,13 +27,19 @@ function buildText(d){
  records("أدلة التقييم والمهارات","mastery_evidence");
  records("مواعيد المراجعة","reviews");
  records("سجلات التصحيح الآلي","ai_grading_runs");
+ records("التشخيص الرسمي الكامل والإجابات والخطة الأولية","student_diagnostic_runs");
+ records("الجلسات الثلاثون وتواريخ إكمالها وأسئلتها المختارة","student_training_sessions");
+ records("كل إجابات الجلسات الثلاثين وتصحيحها الفعلي","student_training_answers");
+ records("إجابات مسار المستويات الأخرى","student_level_responses");
+ records("الموافقات المسجلة","consent_records");
+ records("تدخلات المشرف في حساب الطالب","admin_audit");
  if(d.truncated&&d.truncated.length)lines.push("","تنبيه: يوجد اقتطاع بيانات بسبب حد التصدير في: "+d.truncated.join("، "));
  return lines.join("\n");
 }
 function section(title,body,klass){return '<section class="section '+(klass||"")+'"><h2>'+escapeHTML(title)+'</h2>'+body+'</section>';}
 function render(d,raw){
  var p=d.student,records=d.records||{},arr=records.attempts||[],human=new Map((records.pilot_human_grades||[]).map(function(x){return[x.attempt_id,x];})),ai=new Map((records.pilot_ai_grades||[]).map(function(x){return[x.attempt_id,x];})),questions=new Map((records.questions||[]).map(function(x){return[x.id,x];}));
- var fields=[["الاسم",p.display_name],["اسم المستخدم",p.username],["الجامعة",p.university],["السنة الدراسية",p.year_label],["الدولة",p.country_code],["الحالة",p.account_status],["تاريخ التسجيل",fmtDate(p.created_at)],["معرف الطالب",p.id]];
+ var fields=[["الاسم",p.display_name],["اسم المستخدم",p.username],["الجامعة",p.university],["السنة الدراسية",p.year_label],["الدولة",p.country_code],["الكلية",p.faculty],["البريد الجامعي",p.institutional_email],["حالة التحقق",p.institutional_email_verified_at?"مراجعة يدوية":"لم يتحقق"],["رقم القيد",p.student_registration_number],["الحالة",p.account_status],["تاريخ التسجيل",fmtDate(p.created_at)],["معرف الطالب",p.id]];
  var html='<div class="fieldgrid">'+fields.map(function(a){return '<div><small>'+escapeHTML(a[0])+'</small><b>'+escapeHTML(str(a[1]))+'</b></div>';}).join("")+'</div>';
  var enroll=(records.enrollments||[]).map(function(x){return '<div class="entry"><b>'+escapeHTML(str(x.course_id))+'</b><p>الحالة: '+escapeHTML(str(x.status))+' • '+escapeHTML(fmtDate(x.assigned_at))+'</p></div>';}).join("")||'<p>لا توجد مقررات مسجلة.</p>';
  var tests=arr.slice().sort(function(a,b){return new Date(a.created_at)-new Date(b.created_at);}).map(function(a,i){
@@ -66,6 +72,22 @@ function render(d,raw){
  other("أدلة التقييم","mastery_evidence")+
  other("المراجعات المجدولة","reviews")+
  other("سجل عمليات التصحيح الآلي","ai_grading_runs")+
+ section("03 — التشخيص الرسمي: الإجابات والنتيجة", (records.student_diagnostic_runs||[]).map(function(x,i){
+  return '<article class="entry"><h3>اختبار تشخيصي '+(i+1)+'</h3><p>الحالة: '+escapeHTML(str(x.status))+' • تاريخ الانتهاء: '+escapeHTML(fmtDate(x.completed_at))+'</p>'+
+   '<p><b>الإجابات الموضوعية:</b></p><pre>'+escapeHTML(JSON.stringify(x.answers||{},null,2))+'</pre>'+
+   '<p><b>الإجابة الحرة:</b></p><pre>'+escapeHTML(str(x.free_text))+'</pre>'+
+   '<p><b>التقييم:</b></p><pre>'+escapeHTML(JSON.stringify(x.result||{},null,2))+'</pre>'+
+   '<p><b>خطة التعلم:</b></p><pre>'+escapeHTML(JSON.stringify(x.training_plan||{},null,2))+'</pre></article>';
+ }).join("")||'<p>لا يوجد تشخيص رسمي محفوظ.</p>',"training")+
+ section("04 — جلسات التدريب الثلاثون", (records.student_training_sessions||[]).map(function(x){
+  return '<article class="entry"><h3>الجلسة '+escapeHTML(str(x.session_number))+'</h3><p>البداية: '+escapeHTML(fmtDate(x.started_at))+' • النهاية: '+escapeHTML(fmtDate(x.completed_at))+'</p><pre>'+escapeHTML(JSON.stringify(x.tasks_json||[],null,2))+'</pre></article>';
+ }).join("")||'<p>لم تُفتح جلسات مسجلة.</p>',"training")+
+ section("05 — جميع إجابات المسار الرسمي", (records.student_training_answers||[]).map(function(x,i){
+  return '<article class="entry"><h3>إجابة '+(i+1)+' — الجلسة '+escapeHTML(str(x.session_number))+'</h3><p>المهارة: '+escapeHTML(label(x.dimension))+' • السؤال: '+escapeHTML(str(x.item_id))+' • '+escapeHTML(fmtDate(x.submitted_at))+'</p><div class="answer"><pre>'+escapeHTML(str(x.answer_text))+'</pre></div><p>تفاصيل التقييم:</p><pre>'+escapeHTML(JSON.stringify(x.evaluation||{},null,2))+'</pre></article>';
+ }).join("")||'<p>لا توجد إجابات للجلسات.</p>',"training")+
+ other("إجابات مسار المستويات الأخرى","student_level_responses")+
+ other("الموافقات البحثية","consent_records")+
+ other("تدخلات الإدارة في حساب الطالب","admin_audit")+
  '<p class="footnote">رقم الحساب: '+escapeHTML(p.id)+' | تاريخ الاستخراج: '+escapeHTML(d.generated_at)+'</p><textarea class="copyArea" id="fullReportText" readonly>'+escapeHTML(raw)+'</textarea></main></body></html>';
 }
 async function open(userId){
