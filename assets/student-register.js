@@ -17,6 +17,8 @@ if(academic){
  ["faculty","institutionalEmail","researchConsent"].forEach(function(id){document.getElementById(id).required=true;});
  if(contactEmail)contactEmail.closest("label").hidden=true;
  if(academicTitle)academicTitle.textContent=say("تسجيل المشاركة البحثية الجامعية","University research pilot registration");
+ var formHint=document.querySelector(".formCard > p");if(formHint)formHint.textContent=say("البريد الجامعي مطلوب للمشاركة البحثية ولا يُعد موثقًا إلا بعد مراجعة المشرف. رقم القيد حسب شرط الكلية.","University email is required but is not considered verified until staff review. Student number depends on faculty policy.");
+ var steps=document.querySelectorAll(".intro .steps li");if(steps&&steps.length===3){steps[0].textContent=say("1 — أدخل بيانات الانتساب والموافقة البحثية","1 — Enter affiliation and research consent");steps[1].textContent=say("2 — استلم اسم المستخدم الخاص بك","2 — Receive your username");steps[2].textContent=say("3 — انتظر اعتماد المشرف ثم ابدأ","3 — Await supervisor approval before training");}
  if(academicIntro)academicIntro.textContent=say("تُراجع بياناتك الجامعية قبل بدء المشاركة في التجربة البحثية.","Your university details will be reviewed before research participation begins.");
  var switchLanguage=document.getElementById("switchLanguage");if(switchLanguage)switchLanguage.href+="?mode=academic";
 }
@@ -84,6 +86,8 @@ form.addEventListener("submit",async function(ev){
   }
   if(response.error||!response.data||response.data.ok!==true||!response.data.username){
    if(code==="too_many_registrations")throw new Error("rate_limit");
+   if(code==="student_number_required_by_faculty")throw new Error("student_number_required");
+   if(code==="university_email_domain_not_allowed")throw new Error("institutional_domain_required");
    throw new Error("registration_failed");
   }
   var username=String(response.data.username);
@@ -118,7 +122,9 @@ form.addEventListener("submit",async function(ev){
   }
   form.reset();
  }catch(e){
-  show(e.message==="rate_limit"?
+  show(e.message==="student_number_required"?say("الكلية تشترط رقم القيد، يرجى إدخاله.","Your faculty requires your student number. Please provide it."):
+   e.message==="institutional_domain_required"?say("استخدم نطاق البريد الجامعي المعتمد لدى الكلية.","Use an email address from your faculty’s approved university domain."):
+   e.message==="rate_limit"?
    say("طلبات التسجيل من هذه الشبكة كثيرة الآن. حاول لاحقًا أو استخدم شبكة أخرى.","Too many registrations on this network. Try later or use another connection."):
    say("تعذر إنشاء الحساب الآن. حاول مجددًا أو اطلب مساعدة المشرف.","Unable to create an account right now. Please try again or ask a supervisor for help."),true);
  }finally{button.disabled=false;}
