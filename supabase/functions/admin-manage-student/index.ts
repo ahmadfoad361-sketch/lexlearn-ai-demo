@@ -15,7 +15,7 @@ Deno.serve(async(req)=>{
     const b=await req.json(),target=String(b.user_id||"");
     if(!target)return json({error:"user_id_required"},400);
     const action=String(b.action||"");
-    const {data:student,error:studentError}=await admin.from("profiles").select("id,role,username,active,account_status,display_name,country_code,whatsapp_e164,whatsapp_verified_at").eq("id",target).maybeSingle();
+    const {data:student,error:studentError}=await admin.from("profiles").select("id,role,username,active,account_status,display_name,country_code,whatsapp_e164,whatsapp_verified_at,registration_track,institutional_email,institutional_email_verified_at").eq("id",target).maybeSingle();
     if(studentError||!student||student.role!=="student")return json({error:"student_account_required"},404);
     if(target===user.id)return json({error:"self_action_denied"},403);
     // Instructor access is restricted to an explicitly assigned cohort.
@@ -42,12 +42,19 @@ Deno.serve(async(req)=>{
       if(!["active","paused","disabled"].includes(status))return json({error:"invalid_account_status"},400);
       if(status==="active"){
         if(student.account_status==="pending"){
+          if(student.registration_track==="academic"&&!student.institutional_email_verified_at){
+            if(b.institutional_email_verified_manually!==true)return json({error:"academic_email_manual_verification_required"},409);
+            const stamped=await admin.from("profiles").update({institutional_email_verified_at:new Date().toISOString()}).eq("id",target);
+            if(stamped.error)throw stamped.error;
+          }
           const authUser=await admin.auth.admin.getUserById(target);
           if(authUser.error||!authUser.data.user)return json({error:"student_auth_account_unavailable"},409);
           const account=authUser.data.user;
           // WhatsApp is the primary identity confirmation for every new account.
           // The optional contact email never gates activation.
-          if(student.whatsapp_e164){
+          if(student.registration_track==="academic"){
+            // University affiliation was reviewed manually by authorized staff. No OTP is implied.
+          }else if(student.whatsapp_e164){
             if(!student.whatsapp_verified_at){
               if(b.whatsapp_verified_manually!==true)return json({error:"manual_whatsapp_verification_required"},409);
               const updated=await admin.auth.admin.updateUserById(target,{
@@ -83,7 +90,9 @@ Deno.serve(async(req)=>{
         const upd=await admin.from("profiles").update({active:false,account_status:status}).eq("id",target);
         if(upd.error){await admin.auth.admin.updateUserById(target,{ban_duration:"none"});throw upd.error;}
       }
-      b.details={from:student.account_status||(student.active?"active":"disabled"),to:status,reason:String(b.reason||"").slice(0,500),whatsapp_verified_manually:b.whatsapp_verified_manually===true};
+      b.details={from:student.account_status||(student.active?"active":"disabled"),to:status,reason:String(b.reason||"").slice(0,500),whatsapp_verified_manually:b.whatsapp_verified_manually===true,
+        institutional_email_verified_manually:b.institutional_email_verified_manually===true,
+        institution_email:student.registration_track==="academic"?student.institutional_email:null};
     }else if(action==="delete_student"){
       // Irreversible: removing auth.users cascades to profiles, attempts and learning records.
       // Only owner/admin may execute, never an instructor.
