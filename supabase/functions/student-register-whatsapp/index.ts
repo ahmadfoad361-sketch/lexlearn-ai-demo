@@ -1,4 +1,5 @@
 import {adminClient,corsHeaders,json} from "../_shared/auth.ts";
+import {facultyCohort} from "../_shared/faculty.ts";
 
 // Conference: immediate access. Academic research: university email is recorded as UNVERIFIED; staff approval required.
 // Email and WhatsApp are OPTIONAL and are never linked to Supabase Auth as
@@ -72,8 +73,9 @@ Deno.serve(async(req)=>{
    if(p.error||p.data?.role!=="student"||p.data?.active!==false||p.data?.account_status!=="pending"||
        p.data?.username!==username)throw new Error("profile_creation_inconsistent");
    if(academic){
+    const facultyGroup=await facultyCohort(admin,university,faculty);
     const details=await admin.from("profiles").update({
-      registration_track:"academic",faculty,institutional_email:institutionalEmail,
+      cohort_id:facultyGroup,registration_track:"academic",faculty,institutional_email:institutionalEmail,
       student_registration_number:studentNumber||null
     }).eq("id",uid);
     if(details.error)throw details.error;
