@@ -81,7 +81,7 @@ Deno.serve(async(req)=>{
       student_registration_number:registrationTrack==="academic"?studentNumber||null:null,
       registration_track:registrationTrack,year_label:body.year||body.year_label||"السنة الأولى",country_code:body.country_code||"qa"
     }).eq("id",uid);
-    if(upd.error)throw upd.error;
+    if(upd.error){await admin.auth.admin.deleteUser(uid);throw upd.error;}
     const courseId=String(body.course_id||"qa-qu-lawc101-rights");
     const enroll=await admin.from("enrollments").upsert({user_id:uid,course_id:courseId,status:"active"},{onConflict:"user_id,course_id"});
     if(enroll.error){await admin.auth.admin.deleteUser(uid);throw enroll.error;}
