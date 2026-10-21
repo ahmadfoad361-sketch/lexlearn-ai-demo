@@ -15,3 +15,23 @@ create index if not exists academic_faculty_cohorts_cohort_idx on public.academi
 -- By assigning the exact faculty cohort_id to both instructor and student on the server,
 -- RLS protects profiles, student attempts and learner snapshots without browser filters.
 -- All newly assigned faculty students must have the correct cohort_id.
+
+-- Security hardening: a faculty instructor may not update roles or other users' profiles
+-- by calling the PostgREST Data API directly. All student management goes through
+-- scoped, staff-authenticated Edge Functions using the privileged server key.
+create or replace function private.is_platform_admin()
+ returns boolean language sql stable security definer set search_path=''
+as $$
+ select exists(select 1 from public.profiles p where p.id=(select auth.uid())
+   and p.active=true and p.role in ('owner','admin'));
+$$;
+revoke all on function private.is_platform_admin() from public,anon;
+grant execute on function private.is_platform_admin() to authenticated;
+drop policy if exists "profiles staff update" on public.profiles;
+create policy "profiles platform admin update" on public.profiles for update
+ to authenticated using(private.is_platform_admin())
+ with check(private.is_platform_admin());
+drop policy if exists "cohorts staff write" on public.cohorts;
+create policy "cohorts platform admin write" on public.cohorts for all
+ to authenticated using(private.is_platform_admin())
+ with check(private.is_platform_admin());
