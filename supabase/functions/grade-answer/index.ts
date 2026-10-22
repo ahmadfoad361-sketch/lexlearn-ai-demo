@@ -1,6 +1,6 @@
 
 import {corsHeaders,json,requireUser} from "../_shared/auth.ts";
-import {apiRequest,extractResult,validateProposal,reviewRubric,flagEnabled,MODEL,PROMPT_VERSION} from "../_shared/semantic-grading.mjs";
+import {compactGradeRequest,inspectCompactGradeResponse,criterionGradeResult,reviewRubric,flagEnabled,MODEL,PROMPT_VERSION} from "../_shared/semantic-grading.mjs";
 
 // DRAFT ONLY: two explicit server flags, reviewed content and explicit opt-in.
 // Absolutely no API calls when disabled. Never expose credentials to students.
@@ -85,7 +85,7 @@ Deno.serve(async(req:Request)=>{
    ||src.data.some((s:any)=>s.status!=="approved"||!s.excerpt||s.excerpt.length>1800))
    return pending("approved_sources_missing",422);
   let payload:Record<string,unknown>;
-  try{payload=apiRequest({answer,item,sources:src.data,language});}
+  try{payload=compactGradeRequest({answer,item,sources:src.data,language});}
   catch{return pending("unsafe_or_unsupported_grading_payload",422);}
   const usage=await counted(admin,auth.user.id);
   if(usage.hour>=MAX_USER_HOURLY_REQUESTS||usage.month>=MAX_PROJECT_REQUESTS)
@@ -112,16 +112,25 @@ Deno.serve(async(req:Request)=>{
   }finally{clearTimeout(timeout);}
   if(!response.ok)return pending("semantic_provider_unavailable",503);
   const raw=await response.json();
-  const proposed=extractResult(raw);
-  const assessed=validateProposal(proposed,item.rubric_json,answer);
-  const published=assessed.ok?{...assessed,score:assessed.score/100,source_ids:item.source_ids,
-     review_notice:"provisional_only_human_review_required"}:
-    {score:null,needs_human_review:true,reason:assessed.reason,
-     grading_method:"human_review_pending",source_ids:item.source_ids};
+  const diagnostic=inspectCompactGradeResponse(raw);
+  const assessed=diagnostic.proposal?
+   criterionGradeResult(diagnostic.proposal,item.rubric_json,answer,item.dimension):
+   {ok:false,reason:diagnostic.reason};
+  const published=assessed.ok?
+   {...assessed,score_percent:assessed.score,score:assessed.score_fraction,
+    source_ids:item.source_ids,
+    review_notice:"provisional_numeric_grade_human_review_required",
+    academic_certified:false}:
+   {score:null,score_percent:null,needs_human_review:true,reason:assessed.reason,
+    grading_method:"human_review_pending",source_ids:item.source_ids,academic_certified:false};
   // Store restricted metadata only: no raw student answer, key, provider prompt or PII in audit result.
   await admin.from("ai_grading_runs").update({
    result:{status:assessed.ok?"preliminary_ai":"needs_human_review",
-    score:published.score,reason:assessed.ok?null:assessed.reason,
+    score:published.score,score_percent:published.score_percent,
+    scored_dimension:assessed.ok?assessed.assessed_dimension:null,
+    breakdown:assessed.ok?assessed.breakdown:null,
+    criteria_met:assessed.ok?assessed.criteria_met:[],
+    reason:assessed.ok?null:assessed.reason,
     usage:{input_tokens:raw.usage?.input_tokens||null,output_tokens:raw.usage?.output_tokens||null}},
    model_confidence:assessed.ok?assessed.confidence:null,
    needs_human_review:true,latency_ms:Date.now()-started
