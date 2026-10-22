@@ -7,6 +7,9 @@ returns boolean language sql immutable set search_path='' as $guard$
  select (
    regexp_replace(translate(lower(coalesce(p_text,'')),'أإآىةؤئ','ااايهوي'),'[ًٌٍَُِّْـ]','','g')
       ~ '(لا[[:space:]]+(تبدا|يبدا).{0,70}(الشخصيه|ولاد|الولاد)|لا[[:space:]]+تنتهي.{0,60}(الوفاه|الوفا|الموت)|لا[[:space:]]+(توجد|تثبت).{0,55}(حق|حقوق).{0,45}(الحمل|الجنين))'
+   or regexp_replace(translate(lower(coalesce(p_text,'')),'أإآىةؤئ','ااايهوي'),'[ًٌٍَُِّْـ]','','g')
+     ~ '(تبدا.{0,24}الشخصيه.{0,14}(بالوفاه|بالموت)|تنتهي.{0,22}الشخصيه.{0,14}بالولاده|لا.{0,7}(اي[[:space:]]+)?حقوق.{0,12}(للحمل|للجنين)|لا[[:space:]]+توجد[[:space:]]+حقوق[[:space:]]+للحمل)'
+   or lower(coalesce(p_text,'')) ~ '(personality[[:space:]]+(begins|starts)[[:space:]]+(at|upon)[[:space:]]+death|personality[[:space:]]+ends[[:space:]]+at[[:space:]]+(live[[:space:]]+)?birth|unborn[[:space:]]+child[[:space:]]+has[[:space:]]+(absolutely[[:space:]]+)?no[[:space:]]+(conditional[[:space:]]+)?rights)'
    or lower(coalesce(p_text,'')) ~ '(does not|doesn.t|never)[[:space:]]+(begin|start).{0,55}(birth|born alive)|does not[[:space:]]+end.{0,55}(death|died)'
  );
 $guard$;
