@@ -1,5 +1,5 @@
 import {corsHeaders,json,requireStaff,adminClient} from "../_shared/auth.ts";
-import {apiRequest,extractResult,validateProposal,MODEL} from "../_shared/semantic-grading.mjs";
+import {apiRequest,inspectProviderResponse,validateProposal,MODEL} from "../_shared/semantic-grading.mjs";
 
 // A deliberately SEPARATE, synthetic-only smoke endpoint. This is not used by students.
 // Exactly three, one-time, atomic DB slots; a repeat cannot call the provider again.
@@ -78,7 +78,7 @@ Deno.serve(async(req:Request)=>{
  let inTokens:number|null=null,outTokens:number|null=null,cost:number|null=null;
  try{
   const payload=apiRequest({answer:t.answer,item:ITEM_RUBRIC,sources:SOURCES,language:t.lang});
-  payload.max_output_tokens=1200;
+  payload.max_output_tokens=1700; // Budgeted room for strict JSON, including explanation and all criteria.
   const ctrl=new AbortController();
   const timeout=setTimeout(()=>ctrl.abort(),18000);
   let resp:Response;
@@ -94,8 +94,10 @@ Deno.serve(async(req:Request)=>{
    inTokens=Number.isFinite(raw.usage?.input_tokens)?raw.usage.input_tokens:null;
    outTokens=Number.isFinite(raw.usage?.output_tokens)?raw.usage.output_tokens:null;
    if(inTokens!==null&&outTokens!==null)cost=Math.round((inTokens*0.75/1000000+outTokens*4.50/1000000)*1000000)/1000000;
-   const proposal=extractResult(raw);
-   const grading=validateProposal(proposal,ITEM_RUBRIC.rubric_json,t.answer);
+   const diagnostic=inspectProviderResponse(raw);
+   const grading=diagnostic.proposal?
+    validateProposal(diagnostic.proposal,ITEM_RUBRIC.rubric_json,t.answer):
+    {ok:false,reason:diagnostic.reason};
    if(grading.ok){score=grading.score;state="completed";reason="provisional_only";}
    else{state="review_required";reason=grading.reason||"meaning_review_required";}
    // Negative sample is a PASS only if it is NOT rewarded as correct.
