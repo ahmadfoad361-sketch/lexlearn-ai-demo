@@ -94,5 +94,5 @@ export function extractResult(response){
 export function flagEnabled(env){
  // Both switches must be set intentionally; default deny.
  return env?.LEX_AI_GRADING_ENABLED==="true"&&env?.LEX_AI_SPEND_APPROVED==="true"
-  &&env?.LEX_AI_GRADING_MODEL===MODEL&&!!env?.OPENAI_API_KEY;
+  &&env?.LEX_AI_GRADING_MODEL===MODEL&&!!env?.OPENAI_GRADING_API_KEY;
 }
