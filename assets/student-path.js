@@ -40,6 +40,11 @@ function previousAnswerTitle(item,task){
 }
 function feedback(item){
  var ev=item&&item.evaluation||{},provisional=noHtmlScore(ev.provisional_percent);
+ if(ev.status==="needs_human_review"||ev.provisional_percent===null){
+  return "<div class='feedback' role='status'><b>"+t("تم حفظ إجابتك وتحتاج مراجعة دلالية","Answer saved; meaning review required")+"</b>"+
+   "<p>"+esc((lang()==="en"?ev.feedback_en:ev.feedback_ar)||t("لا تكفي الكلمات الظاهرة للحكم على الصحة؛ لم نحسب درجة صفرية أو نسبة افتراضية.","Words alone cannot establish legal correctness. No invented zero or percentage was assigned."))+"</p></div>";
+ }
+
  return "<div class='feedback' role='status'><b>"+t("تغطية مبدئية لعناصر القاعدة: ","Provisional legal-rule coverage: ")+esc(provisional)+"</b>"+
  "<p>"+esc((lang()==="en"?ev.feedback_en:ev.feedback_ar)||t("يلزم التأكد من المعنى القانوني مع مراجعة علمية.","Legal meaning still needs independent review."))+"</p>"+
  "<small>"+t("تقدير أولي لتغطية عناصر القاعدة، وقد لا يلتقط بعض الصياغات أو الاستثناءات. راجع الملاحظات مع المشرف عند الحاجة.","Preliminary coverage of rule elements may miss paraphrases or exceptions. Discuss the feedback with your instructor when needed.")+"</small></div>";
