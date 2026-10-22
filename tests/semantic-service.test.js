@@ -55,12 +55,12 @@ const fs=require("node:fs"),vm=require("node:vm"),assert=require("node:assert/st
      requested++;providerPayload=JSON.parse(init.body);
      const answer=options.answer||baseAnswer;
      const evidence=answer.slice(0,13); // exact student span
-     const response=options.invalid?{score:1,model_confidence:.99,needs_human_review:false,
-       achieved_criteria:[{id:"birth",label:"Legal birth",evidence:"invented evidence"}],
-       missing_criteria:[],contradictions:[],feedback_ar:"ok",feedback_en:"ok"}:
-      {score:1,model_confidence:.92,needs_human_review:false,
-       achieved_criteria:[{id:"birth",label:"Legal birth",evidence}],
-       missing_criteria:[],contradictions:[],feedback_ar:"مبدئيا صحيح",feedback_en:"Provisionally correct"};
+     const response=options.invalid?
+      {criteria:[{id:"birth",met:true,evidence:"invented evidence"}],
+       model_confidence:.99,needs_human_review:false,contradictions:[],feedback_ar:"ok",feedback_en:"ok"}:
+      {criteria:[{id:"birth",met:true,evidence}],
+       model_confidence:.92,needs_human_review:false,contradictions:[],
+       feedback_ar:"مبدئيا صحيح",feedback_en:"Provisionally correct"};
      return {ok:true,json:async()=>({status:"completed",output_text:JSON.stringify(response),
        usage:{input_tokens:1200,output_tokens:180}})};
    }
@@ -82,7 +82,7 @@ const fs=require("node:fs"),vm=require("node:vm"),assert=require("node:assert/st
  }
  const t=fixture(),r=await t.send();
  assert.equal(t.requested,1);assert.equal(t.providerPayload.store,false);
- assert.equal(r.body.score,1);assert.equal(r.body.needs_human_review,true);
+ assert.equal(r.body.score,1);assert.equal(r.body.score_percent,100);assert.equal(r.body.earned_weight,1);assert.equal(r.body.needs_human_review,true);
  assert.equal(r.body.mastery_confirmed,false);assert.equal(t.writes,1);
  const fake=fixture({invalid:true}),invalid=await fake.send();
  assert.equal(invalid.body.score,null);assert.equal(invalid.body.needs_human_review,true);
