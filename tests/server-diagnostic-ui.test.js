@@ -92,6 +92,33 @@ function make(uid,lang,data,opts={}){
   assert.match(env.main.html,/80%/,"preliminary AI recall is shown from saved server result");
   assert.match(env.main.html,/تقدير أولي/);
  }
+ // Previously completed students can opt in later without restarting or overwriting the diagnostic.
+ {
+  const uid="older-learner",events=[];
+  data[uid]={status:"completed",attempt_id:"saved-once",
+   result:{source:"server_finalized_diagnostic",student_id:uid,measurements:{recall:{
+    internal_grade:{status:"preliminary_internal",provisional_percent:100}}}},
+   training_plan:{mode:"balanced",firstTasks:["supported_rule"]}};
+  const env=make(uid,"ar",data);
+  env.cloud.recordConsent=async(version,type,accepted)=>{events.push("consent");return {accepted};};
+  env.cloud.gradeDiagnosticAi=async()=>{
+   events.push("grade");
+   data[uid].result.measurements.recall.ai_grade={status:"preliminary_ai",provisional_percent:40};
+   return {status:"completed"};
+  };
+  await env.win.LEX_SERVER_DIAGNOSTIC.mount();
+  assert.match(env.main.html,/100%/,"existing internal estimate remains explicitly labelled");
+  assert.ok(env.nodes.retroAiGrade,"a completed learner can request AI grading after the fact");
+  await env.nodes.retroAiGrade.onclick();
+  assert.deepEqual(events,[],"no AI call without explicit opt-in");
+  assert.match(env.nodes.retroAiMessage.textContent,/الموافقة/);
+  env.nodes.retroAiConsent.checked=true;
+  await env.nodes.retroAiGrade.onclick();
+  assert.deepEqual(events,["consent","grade"]);
+  assert.match(env.main.html,/40%/,"readback displays the confirmed AI score");
+  assert.equal(env.nodes.retroAiGrade,undefined,"no second grading button after score is saved");
+  assert.equal(data[uid].attempt_id,"saved-once");
+ }
  // Partial draft is truly server-originating, and is resumed in another language.
  const part={partial:{status:"in_progress",attempt_id:"partial-attempt",draft:[{question_id:"q39r",selected:0}]}};
  const resumed=make("partial","en",part);

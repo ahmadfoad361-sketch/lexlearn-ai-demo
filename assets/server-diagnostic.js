@@ -29,6 +29,7 @@ function report(status,uid){
  function numberOrNot(v){return typeof v==="number"&&Number.isFinite(v)?Math.max(0,Math.min(100,Math.round(v)))+"%":tr("لم يُقَس","Not measured");}
  var rec=measurements.recall||{},internal=rec.internal_grade||{},ai=rec.ai_grade||{},p=status.training_plan||{};
  var aiRecall=ai.status==="preliminary_ai"&&Number.isFinite(ai.provisional_percent)?ai.provisional_percent:null;
+ var internalRecall=internal.status==="preliminary_internal"&&Number.isFinite(internal.provisional_percent)?internal.provisional_percent:null;
  var free=typeof internal.provisional_percent==="number"&&Number.isFinite(internal.provisional_percent)?numberOrNot(internal.provisional_percent):tr("بانتظار تقييم كافٍ أو مراجعة","Not enough evidence / awaiting review");
  var reasons={"recall-led":tr("نبدأ بتقوية الفهم والتحليل.","Focus first on explanation and understanding."),
    "understanding-led":tr("نبدأ بتقوية الاسترجاع من الذاكرة.","Start with unaided retrieval practice."),
@@ -36,7 +37,7 @@ function report(status,uid){
    "foundation":tr("نبدأ من تأسيس القاعدة قبل رفع الصعوبة.","Begin with supported foundations.")};
  var mode=p.mode||"foundation";
  var tiles=[
-   [tr("الحفظ — تقييم آلي مبدئي","Recall — preliminary AI assessment"),aiRecall],
+   [aiRecall!==null?tr("الحفظ — تقييم OpenAI مبدئي","Recall — preliminary OpenAI score"):internalRecall!==null?tr("الحفظ — مؤشر داخلي مبدئي لسؤال واحد","Recall — preliminary internal single-task score"):tr("الحفظ — بانتظار التقييم","Recall — awaiting assessment"),aiRecall!==null?aiRecall:internalRecall],
    [tr("التعرّف على القاعدة","Rule recognition"),metrics.recognition],
    [tr("الفهم","Understanding"),metrics.understanding],
    [tr("التطبيق","Application"),metrics.application]
@@ -51,6 +52,7 @@ function report(status,uid){
  (Array.isArray(internal.criteria_missing)&&internal.criteria_missing.length?"<p>"+tr("عناصر راجعها","Review these elements")+": "+esc(internal.criteria_missing.map(criterionLabel).join(lang()==="en"?", ":"، "))+"</p>":"")+
  "</div>"+
  (aiRecall!==null?"<div class='resultMetric' style='margin:1rem 0;padding:1rem;border:1px solid #e5d9dc;border-radius:12px'><b>"+tr("تفصيل التصحيح الآلي للحفظ","AI recall assessment detail")+": "+esc(numberOrNot(aiRecall))+"</b><p>"+tr("تقدير أولي لتغطية عناصر الإجابة من سؤال استرجاع واحد، وليس قياسًا معتمدًا لإتقان الحفظ أو الاحتفاظ طويل المدى؛ يمكن للمشرف مراجعته.","Preliminary criterion coverage from one unaided-recall answer. This is not validated memory mastery or long-term retention; supervisor review remains available.")+"</p>"+(ai.feedback_ar||ai.feedback_en?"<p>"+esc(lang()==="en"?ai.feedback_en:ai.feedback_ar)+"</p>":"")+"</div>":"")+
+ (aiRecall===null?"<section class='retroAiPanel'><h3>"+tr("تصحيح الإجابة المحفوظة باستخدام OpenAI","Grade your saved answer using OpenAI")+"</h3><p>"+tr("النسبة الداخلية تخص عناصر القاعدة فقط. لتقييم إجابتك الحرة باستخدام OpenAI، وافق ثم اضغط الزر. لن تعيد الاختبار.","The internal percentage checks rule coverage only. With your consent, OpenAI can assess your saved free-text answer without repeating the test.")+"</p><label class='retroAiLabel'><input id='retroAiConsent' type='checkbox'>"+tr("أوافق على إرسال نص إجابتي فقط إلى OpenAI للتقييم المبدئي، دون إرسال اسمي أو بيانات حسابي.","I consent to sending only my saved answer text to OpenAI for a preliminary assessment, without my name or account details.")+"</label><button id='retroAiGrade' type='button'>"+tr("احسب نسبة الحفظ بالذكاء الاصطناعي","Grade recall using AI")+"</button><p id='retroAiMessage' role='status' aria-live='polite'></p></section>":"")+
  "<h2>"+tr("خطة تدريبك المتكيفة","Your adaptive practice plan")+"</h2>"+
  "<p>"+esc((lang()==="en"?p.reason_en:p.reason_ar)||reasons[mode]||reasons.foundation)+"</p>"+
  "<p>"+tr("الترتيب المبدئي: ","Initial order: ")+esc(Array.isArray(p.firstTasks)&&p.firstTasks.length?p.firstTasks.map(taskLabel).join(lang()==="en"?" → ":" ← "):taskLabel("worked_example"))+"</p>"+
@@ -62,6 +64,23 @@ async function startUI(){
  var area=root.document.getElementById("officialDiagnostic");if(!area)return;
  var cloud=root.LEX_CLOUD;
  function render(html){area.innerHTML=html;}
+ function showCompleted(status,info){
+   render(report(status,student)+(info?"<p role='status'>"+esc(info)+"</p>":""));
+   var btn=root.document.getElementById("retroAiGrade");if(!btn)return;
+   btn.onclick=async function(){
+     var box=root.document.getElementById("retroAiConsent"),msg=root.document.getElementById("retroAiMessage");
+     if(!box||!box.checked){msg.textContent=tr("الموافقة مطلوبة قبل إرسال الإجابة.","Consent is required before sending the answer.");return;}
+     btn.disabled=true;msg.textContent=tr("جارٍ تقييم الإجابة المحفوظة…","Grading saved answer…");
+     try{
+       await cloud.recordConsent("lexlearn-ai-grading-v1","external_ai_grading",true);
+       var response=await cloud.gradeDiagnosticAi();
+       var saved=await cloud.studentLifecycleRpc("status",{courseId:COURSE_ID});
+       var recall=saved.result&&saved.result.measurements&&saved.result.measurements.recall;
+       if(saved.status==="completed"&&saved.result.student_id===student&&recall&&recall.ai_grade&&Number.isFinite(recall.ai_grade.provisional_percent)){showCompleted(saved);return;}
+       msg.textContent=tr("النتيجة تحتاج مراجعة المشرف أو التحقق من إعدادات OpenAI. لم نحتسب نسبة جديدة.","Supervisor review or OpenAI configuration check is needed. No new percentage was assigned.");
+     }catch(e){msg.textContent=tr("تعذر تأكيد التصحيح. لا تكرر العملية قبل مراجعة المشرف.","Grading not confirmed. Consult the supervisor before retrying.");}
+   };
+ }
  function fail(err){
   var msg=String(err&&err.message||err);
   if(/diagnostic_academic_approval_pending/i.test(msg)){
@@ -82,7 +101,7 @@ async function startUI(){
     logout.type="button";logout.onclick=async function(){await cloud.signOut();root.location.replace(login());};header.appendChild(logout);
   }
   var status=await cloud.studentLifecycleRpc("status",{courseId:COURSE_ID});
-  if(status.status==="completed"){render(report(status,student));return;}
+  if(status.status==="completed"){showCompleted(status);return;}
   if(!await D.academicItemsApproved(cloud))throw new Error("diagnostic_academic_approval_pending");
   if(status.status==="not_started"){
    render("<p>"+tr("ابدأ بتقييم قصير لتحديد نقطة انطلاقك. تُحفظ إجاباتك في حسابك، وتحصل الإجابة الحرة على تقدير مبدئي عند توفر أدلة كافية لتقييمها.","Start with a short assessment to find your starting point. Answers are saved to your account; free responses receive a preliminary estimate when there is enough evidence to assess them.")+"</p>"+
@@ -96,7 +115,7 @@ async function startUI(){
   else throw new Error("unknown_diagnostic_status");
  }catch(e){fail(e);}
  async function present(status){
-  if(status.status==="completed"){render(report(status,student));return;}
+  if(status.status==="completed"){showCompleted(status);return;}
   var answers=Array.isArray(status.draft)?status.draft.slice():[];
   if(answers.length>Q.length){fail(new Error("invalid_server_draft"));return;}
   if(answers.some(function(x,i){return !Q[i]||x.question_id!==Q[i].id;})){fail(new Error("inconsistent_server_draft"));return;}
@@ -146,7 +165,7 @@ async function startUI(){
       if(aiRequested){try{var evaluated=await cloud.gradeDiagnosticAi();if(!evaluated||evaluated.status!=="completed")aiInfo=tr("تعذّر تأكيد التصحيح بالذكاء الاصطناعي؛ احتُفظ بإجابتك، ولا تُحتسب درجة حفظ غير موثوقة.","AI grading could not be confirmed. Your answer was saved and no unsupported recall score was assigned.");}catch(_){aiInfo=tr("التصحيح الآلي غير متاح حاليًا. حُفظت إجابتك للتقييم والمراجعة.","AI grading is currently unavailable. Your answer was saved for assessment and review.");}}
       var check=await cloud.studentLifecycleRpc("status",{courseId:COURSE_ID});
       if(check.status!=="completed"||check.attempt_id!==reply.attempt_id)throw new Error("completion_readback_failed");
-      saving=false;render(report(check,student)+(aiInfo?"<p role='status'>"+esc(aiInfo)+"</p>":""));
+      saving=false;showCompleted(check,aiInfo);
      }
     }catch(e){error.textContent=tr("تعذّر تأكيد الحفظ: ","Save not confirmed: ")+String(e.message||e);saving=false;var btn=root.document.getElementById("serverNext");if(btn)btn.disabled=false;}
    };

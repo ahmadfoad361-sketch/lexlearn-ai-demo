@@ -133,3 +133,13 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible{
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{scroll-behavior:auto!important;transition:none!important}
 }
+
+.retroAiPanel{
+ margin:22px 0;padding:18px;border:1px solid #e7d5db;
+ background:#fffbfc;border-radius:16px
+}
+.retroAiPanel h3{margin:0 0 8px;font-size:1.15rem;color:#111D31}
+.retroAiPanel p{margin:8px 0 14px;line-height:1.8;color:#526074}
+.retroAiLabel{display:flex;align-items:start;gap:11px;line-height:1.8;padding:13px 0}
+.retroAiLabel input{margin-top:8px;accent-color:#8A1F39;flex:none;width:18px;height:18px}
+.retroAiPanel #retroAiMessage{font-weight:600;min-height:1.4em}
