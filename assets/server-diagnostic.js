@@ -100,7 +100,7 @@ async function startUI(){
     logout.type="button";logout.onclick=async function(){await cloud.signOut();root.location.replace(login());};header.appendChild(logout);
   }
   var status=await cloud.studentLifecycleRpc("status",{courseId:COURSE_ID});
-  if(status.status==="completed"){render(report(status,student));return;}
+  if(status.status==="completed"){showCompleted(status);return;}
   if(!await D.academicItemsApproved(cloud))throw new Error("diagnostic_academic_approval_pending");
   if(status.status==="not_started"){
    render("<p>"+tr("ابدأ بتقييم قصير لتحديد نقطة انطلاقك. تُحفظ إجاباتك في حسابك، وتحصل الإجابة الحرة على تقدير مبدئي عند توفر أدلة كافية لتقييمها.","Start with a short assessment to find your starting point. Answers are saved to your account; free responses receive a preliminary estimate when there is enough evidence to assess them.")+"</p>"+
@@ -114,7 +114,7 @@ async function startUI(){
   else throw new Error("unknown_diagnostic_status");
  }catch(e){fail(e);}
  async function present(status){
-  if(status.status==="completed"){render(report(status,student));return;}
+  if(status.status==="completed"){showCompleted(status);return;}
   var answers=Array.isArray(status.draft)?status.draft.slice():[];
   if(answers.length>Q.length){fail(new Error("invalid_server_draft"));return;}
   if(answers.some(function(x,i){return !Q[i]||x.question_id!==Q[i].id;})){fail(new Error("inconsistent_server_draft"));return;}
@@ -164,7 +164,7 @@ async function startUI(){
       if(aiRequested){try{var evaluated=await cloud.gradeDiagnosticAi();if(!evaluated||evaluated.status!=="completed")aiInfo=tr("تعذّر تأكيد التصحيح بالذكاء الاصطناعي؛ احتُفظ بإجابتك، ولا تُحتسب درجة حفظ غير موثوقة.","AI grading could not be confirmed. Your answer was saved and no unsupported recall score was assigned.");}catch(_){aiInfo=tr("التصحيح الآلي غير متاح حاليًا. حُفظت إجابتك للتقييم والمراجعة.","AI grading is currently unavailable. Your answer was saved for assessment and review.");}}
       var check=await cloud.studentLifecycleRpc("status",{courseId:COURSE_ID});
       if(check.status!=="completed"||check.attempt_id!==reply.attempt_id)throw new Error("completion_readback_failed");
-      saving=false;render(report(check,student)+(aiInfo?"<p role='status'>"+esc(aiInfo)+"</p>":""));
+      saving=false;showCompleted(check,aiInfo);
      }
     }catch(e){error.textContent=tr("تعذّر تأكيد الحفظ: ","Save not confirmed: ")+String(e.message||e);saving=false;var btn=root.document.getElementById("serverNext");if(btn)btn.disabled=false;}
    };
