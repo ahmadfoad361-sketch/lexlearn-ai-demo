@@ -11,7 +11,7 @@ const fs=require("node:fs"),vm=require("node:vm");
   .replace("let request:any;","let request;")
   .replace("id as keyof typeof CASES","id")
   .replace("let state=\"provider_error\",score:number|null=null,agreement:boolean|null=null,reason=", "let state=\"provider_error\",score=null,agreement=null,reason=")
-  .replace("let inTokens:number|null=null,outTokens:number|null=null,cost:number|null=null;","let inTokens=null,outTokens=null,cost=null;")
+  .replace("let inTokens:number|null=null,outTokens:number|null=null,cost:number|null=null,breakdown:any=null;","let inTokens=null,outTokens=null,cost=null,breakdown=null;")
   .replace("let resp:Response;","let resp;");
  if(src.includes("import {")||src.includes("let admin:any"))throw Error("Fixture source changed");
  const reserved=new Set(),updates=new Map();
@@ -43,8 +43,8 @@ const fs=require("node:fs"),vm=require("node:vm");
    assert.ok(!("student_name" in data)&&!("student_id" in data));
    assert.equal(req.store,false);
    const full=data.learner_answer.includes("مفاتيح الحفظ الثلاثة");
-   let reply={score:full?1:0,model_confidence:.92,needs_human_review:!full,
-    achieved_criteria:[],missing_criteria:[],contradictions:full?[]:["Reversed rule"],
+   let reply={criteria:[],model_confidence:.92,needs_human_review:!full,
+    contradictions:full?[]:["Reversed rule"],
     feedback_ar:"اختبار فقط",feedback_en:"Synthetic test only"};
    if(full){
     const snippets=[
@@ -54,8 +54,8 @@ const fs=require("node:fs"),vm=require("node:vm");
       "مفاتيح الحفظ الثلاثة: الميلاد = بداية الشخصية بتمام الولادة حية؛ الوفاة = نهاية الشخصية بالموت؛ الحمل = حقوق لا يحتاج سببها إلى قبول وتظل مشروطة بالولادة حية",
       "الميلاد = بداية الشخصية بتمام الولادة حية؛ الوفاة = نهاية الشخصية بالموت؛ الحمل = حقوق لا يحتاج سببها إلى قبول وتظل مشروطة بالولادة حية"
     ];
-    reply.achieved_criteria=req.input?data.criteria.map((c,i)=>({id:c.id,label:c.label,evidence:snippets[i]})):[];
-   }else reply.missing_criteria=data.criteria.map(c=>c.id);
+    reply.criteria=data.criteria.map((c,i)=>({id:c.id,met:true,evidence:snippets[i]}));
+   }else reply.criteria=data.criteria.map(c=>({id:c.id,met:false,evidence:""}));
    return {ok:true,status:200,json:async()=>({status:"completed",output_text:JSON.stringify(reply),
     usage:{input_tokens:2200,output_tokens:400}})};
   }
@@ -76,14 +76,14 @@ const fs=require("node:fs"),vm=require("node:vm");
  const again=await call("POST","full_ar");
  assert.equal(again.status,409);assert.equal(paidCalls,1);
  const wrong=await call("POST","reversed_ar");
- assert.equal(wrong.body.provisional_score,null);assert.equal(wrong.body.agrees_with_gold,true);
+ assert.equal(wrong.body.provisional_score,0);assert.equal(wrong.body.agrees_with_gold,true);
  assert.equal(paidCalls,2);
  const badAgain=await call("POST","reversed_ar");
  assert.equal(badAgain.status,409);assert.equal(paidCalls,2);
  const status=await call("GET","");
  assert.equal(status.body.provider_used,false);assert.equal(status.body.results.length,2);
  assert.equal(paidCalls,2);
- assert.match(src,/grading\.reason==="human_review_required"/,"Human-review abstention must be explicit");
+ assert.match(src,/agreement=grading\.ok/,"Only validated numeric grades may pass rubric comparisons");
  assert.ok(!src.includes("(score===null||score<=t.expected_max)"),"Invalid provider response must never be accepted as a passing negative test");
  console.log("Three-case smoke mock: PASS (owner/service authentication, fixed answers, one-time slots, reject retries, no student calls)");
 })().catch(x=>{console.error(x);process.exitCode=1});
