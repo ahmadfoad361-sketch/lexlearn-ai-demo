@@ -29,6 +29,7 @@ function report(status,uid){
  function numberOrNot(v){return typeof v==="number"&&Number.isFinite(v)?Math.max(0,Math.min(100,Math.round(v)))+"%":tr("لم يُقَس","Not measured");}
  var rec=measurements.recall||{},internal=rec.internal_grade||{},ai=rec.ai_grade||{},p=status.training_plan||{};
  var aiRecall=ai.status==="preliminary_ai"&&Number.isFinite(ai.provisional_percent)?ai.provisional_percent:null;
+ var internalRecall=internal.status==="preliminary_internal"&&Number.isFinite(internal.provisional_percent)?internal.provisional_percent:null;
  var free=typeof internal.provisional_percent==="number"&&Number.isFinite(internal.provisional_percent)?numberOrNot(internal.provisional_percent):tr("بانتظار تقييم كافٍ أو مراجعة","Not enough evidence / awaiting review");
  var reasons={"recall-led":tr("نبدأ بتقوية الفهم والتحليل.","Focus first on explanation and understanding."),
    "understanding-led":tr("نبدأ بتقوية الاسترجاع من الذاكرة.","Start with unaided retrieval practice."),
@@ -36,7 +37,7 @@ function report(status,uid){
    "foundation":tr("نبدأ من تأسيس القاعدة قبل رفع الصعوبة.","Begin with supported foundations.")};
  var mode=p.mode||"foundation";
  var tiles=[
-   [aiRecall!==null?tr("الحفظ — تصحيح OpenAI مبدئي","Recall — preliminary OpenAI grading"):tr("الحفظ — بانتظار تقييم OpenAI","Recall — awaiting OpenAI grading"),aiRecall],
+   [aiRecall!==null?tr("الحفظ — تقييم OpenAI مبدئي","Recall — preliminary OpenAI score"):internalRecall!==null?tr("الحفظ — مؤشر داخلي مبدئي لسؤال واحد","Recall — preliminary internal single-task score"):tr("الحفظ — بانتظار التقييم","Recall — awaiting assessment"),aiRecall!==null?aiRecall:internalRecall],
    [tr("التعرّف على القاعدة","Rule recognition"),metrics.recognition],
    [tr("الفهم","Understanding"),metrics.understanding],
    [tr("التطبيق","Application"),metrics.application]
