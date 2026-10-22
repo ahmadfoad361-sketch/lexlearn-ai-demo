@@ -29,6 +29,14 @@ Official OpenAI API page (as checked 2026-10-22): `gpt-5.4-mini` standard costs 
 7. Local logs contain only model/usage/counts and evaluation metadata, never API key or the raw answer. Don't log student answer in exceptions.
 8. Return no grade if internet/provider unavailable, enrollment, content, consent or source check fails.
 
+## 2026-10-22 post-payment readiness check (read-only)
+- The founder reported that the initial API payment was completed; **assistant cannot read the OpenAI account balance, create a user's API key, or verify the transaction from GitHub/Supabase**.
+- Live Supabase project has **78 course items, 9 status-approved, 0 with separate legal and learning reviewer IDs, and 0 with both necessary approval metadata** (read-only aggregate SQL check). Therefore `grade-answer` must still abstain for all current production items; do **not** bypass this gate or fake reviewer signatures.
+- Payment does **not** grant permission to activate billable calls without the user confirming a project-level **hard spend limit of $5 (Enforce a hard limit)**, and disabling auto-recharge. The OpenAI spend-control docs explicitly distinguish alerts from hard limits.
+- A user-generated project-scoped API key must be stored **by the user directly in the Supabase Edge Function Secrets dashboard** under `OPENAI_API_KEY`, not posted to chat or GitHub. Do not turn on `LEX_AI_GRADING_ENABLED` and `LEX_AI_SPEND_APPROVED` until independent rubric review and consent UX are verified.
+- No secrets management/elicitation action is currently exposed via the connected Supabase integration. Use the Dashboard to save the key without disclosing it in conversation.
+- First paid acceptance sequence: consented synthetic student + one fully reviewed question + exact quoted evidence + provisional-only report; verify total provider usage and ensure course stage and real student records stay unchanged.
+
 ## Before any activation
 - Deploy a stage-only Supabase Edge Function, never straight to production.
 - Approve a detailed external-data notice and UI consent.
