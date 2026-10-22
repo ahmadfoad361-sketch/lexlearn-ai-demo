@@ -30,5 +30,20 @@ do $run$ declare c record; d jsonb; p jsonb; begin
     or p->>'status'<>'needs_human_review' or p->>'provisional_percent' is not null
    then raise exception 'Critical legal reversal is still graded, case % diagnostic % practice %',c.case_id,d,p;end if;
   end if;
+  if c.expectation='correct' and (
+   d->>'status'<>'preliminary_internal' or (d->>'provisional_percent')::int<>100
+   or p->>'status'<>'preliminary_internal'
+   or (p->>'provisional_percent')::int<35) then
+   raise exception 'Correct answer must retain recognized relations in both languages: %, diagnostic %, training %',c.case_id,d,p;
+  end if;
+  if c.expectation in ('incorrect','ambiguous') and (
+   d->>'status'<>'needs_human_review' or d->>'provisional_percent' is not null
+   or p->>'status'<>'needs_human_review' or p->>'provisional_percent' is not null) then
+   raise exception 'False or indeterminate answer must not receive invented score: %, diag %, training %',c.case_id,d,p;
+  end if;
+  if c.expectation='partial' and (d->>'status'<>'preliminary_internal'
+    or (p->>'provisional_percent')::int>=100) then
+   raise exception 'Partial answer must not receive total topic recall coverage: % %',c.case_id,p;
+  end if;
  end loop;
 end $run$;
