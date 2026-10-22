@@ -25,10 +25,10 @@ begin
   diagnostic:=d#>'{result,measurements,recall,internal_grade}';
   stage:=public.lex_training_session_open('qa-qu-lawc101-rights',1);
   if stage->>'allowed'<>'true' then raise exception 'first lesson not allowed % %',label,stage;end if;
-  if not exists(select 1 from jsonb_array_elements(stage->'tasks') a where a->>'id'='rights-v1-s1-recall')
+  if not exists(select 1 from jsonb_array_elements(stage->'tasks') as a(value) where a.value->>'id'='rights-v1-s1-recall')
    then raise exception 'recall task unavailable for %',label;end if;
   stage:=public.lex_training_submit('qa-qu-lawc101-rights',1,'rights-v1-s1-recall',ans);
-  select j->'evaluation' into grade from jsonb_array_elements(stage->'saved') j where j->>'item_id'='rights-v1-s1-recall';
+  select j.value->'evaluation' into grade from jsonb_array_elements(stage->'saved') as j(value) where j.value->>'item_id'='rights-v1-s1-recall';
   if grade is null then raise exception 'practice response not saved %',label;end if;
   raise notice 'RECALL_TWO_STUDENTS %',jsonb_build_object(
     'scenario',label,'diagnostic_status',d->>'status',
