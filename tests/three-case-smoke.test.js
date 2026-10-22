@@ -32,7 +32,7 @@ const fs=require("node:fs"),vm=require("node:vm");
   ...shared,Date,JSON,Math,Number,String,Error,Object,Promise,Array,Boolean,
   AbortController,setTimeout,clearTimeout,console,Response,
   corsHeaders:{},json:(body,status=200)=>({body,status}),
-  requireStaff:async()=>({profile:{role:"owner"},admin}),adminClient:()=>admin,
+  requireStaff:async(req)=>{if(req.headers.get("Authorization")!=="Bearer OWNER_VALID")throw Error("UNAUTHORIZED");return {profile:{role:"owner"},admin}},adminClient:()=>admin,
   Deno:{env:{get:(k)=>env[k]},serve:(x)=>{handler=x}},
   fetch:async(url,init)=>{
    assert.equal(url,"https://api.openai.com/v1/responses");
