@@ -1,5 +1,5 @@
 import {corsHeaders,json,requireStaff,adminClient} from "../_shared/auth.ts";
-import {apiRequest,inspectProviderResponse,validateProposal,MODEL} from "../_shared/semantic-grading.mjs";
+import {compactGradeRequest,inspectCompactGradeResponse,criterionGradeResult,MODEL} from "../_shared/semantic-grading.mjs";
 
 // A deliberately SEPARATE, synthetic-only smoke endpoint. This is not used by students.
 // Exactly three, one-time, atomic DB slots; a repeat cannot call the provider again.
@@ -75,10 +75,10 @@ Deno.serve(async(req:Request)=>{
   return send({error:"case_already_reserved_or_database_unavailable",case_id:id,no_provider_call:true},409);
  const started=Date.now();
  let state="provider_error",score:number|null=null,agreement:boolean|null=null,reason="provider_unavailable";
- let inTokens:number|null=null,outTokens:number|null=null,cost:number|null=null;
+ let inTokens:number|null=null,outTokens:number|null=null,cost:number|null=null,breakdown:any=null;
  try{
-  const payload=apiRequest({answer:t.answer,item:ITEM_RUBRIC,sources:SOURCES,language:t.lang});
-  payload.max_output_tokens=1700; // Budgeted room for strict JSON, including explanation and all criteria.
+  const payload=compactGradeRequest({answer:t.answer,item:ITEM_RUBRIC,sources:SOURCES,language:t.lang});
+  // Short criteria-only response with server-owned weighted numeric scoring.
   const ctrl=new AbortController();
   const timeout=setTimeout(()=>ctrl.abort(),18000);
   let resp:Response;
@@ -94,19 +94,14 @@ Deno.serve(async(req:Request)=>{
    inTokens=Number.isFinite(raw.usage?.input_tokens)?raw.usage.input_tokens:null;
    outTokens=Number.isFinite(raw.usage?.output_tokens)?raw.usage.output_tokens:null;
    if(inTokens!==null&&outTokens!==null)cost=Math.round((inTokens*0.75/1000000+outTokens*4.50/1000000)*1000000)/1000000;
-   const diagnostic=inspectProviderResponse(raw);
+   const diagnostic=inspectCompactGradeResponse(raw);
    const grading=diagnostic.proposal?
-    validateProposal(diagnostic.proposal,ITEM_RUBRIC.rubric_json,t.answer):
+    criterionGradeResult(diagnostic.proposal,ITEM_RUBRIC.rubric_json,t.answer,ITEM_RUBRIC.dimension):
     {ok:false,reason:diagnostic.reason};
-   if(grading.ok){score=grading.score;state="completed";reason="provisional_only";}
+   if(grading.ok){score=grading.score;breakdown=grading.breakdown;state="completed";reason="provisional_numeric_for_review";}
    else{state="review_required";reason=grading.reason||"meaning_review_required";}
-   // Negative sample is a PASS only if it is NOT rewarded as correct.
-   // Invalid JSON/schema is NOT a successful negative test.
-   // Only a valid low provisional score or a deliberate, schema-valid human-review
-   // abstention can meet the reversed-law safety expectation.
-   agreement=id==="reversed_ar"?
-    ((score!==null&&score<=t.expected_max)||grading.reason==="human_review_required"):
-     score!==null&&score>=t.expected_min&&score<=t.expected_max;
+   // Invalid provider JSON NEVER counts as a correct negative-law result.
+   agreement=grading.ok && score!==null && score>=t.expected_min && score<=t.expected_max;
   }
  }catch{reason="model_timeout_or_transport_error"}
  const done=await admin.from("lex_ai_grading_smoke").update({
@@ -116,6 +111,7 @@ Deno.serve(async(req:Request)=>{
  if(done.error)return send({case_id:id,error:"test_completed_but_audit_update_failed",replay_disabled:true},503);
  return send({case_id:id,state,provisional_score:score,agrees_with_gold:agreement,
   expected_range:[t.expected_min,t.expected_max],reason,
+  score_breakdown:breakdown,score_type:"criterion_weighted_preliminary_not_mastery",
   usage:{input_tokens:inTokens,output_tokens:outTokens,estimated_usd:cost},
   duration_ms:Date.now()-started,
   student_records_modified:false,review_required:true},state==="provider_error"?503:200);
