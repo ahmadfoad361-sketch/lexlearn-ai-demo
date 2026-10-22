@@ -67,6 +67,31 @@ function make(uid,lang,data,opts={}){
   assert.match(returning.main.html,/diagnosticReport/,"returning student can read the saved report again");
   assert.ok(!returning.nodes.beginDiagnostic);
  }
+ // An explicit, unchecked-by-default consent activates a server-only AI grade.
+ {
+  const uid="ai-opt-in",env=make(uid,"ar",data),events=[];
+  env.cloud.recordConsent=async(version,type,accepted)=>{events.push(["consent",version,type,accepted]);return {accepted:true};};
+  env.cloud.gradeDiagnosticAi=async()=>{
+   events.push(["grade"]);
+   data[uid].result.measurements={recall:{ai_grade:{
+    status:"preliminary_ai",provisional_percent:80,feedback_ar:"تقدير أولي",
+    feedback_en:"Preliminary",needs_human_review:true
+   }}};
+   return {status:"completed"};
+  };
+  await env.win.LEX_SERVER_DIAGNOSTIC.mount();
+  await env.nodes.beginDiagnostic.onclick();
+  for(const q of QUESTIONS){env.choose(q.a);await env.nodes.serverNext.onclick();}
+  assert.ok(env.nodes.aiConsent,"AI must be opt-in, not hidden inside general learning consent");
+  assert.ok(!env.nodes.aiConsent.checked,"AI consent must start unchecked");
+  env.nodes.ungradedText.value="تبدأ الشخصية القانونية بالولادة الحية وتنتهي بالوفاة";
+  env.nodes.aiConsent.checked=true;
+  await env.nodes.serverNext.onclick();
+  assert.deepEqual(events,[
+   ["consent","lexlearn-ai-grading-v1","external_ai_grading",true],["grade"]]);
+  assert.match(env.main.html,/80%/,"preliminary AI recall is shown from saved server result");
+  assert.match(env.main.html,/تقدير أولي/);
+ }
  // Partial draft is truly server-originating, and is resumed in another language.
  const part={partial:{status:"in_progress",attempt_id:"partial-attempt",draft:[{question_id:"q39r",selected:0}]}};
  const resumed=make("partial","en",part);
