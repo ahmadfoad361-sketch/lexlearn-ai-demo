@@ -36,7 +36,7 @@ function report(status,uid){
    "foundation":tr("نبدأ من تأسيس القاعدة قبل رفع الصعوبة.","Begin with supported foundations.")};
  var mode=p.mode||"foundation";
  var tiles=[
-   [tr("الحفظ — تقييم آلي مبدئي","Recall — preliminary AI assessment"),aiRecall],
+   [aiRecall!==null?tr("الحفظ — تصحيح OpenAI مبدئي","Recall — preliminary OpenAI grading"):tr("الحفظ — بانتظار تقييم OpenAI","Recall — awaiting OpenAI grading"),aiRecall],
    [tr("التعرّف على القاعدة","Rule recognition"),metrics.recognition],
    [tr("الفهم","Understanding"),metrics.understanding],
    [tr("التطبيق","Application"),metrics.application]
