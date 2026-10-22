@@ -415,7 +415,12 @@ async function boot(){
        }
 
     }catch(e){
-      APP.innerHTML="تعذر التحقق من الجلسة. <a href='student-login.html'>سجّل الدخول من جديد</a>.";
+      var reason=String(e&&e.message||"");
+      APP.innerHTML=/not_enrolled|enrollment|course_not_assigned/i.test(reason)
+        ?"<section role='alert' class='empty studentEmpty'><h2>حسابك نشط لكنك غير مسجّل في مقرر نظرية الحق</h2><p>تواصل مع مشرف LexLearn لإضافتك إلى مجموعة الاختبار. تسجيل الدخول مرة أخرى لن يحل مشكلة إسناد المقرر.</p><a href='student-login.html'>العودة لتسجيل الدخول</a></section>"
+        : /learning_data_consent_required|consent_required/i.test(reason)
+        ?"<section role='alert' class='empty studentEmpty'><h2>يلزم قبول إشعار خصوصية بيانات التدريب</h2><p>راجع الموافقة المطلوبة في حسابك قبل بدء الاختبار.</p><a href='privacy.html'>سياسة الخصوصية</a></section>"
+        :"تعذر التحقق من الجلسة. <a href='student-login.html'>سجّل الدخول من جديد</a>.";
       return;
     }
   }
