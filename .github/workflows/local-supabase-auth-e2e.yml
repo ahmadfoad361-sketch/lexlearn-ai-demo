@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - fix/student-lifecycle-server-gated-20261019
+      - feature/continuous-skill-adaptation-20261022
   workflow_dispatch:
 
 permissions:
