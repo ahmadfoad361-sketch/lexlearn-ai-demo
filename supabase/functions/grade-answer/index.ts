@@ -35,7 +35,7 @@ Deno.serve(async(req:Request)=>{
   LEX_AI_GRADING_ENABLED:Deno.env.get("LEX_AI_GRADING_ENABLED"),
   LEX_AI_SPEND_APPROVED:Deno.env.get("LEX_AI_SPEND_APPROVED"),
   LEX_AI_GRADING_MODEL:Deno.env.get("LEX_AI_GRADING_MODEL"),
-  OPENAI_API_KEY:Deno.env.get("OPENAI_API_KEY")
+  OPENAI_GRADING_API_KEY:Deno.env.get("OPENAI_GRADING_API_KEY")
  };
  // Default denial before any other lookup. No billable provider call.
  if(!flagEnabled(env))return pending("semantic_provider_not_approved");
@@ -106,7 +106,7 @@ Deno.serve(async(req:Request)=>{
   try{
    response=await fetch("https://api.openai.com/v1/responses",{
     method:"POST",signal:controller.signal,
-    headers:{"Authorization":"Bearer "+env.OPENAI_API_KEY,"Content-Type":"application/json"},
+    headers:{"Authorization":"Bearer "+env.OPENAI_GRADING_API_KEY,"Content-Type":"application/json"},
     body:JSON.stringify(payload)
    });
   }finally{clearTimeout(timeout);}
