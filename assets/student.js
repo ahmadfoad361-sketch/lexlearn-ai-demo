@@ -145,7 +145,9 @@ function studentInsight(){
   return {best:best,focus:focus,tip:tips[focus.key]};
 }
 function simpleSkillCard(item){
-  var value=adaptiveValue(item.key),level=status(value),pct=value==null?0:Math.round(value);
+  var grade=result&&result.measurements&&result.measurements.recall&&result.measurements.recall.ai_grade;
+  var provisional=item.key==="recall"&&grade&&grade.status==="preliminary_ai"&&Number.isFinite(grade.provisional_percent)&&adaptiveValue("recall")==null;
+  var value=provisional?grade.provisional_percent:adaptiveValue(item.key),level=provisional?"تقدير مبدئي يحتاج مراجعة":status(value),pct=value==null?0:Math.round(value);
   return "<div class='simpleSkill "+item.key+"'>"+
     "<div class='simpleIcon'>"+icon(item.icon)+"</div>"+
     "<b>"+item.label+"</b>"+

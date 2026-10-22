@@ -27,7 +27,8 @@ function report(status,uid){
  var d=status&&status.result||{},metrics=d.metrics||{},measurements=d.measurements||{};
  if(status.status!=="completed"||d.source!=="server_finalized_diagnostic"||d.student_id!==uid)throw Error("unverified_diagnostic_report");
  function numberOrNot(v){return typeof v==="number"&&Number.isFinite(v)?Math.max(0,Math.min(100,Math.round(v)))+"%":tr("لم يُقَس","Not measured");}
- var rec=measurements.recall||{},internal=rec.internal_grade||{},p=status.training_plan||{};
+ var rec=measurements.recall||{},internal=rec.internal_grade||{},ai=rec.ai_grade||{},p=status.training_plan||{};
+ var aiRecall=ai.status==="preliminary_ai"&&Number.isFinite(ai.provisional_percent)?ai.provisional_percent:null;
  var free=typeof internal.provisional_percent==="number"&&Number.isFinite(internal.provisional_percent)?numberOrNot(internal.provisional_percent):tr("بانتظار تقييم كافٍ أو مراجعة","Not enough evidence / awaiting review");
  var reasons={"recall-led":tr("نبدأ بتقوية الفهم والتحليل.","Focus first on explanation and understanding."),
    "understanding-led":tr("نبدأ بتقوية الاسترجاع من الذاكرة.","Start with unaided retrieval practice."),
@@ -35,6 +36,7 @@ function report(status,uid){
    "foundation":tr("نبدأ من تأسيس القاعدة قبل رفع الصعوبة.","Begin with supported foundations.")};
  var mode=p.mode||"foundation";
  var tiles=[
+   [tr("الحفظ — تقييم آلي مبدئي","Recall — preliminary AI assessment"),aiRecall],
    [tr("التعرّف على القاعدة","Rule recognition"),metrics.recognition],
    [tr("الفهم","Understanding"),metrics.understanding],
    [tr("التطبيق","Application"),metrics.application]
@@ -48,6 +50,7 @@ function report(status,uid){
  (Array.isArray(internal.criteria_met)&&internal.criteria_met.length?"<p>"+tr("عناصر ظهرت في إجابتك","Detected elements")+": "+esc(internal.criteria_met.map(criterionLabel).join(lang()==="en"?", ":"، "))+"</p>":"")+
  (Array.isArray(internal.criteria_missing)&&internal.criteria_missing.length?"<p>"+tr("عناصر راجعها","Review these elements")+": "+esc(internal.criteria_missing.map(criterionLabel).join(lang()==="en"?", ":"، "))+"</p>":"")+
  "</div>"+
+ (aiRecall!==null?"<div class='resultMetric' style='margin:1rem 0;padding:1rem;border:1px solid #e5d9dc;border-radius:12px'><b>"+tr("تفصيل التصحيح الآلي للحفظ","AI recall assessment detail")+": "+esc(numberOrNot(aiRecall))+"</b><p>"+tr("تقدير أولي لتغطية عناصر الإجابة من سؤال استرجاع واحد، وليس قياسًا معتمدًا لإتقان الحفظ أو الاحتفاظ طويل المدى؛ يمكن للمشرف مراجعته.","Preliminary criterion coverage from one unaided-recall answer. This is not validated memory mastery or long-term retention; supervisor review remains available.")+"</p>"+(ai.feedback_ar||ai.feedback_en?"<p>"+esc(lang()==="en"?ai.feedback_en:ai.feedback_ar)+"</p>":"")+"</div>":"")+
  "<h2>"+tr("خطة تدريبك المتكيفة","Your adaptive practice plan")+"</h2>"+
  "<p>"+esc((lang()==="en"?p.reason_en:p.reason_ar)||reasons[mode]||reasons.foundation)+"</p>"+
  "<p>"+tr("الترتيب المبدئي: ","Initial order: ")+esc(Array.isArray(p.firstTasks)&&p.firstTasks.length?p.firstTasks.map(taskLabel).join(lang()==="en"?" → ":" ← "):taskLabel("worked_example"))+"</p>"+
@@ -108,7 +111,9 @@ async function startUI(){
    }else{
     html+="<h2>"+tr("استرجاع من الذاكرة (اختياري)","Recall from memory (optional)")+"</h2>"+
       "<p>"+tr("اكتب من ذاكرتك: متى تبدأ الشخصية القانونية للإنسان؟ عبّر عن القاعدة بأسلوبك دون الرجوع إلى النص.","From memory, when does a human being’s legal personality begin? State the rule in your own words without consulting the text.")+"</p>"+
-      "<textarea id='ungradedText' rows='5' maxlength='2000' aria-label='"+tr("إجابة حرة","Free answer")+"'></textarea>";
+      "<p>"+tr("ثم اذكر متى تنتهي الشخصية القانونية، وما حكم حقوق الحمل المستكن وفق المادة 40. لا تستعن بأي مصادر.","Also explain when personality ends and the status of an unborn child’s conditional rights under Article 40. Do not use outside sources.")+"</p>"+
+      "<textarea id='ungradedText' rows='5' maxlength='2000' aria-label='"+tr("إجابة حرة","Free answer")+"'></textarea>"+
+      "<label style='display:block;margin:1rem 0;line-height:1.65'><input type='checkbox' id='aiConsent' style='margin-inline-end:.45rem'>"+tr("أوافق اختياريًا على إرسال نص إجابتي الحرة فقط إلى OpenAI لتقييم تعليمي آلي مبدئي. لن يُرسل اسمي أو جامعتي، والنتيجة ليست درجة أكاديمية معتمدة. يمكنني إنهاء الاختبار دون الموافقة.","I optionally consent to sending only my free-text answer to OpenAI for preliminary educational AI assessment. My name and university are not sent; the result is not an accredited grade. I can finish without consenting.")+"</label>";
    }
    html+="<button id='serverNext'>"+(done?tr("احفظ التقييم واعرض نتيجتي","Save assessment and show my result"):tr("حفظ والانتقال للسؤال التالي","Save and continue"))+"</button>"+
    "<p id='serverError' role='alert'></p>";
@@ -126,6 +131,8 @@ async function startUI(){
       if(reply.status!=="in_progress"||!Array.isArray(reply.draft)||reply.draft.length!==next.length)throw new Error("draft_not_confirmed");
       answers=reply.draft;idx=answers.length;saving=false;page();
      }else{
+      var opt=root.document.getElementById("aiConsent"),aiRequested=!!(opt&&opt.checked);
+      if(aiRequested){if(!cloud.recordConsent)throw new Error("ai_consent_service_unavailable");await cloud.recordConsent("lexlearn-ai-grading-v1","external_ai_grading",true);}
       var reply=await cloud.studentLifecycleRpc("complete",{courseId:COURSE_ID,answers:answers,freeText:root.document.getElementById("ungradedText").value||""});
       if(reply.status!=="completed"||!reply.result||reply.result.source!=="server_finalized_diagnostic"||reply.result.student_id!==student||!reply.training_plan)throw new Error("completion_not_confirmed");
       // Give the optional free recall an internally generated preliminary percentage;
@@ -134,9 +141,11 @@ async function startUI(){
        try{await cloud.studentLifecycleRpc("reviewDiagnostic",{courseId:COURSE_ID});}
        catch(e){if(root.console&&root.console.warn)root.console.warn("Provisional diagnostic review pending:",String(e&&e.message||e));}
       }
+      var aiInfo="";
+      if(aiRequested){try{var evaluated=await cloud.gradeDiagnosticAi();if(!evaluated||evaluated.status!=="completed")aiInfo=tr("تعذّر تأكيد التصحيح بالذكاء الاصطناعي؛ احتُفظ بإجابتك، ولا تُحتسب درجة حفظ غير موثوقة.","AI grading could not be confirmed. Your answer was saved and no unsupported recall score was assigned.");}catch(_){aiInfo=tr("التصحيح الآلي غير متاح حاليًا. حُفظت إجابتك للتقييم والمراجعة.","AI grading is currently unavailable. Your answer was saved for assessment and review.");}}
       var check=await cloud.studentLifecycleRpc("status",{courseId:COURSE_ID});
       if(check.status!=="completed"||check.attempt_id!==reply.attempt_id)throw new Error("completion_readback_failed");
-      saving=false;render(report(check,student));
+      saving=false;render(report(check,student)+(aiInfo?"<p role='status'>"+esc(aiInfo)+"</p>":""));
      }
     }catch(e){error.textContent=tr("تعذّر تأكيد الحفظ: ","Save not confirmed: ")+String(e.message||e);saving=false;var btn=root.document.getElementById("serverNext");if(btn)btn.disabled=false;}
    };
