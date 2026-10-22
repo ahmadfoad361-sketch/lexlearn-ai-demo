@@ -14,11 +14,11 @@ assert.equal(MODEL,"gpt-5.4-mini");
 for(const e of [
  {},
  {LEX_AI_GRADING_ENABLED:"true"},
- {LEX_AI_GRADING_ENABLED:"true",LEX_AI_SPEND_APPROVED:"true",OPENAI_API_KEY:"fake-test-key"},
- {LEX_AI_GRADING_ENABLED:"true",LEX_AI_SPEND_APPROVED:"false",LEX_AI_GRADING_MODEL:MODEL,OPENAI_API_KEY:"fake-test-key"},
- {LEX_AI_GRADING_ENABLED:"true",LEX_AI_SPEND_APPROVED:"true",LEX_AI_GRADING_MODEL:"wrong",OPENAI_API_KEY:"fake-test-key"}
+ {LEX_AI_GRADING_ENABLED:"true",LEX_AI_SPEND_APPROVED:"true",OPENAI_GRADING_API_KEY:"fake-test-key"},
+ {LEX_AI_GRADING_ENABLED:"true",LEX_AI_SPEND_APPROVED:"false",LEX_AI_GRADING_MODEL:MODEL,OPENAI_GRADING_API_KEY:"fake-test-key"},
+ {LEX_AI_GRADING_ENABLED:"true",LEX_AI_SPEND_APPROVED:"true",LEX_AI_GRADING_MODEL:"wrong",OPENAI_GRADING_API_KEY:"fake-test-key"}
 ])assert.equal(flagEnabled(e),false,"No provider call without all four server approvals");
-assert.equal(flagEnabled({LEX_AI_GRADING_ENABLED:"true",LEX_AI_SPEND_APPROVED:"true",LEX_AI_GRADING_MODEL:MODEL,OPENAI_API_KEY:"fake-test-key"}),true);
+assert.equal(flagEnabled({LEX_AI_GRADING_ENABLED:"true",LEX_AI_SPEND_APPROVED:"true",LEX_AI_GRADING_MODEL:MODEL,OPENAI_GRADING_API_KEY:"fake-test-key"}),true);
 assert.deepEqual(reviewRubric(item.rubric_json).map(x=>x.id),["birth","death"]);
 assert.equal(reviewRubric({criteria:[{id:"x",label:"One criterion",weight:1},{id:"x",label:"Other criterion",weight:1}]}),null);
 assert.equal(reviewRubric({criteria:[{id:"x",label:"One criterion",weight:-1}]}),null);
