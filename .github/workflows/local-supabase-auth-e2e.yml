@@ -39,6 +39,10 @@ jobs:
             new="${base:0:8}${base:9:3}000_${base:13}"
             mv "$file" "supabase/migrations/$new"
           done
+          # The hosted project was manually seeded before founder migrations.
+          # Re-create ONLY synthetic prerequisites in this disposable runner;
+          # never modify historical production migrations or the hosted DB.
+          cp tests/staging/ephemeral-pre-pilot-seed.sql supabase/migrations/20261019003500_ephemeral_ci_seed.sql
           ls supabase/migrations
       - name: Start isolated local Supabase Auth, REST, Postgres (NEVER production)
         run: |
