@@ -35,7 +35,7 @@ function report(status,uid){
    "foundation":tr("نبدأ من تأسيس القاعدة قبل رفع الصعوبة.","Begin with supported foundations.")};
  var mode=p.mode||"foundation";
  var tiles=[
-   [tr("الحفظ من الذاكرة — مؤشر أولي","Unaided recall — preliminary indicator"),typeof internal.provisional_percent==="number"&&Number.isFinite(internal.provisional_percent)?internal.provisional_percent:null],
+   [tr("استرجاع قاعدة بدء الشخصية — مؤشر أولي","Recall of the start-of-personality rule — preliminary indicator"),typeof internal.provisional_percent==="number"&&Number.isFinite(internal.provisional_percent)?internal.provisional_percent:null],
    [tr("التعرّف على القاعدة (ليس حفظًا حرًا)","Rule recognition (not unaided recall)"),metrics.recognition],
    [tr("الفهم","Understanding"),metrics.understanding],
    [tr("التطبيق","Application"),metrics.application]
@@ -49,6 +49,7 @@ function report(status,uid){
  (Array.isArray(internal.criteria_met)&&internal.criteria_met.length?"<p>"+tr("عناصر ظهرت في إجابتك","Detected elements")+": "+esc(internal.criteria_met.map(criterionLabel).join(lang()==="en"?", ":"، "))+"</p>":"")+
  (Array.isArray(internal.criteria_missing)&&internal.criteria_missing.length?"<p>"+tr("عناصر راجعها","Review these elements")+": "+esc(internal.criteria_missing.map(criterionLabel).join(lang()==="en"?", ":"، "))+"</p>":"")+
  "</div>"+
+ "<p><small>"+tr("نسبة الاسترجاع هنا تخص العنصر الذي قاسه سؤال التشخيص فقط، وليست نسبة حفظ المقرر كله. قد تحتاج الإجابة مراجعة.","The recall percentage describes only the diagnostic criterion tested, not overall memory of the course; review may still be required.")+"</small></p>"+
  "<h2>"+tr("خطة تدريبك المتكيفة","Your adaptive practice plan")+"</h2>"+
  "<p>"+esc((lang()==="en"?p.reason_en:p.reason_ar)||reasons[mode]||reasons.foundation)+"</p>"+
  "<p>"+tr("الترتيب المبدئي: ","Initial order: ")+esc(Array.isArray(p.firstTasks)&&p.firstTasks.length?p.firstTasks.map(taskLabel).join(lang()==="en"?" → ":" ← "):taskLabel("worked_example"))+"</p>"+
