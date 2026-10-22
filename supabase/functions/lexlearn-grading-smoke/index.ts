@@ -101,7 +101,11 @@ Deno.serve(async(req:Request)=>{
    if(grading.ok){score=grading.score;state="completed";reason="provisional_only";}
    else{state="review_required";reason=grading.reason||"meaning_review_required";}
    // Negative sample is a PASS only if it is NOT rewarded as correct.
-   agreement=id==="reversed_ar"?(score===null||score<=t.expected_max):
+   // Invalid JSON/schema is NOT a successful negative test.
+   // Only a valid low provisional score or a deliberate, schema-valid human-review
+   // abstention can meet the reversed-law safety expectation.
+   agreement=id==="reversed_ar"?
+    ((score!==null&&score<=t.expected_max)||grading.reason==="human_review_required"):
      score!==null&&score>=t.expected_min&&score<=t.expected_max;
   }
  }catch{reason="model_timeout_or_transport_error"}
