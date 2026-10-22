@@ -53,6 +53,7 @@ jobs:
         run: |
           node tests/adaptive-engine.test.js
           node tests/continuous-skill-policy.test.js
+          node tests/semantic-provider-contract.test.mjs
           node tests/learning-quality.test.js
           node tests/diagnostic-evidence.test.js
           node tests/public-showcase.test.js
