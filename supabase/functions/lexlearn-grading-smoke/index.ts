@@ -49,7 +49,7 @@ async function authorized(req:Request){
  return x.admin;
 }
 Deno.serve(async(req:Request)=>{
- if(req.method==="OPTIONS")return new Response("ok",{headers:corsHeaders});
+ if(req.method==="OPTIONS")return new Response("ok",{headers:{...corsHeaders,"Access-Control-Allow-Methods":"GET, POST, OPTIONS"}});
  if(req.method!=="POST"&&req.method!=="GET")return send({error:"method_not_allowed"},405);
  let admin:any;
  try{admin=await authorized(req)}catch{return send({error:"owner_or_dashboard_service_role_required"},403)}
