@@ -142,7 +142,7 @@ Deno.serve(async(req:Request)=>{
    else{
     const parsed=extract(await response.json());
     const evaluated=parsed.ok?interpret(parsed.data,answer):{ok:false,reason:parsed.reason};
-    if(evaluated.ok){
+    if(evaluated.ok && "grade" in evaluated && evaluated.grade){
      confidence=evaluated.grade.confidence;
      result={status:"completed",score:evaluated.grade.provisional_percent,grade:evaluated.grade};
      // Atomic attempt ID check prevents grading one student's later attempt with stale data.
