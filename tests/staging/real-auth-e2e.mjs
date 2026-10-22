@@ -64,9 +64,9 @@ for(let i=0;i<questions.length;i++){
 }
 for(const [key,dim] of [["rights-v1-s1-recall","recall"],["rights-v1-s1-understanding","understanding"],["rights-v1-s1-exam","exam_execution"]]){
  seed+="INSERT INTO public.content_items(id,course_id,unit_id,concept_id,dimension,item_type,prompt_ar,rubric_json,source_ids,status,legal_reviewer,learning_reviewer,reviewed_at,metadata) VALUES("+
- [quote(key),quote(course),"'week-1'","'topic-1'",quote(dim),"'essay'",quote("سؤال اصطناعي للتجربة فقط: اشرح متى تبدأ الشخصية القانونية وما شروط حقوق الحمل."),j({prompt_en:"SYNTHETIC test: explain legal personality beginning and conditional prenatal rights."}),"ARRAY['qa-civil-2004-art39','qa-civil-2004-art40']::text[]","'approved'",checked(accounts[4].uid),checked(accounts[5].uid),"now()","'{\"legal_approval\":true,\"learning_approval\":true,\"staging_only\":true}'::jsonb"].join(",")+");\n";
+ [quote(key),quote(course),"'week-1'","'topic-1'",quote(dim),"'essay'",quote("سؤال اصطناعي للتجربة فقط: اشرح متى تبدأ الشخصية القانونية وما شروط حقوق الحمل."),j({prompt_en:"SYNTHETIC test: explain legal personality beginning and conditional prenatal rights."}),"ARRAY['qa-civil-2004-art39','qa-civil-2004-art40']::text[]","'approved'",checked(accounts[4].uid),checked(accounts[5].uid),"now()","'{\"legal_approval\":true,\"learning_approval\":true,\"staging_only\":true}'::jsonb"].join(",")+") ON CONFLICT(id) DO UPDATE SET status=excluded.status,legal_reviewer=excluded.legal_reviewer,learning_reviewer=excluded.learning_reviewer,reviewed_at=excluded.reviewed_at,metadata=excluded.metadata,prompt_ar=excluded.prompt_ar,rubric_json=excluded.rubric_json,source_ids=excluded.source_ids;\n";
 }
-seed+="INSERT INTO public.student_level_releases(course_id,level_number,academic_approved,published,approved_by,reviewed_at) VALUES("+quote(course)+",1,true,true,"+checked(accounts[5].uid)+",now());\nCOMMIT;\n";
+seed+="INSERT INTO public.student_level_releases(course_id,level_number,academic_approved,published,approved_by,reviewed_at) VALUES("+quote(course)+",1,true,true,"+checked(accounts[5].uid)+",now()) ON CONFLICT(course_id,level_number) DO UPDATE SET academic_approved=true,published=true,approved_by=excluded.approved_by,reviewed_at=excluded.reviewed_at;\nCOMMIT;\n";
 sql(seed);
 const jwt={};
 for(const u of accounts.slice(0,4)){
