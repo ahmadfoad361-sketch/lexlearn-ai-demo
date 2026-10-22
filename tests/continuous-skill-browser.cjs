@@ -4,7 +4,7 @@ const fs=require("node:fs"),assert=require("node:assert/strict");
 const base="http://127.0.0.1:18765/";
 const chrome=[process.env.CHROME_BIN,"/usr/bin/google-chrome","/usr/bin/google-chrome-stable","/usr/bin/chromium"].find(p=>p&&fs.existsSync(p));
 const cases=[
- {name:"recall-led",r:94,u:20,n:12,ar:"ابدأ بالقاعدة التي تتذكرها",en:"Start with the legal rule you can retrieve"},
+ {name:"recall-led",r:94,u:20,n:12,ar:"ابدأ بالقاعدة التي تتذكرها",en:"Begin with the legal rule you can retrieve"},
  {name:"understanding-led",r:21,u:94,n:12,ar:"ابدأ بالمعنى الذي تفهمه",en:"Begin with the meaning you understand"},
  {name:"close-gap",r:66,u:64,n:12,ar:"اشرح القاعدة بأسلوبك",en:"Explain the rule in your own words"},
  {name:"double-low",r:25,u:24,n:12,ar:"ابدأ بمثال محلول",en:"Start with a worked example"},
