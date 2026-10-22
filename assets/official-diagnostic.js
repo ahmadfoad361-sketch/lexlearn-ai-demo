@@ -25,7 +25,9 @@ function build(uid,rows,free,attemptId,date){
  var recall={value:null,measured:false,item_count:free.trim()?1:0,method:"human_review_required",status:free.trim()?"pending_human_review":"not_measured",source_id:"student_diagnostic_free",rubric_version:RUBRIC};
  var profile="insufficient_evidence";
  if(recognition.item_count>=2&&understanding.item_count>=2){
-  if(recognition.value-understanding.value>=25)profile="recall-led";
+  // Low-both signals guided foundations, not high-confidence balanced skills.
+  if(recognition.value<45&&understanding.value<45)profile="foundation";
+  else if(recognition.value-understanding.value>=25)profile="recall-led";
   else if(understanding.value-recognition.value>=25)profile="understanding-led";
   else profile="balanced";
  }
