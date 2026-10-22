@@ -55,6 +55,7 @@ jobs:
           node tests/continuous-skill-policy.test.js
           node tests/semantic-provider-contract.test.mjs
           node tests/three-case-smoke.test.js
+          node tests/owner-grading-console.test.js
           node tests/legal-personality-semantic-contract.test.mjs
           node tests/disabled-pilot-deployment.test.js
           node tests/learning-quality.test.js
