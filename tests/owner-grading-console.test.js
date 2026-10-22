@@ -1,0 +1,28 @@
+const assert=require("node:assert/strict"),fs=require("node:fs"),vm=require("node:vm");
+const raw=fs.readFileSync("supabase/functions/lexlearn-grading-console/index.ts","utf8");
+const script=raw.replace("(req:Request)","(req)");
+let endpoint;
+vm.runInNewContext(script,{Deno:{serve:(f)=>endpoint=f},Response,URL});
+(async()=>{
+ const res=await endpoint({method:"GET",url:"https://project.supabase.co/functions/v1/lexlearn-grading-console"});
+ assert.equal(res.status,200);
+ assert.match(res.headers.get("content-type"),/text\/html/);
+ const html=await res.text();
+ assert.match(html,/الدخول بحساب مالك LexLearn/);
+ assert.match(html,/client\.js/);
+ assert.doesNotMatch(html,/service.role.key|service_role|OPENAI_GRADING_API_KEY|sk-proj-/i);
+ const jsres=await endpoint({method:"GET",url:"https://project.supabase.co/functions/v1/lexlearn-grading-console/client.js"});
+ assert.equal(jsres.status,200);
+ const js=await jsres.text();
+ assert.match(js,/client\.functions\.invoke\("lexlearn-grading-smoke"/);
+ assert.match(js,/client\.auth\.signInWithPassword/);
+ assert.match(js,/client\.auth\.getSession/);
+ assert.match(js,/case_id:"full_ar"/);
+ assert.match(js,/used\)\;/);
+ assert.doesNotMatch(js,/SUPABASE_SERVICE_ROLE_KEY|OPENAI_GRADING_API_KEY|sk-proj-/);
+ const bad=await endpoint({method:"POST",url:"https://project.supabase.co/functions/v1/lexlearn-grading-console"});
+ assert.equal(bad.status,405);
+ const cache=res.headers.get("Cache-Control"),csp=res.headers.get("Content-Security-Policy");
+ assert.equal(cache,"no-store");assert.match(csp,/frame-ancestors 'none'/);
+ console.log("LexLearn owner smoke console: PASS (safe static GET shell, Supabase owner auth, no privileged secrets, restricted use)");
+})().catch(e=>{console.error(e);process.exitCode=1;});
