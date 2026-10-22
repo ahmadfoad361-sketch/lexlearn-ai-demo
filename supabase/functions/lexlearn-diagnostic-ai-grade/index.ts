@@ -47,6 +47,8 @@ function interpret(raw:any,answer:string){
    earned.push(c.id);
   }else if(evidence)return {ok:false,reason:"unearned_evidence"};
  }
+ if(raw.review_required||raw.confidence<0.80||raw.contradictions.length)
+  return {ok:false,reason:"academic_review_required"};
  const score=pct(100*CRITERIA.filter(c=>earned.includes(c.id)).reduce((x,c)=>x+c.weight,0)/
   CRITERIA.reduce((x,c)=>x+c.weight,0));
  return {ok:true,grade:{status:"preliminary_ai",provisional_percent:score,
