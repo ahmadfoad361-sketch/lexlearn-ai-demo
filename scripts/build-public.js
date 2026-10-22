@@ -15,7 +15,7 @@ const assets=[
   "v9-law.css","v9-law-content.js","v9-law.js",
   "adaptive-engine.js","learning-quality.js","pilot-learning.js","pilot-review.js","pilot-qa.js","quality.css",
   "analysis-faces.svg","student-demo-guard.js","showcase-recall.js","showcase.css","showcase-learning-cycle.css","showcase-learning-cycle.js","showcase.js","showcase-en.js",
-  "program.css","program.js","program-en.js","official-diagnostic.js","server-diagnostic.js","official-level-one.js","student-practice.js","student-path.js",
+  "program.css","program.js","program-en.js","diagnostic.css","official-diagnostic.js","server-diagnostic.js","official-level-one.js","student-practice.js","student-path.js",
   "portal.css","register.css","auth-controls.js","student-register.js","student-login.js","student-login-en.js","admin-login-v2.js",
   "student.css","student.js","student-en.js",
   "english.css",
@@ -51,7 +51,8 @@ for(const page of pages){
 // Keep a consistent back arrow across every public subpage (including login,
 // student, university and supervisor views), without injecting it on home or /go.
 for(const page of pages){
-  if(!page.endsWith(".html") || ["index.html","index-en.html","go/index.html"].includes(page))continue;
+  // Diagnostic has its own prominent student-account back link; do not duplicate it with a floating button.
+  if(!page.endsWith(".html") || ["index.html","index-en.html","go/index.html","diagnostic.html"].includes(page))continue;
   const full=path.join(out,page);
   let html=fs.readFileSync(full,"utf8");
   if(!html.includes("lexlearn-navigation.css")){
@@ -73,7 +74,7 @@ for(const page of pages){
 // Silent omissions caused valid GitHub source changes to be absent from the live site.
 for(const required of [
   "conference.html","go/index.html","assets/conference.js","assets/conference-pdf.js","assets/conference.css","assets/lexlearn-navigation.js","assets/lexlearn-navigation.css","assets/lexlearn-learning-lines.js","assets/lexlearn-investor-quotes.js","assets/lexlearn-go-qr.svg","assets/lexlearn-public-pitch-en.pdf",
-  "student-register.html","student-register-en.html","diagnostic.html","student-practice.html","student-path.html","assets/student-practice.js","assets/student-path.js","assets/official-diagnostic.js","assets/server-diagnostic.js","assets/official-level-one.js","showcase-level1.html","showcase-level1-en.html",
+  "student-register.html","student-register-en.html","diagnostic.html","assets/diagnostic.css","student-practice.html","student-path.html","assets/student-practice.js","assets/student-path.js","assets/official-diagnostic.js","assets/server-diagnostic.js","assets/official-level-one.js","showcase-level1.html","showcase-level1-en.html",
   "privacy-en.html","terms-en.html",
   "assets/student-register.js","assets/register.css","assets/auth-controls.js","assets/student-report.js",
   "assets/showcase-learning-cycle.js","assets/showcase-learning-cycle.css"
