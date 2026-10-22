@@ -107,7 +107,7 @@ function make(uid,lang,data,opts={}){
    return {status:"completed"};
   };
   await env.win.LEX_SERVER_DIAGNOSTIC.mount();
-  assert.match(env.main.html,/100%/,"existing internal estimate remains explicitly labelled");
+  assert.match(env.main.html,/لم يُعتمد قياس كافٍ بعد/,"unverified legacy scores must not appear as memorization percentages");
   assert.ok(env.nodes.retroAiGrade,"a completed learner can request AI grading after the fact");
   await env.nodes.retroAiGrade.onclick();
   assert.deepEqual(events,[],"no AI call without explicit opt-in");
