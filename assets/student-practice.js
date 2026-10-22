@@ -12,7 +12,7 @@ function plans(rows){
  var pct=function(x){return x.total?Math.round(100*x.correct/x.total):null;};
  var r=pct(c.recognition),u=pct(c.understanding),a=pct(c.application),mode="foundation";
  if(c.recognition.total>=2&&c.understanding.total>=2){
-  mode=r-u>=25?"recall-led":u-r>=25?"understanding-led":"balanced";
+  mode=r<45&&u<45?"foundation":r-u>=25?"recall-led":u-r>=25?"understanding-led":"balanced";
  }
  return {mode:mode,recognition:r,understanding:u,application:a,
   order:mode==="recall-led"?["understanding","exam","recall"]:mode==="understanding-led"?["recall","understanding","exam"]:mode==="balanced"?["exam","understanding","recall"]:["understanding","recall","exam"]};
