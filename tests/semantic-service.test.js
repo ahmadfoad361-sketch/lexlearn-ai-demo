@@ -41,7 +41,7 @@ const fs=require("node:fs"),vm=require("node:vm"),assert=require("node:assert/st
   const envValues={
    LEX_AI_GRADING_ENABLED:options.enabled===false?undefined:"true",
    LEX_AI_SPEND_APPROVED:options.budget===false?undefined:"true",
-   LEX_AI_GRADING_MODEL:shared.MODEL,OPENAI_API_KEY:"FAKE_TEST_TOKEN"
+   LEX_AI_GRADING_MODEL:shared.MODEL,OPENAI_GRADING_API_KEY:"FAKE_TEST_TOKEN"
   };
   const context={
    Date,JSON,Math,Number,String,Error,Object,Promise,Array,Boolean,
