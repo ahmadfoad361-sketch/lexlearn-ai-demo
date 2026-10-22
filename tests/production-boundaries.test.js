@@ -42,10 +42,16 @@ assert.ok(migration2.includes("curriculum_mappings"),"Qatar curriculum evidence 
 assert.ok(migration2.includes("'legal_review'"),"seeded legal questions must not auto-approve themselves");
 
 const grader=read("supabase/functions/grade-answer/index.ts");
-for(const needle of ["enrollments","grading_rate_limit","item_not_approved","approved_sources_missing","needs_human_review","no_paid_semantic_model"]){
-  assert.ok(grader.includes(needle),"grader safety missing "+needle);
+for(const needle of ["enrollments","grading_request_limit_reached","independently_reviewed_item_required",
+ "approved_sources_missing","needs_human_review","external_processing_consent_required",
+ "semantic_provider_not_approved","flagEnabled(env)","ai_grading_runs"]){
+  assert.ok(grader.includes(needle),"consent-gated semantic grader safety missing "+needle);
 }
-assert.ok(!grader.includes('api.openai.com')&&!grader.includes('OPENAI_API_KEY'),"general grader must never issue paid model requests");
+assert.ok(grader.includes("https://api.openai.com/v1/responses"),"provider endpoint must be explicit and server-only");
+assert.ok(grader.indexOf("if(!flagEnabled(env))")<grader.indexOf("await requireUser(req)"),
+ "fail-closed provider feature gate must precede authenticated grading");
+assert.ok(!read("assets/cloud-data.js").includes("OPENAI_API_KEY"),
+ "model secret must never be sent to the browser");
 const pilotGrade=read("supabase/functions/pilot-grade/index.ts");
 const showcaseGrade=read("supabase/functions/showcase-grade/handler.mjs");
 for(const [path,source] of [["pilot-grade",pilotGrade],["showcase-grade",showcaseGrade]]){
