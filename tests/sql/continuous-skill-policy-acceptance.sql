@@ -31,3 +31,33 @@ begin
  then raise exception 'provisional training is not mastery';end if;
  raise notice 'continuous skill policy: PASS (missing, close, low/low, high/high, bidirectional, uncertainty)';
 end $checks$;
+
+-- Real authenticated function integration on the isolated CI fixture:
+-- student B has no diagnostic at this point; completing all objective answers
+-- incorrectly must request foundations, not a fake free recall grade.
+set role authenticated;
+select set_config('request.jwt.claim.sub','10000000-0000-4000-8000-000000000002',false);
+do $student_b$
+declare d jsonb; sess jsonb; task jsonb;
+begin
+ d:=public.lex_diagnostic_begin('qa-qu-lawc101-rights');
+ if d->>'status'<>'in_progress' then raise exception 'student B diagnostic did not start';end if;
+ d:=public.lex_diagnostic_complete('qa-qu-lawc101-rights','[
+  {"question_id":"q39r","selected":1},{"question_id":"q49r","selected":0},
+  {"question_id":"q62r","selected":1},{"question_id":"q39u","selected":0},
+  {"question_id":"q50u","selected":0},{"question_id":"q63a","selected":0}
+ ]'::jsonb,'');
+ if d#>>'{training_plan,mode}'<>'foundation'
+ then raise exception 'student B double-low diagnostic not foundational: %',d;end if;
+ if d#>>'{result,measurements,recall,value}' is not null
+ then raise exception 'recognition misreported as free recall';end if;
+ sess:=public.lex_training_session_open('qa-qu-lawc101-rights',1);
+ if sess->>'allowed'<>'true' then raise exception 'student B foundational lesson did not open: %',sess;end if;
+ if sess#>>'{skill_policy,mode}'<>'measurement_needed'
+ then raise exception 'student B low-confidence measurement path not explicit';end if;
+ for task in select value from jsonb_array_elements(sess->'tasks') loop
+  if length(coalesce(task->>'instruction_ar',''))<20 or length(coalesce(task->>'instruction_en',''))<20
+  then raise exception 'server did not provide bilingual differentiated learning instruction: %',task;end if;
+ end loop;
+end $student_b$;
+reset role;
