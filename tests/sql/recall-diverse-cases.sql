@@ -25,5 +25,10 @@ do $run$ declare c record; d jsonb; p jsonb; begin
   raise notice 'RECALL_MATRIX %',jsonb_build_object('case',c.case_id,'expected',c.expectation,
    'diagnostic_status',d->>'status','diagnostic',d->'provisional_percent',
    'practice_status',p->>'status','practice',p->'provisional_percent');
+  if c.case_id in ('reverse','wrong_pregnancy','en_reverse') then
+   if d->>'status'<>'needs_human_review' or d->>'provisional_percent' is not null
+    or p->>'status'<>'needs_human_review' or p->>'provisional_percent' is not null
+   then raise exception 'Critical legal reversal is still graded, case % diagnostic % practice %',c.case_id,d,p;end if;
+  end if;
  end loop;
 end $run$;
