@@ -48,6 +48,12 @@ jobs:
           node --check assets/admin-cloud.js
           node --check assets/pilot-learning.js
           node --check assets/pilot0.js
+      - name: Setup Deno for edge-function typecheck
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Check diagnostic AI Edge Function
+        run: deno check supabase/functions/lexlearn-diagnostic-ai-grade/index.ts
       - name: Adaptive engine tests
         run: |
           node tests/adaptive-engine.test.js
