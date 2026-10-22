@@ -29,25 +29,30 @@ function report(status,uid){
  function numberOrNot(v){return typeof v==="number"&&Number.isFinite(v)?Math.max(0,Math.min(100,Math.round(v)))+"%":tr("لم يُقَس","Not measured");}
  var rec=measurements.recall||{},internal=rec.internal_grade||{},ai=rec.ai_grade||{},p=status.training_plan||{};
  var aiRecall=ai.status==="preliminary_ai"&&Number.isFinite(ai.provisional_percent)?ai.provisional_percent:null;
- var internalRecall=internal.status==="preliminary_internal"&&Number.isFinite(internal.provisional_percent)?internal.provisional_percent:null;
- var free=typeof internal.provisional_percent==="number"&&Number.isFinite(internal.provisional_percent)?numberOrNot(internal.provisional_percent):tr("بانتظار تقييم كافٍ أو مراجعة","Not enough evidence / awaiting review");
+ var oldCriterion=(Array.isArray(internal.criteria_met)?internal.criteria_met:[]);
+ var oldCriterionCount=oldCriterion.length;
+ // Legacy internal scorer uses ONE criterion as its whole denominator: 100% is NOT memorization mastery.
+ var applicationSkipped=metrics.application==null&&Array.isArray(d.answers)&&d.answers.some(function(a){return a.question_id==="q63a"&&a.selected===-1;});
+ var free=oldCriterionCount?tr("تم رصد "+oldCriterionCount+" عنصر صحيح مبدئيًا","Detected "+oldCriterionCount+" provisional legal element(s)"):
+   tr("لا توجد أدلة كافية لتقدير الإجابة","Insufficient evidence for grading");
  var reasons={"recall-led":tr("نبدأ بتقوية الفهم والتحليل.","Focus first on explanation and understanding."),
    "understanding-led":tr("نبدأ بتقوية الاسترجاع من الذاكرة.","Start with unaided retrieval practice."),
    "balanced":tr("نبدأ بالتطبيق مع الحفاظ على توازن المهارات.","Begin with application and balanced practice."),
    "foundation":tr("نبدأ من تأسيس القاعدة قبل رفع الصعوبة.","Begin with supported foundations.")};
  var mode=p.mode||"foundation";
  var tiles=[
-   [aiRecall!==null?tr("الحفظ — تقييم OpenAI مبدئي","Recall — preliminary OpenAI score"):internalRecall!==null?tr("الحفظ — مؤشر داخلي مبدئي لسؤال واحد","Recall — preliminary internal single-task score"):tr("الحفظ — بانتظار التقييم","Recall — awaiting assessment"),aiRecall!==null?aiRecall:internalRecall],
+   [aiRecall!==null?tr("الاسترجاع — تقدير OpenAI مبدئي","Recall — provisional OpenAI result"):tr("الحفظ من الذاكرة","Recall from memory"),aiRecall,aiRecall===null?tr("لم يُعتمد قياس كافٍ بعد","Not sufficiently assessed"):null],
    [tr("التعرّف على القاعدة","Rule recognition"),metrics.recognition],
    [tr("الفهم","Understanding"),metrics.understanding],
-   [tr("التطبيق","Application"),metrics.application]
- ].map(function(x){return "<div class='resultMetric' style='background:#F9F4EF;border-radius:12px;padding:1rem;min-width:130px;flex:1'><small>"+esc(x[0])+"</small><div style='font-weight:800;font-size:1.65rem'>"+esc(numberOrNot(x[1]))+"</div></div>";}).join("");
+   [tr("التطبيق على الواقعة","Applying the rule"),metrics.application,applicationSkipped?tr("اختار لا أدري","Chose Not sure"):null]
+ ].map(function(x){return "<div class='resultMetric' style='background:#F9F4EF;border-radius:12px;padding:1rem;min-width:130px;flex:1'><small>"+esc(x[0])+"</small><div style='font-weight:800;font-size:1.55rem'>"+esc(x[2]||numberOrNot(x[1]))+"</div></div>";}).join("");
  return "<section class='diagnosticReport' role='region' aria-label='"+tr("نتيجة التشخيص","Diagnostic results")+"'>"+
  "<h2>"+tr("نتيجة تقييمك التشخيصي","Your diagnostic result")+"</h2>"+
  "<p role='status'>"+tr("حُفظت نتيجتك في حسابك. يمكنك العودة إلى هذه الصفحة لمراجعتها في أي وقت.","Your result is saved to your account. Return to this page to review it at any time.")+"</p>"+
  "<div style='display:flex;flex-wrap:wrap;gap:.75rem'>"+tiles+"</div>"+
- "<div class='resultMetric' style='margin:1rem 0;padding:1rem;border:1px solid #e5d9dc;border-radius:12px'><b>"+tr("الإجابة الحرة — التقييم المبدئي","Free answer — preliminary assessment")+": "+esc(free)+"</b>"+
- "<p>"+tr("هذه نسبة آلية مبدئية لتغطية عناصر القاعدة القانونية؛ ليست درجة جامعية نهائية، وليست تصحيحًا دلاليًا بنموذج لغوي.","This is preliminary rule-coverage analysis, not a final university mark or LLM-based semantic grading.")+"</p>"+
+ (applicationSkipped?"<p class='diagMetricNote' role='note'>"+tr("التطبيق لم يأخذ نسبة لأن الإجابة المسجلة على سؤال التطبيق الوحيد كانت «لا أدري». هذا لا يعني 0%، وسنعيد قياس التطبيق في التدريبات.","No application percentage was calculated because the single application question was answered 'Not sure'. This is not 0%; application will be assessed again during practice.")+"</p>":"")+
+ "<div class='resultMetric' style='margin:1rem 0;padding:1rem;border:1px solid #e5d9dc;border-radius:12px'><b>"+tr("الإجابة الحرة — ما اكتشفه المحرك الداخلي","Free response — what the internal engine detected")+": "+esc(free)+"</b>"+
+ "<p>"+tr("ألغينا اعتماد نسبة 100% السابقة: كانت تعني تحقق عنصر واحد فقط هو بداية الشخصية بالولادة الحية، ولا تُثبت حفظ بقية القاعدة. النتيجة التالية تحتاج تقويمًا بمعايير أوسع.","The previous 100% is no longer treated as a recall score: it only meant one legal element matched (personality begins at live birth), not that the entire rule was recalled.")+"</p>"+
  (Array.isArray(internal.criteria_met)&&internal.criteria_met.length?"<p>"+tr("عناصر ظهرت في إجابتك","Detected elements")+": "+esc(internal.criteria_met.map(criterionLabel).join(lang()==="en"?", ":"، "))+"</p>":"")+
  (Array.isArray(internal.criteria_missing)&&internal.criteria_missing.length?"<p>"+tr("عناصر راجعها","Review these elements")+": "+esc(internal.criteria_missing.map(criterionLabel).join(lang()==="en"?", ":"، "))+"</p>":"")+
  "</div>"+
