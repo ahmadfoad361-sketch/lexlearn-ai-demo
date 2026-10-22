@@ -82,7 +82,7 @@ async function startUI(){
    }
    btn.onclick=async function(){
      var box=root.document.getElementById("retroAiConsent"),msg=root.document.getElementById("retroAiMessage");
-     if(!existingConsent&&(!box||!box.checked)){msg.textContent=tr("هذه أول مرة فقط نطلب إذنك لإرسال الإجابة إلى OpenAI. يمكنك الاستمرار دون التصحيح الخارجي.","This one-time choice authorizes sending your answer to OpenAI. You can continue without external grading.");return;}
+     if(!existingConsent&&(!box||!box.checked)){msg.textContent=tr("الموافقة لمرة واحدة مطلوبة قبل إرسال الإجابة إلى OpenAI. يمكنك الاستمرار دون التصحيح الخارجي.","This one-time choice authorizes sending your answer to OpenAI. You can continue without external grading.");return;}
      btn.disabled=true;msg.textContent=tr("جارٍ تقييم الإجابة المحفوظة…","Grading saved answer…");
      try{
        if(!existingConsent){await cloud.recordConsent("lexlearn-ai-grading-v1","external_ai_grading",true);existingConsent=true;}
