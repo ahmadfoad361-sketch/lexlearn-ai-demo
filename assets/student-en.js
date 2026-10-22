@@ -405,7 +405,12 @@ async function boot(){
        }
 
     }catch(e){
-      APP.innerHTML="Unable to verify your session. Please <a href='student-login-en.html'>sign in again</a>.";
+      var reason=String(e&&e.message||"");
+      APP.innerHTML=/not_enrolled|enrollment|course_not_assigned/i.test(reason)
+        ?"<section role='alert' class='empty studentEmpty'><h2>Your account is active but not enrolled in Theory of Rights</h2><p>Ask the LexLearn supervisor to add you to the testing cohort. Signing in again will not fix course enrollment.</p><a href='student-login-en.html'>Back to sign in</a></section>"
+        : /learning_data_consent_required|consent_required/i.test(reason)
+        ?"<section role='alert' class='empty studentEmpty'><h2>Learning-data privacy consent is required</h2><p>Review and accept the necessary consent inside your account before starting the assessment.</p><a href='privacy-en.html'>Privacy policy</a></section>"
+        :"Unable to verify your session. Please <a href='student-login-en.html'>sign in again</a>.";
       return;
     }
   }
