@@ -132,6 +132,7 @@ jobs:
           sleep 2
           node tests/student-path-browser.cjs
           node tests/student-adaptive-browser.cjs
+          node tests/continuous-skill-browser.cjs
           node tests/conference-viewport-browser.cjs
 
   sql-lifecycle:
