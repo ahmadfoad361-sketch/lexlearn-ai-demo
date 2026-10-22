@@ -247,3 +247,4 @@ jobs:
           psql -v ON_ERROR_STOP=1 -f tests/sql/full-adaptive-acceptance.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261022_001_continuous_skill_policy_DRAFT.sql
           psql -v ON_ERROR_STOP=1 -f tests/sql/continuous-skill-policy-acceptance.sql
+          psql -v ON_ERROR_STOP=1 -f tests/sql/two-students-recall-extremes.sql
