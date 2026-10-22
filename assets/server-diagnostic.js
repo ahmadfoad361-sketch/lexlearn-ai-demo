@@ -29,30 +29,36 @@ function report(status,uid){
  function numberOrNot(v){return typeof v==="number"&&Number.isFinite(v)?Math.max(0,Math.min(100,Math.round(v)))+"%":tr("لم يُقَس","Not measured");}
  var rec=measurements.recall||{},internal=rec.internal_grade||{},ai=rec.ai_grade||{},p=status.training_plan||{};
  var aiRecall=ai.status==="preliminary_ai"&&Number.isFinite(ai.provisional_percent)?ai.provisional_percent:null;
- var internalRecall=internal.status==="preliminary_internal"&&Number.isFinite(internal.provisional_percent)?internal.provisional_percent:null;
- var free=typeof internal.provisional_percent==="number"&&Number.isFinite(internal.provisional_percent)?numberOrNot(internal.provisional_percent):tr("بانتظار تقييم كافٍ أو مراجعة","Not enough evidence / awaiting review");
+ var oldCriterion=(Array.isArray(internal.criteria_met)?internal.criteria_met:[]);
+ var oldCriterionCount=oldCriterion.length;
+ // Legacy internal scorer uses ONE criterion as its whole denominator: 100% is NOT memorization mastery.
+ var applicationSkipped=metrics.application==null&&Array.isArray(d.answers)&&d.answers.some(function(a){return a.question_id==="q63a"&&a.selected===-1;});
+ var free=oldCriterionCount?tr("تم رصد "+oldCriterionCount+" عنصر صحيح مبدئيًا","Detected "+oldCriterionCount+" provisional legal element(s)"):
+   tr("لا توجد أدلة كافية لتقدير الإجابة","Insufficient evidence for grading");
  var reasons={"recall-led":tr("نبدأ بتقوية الفهم والتحليل.","Focus first on explanation and understanding."),
    "understanding-led":tr("نبدأ بتقوية الاسترجاع من الذاكرة.","Start with unaided retrieval practice."),
    "balanced":tr("نبدأ بالتطبيق مع الحفاظ على توازن المهارات.","Begin with application and balanced practice."),
    "foundation":tr("نبدأ من تأسيس القاعدة قبل رفع الصعوبة.","Begin with supported foundations.")};
  var mode=p.mode||"foundation";
  var tiles=[
-   [aiRecall!==null?tr("الحفظ — تقييم OpenAI مبدئي","Recall — preliminary OpenAI score"):internalRecall!==null?tr("الحفظ — مؤشر داخلي مبدئي لسؤال واحد","Recall — preliminary internal single-task score"):tr("الحفظ — بانتظار التقييم","Recall — awaiting assessment"),aiRecall!==null?aiRecall:internalRecall],
+   [aiRecall!==null?tr("الاسترجاع — تقدير OpenAI مبدئي","Recall — provisional OpenAI result"):tr("الحفظ من الذاكرة","Recall from memory"),aiRecall,aiRecall===null?tr("لم يُعتمد قياس كافٍ بعد","Not sufficiently assessed"):null],
    [tr("التعرّف على القاعدة","Rule recognition"),metrics.recognition],
    [tr("الفهم","Understanding"),metrics.understanding],
-   [tr("التطبيق","Application"),metrics.application]
- ].map(function(x){return "<div class='resultMetric' style='background:#F9F4EF;border-radius:12px;padding:1rem;min-width:130px;flex:1'><small>"+esc(x[0])+"</small><div style='font-weight:800;font-size:1.65rem'>"+esc(numberOrNot(x[1]))+"</div></div>";}).join("");
+   [tr("التطبيق على الواقعة","Applying the rule"),metrics.application,applicationSkipped?tr("اختار لا أدري","Chose Not sure"):null]
+ ].map(function(x){return "<div class='resultMetric' style='background:#F9F4EF;border-radius:12px;padding:1rem;min-width:130px;flex:1'><small>"+esc(x[0])+"</small><div style='font-weight:800;font-size:1.55rem'>"+esc(x[2]||numberOrNot(x[1]))+"</div></div>";}).join("");
  return "<section class='diagnosticReport' role='region' aria-label='"+tr("نتيجة التشخيص","Diagnostic results")+"'>"+
  "<h2>"+tr("نتيجة تقييمك التشخيصي","Your diagnostic result")+"</h2>"+
  "<p role='status'>"+tr("حُفظت نتيجتك في حسابك. يمكنك العودة إلى هذه الصفحة لمراجعتها في أي وقت.","Your result is saved to your account. Return to this page to review it at any time.")+"</p>"+
  "<div style='display:flex;flex-wrap:wrap;gap:.75rem'>"+tiles+"</div>"+
- "<div class='resultMetric' style='margin:1rem 0;padding:1rem;border:1px solid #e5d9dc;border-radius:12px'><b>"+tr("الإجابة الحرة — التقييم المبدئي","Free answer — preliminary assessment")+": "+esc(free)+"</b>"+
- "<p>"+tr("هذه نسبة آلية مبدئية لتغطية عناصر القاعدة القانونية؛ ليست درجة جامعية نهائية، وليست تصحيحًا دلاليًا بنموذج لغوي.","This is preliminary rule-coverage analysis, not a final university mark or LLM-based semantic grading.")+"</p>"+
+ (applicationSkipped?"<p class='diagMetricNote' role='note'>"+tr("التطبيق لم يأخذ نسبة لأن الإجابة المسجلة على سؤال التطبيق الوحيد كانت «لا أدري». هذا لا يعني 0%، وسنعيد قياس التطبيق في التدريبات.","No application percentage was calculated because the single application question was answered 'Not sure'. This is not 0%; application will be assessed again during practice.")+"</p>":"")+
+ "<div class='resultMetric' style='margin:1rem 0;padding:1rem;border:1px solid #e5d9dc;border-radius:12px'><b>"+tr("الإجابة الحرة — ما اكتشفه المحرك الداخلي","Free response — what the internal engine detected")+": "+esc(free)+"</b>"+
+ "<p>"+((internal.provisional_percent===100&&oldCriterionCount===1)?tr("ألغينا اعتماد نسبة 100% السابقة: كانت تعني تحقق عنصر واحد فقط هو بداية الشخصية بالولادة الحية، ولا تُثبت حفظ بقية القاعدة.","The previous 100% is no longer treated as a recall score: it represented only one matched legal element (the start of personality at live birth)."):
+ tr("المؤشر الداخلي يفحص بعض عناصر الإجابة، ولا يُعتبر وحده قياسًا معتمدًا للحفظ أو درجة نهائية.","Internal rule matching checks some parts of the response and does not establish memorization mastery or a final grade."))+"</p>"+
  (Array.isArray(internal.criteria_met)&&internal.criteria_met.length?"<p>"+tr("عناصر ظهرت في إجابتك","Detected elements")+": "+esc(internal.criteria_met.map(criterionLabel).join(lang()==="en"?", ":"، "))+"</p>":"")+
  (Array.isArray(internal.criteria_missing)&&internal.criteria_missing.length?"<p>"+tr("عناصر راجعها","Review these elements")+": "+esc(internal.criteria_missing.map(criterionLabel).join(lang()==="en"?", ":"، "))+"</p>":"")+
  "</div>"+
  (aiRecall!==null?"<div class='resultMetric' style='margin:1rem 0;padding:1rem;border:1px solid #e5d9dc;border-radius:12px'><b>"+tr("تفصيل التصحيح الآلي للحفظ","AI recall assessment detail")+": "+esc(numberOrNot(aiRecall))+"</b><p>"+tr("تقدير أولي لتغطية عناصر الإجابة من سؤال استرجاع واحد، وليس قياسًا معتمدًا لإتقان الحفظ أو الاحتفاظ طويل المدى؛ يمكن للمشرف مراجعته.","Preliminary criterion coverage from one unaided-recall answer. This is not validated memory mastery or long-term retention; supervisor review remains available.")+"</p>"+(ai.feedback_ar||ai.feedback_en?"<p>"+esc(lang()==="en"?ai.feedback_en:ai.feedback_ar)+"</p>":"")+"</div>":"")+
- (aiRecall===null?"<section class='retroAiPanel'><h3>"+tr("تصحيح الإجابة المحفوظة باستخدام OpenAI","Grade your saved answer using OpenAI")+"</h3><p>"+tr("النسبة الداخلية تخص عناصر القاعدة فقط. لتقييم إجابتك الحرة باستخدام OpenAI، وافق ثم اضغط الزر. لن تعيد الاختبار.","The internal percentage checks rule coverage only. With your consent, OpenAI can assess your saved free-text answer without repeating the test.")+"</p><label class='retroAiLabel'><input id='retroAiConsent' type='checkbox'>"+tr("أوافق على إرسال نص إجابتي فقط إلى OpenAI للتقييم المبدئي، دون إرسال اسمي أو بيانات حسابي.","I consent to sending only my saved answer text to OpenAI for a preliminary assessment, without my name or account details.")+"</label><button id='retroAiGrade' type='button'>"+tr("احسب نسبة الحفظ بالذكاء الاصطناعي","Grade recall using AI")+"</button><p id='retroAiMessage' role='status' aria-live='polite'></p></section>":"")+
+ (aiRecall===null?"<section class='retroAiPanel'><h3>"+tr("تصحيح الإجابة المحفوظة باستخدام OpenAI","Grade your saved answer using OpenAI")+"</h3><p>"+tr("النسبة الداخلية تخص عناصر القاعدة فقط. لتقييم إجابتك الحرة باستخدام OpenAI، وافق ثم اضغط الزر. لن تعيد الاختبار.","The internal percentage checks rule coverage only. With your consent, OpenAI can assess your saved free-text answer without repeating the test.")+"</p><label class='retroAiLabel' id='retroAiConsentLabel'><input id='retroAiConsent' type='checkbox'>"+tr("أوافق على إرسال نص إجابتي فقط إلى OpenAI للتقييم المبدئي، دون إرسال اسمي أو بيانات حسابي.","I consent to sending only my saved answer text to OpenAI for a preliminary assessment, without my name or account details.")+"</label><button id='retroAiGrade' type='button'>"+tr("احسب نسبة الحفظ بالذكاء الاصطناعي","Grade recall using AI")+"</button><p id='retroAiMessage' role='status' aria-live='polite'></p></section>":"")+
  "<h2>"+tr("خطة تدريبك المتكيفة","Your adaptive practice plan")+"</h2>"+
  "<p>"+esc((lang()==="en"?p.reason_en:p.reason_ar)||reasons[mode]||reasons.foundation)+"</p>"+
  "<p>"+tr("الترتيب المبدئي: ","Initial order: ")+esc(Array.isArray(p.firstTasks)&&p.firstTasks.length?p.firstTasks.map(taskLabel).join(lang()==="en"?" → ":" ← "):taskLabel("worked_example"))+"</p>"+
@@ -64,19 +70,27 @@ async function startUI(){
  var area=root.document.getElementById("officialDiagnostic");if(!area)return;
  var cloud=root.LEX_CLOUD;
  function render(html){area.innerHTML=html;}
- function showCompleted(status,info){
+ async function showCompleted(status,info){
    render(report(status,student)+(info?"<p role='status'>"+esc(info)+"</p>":""));
    var btn=root.document.getElementById("retroAiGrade");if(!btn)return;
+   var existingConsent=false;
+   try{if(cloud.getConsent)existingConsent=!!await cloud.getConsent("lexlearn-ai-grading-v1","external_ai_grading");}catch(_){}
+   var label=root.document.getElementById("retroAiConsentLabel");
+   if(existingConsent&&label){
+     label.style.display="none";
+     var notice=root.document.getElementById("retroAiMessage");
+     if(notice)notice.textContent=tr("موافقتك السابقة على التصحيح محفوظة. لن تُطلب منك مرة أخرى.","Your prior AI grading consent is saved. We won't ask for it again.");
+   }
    btn.onclick=async function(){
      var box=root.document.getElementById("retroAiConsent"),msg=root.document.getElementById("retroAiMessage");
-     if(!box||!box.checked){msg.textContent=tr("الموافقة مطلوبة قبل إرسال الإجابة.","Consent is required before sending the answer.");return;}
+     if(!existingConsent&&(!box||!box.checked)){msg.textContent=tr("الموافقة لمرة واحدة مطلوبة قبل إرسال الإجابة إلى OpenAI. يمكنك الاستمرار دون التصحيح الخارجي.","This one-time choice authorizes sending your answer to OpenAI. You can continue without external grading.");return;}
      btn.disabled=true;msg.textContent=tr("جارٍ تقييم الإجابة المحفوظة…","Grading saved answer…");
      try{
-       await cloud.recordConsent("lexlearn-ai-grading-v1","external_ai_grading",true);
+       if(!existingConsent){await cloud.recordConsent("lexlearn-ai-grading-v1","external_ai_grading",true);existingConsent=true;}
        var response=await cloud.gradeDiagnosticAi();
        var saved=await cloud.studentLifecycleRpc("status",{courseId:COURSE_ID});
        var recall=saved.result&&saved.result.measurements&&saved.result.measurements.recall;
-       if(saved.status==="completed"&&saved.result.student_id===student&&recall&&recall.ai_grade&&Number.isFinite(recall.ai_grade.provisional_percent)){showCompleted(saved);return;}
+       if(saved.status==="completed"&&saved.result.student_id===student&&recall&&recall.ai_grade&&Number.isFinite(recall.ai_grade.provisional_percent)){await showCompleted(saved);return;}
        msg.textContent=tr("النتيجة تحتاج مراجعة المشرف أو التحقق من إعدادات OpenAI. لم نحتسب نسبة جديدة.","Supervisor review or OpenAI configuration check is needed. No new percentage was assigned.");
      }catch(e){msg.textContent=tr("تعذر تأكيد التصحيح. لا تكرر العملية قبل مراجعة المشرف.","Grading not confirmed. Consult the supervisor before retrying.");}
    };
@@ -101,7 +115,7 @@ async function startUI(){
     logout.type="button";logout.onclick=async function(){await cloud.signOut();root.location.replace(login());};header.appendChild(logout);
   }
   var status=await cloud.studentLifecycleRpc("status",{courseId:COURSE_ID});
-  if(status.status==="completed"){showCompleted(status);return;}
+  if(status.status==="completed"){await showCompleted(status);return;}
   if(!await D.academicItemsApproved(cloud))throw new Error("diagnostic_academic_approval_pending");
   if(status.status==="not_started"){
    render("<p>"+tr("ابدأ بتقييم قصير لتحديد نقطة انطلاقك. تُحفظ إجاباتك في حسابك، وتحصل الإجابة الحرة على تقدير مبدئي عند توفر أدلة كافية لتقييمها.","Start with a short assessment to find your starting point. Answers are saved to your account; free responses receive a preliminary estimate when there is enough evidence to assess them.")+"</p>"+
@@ -115,10 +129,12 @@ async function startUI(){
   else throw new Error("unknown_diagnostic_status");
  }catch(e){fail(e);}
  async function present(status){
-  if(status.status==="completed"){showCompleted(status);return;}
+  if(status.status==="completed"){await showCompleted(status);return;}
   var answers=Array.isArray(status.draft)?status.draft.slice():[];
   if(answers.length>Q.length){fail(new Error("invalid_server_draft"));return;}
   if(answers.some(function(x,i){return !Q[i]||x.question_id!==Q[i].id;})){fail(new Error("inconsistent_server_draft"));return;}
+  var acceptedAi=false;
+  try{if(cloud.getConsent)acceptedAi=!!await cloud.getConsent("lexlearn-ai-grading-v1","external_ai_grading");}catch(_){}
   var idx=answers.length, saving=false;
   function page(){
    var done=idx===Q.length,q=Q[idx],progress=Math.round(100*idx/(Q.length+1));
@@ -133,7 +149,8 @@ async function startUI(){
       "<p>"+tr("اكتب من ذاكرتك: متى تبدأ الشخصية القانونية للإنسان؟ عبّر عن القاعدة بأسلوبك دون الرجوع إلى النص.","From memory, when does a human being’s legal personality begin? State the rule in your own words without consulting the text.")+"</p>"+
       "<p>"+tr("ثم اذكر متى تنتهي الشخصية القانونية، وما حكم حقوق الحمل المستكن وفق المادة 40. لا تستعن بأي مصادر.","Also explain when personality ends and the status of an unborn child’s conditional rights under Article 40. Do not use outside sources.")+"</p>"+
       "<textarea id='ungradedText' rows='5' maxlength='2000' aria-label='"+tr("إجابة حرة","Free answer")+"'></textarea>"+
-      "<label style='display:block;margin:1rem 0;line-height:1.65'><input type='checkbox' id='aiConsent' style='margin-inline-end:.45rem'>"+tr("أوافق اختياريًا على إرسال نص إجابتي الحرة فقط إلى OpenAI لتقييم تعليمي آلي مبدئي. لن يُرسل اسمي أو جامعتي، والنتيجة ليست درجة أكاديمية معتمدة. يمكنني إنهاء الاختبار دون الموافقة.","I optionally consent to sending only my free-text answer to OpenAI for preliminary educational AI assessment. My name and university are not sent; the result is not an accredited grade. I can finish without consenting.")+"</label>";
+      (acceptedAi?"<p class='diagConsentSaved' role='note'>"+tr("موافقتك السابقة على التصحيح الخارجي محفوظة؛ لن نطلبها مرة ثانية.","Your prior external AI grading consent is saved; we won't ask again.")+"</p>":
+      "<label style='display:block;margin:1rem 0;line-height:1.65'><input type='checkbox' id='aiConsent' style='margin-inline-end:.45rem'>"+tr("موافقة لمرة واحدة: أسمح بإرسال نص إجابتي الحرة فقط إلى OpenAI للتصحيح المبدئي، دون اسمي أو جامعتي. يمكنك إكمال الاختبار دون هذه الموافقة.","One-time optional consent: I authorize sending only my free-text answer to OpenAI for preliminary grading, without my name or university. I can complete the test without agreeing.")+"</label>");
    }
    html+="<button id='serverNext'>"+(done?tr("احفظ التقييم واعرض نتيجتي","Save assessment and show my result"):tr("حفظ والانتقال للسؤال التالي","Save and continue"))+"</button>"+
    "<p id='serverError' role='alert'></p>";
@@ -151,8 +168,8 @@ async function startUI(){
       if(reply.status!=="in_progress"||!Array.isArray(reply.draft)||reply.draft.length!==next.length)throw new Error("draft_not_confirmed");
       answers=reply.draft;idx=answers.length;saving=false;page();
      }else{
-      var opt=root.document.getElementById("aiConsent"),aiRequested=!!(opt&&opt.checked);
-      if(aiRequested){if(!cloud.recordConsent)throw new Error("ai_consent_service_unavailable");await cloud.recordConsent("lexlearn-ai-grading-v1","external_ai_grading",true);}
+      var opt=root.document.getElementById("aiConsent"),aiRequested=!!(root.document.getElementById("ungradedText").value||"").trim()&&(acceptedAi||!!(opt&&opt.checked));
+      if(aiRequested&&!acceptedAi){if(!cloud.recordConsent)throw new Error("ai_consent_service_unavailable");await cloud.recordConsent("lexlearn-ai-grading-v1","external_ai_grading",true);acceptedAi=true;}
       var reply=await cloud.studentLifecycleRpc("complete",{courseId:COURSE_ID,answers:answers,freeText:root.document.getElementById("ungradedText").value||""});
       if(reply.status!=="completed"||!reply.result||reply.result.source!=="server_finalized_diagnostic"||reply.result.student_id!==student||!reply.training_plan)throw new Error("completion_not_confirmed");
       // Give the optional free recall an internally generated preliminary percentage;
@@ -165,7 +182,7 @@ async function startUI(){
       if(aiRequested){try{var evaluated=await cloud.gradeDiagnosticAi();if(!evaluated||evaluated.status!=="completed")aiInfo=tr("تعذّر تأكيد التصحيح بالذكاء الاصطناعي؛ احتُفظ بإجابتك، ولا تُحتسب درجة حفظ غير موثوقة.","AI grading could not be confirmed. Your answer was saved and no unsupported recall score was assigned.");}catch(_){aiInfo=tr("التصحيح الآلي غير متاح حاليًا. حُفظت إجابتك للتقييم والمراجعة.","AI grading is currently unavailable. Your answer was saved for assessment and review.");}}
       var check=await cloud.studentLifecycleRpc("status",{courseId:COURSE_ID});
       if(check.status!=="completed"||check.attempt_id!==reply.attempt_id)throw new Error("completion_readback_failed");
-      saving=false;showCompleted(check,aiInfo);
+      saving=false;await showCompleted(check,aiInfo);
      }
     }catch(e){error.textContent=tr("تعذّر تأكيد الحفظ: ","Save not confirmed: ")+String(e.message||e);saving=false;var btn=root.document.getElementById("serverNext");if(btn)btn.disabled=false;}
    };

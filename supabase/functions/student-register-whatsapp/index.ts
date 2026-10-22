@@ -62,6 +62,13 @@ Deno.serve(async(req)=>{
    const activated=await admin.from("profiles").update({active:true,account_status:"active"})
      .eq("id",uid).eq("role","student").eq("account_status","pending").select("id").single();
    if(activated.error||!activated.data)throw new Error("student_activation_failed");
+   // The registration form already required affirmative acceptance of privacy/terms.
+   // Persist that learning-data choice at creation to avoid a second consent prompt
+   // immediately after signing in. External AI grading remains a distinct optional choice.
+   const learningConsent=await admin.from("consent_records").insert({
+     user_id:uid,notice_version:"2026-10-06-v1",consent_type:"learning_data",accepted:true
+   });
+   if(learningConsent.error)throw new Error("registration_learning_consent_failed");
   }catch(_){
    await admin.auth.admin.deleteUser(uid);
    return json({error:"registration_not_completed"},503);

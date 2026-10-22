@@ -6,7 +6,7 @@ function make(uid,lang,data,opts={}){
  const main={html:"",querySelector:q=>q==="input[name=selected]:checked"&&chosen!==null?{value:String(chosen)}:null};
  Object.defineProperty(main,"innerHTML",{get(){return this.html},set(v){
   this.html=v;for(const k of Object.keys(nodes))delete nodes[k];
-  for(const m of v.matchAll(/id='([^']+)'/g))nodes[m[1]]={value:"",textContent:"",disabled:false,onclick:null};
+  for(const m of v.matchAll(/id='([^']+)'/g))nodes[m[1]]={value:"",textContent:"",disabled:false,onclick:null,style:{}};
  }});
  const header={appendChild(){this.length=(this.length||0)+1;},length:0};
  const document={getElementById:id=>id==="officialDiagnostic"?main:nodes[id],querySelector:s=>s==="header"?header:null,
@@ -107,7 +107,7 @@ function make(uid,lang,data,opts={}){
    return {status:"completed"};
   };
   await env.win.LEX_SERVER_DIAGNOSTIC.mount();
-  assert.match(env.main.html,/100%/,"existing internal estimate remains explicitly labelled");
+  assert.match(env.main.html,/لم يُعتمد قياس كافٍ بعد/,"unverified legacy scores must not appear as memorization percentages");
   assert.ok(env.nodes.retroAiGrade,"a completed learner can request AI grading after the fact");
   await env.nodes.retroAiGrade.onclick();
   assert.deepEqual(events,[],"no AI call without explicit opt-in");
@@ -118,6 +118,30 @@ function make(uid,lang,data,opts={}){
   assert.match(env.main.html,/40%/,"readback displays the confirmed AI score");
   assert.equal(env.nodes.retroAiGrade,undefined,"no second grading button after score is saved");
   assert.equal(data[uid].attempt_id,"saved-once");
+ }
+ // Saved consent is re-used. No second checkbox requirement or second consent record.
+ {
+  const uid="consented-learner",events=[];
+  data[uid]={status:"completed",attempt_id:"consent-existing",result:{
+   source:"server_finalized_diagnostic",student_id:uid,
+   measurements:{recall:{internal_grade:{status:"preliminary_internal",provisional_percent:100,criteria_met:["live_birth"]}}},
+   answers:[{question_id:"q63a",selected:-1}]
+  },training_plan:{mode:"foundation",firstTasks:["memory_cues"]}};
+  const env=make(uid,"ar",data);
+  env.cloud.getConsent=async()=>({accepted:true});
+  env.cloud.recordConsent=async()=>{events.push("duplicate consent");throw Error("duplicate");};
+  env.cloud.gradeDiagnosticAi=async()=>{
+   events.push("grade");
+   data[uid].result.measurements.recall.ai_grade={status:"preliminary_ai",provisional_percent:40};
+   return {status:"completed"};
+  };
+  await env.win.LEX_SERVER_DIAGNOSTIC.mount();
+  assert.equal(env.nodes.retroAiConsentLabel.style.display,"none","previous AI consent must not be shown again");
+  assert.match(env.main.html,/اختار لا أدري/,"application was skipped, not graded zero");
+  assert.match(env.main.html,/ألغينا اعتماد نسبة 100%/,"old one-criterion grading is disclaimed");
+  await env.nodes.retroAiGrade.onclick();
+  assert.deepEqual(events,["grade"],"a saved consent causes no additional consent request");
+  assert.match(env.main.html,/40%/,"confirmed AI grading appears");
  }
  // Partial draft is truly server-originating, and is resumed in another language.
  const part={partial:{status:"in_progress",attempt_id:"partial-attempt",draft:[{question_id:"q39r",selected:0}]}};
