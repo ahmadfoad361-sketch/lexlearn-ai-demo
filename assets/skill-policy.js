@@ -44,8 +44,15 @@
    var mode,target=null,bridgeFrom=null;
    if(rec<40&&und<40){mode="foundations";}
    else if(rec>=85&&und>=85){mode="consolidation";}
-   else if(abs<=uncertainty||confidence==="low"||provisional){mode="balanced";}
-   else {
+   else if(abs<=uncertainty||confidence==="low"){mode="balanced";}
+   else if(provisional){
+     // Large, repeatedly observed *provisional* difference may guide low-stakes practice only.
+     // Never present this as verified mastery or an immutable learner classification.
+     if(minimumEvidence>=6&&abs>uncertainty+25){
+       target=gap>0?"understanding":"recall";bridgeFrom=gap>0?"recall":"understanding";
+       mode="provisional_bridge";
+     }else mode="balanced";
+   }else{
      target=gap>0?"understanding":"recall";
      bridgeFrom=gap>0?"recall":"understanding";
      mode="bridge";
@@ -55,7 +62,8 @@
    var signal=Math.max(0,abs-uncertainty)/100;
    var strength=clamp(signal*reliable,0,1);
    var targetShare=Math.round(50+35*(1-Math.exp(-2.5*strength)));
-   var recallShare=mode==="bridge"?(target==="recall"?targetShare:100-targetShare):50;
+   if(mode==="provisional_bridge")targetShare=Math.min(60,targetShare);
+   var recallShare=(mode==="bridge"||mode==="provisional_bridge")?(target==="recall"?targetShare:100-targetShare):50;
    return {
      version:"skill-policy-v1",mode:mode,target:target,bridgeFrom:bridgeFrom,
      gap:Math.round(gap*100)/100, uncertaintyPoints:uncertainty,confidence:confidence,
@@ -78,10 +86,10 @@
    if(mode==="consolidation")return en?
      "Apply the rule to a new factual variation, then retrieve its conditions after a delay.":
      "طبّق القاعدة على واقعة جديدة، ثم استرجع شروطها بعد فترة دون مساعدة.";
-   if(mode==="bridge"&&plan.bridgeFrom==="recall")return en?
+   if((mode==="bridge"||mode==="provisional_bridge")&&plan.bridgeFrom==="recall")return en?
      "Begin with the legal rule you can retrieve, explain WHY each condition matters, then change one fact and reassess the outcome.":
      "ابدأ بالقاعدة التي تتذكرها، واشرح لماذا يؤثر كل شرط، ثم غيّر واقعة واحدة وأعد تحديد النتيجة.";
-   if(mode==="bridge"&&plan.bridgeFrom==="understanding")return en?
+   if((mode==="bridge"||mode==="provisional_bridge")&&plan.bridgeFrom==="understanding")return en?
      "Begin with the meaning you understand, derive short retrieval cues, hide the rule, and reconstruct it unaided.":
      "ابدأ بالمعنى الذي تفهمه، واستخرج مفاتيح تذكّر قصيرة، ثم أخفِ القاعدة وأعد بناءها من الذاكرة.";
    return en?
