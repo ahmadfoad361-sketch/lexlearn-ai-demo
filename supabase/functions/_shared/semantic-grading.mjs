@@ -93,6 +93,34 @@ export function apiRequest({answer,item,sources,language}){
   text:{format:{type:"json_schema",name:"lexlearn_semantic_grading",strict:true,schema:RESPONSE_SCHEMA}}
  };
 }
+// Separate transport/parsing failures from semantic-review failures. Safe to log the
+// short reason code only; no student answer, model text, API key, or provider id is logged.
+export function inspectProviderResponse(response){
+ if(!asObject(response))return {proposal:null,reason:"provider_response_invalid"};
+ if(response.status==="incomplete")return {proposal:null,reason:"provider_output_incomplete"};
+ if(response.status==="failed"||response.status==="cancelled")return {proposal:null,reason:"provider_response_failed"};
+ const content=[];
+ if(typeof response.output_text==="string"&&response.output_text.trim())content.push(response.output_text);
+ if(!content.length)for(const output of response.output||[])for(const part of output.content||[]){
+  if(part?.type==="refusal")return {proposal:null,reason:"provider_refused"};
+  if(part?.type==="output_text"&&typeof part.text==="string")content.push(part.text);
+ }
+ const raw=content.join("");
+ if(!raw.trim())return {proposal:null,reason:"provider_output_missing"};
+ if(raw.length>20000)return {proposal:null,reason:"provider_output_oversized"};
+ let p;
+ try{p=JSON.parse(raw)}catch{return {proposal:null,reason:"provider_output_not_json"};}
+ if(!asObject(p))return {proposal:null,reason:"provider_json_not_object"};
+ if(!finite(p.score)||p.score<0||p.score>1)return {proposal:null,reason:"invalid_grade_schema_score"};
+ if(!finite(p.model_confidence)||p.model_confidence<0||p.model_confidence>1)return {proposal:null,reason:"invalid_grade_schema_confidence"};
+ if(typeof p.needs_human_review!=="boolean")return {proposal:null,reason:"invalid_grade_schema_review_flag"};
+ if(!Array.isArray(p.achieved_criteria)||!Array.isArray(p.missing_criteria)||!Array.isArray(p.contradictions))
+  return {proposal:null,reason:"invalid_grade_schema_criteria"};
+ if(p.contradictions.some(x=>typeof x!=="string"||!x.trim()))return {proposal:null,reason:"invalid_grade_schema_contradictions"};
+ if(typeof p.feedback_ar!=="string"||typeof p.feedback_en!=="string"||p.feedback_ar.length>1000||p.feedback_en.length>1000)
+  return {proposal:null,reason:"invalid_grade_schema_feedback"};
+ return {proposal:p,reason:null};
+}
 export function extractResult(response){
  let raw=typeof response?.output_text==="string"?response.output_text:"";
  if(!raw)for(const output of response?.output||[])for(const part of output.content||[])if(part.type==="output_text")raw+=part.text||"";
