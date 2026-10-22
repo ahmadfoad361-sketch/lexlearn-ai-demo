@@ -14,7 +14,7 @@ button:disabled{background:#aaa;cursor:wait}.outline{background:#f9f4ef;color:#1
 strong{color:#8a1f39}.hidden{display:none}
 </style></head><body><main>
 <h1>LexLearn — تجربة التصحيح الآمن</h1>
-<p>صفحة داخلية لاختبار <strong>إجابة افتراضية واحدة</strong> بالذكاء الاصطناعي. لن تُستخدم إجابة طالب حقيقي ولن تتغير درجات أو مستويات الطلاب.</p>
+<p>شاشة مراجعة رقمية لاختبار <strong>إجابات قانونية افتراضية</strong> بمعايير موزونة. لن تُستخدم إجابات طلاب حقيقيين ولن تتغير درجاتهم أو مستوياتهم.</p>
 <p class="small">وظيفة تصحيح الطلاب الحالية منفصلة عن الاختبار. مفتاح OpenAI محفوظ على الخادم فقط.</p>
 <section id="login">
 <h2>الدخول بحساب مالك LexLearn</h2>
@@ -27,13 +27,14 @@ strong{color:#8a1f39}.hidden{display:none}
 </section>
 <section id="owner" class="hidden">
 <p><b>تم التحقق من صلاحية المالك.</b></p>
-<p>التجربة الأولى: <code dir="ltr">full_ar</code> — إجابة قانونية عربية صحيحة مع ثلاث مفاتيح للذاكرة.</p>
-<button id="runBtn" type="button">تشغيل حالة واحدة مرة واحدة</button>
+<p>التجربة الأولى <code dir="ltr">full_ar</code> أُجريت وحُفظت. لم تنتج درجة موثوقة، ولذلك لن نكرر خصمها.</p>
+<div id="remainingCases"></div>
 <button id="refreshBtn" type="button" class="outline">عرض النتائج المسجّلة</button>
 <button id="logoutBtn" type="button" class="outline">تسجيل خروج</button>
 <p class="small">يمنع الخادم تكرار الحالة بعد محاولة واحدة حتى لو حدث خطأ. قد تُستهلك تكلفة API بسيطة. حد الإنفاق الذي ضبطته في OpenAI يظل مستقلًا.</p>
 </section>
-<h3>الحالة / نتيجة التجربة</h3><div id="status" class="status" role="status" aria-live="polite">لم يتم البدء بعد.</div>
+<section id="numericGrade" class="hidden" aria-live="polite" style="border:1px solid #d9dfe7;border-radius:12px;padding:18px;margin-top:14px"><h3>الدرجة الأولية لهذا النشاط</h3><p id="numericValue" style="font-size:2.3rem;font-weight:800;color:#8a1f39;margin:4px 0"></p><div id="numericBreakdown"></div><p class="small">تقييم إجابة واحدة وفق معايير موزونة، وليس نسبة حفظ أو فهم المقرر بالكامل؛ يلزم مراجعة بشرية قبل اعتمادها رسميًا.</p></section>
+<h3>الحالة / نتيجة التجربة</h3><div id="status" class="status" role="status" aria-live="polite" dir="ltr" style="text-align:left">لم يتم البدء بعد.</div>
 <p class="small note">شاشة اختبار هندسية داخلية، وليست نظامًا لإصدار درجات جامعية أو إثبات فاعلية تعليمية. لا توجد مفاتيح إدارية في الصفحة.</p>
 </main><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="assets/lexlearn-grading-console.js"></script>
