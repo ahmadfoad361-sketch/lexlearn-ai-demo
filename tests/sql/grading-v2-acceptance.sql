@@ -1,14 +1,14 @@
 -- Grader v2 semantic-scope safety checks on isolated test content.
 \set ON_ERROR_STOP on
 do $checks$
-declare full jsonb; alt jsonb; en jsonb; falsehood jsonb; vague jsonb;
+declare v_full jsonb; alt jsonb; en jsonb; falsehood jsonb; vague jsonb;
   understanding jsonb; exam_task jsonb; unknown_topic jsonb;
 begin
- full:=public.lex_training_rubric_coverage('rights-v1-s1-recall',
+ v_full:=public.lex_training_rubric_coverage('rights-v1-s1-recall',
    'تبدأ الشخصية القانونية بالولادة حيا وتنتهي بالوفاة. للحمل حقوق بشرط ولادته حيا.');
- if full->>'status'<>'preliminary_internal' or (full->>'provisional_percent')::int<>100
-   or (full->>'needs_human_review')::boolean is not true
-   then raise exception 'complete observed relations are not 100 provisional with human review: %',full;end if;
+ if v_full->>'status'<>'preliminary_internal' or (v_full->>'provisional_percent')::int<>100
+   or (v_full->>'needs_human_review')::boolean is not true
+   then raise exception 'complete observed relations are not 100 provisional with human review: %',v_full;end if;
  alt:=public.lex_training_rubric_coverage('rights-v1-s1-recall',
    'تثبت للإنسان الشخصية بمجيئه إلى الدنيا مولودا على قيد الحياة، وتزول بموته.');
  if alt->>'status'<>'preliminary_internal' or (alt->>'provisional_percent')::int<65
