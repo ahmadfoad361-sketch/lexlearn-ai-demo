@@ -1,0 +1,40 @@
+<!doctype html><html lang="ar" dir="rtl"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<title>LexLearn — اختبار التصحيح الداخلي</title>
+<style>
+:root{font-family:system-ui,"Segoe UI",Tahoma,sans-serif;color:#111d31;background:#f9f4ef}
+*{box-sizing:border-box}body{margin:0;padding:28px 12px}main{max-width:680px;margin:auto;background:#fff;border-radius:18px;box-shadow:0 10px 28px #111d3118;padding:28px}
+h1{font-size:1.55rem;margin:0 0 8px;color:#111d31}p{line-height:1.8}.small{font-size:.88rem;color:#556070}
+label{display:block;margin:12px 0 5px;font-weight:600}input{width:100%;padding:12px;border:1px solid #c3cad3;border-radius:9px;font:inherit}
+button{font:inherit;background:#111d31;color:white;border:0;border-radius:9px;padding:11px 18px;cursor:pointer;margin:10px 0}
+button:disabled{background:#aaa;cursor:wait}.outline{background:#f9f4ef;color:#111d31;border:1px solid #111d31;margin-inline-start:8px}
+.note{border-top:1px solid #ddd;padding-top:13px;margin-top:15px}
+.status{white-space:pre-wrap;overflow-wrap:anywhere;background:#f2f3f6;border-radius:8px;padding:12px;min-height:60px;line-height:1.7}
+strong{color:#8a1f39}.hidden{display:none}
+</style></head><body><main>
+<h1>LexLearn — تجربة التصحيح الآمن</h1>
+<p>صفحة داخلية لاختبار <strong>إجابة افتراضية واحدة</strong> بالذكاء الاصطناعي. لن تُستخدم إجابة طالب حقيقي ولن تتغير درجات أو مستويات الطلاب.</p>
+<p class="small">وظيفة تصحيح الطلاب الحالية منفصلة عن الاختبار. مفتاح OpenAI محفوظ على الخادم فقط.</p>
+<section id="login">
+<h2>الدخول بحساب مالك LexLearn</h2>
+<form id="loginForm"><label for="mail">بريد حساب مدير LexLearn</label>
+<input id="mail" type="email" autocomplete="username" required>
+<label for="password">كلمة المرور</label>
+<input id="password" type="password" autocomplete="current-password" required>
+<button id="loginBtn" type="submit">تسجيل الدخول الآمن</button></form>
+<p class="small">استخدم بيانات دخول لوحة مدير LexLearn، وليس حساب Supabase أو OpenAI. لا ترسل كلمة مرورك في المحادثة.</p>
+</section>
+<section id="owner" class="hidden">
+<p><b>تم التحقق من صلاحية المالك.</b></p>
+<p>التجربة الأولى: <code dir="ltr">full_ar</code> — إجابة قانونية عربية صحيحة مع ثلاث مفاتيح للذاكرة.</p>
+<button id="runBtn" type="button">تشغيل حالة واحدة مرة واحدة</button>
+<button id="refreshBtn" type="button" class="outline">عرض النتائج المسجّلة</button>
+<button id="logoutBtn" type="button" class="outline">تسجيل خروج</button>
+<p class="small">يمنع الخادم تكرار الحالة بعد محاولة واحدة حتى لو حدث خطأ. قد تُستهلك تكلفة API بسيطة. حد الإنفاق الذي ضبطته في OpenAI يظل مستقلًا.</p>
+</section>
+<h3>الحالة / نتيجة التجربة</h3><div id="status" class="status" role="status" aria-live="polite">لم يتم البدء بعد.</div>
+<p class="small note">شاشة اختبار هندسية داخلية، وليست نظامًا لإصدار درجات جامعية أو إثبات فاعلية تعليمية. لا توجد مفاتيح إدارية في الصفحة.</p>
+</main><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/lexlearn-grading-console.js"></script>
+</body></html>
