@@ -214,3 +214,28 @@ export function criterionGradeResult(data,rawRubric,answer,dimension="recall"){
   needs_human_review:true,mastery_confirmed:false,can_advance:false,
   prompt_version:"lexlearn-criteria-v2"};
 }
+
+export function inspectCompactGradeResponse(response){
+ if(!asObject(response))return {proposal:null,reason:"provider_response_invalid"};
+ if(response.status==="incomplete")return {proposal:null,reason:"provider_output_incomplete"};
+ if(response.status==="failed"||response.status==="cancelled")return {proposal:null,reason:"provider_response_failed"};
+ const parts=[];
+ if(typeof response.output_text==="string"&&response.output_text.trim())parts.push(response.output_text);
+ if(!parts.length)for(const output of response.output||[])for(const part of output.content||[]){
+  if(part?.type==="refusal")return {proposal:null,reason:"provider_refused"};
+  if(part?.type==="output_text"&&typeof part.text==="string")parts.push(part.text);
+ }
+ const raw=parts.join("");
+ if(!raw.trim())return {proposal:null,reason:"provider_output_missing"};
+ if(raw.length>20000)return {proposal:null,reason:"provider_output_oversized"};
+ let p;
+ try{p=JSON.parse(raw)}catch{return {proposal:null,reason:"provider_output_not_json"};}
+ if(!asObject(p))return {proposal:null,reason:"provider_json_not_object"};
+ if(!Array.isArray(p.criteria))return {proposal:null,reason:"invalid_grade_schema_criteria"};
+ if(!finite(p.model_confidence)||p.model_confidence<0||p.model_confidence>1)return {proposal:null,reason:"invalid_grade_schema_confidence"};
+ if(typeof p.needs_human_review!=="boolean")return {proposal:null,reason:"invalid_grade_schema_review_flag"};
+ if(!Array.isArray(p.contradictions))return {proposal:null,reason:"invalid_grade_schema_contradictions"};
+ if(typeof p.feedback_ar!=="string"||typeof p.feedback_en!=="string")
+  return {proposal:null,reason:"invalid_grade_schema_feedback"};
+ return {proposal:p,reason:null};
+}
