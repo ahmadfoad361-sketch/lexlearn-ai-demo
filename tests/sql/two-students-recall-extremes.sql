@@ -30,6 +30,17 @@ begin
   stage:=public.lex_training_submit('qa-qu-lawc101-rights',1,'rights-v1-s1-recall',ans);
   select j.value->'evaluation' into grade from jsonb_array_elements(stage->'saved') as j(value) where j.value->>'item_id'='rights-v1-s1-recall';
   if grade is null then raise exception 'practice response not saved %',label;end if;
+  if label='full_correct' then
+   if diagnostic->>'status'<>'preliminary_internal' or (diagnostic->>'provisional_percent')::integer<>100
+      or grade->>'status'<>'preliminary_internal' or (grade->>'provisional_percent')::integer<>100 then
+     raise exception 'Full correct recall was not awarded high preliminary coverage: diag %, practice %',diagnostic,grade;
+   end if;
+  else
+   if diagnostic->>'status'<>'needs_human_review' or diagnostic->>'provisional_percent' is not null
+    or grade->>'status'<>'needs_human_review' or grade->>'provisional_percent' is not null then
+     raise exception 'False legal statement must never receive a confident memory percentage: diag %, practice %',diagnostic,grade;
+   end if;
+  end if;
   raise notice 'RECALL_TWO_STUDENTS %',jsonb_build_object(
     'scenario',label,'diagnostic_status',d->>'status',
     'recognition',d#>'{result,metrics,recognition}','understanding',d#>'{result,metrics,understanding}',
