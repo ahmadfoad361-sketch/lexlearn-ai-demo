@@ -7,7 +7,7 @@ const pages=[
   "index.html","conference.html","go/index.html","showcase.html","showcase-level1.html","program.html","diagnostic.html","student-practice.html","student-path.html",
   "index-en.html","showcase-en.html","showcase-level1-en.html","program-en.html",
   "student-login.html","student-register.html","student.html","student-login-en.html","student-register-en.html","student-en.html",
-  "admin-login.html","admin.html","demo-supervisor.html","pilot-review.html","pilot-qa.html",
+  "admin-login.html","admin.html","lexlearn-grading-console.html","demo-supervisor.html","pilot-review.html","pilot-qa.html",
   "privacy.html","privacy-en.html","terms.html","terms-en.html","reset-password.html",".nojekyll"
 ];
 const assets=[
@@ -20,7 +20,7 @@ const assets=[
   "student.css","student.js","student-en.js",
   "english.css",
   "admin.css","admin-entry.js","admin-cloud.js","student-report.js","admin.js",
-  "lexlearn-config.js","cloud-data.js","reset-password.js",
+  "lexlearn-config.js","cloud-data.js","lexlearn-grading-console.js","reset-password.js",
   "legal-pages.css"
 ];
 function cp(src,dst){
