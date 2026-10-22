@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import {MODEL,RESPONSE_SCHEMA,flagEnabled,apiRequest,validateProposal,extractResult,reviewRubric} from "../supabase/functions/_shared/semantic-grading.mjs";
+import {MODEL,RESPONSE_SCHEMA,flagEnabled,apiRequest,validateProposal,extractResult,inspectProviderResponse,reviewRubric} from "../supabase/functions/_shared/semantic-grading.mjs";
 const item={
  id:"rights-v1-s1-recall",prompt_ar:"اشرح بدء وانتهاء الشخصية القانونية",
  dimension:"recall",
@@ -61,5 +61,18 @@ const wrapped={output:[{content:[{type:"output_text",text:JSON.stringify(full)}]
 assert.deepEqual(extractResult(wrapped),full);
 assert.equal(extractResult({status:"incomplete",output_text:JSON.stringify(full)}),null);
 assert.equal(extractResult({output_text:"not json"}),null);
+// The first paid full_ar attempt returned invalid_grade_schema but did not
+// retain the provider's raw response. These checks ensure future errors are
+// distinguishable without logging private answers, provider text or API keys.
+assert.equal(inspectProviderResponse({status:"incomplete",incomplete_details:{reason:"max_output_tokens"}}).reason,"provider_output_incomplete");
+assert.equal(inspectProviderResponse({status:"completed",output:[]}).reason,"provider_output_missing");
+assert.equal(inspectProviderResponse({status:"completed",output_text:"not valid json"}).reason,"provider_output_not_json");
+assert.equal(inspectProviderResponse({status:"completed",output_text:JSON.stringify({...full,score:2})}).reason,"invalid_grade_schema_score");
+assert.equal(inspectProviderResponse({status:"completed",output_text:JSON.stringify({...full,model_confidence:null})}).reason,"invalid_grade_schema_confidence");
+assert.equal(inspectProviderResponse({status:"completed",output_text:JSON.stringify({...full,achieved_criteria:"not_array"})}).reason,"invalid_grade_schema_criteria");
+assert.equal(inspectProviderResponse({status:"completed",output_text:JSON.stringify({...full,feedback_ar:42})}).reason,"invalid_grade_schema_feedback");
+assert.equal(inspectProviderResponse({status:"completed",output:[{content:[{type:"refusal",refusal:"no"}]}]}).reason,"provider_refused");
+assert.equal(inspectProviderResponse(wrapped).reason,null);
+assert.deepEqual(inspectProviderResponse(wrapped).proposal,full);
 // No real OpenAI client, keys, accounts, API calls or charges are used by this suite.
 console.log("Semantic provider dry-run contract: PASS (approval gates, evidence, weighted scores, trust boundaries and bilingual prompts)");
