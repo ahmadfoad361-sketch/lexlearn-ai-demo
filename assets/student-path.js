@@ -12,6 +12,27 @@ function url(n){return "student-path.html?lang="+lang()+(n?"&session="+n:"");}
 function noHtmlScore(value){return typeof value==="number"&&isFinite(value)?Math.round(Math.max(0,Math.min(100,value)))+"%":t("غير قابل للتقدير","Not reliably measurable");}
 function weakName(s){return {recall:t("الحفظ","Recall"),understanding:t("الفهم","Understanding"),exam_execution:t("بناء الإجابة","Exam answer structure")}[s]||t("التأسيس","Foundations");}
 function byId(a,id){return (a||[]).find(function(x){return x.item_id===id;});}
+function provisionalSkillPlan(rows){
+ var api=root.LEX_SKILL_POLICY;if(!api)return null;
+ function skill(dim){
+  var scores=(rows||[]).filter(function(x){return x.dimension===dim&&x.evaluation&&x.evaluation.status==="preliminary_internal"})
+   .map(function(x){return x.evaluation.provisional_percent;})
+   .filter(function(v){return typeof v==="number"&&Number.isFinite(v)&&v>=0&&v<=100;});
+  return scores.length?{value:scores.reduce(function(a,b){return a+b;},0)/scores.length,
+   evidence:scores.length,measured:true,provisional:true,method:"lexical_rubric_coverage_v1",status:"preliminary_internal"}:null;
+ }
+ return api.policy({recall:skill("recall"),understanding:skill("understanding")});
+}
+function adaptiveGuidance(data,rows,task){
+ var p=data&&data.skill_policy||provisionalSkillPlan(rows);
+ if(!p||!root.LEX_SKILL_POLICY)return "";
+ var txt=data&&task&&(lang()==="en"?task.instruction_en:task.instruction_ar);
+ if(!txt)txt=root.LEX_SKILL_POLICY.exercise(p,task&&task.dimension,lang());
+ return "<aside class='scope' role='note'><b>"+t("طريقة التدريب المقترحة: ","Suggested learning approach: ")+"</b>"+esc(txt)+
+ "<p>"+t("هذا توجيه تدريبي قابل للتعديل، وليس تصنيفًا ثابتًا لشخصيتك أو إثباتًا لإتقان المادة.",
+ "This is provisional practice guidance, not a fixed learning style or confirmed mastery.")+"</p></aside>";
+}
+
 function previousAnswerTitle(item,task){
   var dimension=(task&&task.dimension)||(item&&item.dimension);
   var localizedTitle=task&&(lang()==="en"?task.title_en:task.title_ar);
@@ -19,6 +40,11 @@ function previousAnswerTitle(item,task){
 }
 function feedback(item){
  var ev=item&&item.evaluation||{},provisional=noHtmlScore(ev.provisional_percent);
+ if(ev.status==="needs_human_review"||ev.provisional_percent===null){
+  return "<div class='feedback' role='status'><b>"+t("تم حفظ إجابتك وتحتاج مراجعة دلالية","Answer saved; meaning review required")+"</b>"+
+   "<p>"+esc((lang()==="en"?ev.feedback_en:ev.feedback_ar)||t("لا تكفي الكلمات الظاهرة للحكم على الصحة؛ لم نحسب درجة صفرية أو نسبة افتراضية.","Words alone cannot establish legal correctness. No invented zero or percentage was assigned."))+"</p></div>";
+ }
+
  return "<div class='feedback' role='status'><b>"+t("تغطية مبدئية لعناصر القاعدة: ","Provisional legal-rule coverage: ")+esc(provisional)+"</b>"+
  "<p>"+esc((lang()==="en"?ev.feedback_en:ev.feedback_ar)||t("يلزم التأكد من المعنى القانوني مع مراجعة علمية.","Legal meaning still needs independent review."))+"</p>"+
  "<small>"+t("تقدير أولي لتغطية عناصر القاعدة، وقد لا يلتقط بعض الصياغات أو الاستثناءات. راجع الملاحظات مع المشرف عند الحاجة.","Preliminary coverage of rule elements may miss paraphrases or exceptions. Discuss the feedback with your instructor when needed.")+"</small></div>";
@@ -101,7 +127,7 @@ async function boot(){
    try{
     var result=await cloud.studentLifecycleRpc("trainingOpen",{courseId:COURSE,session:n});
     if(!result||!result.allowed||!Array.isArray(result.tasks)||!Array.isArray(result.saved))throw Error(result&&result.reason||"invalid_session");
-    selected=n;data=result;if(data.completed)await loadProgress();busy=false;render();
+    selected=n;data=result;await loadProgress();busy=false;render();
    }catch(e){reportError(e);}
   }
   function render(){
@@ -127,6 +153,7 @@ async function boot(){
     var prompt=lang()==="en"?next.prompt_en:next.prompt_ar;
     main+="<h2>"+esc((lang()==="en"?next.title_en:next.title_ar)||weakName(next.dimension))+"</h2>"+
       "<p class='taskType'>"+t("تدريب على: ","Focus: ")+esc(weakName(next.dimension))+"</p>"+
+      adaptiveGuidance(data,progressRows,next)+
       "<div class='prompt' style='white-space:pre-wrap'>"+esc(prompt)+"</div>"+
       "<label for='adaptiveEssay'>"+t("اكتب إجابتك القانونية بأسلوبك","Write your legal explanation in your own words")+"</label>"+
       "<textarea id='adaptiveEssay' rows='7' maxlength='4000' placeholder='"+t("المسألة والقاعدة والتطبيق والنتيجة عند الحاجة...","Identify rule, facts, analysis and result where relevant...")+"'></textarea>"+
@@ -157,6 +184,6 @@ async function boot(){
   await open(selected);
  }catch(e){reportError(e);}
 }
-root.LEX_STUDENT_PATH={mount:boot,noHtmlScore:noHtmlScore,previousAnswerTitle:previousAnswerTitle,progressModel:progressModel,progressHtml:progressHtml};
+root.LEX_STUDENT_PATH={mount:boot,noHtmlScore:noHtmlScore,previousAnswerTitle:previousAnswerTitle,progressModel:progressModel,progressHtml:progressHtml,provisionalSkillPlan:provisionalSkillPlan,adaptiveGuidance:adaptiveGuidance};
 if(typeof module!=="undefined"&&module.exports)module.exports=root.LEX_STUDENT_PATH;
 })(typeof window!=="undefined"?window:globalThis);

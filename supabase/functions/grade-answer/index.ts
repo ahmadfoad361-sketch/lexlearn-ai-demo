@@ -1,70 +1,150 @@
-import { corsHeaders,json,requireUser } from "../_shared/auth.ts";
 
-function outputText(data:any){
-  if(typeof data?.output_text==="string")return data.output_text;
-  for(const item of data?.output||[])for(const part of item?.content||[])if(part?.type==="output_text"&&part?.text)return part.text;
-  return "";
+import {corsHeaders,json,requireUser} from "../_shared/auth.ts";
+import {compactGradeRequest,inspectCompactGradeResponse,criterionGradeResult,reviewRubric,flagEnabled,MODEL,PROMPT_VERSION} from "../_shared/semantic-grading.mjs";
+
+// DRAFT ONLY: two explicit server flags, reviewed content and explicit opt-in.
+// Absolutely no API calls when disabled. Never expose credentials to students.
+const MAX_PROJECT_REQUESTS=200; // safety volume guard, not a monetary hard cap
+const MAX_USER_HOURLY_REQUESTS=12;
+const REQUIRED_CONSENT_VERSION="2026-10-22-v1";
+const REQUIRED_CONSENT_TYPE="external_ai_grading";
+
+function pending(reason:string,status=200,more:Record<string,unknown>={}){
+ return json({score:null,needs_human_review:true,grading_method:"human_review_pending",
+  reason,...more},status);
 }
-
-// Provider JSON is untrusted until rubric IDs, quoted evidence and score agree.
-function validateGrade(result:any,rubric:any,answer:any){
-  const criteria=rubric?.criteria;
-  if(!Array.isArray(criteria)||!criteria.length)return "invalid_rubric";
-  const ids=criteria.map((c:any)=>c.id);
-  if(ids.some((id:any)=>typeof id!=="string"||!id)||new Set(ids).size!==ids.length)return "invalid_rubric";
-  if(!result||typeof result!=="object"||typeof result.needs_human_review!=="boolean"||typeof result.feedback_ar!=="string"||!Array.isArray(result.achieved_criteria)||!Array.isArray(result.missing_criteria)||!Array.isArray(result.contradictions)||result.contradictions.some((x:any)=>typeof x!=="string"||!x.trim()))return "invalid_grade_schema";
-  if(typeof result.model_confidence!=="number"||!Number.isFinite(result.model_confidence)||result.model_confidence<.8||result.model_confidence>1||result.needs_human_review)return "human_review_required";
-  if(typeof result.score!=="number"||!Number.isFinite(result.score)||result.score<0||result.score>1)return "invalid_score";
-  const achieved=result.achieved_criteria,missing=result.missing_criteria;
-  const normalized=String(answer).replace(/\s+/g," ").trim();
-  if(achieved.some((c:any)=>!c||!ids.includes(c.id)||typeof c.label!=="string"||typeof c.evidence!=="string"||!c.evidence.trim()||!normalized.includes(c.evidence.replace(/\s+/g," ").trim()))||missing.some((id:any)=>typeof id!=="string"||!ids.includes(id)))return "invalid_criterion_evidence";
-  const covered=achieved.map((c:any)=>c.id).concat(missing);
-  if(covered.length!==ids.length||new Set(covered).size!==ids.length)return "incomplete_criterion_review";
-  const weights=criteria.map((c:any)=>c.weight==null?1:c.weight);
-  if(weights.some((w:any)=>typeof w!=="number"||!Number.isFinite(w)||w<=0))return "invalid_rubric";
-  const total=weights.reduce((s:any,w:any)=>s+w,0);
-  const expected=result.contradictions.length?0:criteria.reduce((s:any,c:any,i:any)=>s+(achieved.some((a:any)=>a.id===c.id)?weights[i]:0),0)/total;
-  if(Math.abs(result.score-expected)>.011)return "score_evidence_mismatch";
-  return null;
+function utcMonthStart(){
+ const n=new Date();return new Date(Date.UTC(n.getUTCFullYear(),n.getUTCMonth(),1)).toISOString();
 }
-
-Deno.serve(async(req)=>{
-  if(req.method==="OPTIONS")return new Response("ok",{headers:corsHeaders});
-  const started=Date.now();
+async function counted(admin:any,userId:string){
+ const since=new Date(Date.now()-3600_000).toISOString();
+ const [hour,monthly]=await Promise.all([
+  admin.from("ai_grading_runs").select("id",{count:"exact",head:true})
+   .eq("user_id",userId).gte("created_at",since),
+  admin.from("ai_grading_runs").select("id",{count:"exact",head:true})
+   .gte("created_at",utcMonthStart())
+ ]);
+ if(hour.error||monthly.error)throw Error("grading_usage_unavailable");
+ return {hour:Number(hour.count)||0,month:Number(monthly.count)||0};
+}
+Deno.serve(async(req:Request)=>{
+ if(req.method==="OPTIONS")return new Response("ok",{headers:corsHeaders});
+ if(req.method!=="POST")return pending("invalid_method",405);
+ const started=Date.now();
+ const env={
+  LEX_AI_GRADING_ENABLED:Deno.env.get("LEX_AI_GRADING_ENABLED"),
+  LEX_AI_SPEND_APPROVED:Deno.env.get("LEX_AI_SPEND_APPROVED"),
+  LEX_AI_GRADING_MODEL:Deno.env.get("LEX_AI_GRADING_MODEL"),
+  OPENAI_GRADING_API_KEY:Deno.env.get("OPENAI_GRADING_API_KEY")
+ };
+ // Default denial before any other lookup. No billable provider call.
+ if(!flagEnabled(env))return pending("semantic_provider_not_approved");
+ let logId:string|null=null,admin:any=null;
+ try{
+  const auth=await requireUser(req);
+  admin=auth.admin;
+  const b=await req.json();
+  const itemId=String(b.item_id||"");
+  const taskKey=String(b.task_key||"");
+  const answer=String(b.answer||"").trim();
+  const courseId=String(b.course_id||"");
+  const language=b.language==="en"?"en":"ar";
+  if((!itemId&&!taskKey)||!courseId||!answer)return pending("missing_fields",400);
+  if(answer.length>4000)return pending("answer_too_long",413);
+  // Do not send PII other than the actual student's explicitly consented answer.
+  if(auth.profile.role!=="student")return pending("student_only",403);
+  const enrolled=await admin.from("enrollments").select("status")
+   .eq("user_id",auth.user.id).eq("course_id",courseId).maybeSingle();
+  if(enrolled.error||enrolled.data?.status!=="active")return pending("course_access_denied",403);
+  const consent=await admin.from("consent_records").select("accepted,created_at")
+   .eq("user_id",auth.user.id)
+   .eq("notice_version",REQUIRED_CONSENT_VERSION)
+   .eq("consent_type",REQUIRED_CONSENT_TYPE)
+   .order("created_at",{ascending:false}).limit(1).maybeSingle();
+  if(consent.error||consent.data?.accepted!==true)
+   return pending("external_processing_consent_required",403);
+  if(taskKey&&!/^rights-v1-s(?:[1-9]|[12][0-9])-(?:recall|understanding|exam)$/.test(taskKey))
+   return pending("invalid_task_key",400);
+  let query=admin.from("content_items")
+    .select("id,course_id,prompt_ar,rubric_json,source_ids,status,dimension,metadata,reviewed_at,legal_reviewer,learning_reviewer")
+    .eq("course_id",courseId).eq("status","approved");
+  query=taskKey?query.contains("rubric_json",{lex_task_key:taskKey}):query.eq("id",itemId);
+  const itemResult=await query.maybeSingle();
+  const item=itemResult.data;
+  if(itemResult.error||!item||!item.reviewed_at||!item.legal_reviewer||!item.learning_reviewer
+   ||item.legal_reviewer===item.learning_reviewer
+   ||item.metadata?.legal_approval!==true||item.metadata?.learning_approval!==true)
+   return pending("independently_reviewed_item_required",422);
+  if(!reviewRubric(item.rubric_json))
+   return pending("criterion_based_semantic_rubric_required",422);
+  if(!Array.isArray(item.source_ids)||!item.source_ids.length||item.source_ids.length>6)
+   return pending("approved_sources_missing",422);
+  const src=await admin.from("content_sources")
+   .select("id,excerpt,status").in("id",item.source_ids);
+  if(src.error||!src.data||src.data.length!==item.source_ids.length
+   ||src.data.some((s:any)=>s.status!=="approved"||!s.excerpt||s.excerpt.length>1800))
+   return pending("approved_sources_missing",422);
+  let payload:Record<string,unknown>;
+  try{payload=compactGradeRequest({answer,item,sources:src.data,language});}
+  catch{return pending("unsafe_or_unsupported_grading_payload",422);}
+  const usage=await counted(admin,auth.user.id);
+  if(usage.hour>=MAX_USER_HOURLY_REQUESTS||usage.month>=MAX_PROJECT_REQUESTS)
+   return pending("grading_request_limit_reached",429);
+  // Reserve an audit slot before any external call. No untracked answer sent to provider.
+  // Concurrency makes this a volume *safeguard*, not a guaranteed financial hard stop.
+  const row=await admin.from("ai_grading_runs").insert({
+   user_id:auth.user.id,course_id:courseId,item_id:item.id,model:MODEL,
+   prompt_version:PROMPT_VERSION,source_ids:item.source_ids,
+   result:{status:"reserved",score:null},
+   needs_human_review:true,model_confidence:null,latency_ms:0
+  }).select("id").single();
+  if(row.error||!row.data)return pending("grading_audit_unavailable",503);
+  logId=row.data.id;
+  const controller=new AbortController();
+  const timeout=setTimeout(()=>controller.abort(),18000);
+  let response:Response;
   try{
-    const {user,profile,admin}=await requireUser(req);
-    const b=await req.json();
-    let itemId=String(b.item_id||"");const taskKey=String(b.task_key||"");const answer=String(b.answer||"").trim(),courseId=String(b.course_id||"");
-    if((!itemId&&!taskKey)||!answer||!courseId)return json({error:"missing_fields"},400);
-    if(answer.length>12000)return json({error:"answer_too_long"},413);
-    if(profile.role==="student"){
-      const er=await admin.from("enrollments").select("status").eq("user_id",user.id).eq("course_id",courseId).maybeSingle();
-      if(er.error||!er.data||er.data.status!=="active")return json({error:"course_access_denied"},403);
-    }
-    const since=new Date(Date.now()-60*60*1000).toISOString();
-    const usage=await admin.from("ai_grading_runs").select("id",{count:"exact",head:true}).eq("user_id",user.id).gte("created_at",since);
-    if((usage.count||0)>=40)return json({error:"grading_rate_limit"},429);
-    if(taskKey&&!/^rights-v1-s(?:[1-9]|[12][0-9])-(?:recall|understanding|exam)$/.test(taskKey))return json({error:"invalid_task_key",score:null,needs_human_review:true},400);
-    let itemQuery=admin.from("content_items").select("id,course_id,prompt_ar,rubric_json,source_ids,status,dimension").eq("course_id",courseId).eq("status","approved");
-    itemQuery=taskKey?itemQuery.contains("rubric_json",{lex_task_key:taskKey}):itemQuery.eq("id",itemId);
-    const itemR=await itemQuery.single();
-    if(itemR.error||!itemR.data||itemR.data.status!=="approved")return json({needs_human_review:true,score:null,reason:"item_not_approved"},422);
-    const item=itemR.data;itemId=item.id;
-    const srcR=item.source_ids?.length?await admin.from("content_sources").select("id,title,authority,excerpt,status,effective_date").in("id",item.source_ids):{data:[]};
-    const sources=(srcR.data||[]).filter((x:any)=>x.status==="approved"&&x.excerpt);
-    if(!item.source_ids?.length||sources.length!==item.source_ids.length)return json({needs_human_review:true,score:null,reason:"approved_sources_missing"},422);
-
-    // No paid inference is permitted in LexLearn's current operation mode.
-    // Only approved content reaches this point, but a reliable free-form legal
-    // grade cannot be inferred without a validated evaluator. Return no score.
-    return json({needs_human_review:true,score:null,reason:"no_paid_semantic_model",
-      grading_method:"human_review_pending",source_ids:item.source_ids||[],
-      feedback_ar:b.language==="en"
-        ?"This legal answer needs an authorized academic review; no automatic grade was awarded."
-        :"الإجابة القانونية تحتاج مراجعة أكاديمية؛ لم يتم منح درجة آلية.",
-      latency_ms:Date.now()-started});
-  }catch(e){
-    const m=e instanceof Error?e.message:String(e);
-    return json({error:m,needs_human_review:true,score:null},m==="UNAUTHORIZED"?401:m==="FORBIDDEN"?403:500);
+   response=await fetch("https://api.openai.com/v1/responses",{
+    method:"POST",signal:controller.signal,
+    headers:{"Authorization":"Bearer "+env.OPENAI_GRADING_API_KEY,"Content-Type":"application/json"},
+    body:JSON.stringify(payload)
+   });
+  }finally{clearTimeout(timeout);}
+  if(!response.ok)return pending("semantic_provider_unavailable",503);
+  const raw=await response.json();
+  const diagnostic=inspectCompactGradeResponse(raw);
+  const assessed=diagnostic.proposal?
+   criterionGradeResult(diagnostic.proposal,item.rubric_json,answer,item.dimension):
+   {ok:false,reason:diagnostic.reason};
+  const published=assessed.ok?
+   {...assessed,score_percent:assessed.score,score:assessed.score_fraction,
+    source_ids:item.source_ids,
+    review_notice:"provisional_numeric_grade_human_review_required",
+    academic_certified:false}:
+   {score:null,score_percent:null,needs_human_review:true,reason:assessed.reason,
+    grading_method:"human_review_pending",source_ids:item.source_ids,academic_certified:false};
+  // Store restricted metadata only: no raw student answer, key, provider prompt or PII in audit result.
+  await admin.from("ai_grading_runs").update({
+   result:{status:assessed.ok?"preliminary_ai":"needs_human_review",
+    score:published.score,score_percent:published.score_percent,
+    scored_dimension:assessed.ok?assessed.assessed_dimension:null,
+    breakdown:assessed.ok?assessed.breakdown:null,
+    criteria_met:assessed.ok?assessed.criteria_met:[],
+    reason:assessed.ok?null:assessed.reason,
+    usage:{input_tokens:raw.usage?.input_tokens||null,output_tokens:raw.usage?.output_tokens||null}},
+   model_confidence:assessed.ok?assessed.confidence:null,
+   needs_human_review:true,latency_ms:Date.now()-started
+  }).eq("id",logId);
+  return json(published);
+ }catch(err){
+  if(logId&&admin){
+   try{await admin.from("ai_grading_runs").update({
+    result:{status:"failed_no_score"},needs_human_review:true,
+    latency_ms:Date.now()-started
+   }).eq("id",logId);}catch{ /* no propagation */ }
   }
+  const code=err instanceof Error?err.message:"";
+  return pending(code==="UNAUTHORIZED"?"unauthorized":code==="FORBIDDEN"?"forbidden":"semantic_evaluation_unavailable",
+   code==="UNAUTHORIZED"?401:code==="FORBIDDEN"?403:503);
+ }
 });

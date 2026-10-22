@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - fix/student-lifecycle-server-gated-20261019
+      - feature/continuous-skill-adaptation-20261022
   workflow_dispatch:
 
 permissions:
@@ -38,6 +39,16 @@ jobs:
             new="${base:0:8}${base:9:3}000_${base:13}"
             mv "$file" "supabase/migrations/$new"
           done
+          # Historical 004 numbers occur twice in the source repository.
+          # Give the compatibility-only copy a unique test-time version,
+          # before the founder release. Do not rename hosted migration history.
+          if [ -f supabase/migrations/20261019004000_profile_schema_compatibility.sql ]; then
+            mv supabase/migrations/20261019004000_profile_schema_compatibility.sql supabase/migrations/20261019003600_profile_schema_compatibility.sql
+          fi
+          # The hosted project was manually seeded before founder migrations.
+          # Re-create ONLY synthetic prerequisites in this disposable runner;
+          # never modify historical production migrations or the hosted DB.
+          cp tests/staging/ephemeral-pre-pilot-seed.sql supabase/migrations/20261019003500_ephemeral_ci_seed.sql
           ls supabase/migrations
       - name: Start isolated local Supabase Auth, REST, Postgres (NEVER production)
         run: |
