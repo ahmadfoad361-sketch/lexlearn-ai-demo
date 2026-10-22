@@ -62,6 +62,7 @@ jobs:
           node tests/disabled-pilot-deployment.test.js
           node tests/learning-quality.test.js
           node tests/diagnostic-evidence.test.js
+          node tests/foundation-diagnostic-readiness.test.js
           node tests/public-showcase.test.js
           node tests/showcase-semantic.test.mjs
           node tests/showcase-learning-cycle.test.js
