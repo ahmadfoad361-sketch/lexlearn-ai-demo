@@ -1,0 +1,135 @@
+:root{
+  --diag-navy:#111D31;
+  --diag-burgundy:#8A1F39;
+  --diag-paper:#F9F4EF;
+  --diag-muted:#526074;
+  --diag-border:#e7e1df;
+  --diag-focus:#9d2648;
+}
+*{box-sizing:border-box}
+html{min-height:100%;scroll-behavior:smooth}
+body{
+  margin:0;min-height:100vh;color:var(--diag-navy);
+  background:radial-gradient(ellipse at 86% 0%,rgba(138,31,57,.075),transparent 38%),
+    linear-gradient(180deg,#f9f4ef 0%,#f5f0eb 100%);
+  font-family:"IBM Plex Sans Arabic","Segoe UI",Tahoma,Arial,sans-serif;
+  line-height:1.7;
+}
+button,input,textarea{font:inherit}
+button{cursor:pointer}
+button:disabled{opacity:.62;cursor:wait}
+a{color:var(--diag-burgundy)}
+a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible{
+  outline:3px solid var(--diag-focus);outline-offset:3px
+}
+.diagnosticShell{width:min(920px,calc(100% - 40px));margin:clamp(20px,4vw,42px) auto 65px}
+.diagHeader{
+  display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;
+  gap:10px 24px;padding:20px 24px;
+  border:1px solid var(--diag-border);border-radius:22px;
+  background:#fff;box-shadow:0 10px 32px rgba(17,29,49,.05);
+}
+.diagBrand{display:flex;align-items:center;gap:16px;min-width:0}
+.diagLogo{
+  display:block;width:70px;height:70px;flex:0 0 70px;object-fit:contain;
+  background:#fff;border:1px solid #f1e9e5;border-radius:16px;padding:5px
+}
+.diagBrandCopy{min-width:0}
+.diagEyebrow{display:block;color:var(--diag-burgundy);font-size:.78rem;font-weight:800;letter-spacing:.025em}
+.diagBrandCopy h1{
+  font-size:clamp(1.15rem,2vw,1.55rem);line-height:1.55;
+  margin:2px 0 3px;font-weight:800;overflow-wrap:anywhere
+}
+.diagBrandCopy small{display:block;color:var(--diag-muted);font-size:.84rem}
+.diagLinks{display:flex;align-items:center;justify-content:flex-end;gap:12px;flex-wrap:wrap}
+.diagLinks a{
+  display:inline-flex;align-items:center;padding:7px 12px;
+  background:#faf7f5;border:1px solid #ede6e1;border-radius:10px;
+  text-decoration:none;font-size:.87rem;font-weight:700;white-space:nowrap
+}
+.diagLinks a:hover{border-color:var(--diag-burgundy)}
+.diagHeader>p[role="status"]{
+  color:var(--diag-muted);margin:0;font-size:.86rem;overflow-wrap:anywhere
+}
+.diagHeader>button{
+  justify-self:end;border:1px solid #ddd5d5;background:#fff;
+  color:var(--diag-navy);border-radius:10px;padding:6px 13px;
+  font-size:.83rem;font-weight:700
+}
+.diagNotice{
+  margin:16px 0;background:rgba(255,255,255,.64);padding:11px 16px;
+  border:1px solid #e7dce0;border-inline-start:3px solid var(--diag-burgundy);
+  border-radius:11px;color:#475267;font-size:.83rem
+}
+.diagCard{
+  background:#fff;border:1px solid var(--diag-border);border-radius:24px;
+  padding:clamp(20px,4vw,36px);
+  box-shadow:0 16px 40px rgba(17,29,49,.055);min-height:310px
+}
+.diagCard h2{
+  margin:18px 0 16px;line-height:1.6;
+  font-size:clamp(1.12rem,2.1vw,1.42rem);color:var(--diag-navy);font-weight:800
+}
+.diagCard>p,.diagCard fieldset p{color:var(--diag-muted)}
+.diagProgressHeader{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:12px;flex-wrap:wrap;font-weight:700;font-size:.85rem;
+  color:#596274;margin:0 0 8px
+}
+.diagProgressHeader strong{color:var(--diag-burgundy);font-variant-numeric:tabular-nums}
+.diagProgressTrack{
+  height:9px;background:#ede7e4;overflow:hidden;border-radius:99px;margin:0 0 21px
+}
+.diagProgressFill{
+  display:block;height:100%;background:linear-gradient(90deg,#8A1F39,#b44161);
+  border-radius:99px;transition:width .2s ease
+}
+.diagCard fieldset{border:0;padding:0;margin:10px 0 20px;min-width:0}
+.diagCard legend{font-weight:600;color:var(--diag-muted);padding:0;margin:0 0 6px;font-size:.9rem}
+.diagCard .choice{
+  display:flex;align-items:center;gap:12px;padding:14px 17px;
+  min-height:57px;margin:10px 0;border:1px solid #dbe0e6;
+  border-radius:14px;cursor:pointer;color:#243149;
+  background:#fff;transition:background .15s,border-color .15s,box-shadow .15s
+}
+.diagCard .choice:hover{border-color:#a96678;background:#fcf9fa}
+.diagCard .choice:has(input:checked){
+  border-color:var(--diag-burgundy);background:#fdf5f7;
+  box-shadow:0 0 0 2px rgba(138,31,57,.08)
+}
+.diagCard .choice input{accent-color:var(--diag-burgundy);width:18px;height:18px;margin:0;flex:none}
+.diagCard button:not(.secondary){
+  border:0;border-radius:12px;background:var(--diag-burgundy);
+  color:#fff;padding:12px 22px;font-weight:800;min-height:47px
+}
+.diagCard button:not(.secondary):hover:not(:disabled){background:#73172e}
+.diagCard textarea{width:100%;min-height:148px;resize:vertical;border:1px solid #cbd0d8;border-radius:14px;padding:14px;background:#fff}
+.diagCard #aiConsent{accent-color:var(--diag-burgundy);width:17px;height:17px}
+.diagCard label:has(#aiConsent){
+  background:#fdf9fa;padding:13px 16px;border:1px solid #ead7dd;border-radius:12px
+}
+.diagCard #serverNext{display:block;margin-inline-start:auto}
+.diagCard [role="alert"]{color:#992543}
+.diagCard .diagnosticReport>h2:first-child{margin-top:0}
+.diagCard .resultMetric{border:1px solid #eae1df}
+.diagCard .resultMetric small{display:block;font-weight:650;color:var(--diag-muted)}
+.diagCard .actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:24px}
+.diagCard .actionCard{border-radius:12px}
+.diagFooter{
+  text-align:center;color:#738092;font-size:.76rem;margin:18px 0 0;
+  padding:0 6px
+}
+@media(max-width:640px){
+  .diagnosticShell{width:calc(100% - 22px);margin:12px auto 30px}
+  .diagHeader{grid-template-columns:1fr;gap:10px;padding:15px;border-radius:17px}
+  .diagLogo{width:54px;height:54px;flex-basis:54px;border-radius:12px}
+  .diagBrand{gap:11px}
+  .diagBrandCopy small{font-size:.74rem}
+  .diagLinks{justify-content:flex-start}
+  .diagHeader>button{justify-self:start}
+  .diagCard{padding:20px 15px;border-radius:17px}
+  .diagCard .choice{padding:14px 12px}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{scroll-behavior:auto!important;transition:none!important}
+}

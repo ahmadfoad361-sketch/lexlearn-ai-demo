@@ -103,7 +103,8 @@ async function startUI(){
   var idx=answers.length, saving=false;
   function page(){
    var done=idx===Q.length,q=Q[idx],progress=Math.round(100*idx/(Q.length+1));
-   var html="<div role='status'>"+tr("التشخيص الرسمي","Official diagnostic")+" · "+(idx+1)+" / "+(Q.length+1)+" · "+progress+"%</div>";
+   var html="<div class='diagProgressHeader' role='status'><span>"+tr("السؤال ","Question ")+(idx+1)+" / "+(Q.length+1)+"</span><strong>"+progress+"%</strong></div>"+
+    "<div class='diagProgressTrack' role='progressbar' aria-label='"+tr("تقدّم الاختبار","Assessment progress")+"' aria-valuemin='0' aria-valuemax='100' aria-valuenow='"+progress+"'><span class='diagProgressFill' style='width:"+progress+"%'></span></div>";
    if(!done){
     html+="<h2>"+esc(q[lang()])+"</h2><fieldset><legend>"+tr("اختر إجابتك أو «لا أدري»","Choose your answer or Not sure")+"</legend>"+
       q[lang()+"Options"].map(function(o,j){return "<label class='choice'><input name='selected' type='radio' value='"+j+"'>"+esc(o)+"</label>";}).join("")+
