@@ -37,7 +37,7 @@ function build(uid,rows,free,attemptId,date){
   "balanced":{mode:"balanced",weakest:"application",firstTasks:["supported_rule","one_fact","retrieval_check"],reason_ar:"الأسئلة الموضوعية لا تكفي لتحديد أولوية قاطعة؛ نبدأ بمراجعة متوازنة ثم نعيد القياس.",reason_en:"Objective evidence does not establish a clear dominant skill; start with balanced practice and reassess."},
   "insufficient_evidence":{mode:"foundation",weakest:"foundation",firstTasks:["worked_example","supported_decision","unaided_check"],reason_ar:"لا توجد إجابات موضوعية كافية للمقارنة؛ تبدأ جلسة تأسيسية دون افتراض ضعف أو قوة مؤكدة.",reason_en:"There is insufficient comparable objective evidence; begin with supported foundations without assuming strength or weakness."}
  };
- var plan=plans[profile];
+ var plan=plans[profile]||plans.insufficient_evidence; // foundation shares the safe no-assumptions plan
  return {version:VERSION,source:"student_official_diagnostic",student_id:uid,course_id:COURSE_DB_ID,attempt_id:attemptId,completed_at:date,legal_reference:"Qatar Civil Code Law 22/2004 Arts 39,49,50,62,63",review_status:free.trim()?"pending_human_review":"not_requested",
   measurements:{recognition:recognition,recall:recall,understanding:understanding,application:application,
     legal_precision:{value:null,measured:false,item_count:0,status:"not_measured",method:"none",rubric_version:RUBRIC,source_id:null},
