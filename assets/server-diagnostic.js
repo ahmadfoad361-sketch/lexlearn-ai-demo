@@ -63,6 +63,23 @@ async function startUI(){
  var area=root.document.getElementById("officialDiagnostic");if(!area)return;
  var cloud=root.LEX_CLOUD;
  function render(html){area.innerHTML=html;}
+ function showCompleted(status,info){
+   render(report(status,student)+(info?"<p role='status'>"+esc(info)+"</p>":""));
+   var btn=root.document.getElementById("retroAiGrade");if(!btn)return;
+   btn.onclick=async function(){
+     var box=root.document.getElementById("retroAiConsent"),msg=root.document.getElementById("retroAiMessage");
+     if(!box||!box.checked){msg.textContent=tr("الموافقة مطلوبة قبل إرسال الإجابة.","Consent is required before sending the answer.");return;}
+     btn.disabled=true;msg.textContent=tr("جارٍ تقييم الإجابة المحفوظة…","Grading saved answer…");
+     try{
+       await cloud.recordConsent("lexlearn-ai-grading-v1","external_ai_grading",true);
+       var response=await cloud.gradeDiagnosticAi();
+       var saved=await cloud.studentLifecycleRpc("status",{courseId:COURSE_ID});
+       var recall=saved.result&&saved.result.measurements&&saved.result.measurements.recall;
+       if(saved.status==="completed"&&saved.result.student_id===student&&recall&&recall.ai_grade&&Number.isFinite(recall.ai_grade.provisional_percent)){showCompleted(saved);return;}
+       msg.textContent=tr("النتيجة تحتاج مراجعة المشرف أو التحقق من إعدادات OpenAI. لم نحتسب نسبة جديدة.","Supervisor review or OpenAI configuration check is needed. No new percentage was assigned.");
+     }catch(e){msg.textContent=tr("تعذر تأكيد التصحيح. لا تكرر العملية قبل مراجعة المشرف.","Grading not confirmed. Consult the supervisor before retrying.");}
+   };
+ }
  function fail(err){
   var msg=String(err&&err.message||err);
   if(/diagnostic_academic_approval_pending/i.test(msg)){
