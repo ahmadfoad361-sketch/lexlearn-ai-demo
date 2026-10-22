@@ -83,5 +83,7 @@ const fs=require("node:fs"),vm=require("node:vm");
  const status=await call("GET","");
  assert.equal(status.body.provider_used,false);assert.equal(status.body.results.length,2);
  assert.equal(paidCalls,2);
+ assert.match(src,/grading\.reason==="human_review_required"/,"Human-review abstention must be explicit");
+ assert.ok(!src.includes("(score===null||score<=t.expected_max)"),"Invalid provider response must never be accepted as a passing negative test");
  console.log("Three-case smoke mock: PASS (owner/service authentication, fixed answers, one-time slots, reject retries, no student calls)");
 })().catch(x=>{console.error(x);process.exitCode=1});
