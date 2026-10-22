@@ -22,6 +22,7 @@ jobs:
       - name: Syntax check
         run: |
           node --check assets/adaptive-engine.js
+          node --check assets/skill-policy.js
           node --check assets/content.js
           node --check assets/app.js
           node --check namaa/assets/app.js
@@ -51,6 +52,7 @@ jobs:
       - name: Adaptive engine tests
         run: |
           node tests/adaptive-engine.test.js
+          node tests/continuous-skill-policy.test.js
           node tests/learning-quality.test.js
           node tests/diagnostic-evidence.test.js
           node tests/public-showcase.test.js
@@ -242,3 +244,5 @@ jobs:
           psql -v ON_ERROR_STOP=1 -f tests/sql/full-adaptive-fixture.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261019_005_full_adaptive_internal_pilot.sql
           psql -v ON_ERROR_STOP=1 -f tests/sql/full-adaptive-acceptance.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261022_001_continuous_skill_policy_DRAFT.sql
+          psql -v ON_ERROR_STOP=1 -f tests/sql/continuous-skill-policy-acceptance.sql
