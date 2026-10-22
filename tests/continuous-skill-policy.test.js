@@ -33,8 +33,10 @@ const adapt=(r,u,extra={})=>P.policy({recall:r,understanding:u,...extra});
 }
 {
  const provisional=adapt(sample(89,15,{method:"lexical_rubric_coverage_v1",status:"preliminary_internal"}),sample(30));
- assert.equal(provisional.mode,"balanced","low-confidence textual keyword coverage cannot force strength assignment");
+ assert.equal(provisional.mode,"provisional_bridge","many repeated low-confidence indicators can guide cautious practice only");
  assert.equal(provisional.confidence,"provisional");
+ assert.ok(provisional.allocation.understanding<=60);
+ assert.equal(provisional.mastery,false);
 }
 {
  const few=adapt(sample(95,1),sample(5,1));
