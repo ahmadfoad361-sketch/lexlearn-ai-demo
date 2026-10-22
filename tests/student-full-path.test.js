@@ -33,5 +33,18 @@ assert.ok(migration.includes("tasks_json"),"task selection needs to be frozen pe
 assert.ok(migration.includes("p_session%5=0"),"six review checkpoints missing");
 const build=fs.readFileSync("scripts/build-public.js","utf8");
 assert.ok(build.includes('"student-path.html"')&&build.includes('"student-path.js"'));
+const policy=require("../assets/skill-policy.js");
+ctx.LEX_SKILL_POLICY=policy;
+const simulated=[
+ {dimension:"recall",evaluation:{status:"preliminary_internal",provisional_percent:91}},
+ {dimension:"understanding",evaluation:{status:"preliminary_internal",provisional_percent:45}}
+];
+const early=ctx.LEX_STUDENT_PATH.provisionalSkillPlan(simulated);
+assert.equal(early.mode,"balanced","one indicator each cannot force a learner classification");
+assert.equal(early.mastery,false);
+const preview=ctx.LEX_STUDENT_PATH.adaptiveGuidance({skill_policy:early},simulated,{dimension:"recall"});
+assert.ok(preview.includes("طريقة التدريب المقترحة"));
+assert.ok(preview.includes("تصنيفًا ثابتًا"));
+
 console.log("Full-session client boundaries and provisional grades: PASS");
 require("./student-progress-ui.test.js");
