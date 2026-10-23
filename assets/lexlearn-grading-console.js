@@ -5,6 +5,7 @@ const KEY="sb_publishable_AlUGXdTwlvIqpyKJbHGBlg_Qr-dAXef";
 const statusEl=document.getElementById("status"),login=document.getElementById("login"),owner=document.getElementById("owner");
 const form=document.getElementById("loginForm"),numeric=document.getElementById("numericGrade");
 const cases=[
+ {id:"full_ar_v2",label:"التحقق من تصحيح الإجابة العربية الصحيحة المكتملة (إصدار جديد)",range:"85–100%"},
  {id:"paraphrase_en",label:"اختبار صياغة إنجليزية صحيحة دون مفاتيح التذكر",range:"70–75%"},
  {id:"reversed_ar",label:"اختبار إجابة عربية خاطئة قانونيًا",range:"0–25%"}
 ];
