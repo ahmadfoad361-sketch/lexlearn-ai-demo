@@ -105,7 +105,7 @@ Deno.serve(async(req:Request)=>{
    const grading=diagnostic.proposal?
     criterionGradeResult(diagnostic.proposal,ITEM_RUBRIC.rubric_json,t.answer,ITEM_RUBRIC.dimension):
     {ok:false,reason:diagnostic.reason};
-   if(grading.ok){score=grading.score;breakdown=grading.breakdown;state="completed";reason="provisional_numeric_for_review";}
+   if(grading.ok && "score" in grading && typeof grading.score==="number" && "breakdown" in grading){score=grading.score;breakdown=grading.breakdown;state="completed";reason="provisional_numeric_for_review";}
    else{state="review_required";reason=grading.reason||"meaning_review_required";}
    // Invalid provider JSON NEVER counts as a correct negative-law result.
    agreement=grading.ok && score!==null && score>=t.expected_min && score<=t.expected_max;
