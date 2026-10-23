@@ -58,7 +58,7 @@ function report(status,uid){
  (Array.isArray(internal.criteria_missing)&&internal.criteria_missing.length?"<p>"+tr("عناصر راجعها","Review these elements")+": "+esc(internal.criteria_missing.map(criterionLabel).join(lang()==="en"?", ":"، "))+"</p>":"")+
  "</div>"+
  (aiRecall!==null?"<div class='resultMetric' style='margin:1rem 0;padding:1rem;border:1px solid #e5d9dc;border-radius:12px'><b>"+tr("تفصيل التصحيح الآلي للحفظ","AI recall assessment detail")+": "+esc(numberOrNot(aiRecall))+"</b><p>"+tr("تقدير أولي لتغطية عناصر الإجابة من سؤال استرجاع واحد، وليس قياسًا معتمدًا لإتقان الحفظ أو الاحتفاظ طويل المدى؛ يمكن للمشرف مراجعته.","Preliminary criterion coverage from one unaided-recall answer. This is not validated memory mastery or long-term retention; supervisor review remains available.")+"</p>"+(ai.feedback_ar||ai.feedback_en?"<p>"+esc(lang()==="en"?ai.feedback_en:ai.feedback_ar)+"</p>":"")+"</div>":"")+
- (aiRecall===null?"<section class='retroAiPanel'><h3>"+tr("تصحيح الإجابة المحفوظة باستخدام OpenAI","Grade your saved answer using OpenAI")+"</h3><p>"+tr("النسبة الداخلية تخص عناصر القاعدة فقط. لتقييم إجابتك الحرة باستخدام OpenAI، وافق ثم اضغط الزر. لن تعيد الاختبار.","The internal percentage checks rule coverage only. With your consent, OpenAI can assess your saved free-text answer without repeating the test.")+"</p><label class='retroAiLabel' id='retroAiConsentLabel'><input id='retroAiConsent' type='checkbox'>"+tr("أوافق على إرسال نص إجابتي فقط إلى OpenAI للتقييم المبدئي، دون إرسال اسمي أو بيانات حسابي.","I consent to sending only my saved answer text to OpenAI for a preliminary assessment, without my name or account details.")+"</label><button id='retroAiGrade' type='button'>"+tr("احسب نسبة الحفظ بالذكاء الاصطناعي","Grade recall using AI")+"</button><p id='retroAiMessage' role='status' aria-live='polite'></p></section>":"")+
+ (aiRecall===null?"<section class='retroAiPanel' id='retroAiPanel'><h3>"+tr("تصحيح الإجابة المحفوظة باستخدام OpenAI","Grade your saved answer using OpenAI")+"</h3><p>"+tr("النسبة الداخلية تخص عناصر القاعدة فقط. لتقييم إجابتك الحرة باستخدام OpenAI، وافق ثم اضغط الزر. لن تعيد الاختبار.","The internal percentage checks rule coverage only. With your consent, OpenAI can assess your saved free-text answer without repeating the test.")+"</p><label class='retroAiLabel' id='retroAiConsentLabel'><input id='retroAiConsent' type='checkbox'>"+tr("أوافق على إرسال نص إجابتي فقط إلى OpenAI للتقييم المبدئي، دون إرسال اسمي أو بيانات حسابي.","I consent to sending only my saved answer text to OpenAI for a preliminary assessment, without my name or account details.")+"</label><button id='retroAiGrade' type='button'>"+tr("احسب نسبة الحفظ بالذكاء الاصطناعي","Grade recall using AI")+"</button><p id='retroAiMessage' role='status' aria-live='polite'></p></section>":"")+
  "<h2>"+tr("خطة تدريبك المتكيفة","Your adaptive practice plan")+"</h2>"+
  "<p>"+esc((lang()==="en"?p.reason_en:p.reason_ar)||reasons[mode]||reasons.foundation)+"</p>"+
  "<p>"+tr("الترتيب المبدئي: ","Initial order: ")+esc(Array.isArray(p.firstTasks)&&p.firstTasks.length?p.firstTasks.map(taskLabel).join(lang()==="en"?" → ":" ← "):taskLabel("worked_example"))+"</p>"+
@@ -70,30 +70,50 @@ async function startUI(){
  var area=root.document.getElementById("officialDiagnostic");if(!area)return;
  var cloud=root.LEX_CLOUD;
  function render(html){area.innerHTML=html;}
- async function showCompleted(status,info){
-   render(report(status,student)+(info?"<p role='status'>"+esc(info)+"</p>":""));
-   var btn=root.document.getElementById("retroAiGrade");if(!btn)return;
-   var existingConsent=false;
-   try{if(cloud.getConsent)existingConsent=!!await cloud.getConsent("lexlearn-ai-grading-v1","external_ai_grading");}catch(_){}
-   var label=root.document.getElementById("retroAiConsentLabel");
-   if(existingConsent&&label){
-     label.style.display="none";
-     var notice=root.document.getElementById("retroAiMessage");
-     if(notice)notice.textContent=tr("موافقتك السابقة على التصحيح محفوظة. لن تُطلب منك مرة أخرى.","Your prior AI grading consent is saved. We won't ask for it again.");
+ function concealAiAction(){
+  var panel=root.document.getElementById("retroAiPanel");
+  if(panel)panel.style.display="none";
+ }
+ async function showCompleted(status){
+  render(report(status,student));
+  var btn=root.document.getElementById("retroAiGrade");if(!btn)return;
+  // One paid invocation per diagnostic: never offer a reviewed/reserved attempt again.
+  try{
+   var prior=cloud.getDiagnosticAiAudit&&await cloud.getDiagnosticAiAudit(status.attempt_id);
+   if(prior&&["completed","reserved","review_required"].indexOf(prior.status)>=0){
+    concealAiAction();return;
    }
-   btn.onclick=async function(){
-     var box=root.document.getElementById("retroAiConsent"),msg=root.document.getElementById("retroAiMessage");
-     if(!existingConsent&&(!box||!box.checked)){msg.textContent=tr("الموافقة لمرة واحدة مطلوبة قبل إرسال الإجابة إلى OpenAI. يمكنك الاستمرار دون التصحيح الخارجي.","This one-time choice authorizes sending your answer to OpenAI. You can continue without external grading.");return;}
-     btn.disabled=true;msg.textContent=tr("جارٍ تقييم الإجابة المحفوظة…","Grading saved answer…");
-     try{
-       if(!existingConsent){await cloud.recordConsent("lexlearn-ai-grading-v1","external_ai_grading",true);existingConsent=true;}
-       var response=await cloud.gradeDiagnosticAi();
-       var saved=await cloud.studentLifecycleRpc("status",{courseId:COURSE_ID});
-       var recall=saved.result&&saved.result.measurements&&saved.result.measurements.recall;
-       if(saved.status==="completed"&&saved.result.student_id===student&&recall&&recall.ai_grade&&Number.isFinite(recall.ai_grade.provisional_percent)){await showCompleted(saved);return;}
-       msg.textContent=tr("النتيجة تحتاج مراجعة المشرف أو التحقق من إعدادات OpenAI. لم نحتسب نسبة جديدة.","Supervisor review or OpenAI configuration check is needed. No new percentage was assigned.");
-     }catch(e){msg.textContent=tr("تعذر تأكيد التصحيح. لا تكرر العملية قبل مراجعة المشرف.","Grading not confirmed. Consult the supervisor before retrying.");}
-   };
+  }catch(_){}
+  var existingConsent=false;
+  try{if(cloud.getConsent)existingConsent=!!await cloud.getConsent("lexlearn-ai-grading-v1","external_ai_grading");}catch(_){}
+  var label=root.document.getElementById("retroAiConsentLabel");
+  if(existingConsent&&label)label.style.display="none";
+  btn.onclick=async function(){
+   var box=root.document.getElementById("retroAiConsent"),msg=root.document.getElementById("retroAiMessage");
+   if(!existingConsent&&(!box||!box.checked)){
+    if(msg)msg.textContent=tr("يلزم اختيار الموافقة قبل إرسال الإجابة للتصحيح.","Choose the optional consent before submitting your answer for grading.");
+    return;
+   }
+   btn.disabled=true;
+   if(msg)msg.textContent=tr("جارٍ تقييم إجابتك…","Assessing your answer…");
+   try{
+    if(!existingConsent){
+     await cloud.recordConsent("lexlearn-ai-grading-v1","external_ai_grading",true);
+     existingConsent=true;
+    }
+    await cloud.gradeDiagnosticAi();
+    var saved=await cloud.studentLifecycleRpc("status",{courseId:COURSE_ID});
+    var recall=saved.result&&saved.result.measurements&&saved.result.measurements.recall;
+    var ai=recall&&recall.ai_grade;
+    if(saved.status==="completed"&&saved.result.student_id===student&&
+       ai&&ai.status==="preliminary_ai"&&Number.isFinite(ai.provisional_percent)){
+     await showCompleted(saved);return;
+    }
+   }catch(_){}
+   // Provider/review details remain in server audit only, not the student UI.
+   if(msg)msg.textContent="";
+   concealAiAction();
+  };
  }
  function fail(err){
   var msg=String(err&&err.message||err);
@@ -178,11 +198,10 @@ async function startUI(){
        try{await cloud.studentLifecycleRpc("reviewDiagnostic",{courseId:COURSE_ID});}
        catch(e){if(root.console&&root.console.warn)root.console.warn("Provisional diagnostic review pending:",String(e&&e.message||e));}
       }
-      var aiInfo="";
-      if(aiRequested){try{var evaluated=await cloud.gradeDiagnosticAi();if(!evaluated||evaluated.status!=="completed")aiInfo=tr("تعذّر تأكيد التصحيح بالذكاء الاصطناعي؛ احتُفظ بإجابتك، ولا تُحتسب درجة حفظ غير موثوقة.","AI grading could not be confirmed. Your answer was saved and no unsupported recall score was assigned.");}catch(_){aiInfo=tr("التصحيح الآلي غير متاح حاليًا. حُفظت إجابتك للتقييم والمراجعة.","AI grading is currently unavailable. Your answer was saved for assessment and review.");}}
+      if(aiRequested){try{await cloud.gradeDiagnosticAi();}catch(_){}}
       var check=await cloud.studentLifecycleRpc("status",{courseId:COURSE_ID});
       if(check.status!=="completed"||check.attempt_id!==reply.attempt_id)throw new Error("completion_readback_failed");
-      saving=false;await showCompleted(check,aiInfo);
+      saving=false;await showCompleted(check);
      }
     }catch(e){error.textContent=tr("تعذّر تأكيد الحفظ: ","Save not confirmed: ")+String(e.message||e);saving=false;var btn=root.document.getElementById("serverNext");if(btn)btn.disabled=false;}
    };
