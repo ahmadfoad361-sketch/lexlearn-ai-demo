@@ -156,7 +156,7 @@ function make(uid,lang,data,opts={}){
   env.cloud.gradeDiagnosticAi=async()=>{throw Error("Should not re-call OpenAI on a reviewed attempt");};
   await env.win.LEX_SERVER_DIAGNOSTIC.mount();
   assert.doesNotMatch(env.main.html,/40%/,"raw provisional percentages remain private");
-  assert.match(env.main.html,/ليست نتيجة OpenAI المدفوعة/,"do not pass internal correction off as paid AI");
+  assert.match(env.main.html,/المؤشر الداخلي يفحص بعض عناصر الإجابة/,"learner receives cautious wording without false scores");
   assert.ok(env.nodes.retroAiPanel,"report contains the AI panel before state is checked");
   assert.equal(env.nodes.retroAiPanel.style.display,"none","one-use provider action is hidden");
   assert.doesNotMatch(env.main.html,/النتيجة تحتاج مراجعة المشرف أو التحقق من إعدادات OpenAI/);
