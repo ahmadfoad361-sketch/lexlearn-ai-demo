@@ -59,7 +59,7 @@ assert.ok(manage.includes("temporaryPassword"),"password reset must generate cre
 assert.ok(manage.includes("admin_audit"),"admin actions must be audited");
 
 const privacy=read("privacy.html"),terms=read("terms.html");
-assert.ok(/2026-10-17-v5/.test(privacy)&&terms.includes("شروط الاستخدام"),"legal notices and terms must be published");
+assert.ok(/2026-10-23-v6/.test(privacy)&&terms.includes("2026-10-23-v6")&&terms.includes("شروط الاستخدام"),"current single-acceptance legal notices and terms must be published");
 
 
 for(const page of ["program.html","program-en.html","pilot-review.html","pilot-qa.html","admin.html"]){
@@ -80,3 +80,4 @@ for(const source of [read("assets/program.js"),read("assets/program-en.js")]){
  assert.ok(source.includes('state.view="stagePreviewComplete"'),"preview must not unlock later academic sessions");
 }
 console.log("production-boundaries tests: PASS");
+
