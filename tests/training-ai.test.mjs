@@ -5,9 +5,16 @@ import {stripTypeScriptTypes} from "node:module";
 import {interpret,summarize,VERSION,SCHEMA} from "../supabase/functions/lexlearn-training-ai-grade/assessment.mjs";
 const rubric={criteria:[{id:"birth",weight:2},{id:"death",weight:1}]};
 const answer="Live birth begins personality; death ends it.";
-const valid={criteria:[{id:"birth",met:true,evidence:"Live birth begins personality"},{id:"death",met:false,evidence:""}],confidence:.9,review_required:false,feedback_ar:"اذكر نهاية الشخصية بالوفاة.",feedback_en:"Include death as the end of personality."};
+const valid={criteria:[{id:"birth",met:true,credit:1,evidence:"Live birth begins personality",explanation_ar:"ذكرت البداية بالولادة الحية.",explanation_en:"You stated the live-birth condition."},{id:"death",met:false,credit:0,evidence:"",explanation_ar:"لم تشرح النهاية.",explanation_en:"The end is not explained."}],confidence:.9,review_required:false,feedback_ar:"اذكر نهاية الشخصية بالوفاة.",feedback_en:"Include death as the end of personality."};
 assert.equal(interpret(valid,rubric,answer).provisional_percent,67);
-assert.throws(()=>interpret({...valid,criteria:[{id:"birth",met:true,evidence:"invented"},{id:"death",met:false,evidence:""}]},rubric,answer),/invalid_evidence/);
+const partial={...valid,criteria:[{...valid.criteria[0],met:false,credit:.5},valid.criteria[1]]};
+assert.equal(interpret(partial,rubric,answer).provisional_percent,33,'a correct component earns partial credit, not zero');
+assert.equal(interpret(partial,rubric,answer).verdict,'partially_correct');
+assert.equal(interpret({...valid,criteria:[{...valid.criteria[0],evidence:'"Live birth begins personality"'},valid.criteria[1]]},rubric,answer).provisional_percent,67,'wrapping quotation marks do not reject real evidence');
+assert.throws(()=>interpret({...partial,criteria:[{...partial.criteria[0],evidence:'invented'},partial.criteria[1]]},rubric,answer),/invalid_evidence/);
+assert.throws(()=>interpret({...partial,criteria:[{...partial.criteria[0],met:true},partial.criteria[1]]},rubric,answer),/invalid_criteria/);
+assert.equal(summarize([{dimension:'understanding',evaluation:{status:'preliminary_ai',rubric_version:'lexlearn-training-ai-v2',provisional_percent:0}}],{}).skills.understanding,null,'old binary zeros must not drive adaptation');
+assert.throws(()=>interpret({...valid,criteria:[{...valid.criteria[0],evidence:"invented"},valid.criteria[1]]},rubric,answer),/invalid_evidence/);
 assert.throws(()=>interpret({...valid,criteria:[valid.criteria[0],valid.criteria[0]]},rubric,answer),/invalid_criteria/);
 assert.throws(()=>interpret({...valid,confidence:.7},rubric,answer),/human_review/);
 assert.throws(()=>interpret({...valid,review_required:true},rubric,answer),/human_review/);
@@ -20,7 +27,7 @@ assert.deepEqual(summarize([],{}).skills,{recall:null,understanding:null});
 let handler,providerCalls=0;
 const source=stripTypeScriptTypes(fs.readFileSync("supabase/functions/lexlearn-training-ai-grade/index.ts","utf8").replace(/^import .*;\r?\n/gm,""));
 function environment({consent=true,providerFailure=false}={}){
- let evaluation={status:"preliminary_internal",provisional_percent:50};
+ let evaluation=arguments[0]?.initialEvaluation||{status:"preliminary_internal",provisional_percent:50};
  let auditCount=0;
  const admin={from(table){
   let operation="select",payload,filters=[];
@@ -57,5 +64,10 @@ const ok=environment();assert.equal((await ok.call()).status,200);assert.equal(o
 await ok.call();assert.equal(providerCalls,1,"cached attempts never charge twice");
 const simultaneous=environment();await Promise.all([simultaneous.call(),simultaneous.call()]);assert.equal(simultaneous.audits(),1,"reservation must be atomic");
 const failed=environment({providerFailure:true});await failed.call();assert.equal(failed.grade().provisional_percent,null);assert.equal(failed.grade().status,"ai_review_required");
+assert.equal(failed.grade().reason,'provider_http_503');
+await failed.call();assert.equal(failed.audits(),2,'failed provider calls may be retried, not cached forever');
+const oldZero=environment({initialEvaluation:{status:'preliminary_ai',rubric_version:'lexlearn-training-ai-v2',provisional_percent:0}});await oldZero.call();assert.equal(oldZero.grade().rubric_version,VERSION);assert.equal(oldZero.grade().provisional_percent,67);
+
 console.log("Training AI rubric evidence, consent, persistence, duplicate/concurrent requests, provider failures and adaptive priorities: PASS");
+
 
