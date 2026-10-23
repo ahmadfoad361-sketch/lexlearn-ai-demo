@@ -67,10 +67,11 @@ function make(uid,lang,data,opts={}){
   assert.match(returning.main.html,/diagnosticReport/,"returning student can read the saved report again");
   assert.ok(!returning.nodes.beginDiagnostic);
  }
- // An explicit, unchecked-by-default consent activates a server-only AI grade.
+ // A previously saved OPTIONAL signup consent permits one server-only AI grade.
  {
   const uid="ai-opt-in",env=make(uid,"ar",data),events=[];
-  env.cloud.recordConsent=async(version,type,accepted)=>{events.push(["consent",version,type,accepted]);return {accepted:true};};
+  env.cloud.getConsent=async()=>({accepted:true});
+  env.cloud.recordConsent=async()=>{throw Error("no_repeated_consent");};
   env.cloud.gradeDiagnosticAi=async()=>{
    events.push(["grade"]);
    data[uid].result.measurements={recall:{ai_grade:{
@@ -82,13 +83,10 @@ function make(uid,lang,data,opts={}){
   await env.win.LEX_SERVER_DIAGNOSTIC.mount();
   await env.nodes.beginDiagnostic.onclick();
   for(const q of QUESTIONS){env.choose(q.a);await env.nodes.serverNext.onclick();}
-  assert.ok(env.nodes.aiConsent,"AI must be opt-in, not hidden inside general learning consent");
-  assert.ok(!env.nodes.aiConsent.checked,"AI consent must start unchecked");
+  assert.ok(!env.nodes.aiConsent,"diagnostic must not ask for external AI permission again");
   env.nodes.ungradedText.value="تبدأ الشخصية القانونية بالولادة الحية وتنتهي بالوفاة";
-  env.nodes.aiConsent.checked=true;
   await env.nodes.serverNext.onclick();
-  assert.deepEqual(events,[
-   ["consent","lexlearn-ai-grading-v1","external_ai_grading",true],["grade"]]);
+  assert.deepEqual(events,[["grade"]]);
   assert.match(env.main.html,/80%/,"persisted AI estimate shown");
   assert.match(env.main.html,/تقديرات مبدئية للتدريب/);
  }
@@ -146,12 +144,14 @@ function make(uid,lang,data,opts={}){
  fail.choose(0);await fail.nodes.serverNext.onclick();
  assert.equal(data.failed.draft.length,0);
  assert.equal(fail.redirects.length,0);
- assert.match(fail.nodes.serverError.textContent,/network_lost/);
+ assert.match(fail.nodes.serverError.textContent,/إجابتك ما زالت موجودة/);
+ assert.doesNotMatch(fail.nodes.serverError.textContent,/network_lost/);
  // Content not approved -> no questions shown, no bypass.
  const denied=make("unreviewed","ar",data,{unapproved:true});
  await denied.win.LEX_SERVER_DIAGNOSTIC.mount();
  assert.equal(denied.nodes.beginDiagnostic,undefined,"unapproved questions never render a start button");
- assert.match(denied.main.html,/تنتظر مراجعة/);
+ assert.match(denied.main.html,/تعذّر فتح الاختبار/);
+ assert.doesNotMatch(denied.main.html,/اعتمادًا قانونيًا وأكاديميًا/);
  assert.ok(!denied.nodes.serverNext);
  console.log("Server-connected diagnostic UI mock PASS: AR/EN start/draft/readback, return, partial resume, failure, approval guard");
 })().catch(e=>{console.error(e);process.exitCode=1;});

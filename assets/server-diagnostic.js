@@ -80,11 +80,9 @@ async function startUI(){
   render(report(status,student));
  }
  function fail(err){
-  var msg=String(err&&err.message||err);
-  if(/diagnostic_academic_approval_pending/i.test(msg)){
-   render("<p role='status'>"+tr("أسئلة التشخيص الرسمية تنتظر مراجعة واعتمادًا قانونيًا وأكاديميًا مستقلًا. يمكنك الآن تجربة تقييم تدريبي متكيف داخل حسابك، ولن يُحتسب ضمن نتائجك الرسمية.","The official questions await independent review. You can now start a signed-in adaptive rehearsal, separate from official records.")+"</p><p><a class='practice-start' href='student-practice.html?lang="+lang()+"'>"+tr("ابدأ التقييم التدريبي التكيفي الآن","Start adaptive student practice now")+"</a></p><a href='"+portal()+"'>"+tr("حساب الطالب","Student portal")+"</a>");return;
-  }
-  render("<p role='alert'>"+tr("تعذّر تأكيد حالة التشخيص بالخادم. لا توجد نتيجة محفوظة مؤكدة. ","Unable to confirm the server diagnostic state. No result can be assumed. ")+esc(msg)+"</p><a href='"+portal()+"'>"+tr("حساب الطالب","Student portal")+"</a>");
+  if(root.console&&root.console.warn)root.console.warn("LexLearn diagnostic unavailable:",String(err&&err.message||err));
+  render("<p role='alert'>"+tr("تعذّر فتح الاختبار أو تأكيد حفظه. بياناتك المحفوظة لم تُحذف. حاول إعادة فتح الصفحة، وإذا استمرت المشكلة تواصل مع المشرف.","Unable to open or confirm this assessment. Your saved work has not been deleted. Reload or contact the supervisor.")+
+   "</p><a href='"+portal()+"'>"+tr("حساب الطالب","Student account")+"</a>");
  }
  render("<p role='status'>"+tr("جارٍ تحميل تقييمك…","Loading your assessment…")+"</p>");
  var student,studentName;
@@ -132,9 +130,7 @@ async function startUI(){
     html+="<h2>"+tr("استرجاع من الذاكرة (اختياري)","Recall from memory (optional)")+"</h2>"+
       "<p>"+tr("اكتب من ذاكرتك: متى تبدأ الشخصية القانونية للإنسان؟ عبّر عن القاعدة بأسلوبك دون الرجوع إلى النص.","From memory, when does a human being’s legal personality begin? State the rule in your own words without consulting the text.")+"</p>"+
       "<p>"+tr("ثم اذكر متى تنتهي الشخصية القانونية، وما حكم حقوق الحمل المستكن وفق المادة 40. لا تستعن بأي مصادر.","Also explain when personality ends and the status of an unborn child’s conditional rights under Article 40. Do not use outside sources.")+"</p>"+
-      "<textarea id='ungradedText' rows='5' maxlength='2000' aria-label='"+tr("إجابة حرة","Free answer")+"'></textarea>"+
-      (acceptedAi?"<p class='diagConsentSaved' role='note'>"+tr("موافقتك السابقة على التصحيح الخارجي محفوظة؛ لن نطلبها مرة ثانية.","Your prior external AI grading consent is saved; we won't ask again.")+"</p>":
-      "<label style='display:block;margin:1rem 0;line-height:1.65'><input type='checkbox' id='aiConsent' style='margin-inline-end:.45rem'>"+tr("موافقة لمرة واحدة: أسمح بإرسال نص إجابتي الحرة فقط إلى OpenAI للتصحيح المبدئي، دون اسمي أو جامعتي. يمكنك إكمال الاختبار دون هذه الموافقة.","One-time optional consent: I authorize sending only my free-text answer to OpenAI for preliminary grading, without my name or university. I can complete the test without agreeing.")+"</label>");
+      "<textarea id='ungradedText' rows='5' maxlength='2000' aria-label='"+tr("إجابة حرة","Free answer")+"'></textarea>";
    }
    html+="<button id='serverNext'>"+(done?tr("احفظ التقييم واعرض نتيجتي","Save assessment and show my result"):tr("حفظ والانتقال للسؤال التالي","Save and continue"))+"</button>"+
    "<p id='serverError' role='alert'></p>";
@@ -152,8 +148,7 @@ async function startUI(){
       if(reply.status!=="in_progress"||!Array.isArray(reply.draft)||reply.draft.length!==next.length)throw new Error("draft_not_confirmed");
       answers=reply.draft;idx=answers.length;saving=false;page();
      }else{
-      var opt=root.document.getElementById("aiConsent"),aiRequested=!!(root.document.getElementById("ungradedText").value||"").trim()&&(acceptedAi||!!(opt&&opt.checked));
-      if(aiRequested&&!acceptedAi){if(!cloud.recordConsent)throw new Error("ai_consent_service_unavailable");await cloud.recordConsent("lexlearn-ai-grading-v1","external_ai_grading",true);acceptedAi=true;}
+      var aiRequested=!!(root.document.getElementById("ungradedText").value||"").trim()&&acceptedAi;
       var reply=await cloud.studentLifecycleRpc("complete",{courseId:COURSE_ID,answers:answers,freeText:root.document.getElementById("ungradedText").value||""});
       if(reply.status!=="completed"||!reply.result||reply.result.source!=="server_finalized_diagnostic"||reply.result.student_id!==student||!reply.training_plan)throw new Error("completion_not_confirmed");
       // Give the optional free recall an internally generated preliminary percentage;
@@ -167,7 +162,7 @@ async function startUI(){
       if(check.status!=="completed"||check.attempt_id!==reply.attempt_id)throw new Error("completion_readback_failed");
       saving=false;await showCompleted(check);
      }
-    }catch(e){error.textContent=tr("تعذّر تأكيد الحفظ: ","Save not confirmed: ")+String(e.message||e);saving=false;var btn=root.document.getElementById("serverNext");if(btn)btn.disabled=false;}
+    }catch(e){error.textContent=tr("تعذّر حفظ هذه الخطوة. إجابتك ما زالت موجودة؛ حاول مرة أخرى، وإذا استمرت المشكلة تواصل مع المشرف.","Could not save this step. Your answer is still here; retry or contact the supervisor.");saving=false;var btn=root.document.getElementById("serverNext");if(btn)btn.disabled=false;}
    };
   }
   page();

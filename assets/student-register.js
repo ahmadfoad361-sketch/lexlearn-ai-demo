@@ -35,8 +35,12 @@ form.addEventListener("submit",async function(ev){
   password=document.getElementById("password").value,
   university=document.getElementById("university").value.trim(),
   year=document.getElementById("year").value,
-  country=document.getElementById("country").value;
- if(!name||!university||!year||!country||password.length<10||password.length>72){
+  country=document.getElementById("country").value,
+  faculty=document.getElementById("faculty").value.trim(),
+  academicSection=document.getElementById("academicSection").value.trim(),
+  studentNumber=document.getElementById("studentNumber").value.trim(),
+  groupEmail=document.getElementById("groupEmail").value.trim().toLowerCase();
+ if(!name||!university||!faculty||!year||!country||password.length<10||password.length>72){
   show(say("أكمل البيانات الأساسية، وكلمة مرور من 10 إلى 72 حرفًا.","Complete your basic details and enter a password of 10–72 characters."),true);return;
  }
  if(whatsapp&&!/^\+[1-9][0-9]{7,14}$/.test(whatsapp)){
@@ -44,6 +48,12 @@ form.addEventListener("submit",async function(ev){
  }
  if(email&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
   show(say("أدخل بريدًا صحيحًا أو اترك الحقل فارغًا.","Enter a valid email or leave the field blank."),true);return;
+ }
+ if(groupEmail&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(groupEmail)){
+  show(say("أدخل بريد المجموعة صحيحًا أو اتركه فارغًا.","Enter a valid cohort email or leave it blank."),true);return;
+ }
+ if(faculty.length>160||academicSection.length>100||studentNumber.length>80){
+  show(say("راجع طول حقول الكلية والقسم ورقم القيد.","Check the faculty, section and registration number fields."),true);return;
  }
  if(!document.getElementById("consent").checked){
   show(say("راجع سياسة الخصوصية وشروط الاستخدام ووافق عليهما.","Review and accept the privacy policy and terms."),true);return;
@@ -58,8 +68,8 @@ form.addEventListener("submit",async function(ev){
   var db=LEX_CLOUD.db();
   var response=await db.functions.invoke("student-register-whatsapp",{body:{
    name:name,email:email||null,whatsapp_e164:whatsapp||null,
-   password:password,university:university,year_label:year,
-   country_code:country,accepted_privacy:true,website:""
+   password:password,university:university,faculty:faculty,academic_section:academicSection||null,student_registration_number:studentNumber||null,institutional_group_email:groupEmail||null,year_label:year,
+   country_code:country,accepted_privacy:true,accepted_external_ai:!!document.getElementById("externalAiConsent").checked,website:""
   }});
   var code=response.data&&response.data.error;
   if(!code&&response.error&&response.error.context&&typeof response.error.context.json==="function"){
