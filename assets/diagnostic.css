@@ -143,3 +143,15 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible{
 .retroAiLabel{display:flex;align-items:start;gap:11px;line-height:1.8;padding:13px 0}
 .retroAiLabel input{margin-top:8px;accent-color:#8A1F39;flex:none;width:18px;height:18px}
 .retroAiPanel #retroAiMessage{font-weight:600;min-height:1.4em}
+
+/* Completed official diagnostic: exactly two visible, preliminary skill scores */
+.diagScoresGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin:22px 0}
+.diagScoreCard{padding:clamp(18px,3vw,28px);border:1px solid #e5d8dd;border-radius:18px;background:#f9f4ef;text-align:center;min-width:0}
+.diagScoreLabel{font-size:clamp(1rem,2vw,1.23rem);font-weight:800;color:#111d31}
+.diagScoreValue{color:#8a1f39;font-size:clamp(2.2rem,5.5vw,3.5rem);font-weight:900;line-height:1.5;font-variant-numeric:tabular-nums}
+.diagScoreValue:not(:first-child){overflow-wrap:anywhere}
+.diagScoreTrack{height:10px;margin:6px 0 14px;border-radius:99px;background:#e8dfe1;overflow:hidden}
+.diagScoreTrack>span{display:block;height:100%;background:#8a1f39;border-radius:99px}
+.diagScoreCard small{display:block;color:#526074;line-height:1.65}
+.diagScoreDisclaimer{font-size:.83rem;color:#647084;text-align:center;margin:5px auto 18px}
+@media(max-width:560px){.diagScoresGrid{grid-template-columns:1fr;gap:12px}.diagScoreCard{padding:16px}}
