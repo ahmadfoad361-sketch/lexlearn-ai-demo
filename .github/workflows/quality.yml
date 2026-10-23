@@ -53,7 +53,9 @@ jobs:
         with:
           deno-version: v2.x
       - name: Check diagnostic AI Edge Function
-        run: deno check supabase/functions/lexlearn-diagnostic-ai-grade/index.ts
+        run: |
+          deno check supabase/functions/lexlearn-diagnostic-ai-grade/index.ts
+          deno check supabase/functions/lexlearn-grading-smoke/index.ts
       - name: Adaptive engine tests
         run: |
           node tests/adaptive-engine.test.js
