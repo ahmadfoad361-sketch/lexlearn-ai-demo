@@ -25,6 +25,12 @@ const ITEM_RUBRIC={
  }
 };
 const CASES={
+ // Fresh, one-time replacement for the original incomplete-schema full_ar smoke.
+ // Must be initiated by project owner; never retry a spent test slot.
+ full_ar_v2:{
+  expected_min:85,expected_max:100,lang:"ar",
+  answer:"تبدأ الشخصية القانونية للإنسان بتمام ولادته حيًّا، وتنتهي بموته. ويثبت للحمل المستكن ما لا يحتاج من الحقوق إلى قبول بشرط أن يولد حيًّا. مفاتيح الحفظ الثلاثة: الميلاد = بداية الشخصية بتمام الولادة حية؛ الوفاة = نهاية الشخصية بالموت؛ الحمل = حقوق لا يحتاج سببها إلى قبول وتظل مشروطة بالولادة حية."
+ },
  full_ar:{
   expected_min:85,expected_max:100,lang:"ar",
   answer:"تبدأ الشخصية القانونية للإنسان بتمام ولادته حيًّا، وتنتهي بموته. ويثبت للحمل المستكن ما لا يحتاج من الحقوق إلى قبول بشرط أن يولد حيًّا. مفاتيح الحفظ الثلاثة: الميلاد = بداية الشخصية بتمام الولادة حية؛ الوفاة = نهاية الشخصية بالموت؛ الحمل = حقوق لا يحتاج سببها إلى قبول وتظل مشروطة بالولادة حية."
@@ -78,6 +84,7 @@ Deno.serve(async(req:Request)=>{
  let inTokens:number|null=null,outTokens:number|null=null,cost:number|null=null,breakdown:any=null;
  try{
   const payload=compactGradeRequest({answer:t.answer,item:ITEM_RUBRIC,sources:SOURCES,language:t.lang});
+  payload.max_output_tokens=2400; // Allow complete structured feedback for every criterion
   // Short criteria-only response with server-owned weighted numeric scoring.
   const ctrl=new AbortController();
   const timeout=setTimeout(()=>ctrl.abort(),18000);
