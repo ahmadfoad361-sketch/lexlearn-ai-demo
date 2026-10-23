@@ -4,6 +4,8 @@ assert.equal(moments.score('90'),null);assert.equal(moments.score(101),null);ass
 for(const lang of ['ar','en']){
  const image=moments.resultSvg({kind:'level',level:2,recall:80,understanding:null},lang);
  assert.ok(image.startsWith('<svg'));assert.ok(image.includes('80%'));assert.ok(image.includes(lang==='ar'?'قيد المراجعة':'Under review'));
+ assert.ok(!image.includes('pathLength='),'downloaded circles must also work in image renderers that ignore pathLength');
+ const arcs=[...image.matchAll(/stroke-dasharray='([0-9.]+) ([0-9.]+)'/g)];assert.equal(arcs.length,2);assert.equal(+arcs[0][1],0);assert.ok(Math.abs(+arcs[1][1]/+arcs[1][2]-.8)<.00001);
  assert.ok(!image.includes('null%')&&!image.includes('undefined')&&!image.includes('>0%</text>'));
  assert.ok(moments.hero({kind:'level',level:'<script>'},lang).includes(lang==='ar'?'المستوى 1':'Level 1'));
  assert.equal((moments.completion({kind:'level',level:2},lang).match(/class='earned'/g)||[]).length,2);
