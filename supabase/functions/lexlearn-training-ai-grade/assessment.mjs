@@ -1,5 +1,5 @@
 // Scores are calculated from the approved rubric, never from a model-supplied total.
-export const VERSION = "lexlearn-training-ai-v3";
+export const VERSION = "lexlearn-training-ai-v4";
 export const SCHEMA = {type:"object",additionalProperties:false,properties:{
  criteria:{type:"array",items:{type:"object",additionalProperties:false,properties:{id:{type:"string"},met:{type:"boolean"},credit:{type:"number",enum:[0,0.5,1]},evidence:{type:"string"},explanation_ar:{type:"string"},explanation_en:{type:"string"}},required:["id","met","credit","evidence","explanation_ar","explanation_en"]}},
  confidence:{type:"number"},review_required:{type:"boolean"},
@@ -38,7 +38,7 @@ export function interpret(result, rubric, answer) {
 export function summarize(rows, diagnostic) {
  const skills={recall:null,understanding:null};
  for(const dimension of Object.keys(skills)){
-  const values=rows.filter(r=>r.dimension===dimension&&r.evaluation?.status==="preliminary_ai"&&r.evaluation?.rubric_version!=="lexlearn-training-ai-v2")
+  const values=rows.filter(r=>r.dimension===dimension&&r.evaluation?.status==="preliminary_ai"&&!["lexlearn-training-ai-v2","lexlearn-training-ai-v3"].includes(r.evaluation?.rubric_version))
    .slice(0,3).map(r=>r.evaluation.provisional_percent).filter(v=>typeof v==="number"&&Number.isFinite(v)&&v>=0&&v<=100);
   if(values.length)skills[dimension]=Math.round(values.reduce((a,b)=>a+b,0)/values.length);
  }
@@ -51,6 +51,7 @@ export function summarize(rows, diagnostic) {
   measured.length===1?(measured[0]==="recall"?"understanding":"recall"):"foundation";
  return {skills,priority,status:measured.length?"preliminary_evidence":"insufficient_evidence"};
 }
+
 
 
 

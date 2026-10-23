@@ -32,7 +32,7 @@ async function recover(lang){
  Object.defineProperty(host,'innerHTML',{get(){return this.html;},set(v){this.html=v;for(const k of Object.keys(nodes))delete nodes[k];for(const m of v.matchAll(/id='([^']+)'/g))nodes[m[1]]={value:'',disabled:false,textContent:'',onclick:null};}});
  let fail=true;
  const cloud={getConsent:async()=>true,trainingAiSummary:async()=>({priority:'foundation'}),
-  gradeTrainingAi:async()=>{calls.push('grade');if(fail)throw Error('temporary outage');saved[0].evaluation={status:'preliminary_ai',rubric_version:'lexlearn-training-ai-v3',provisional_percent:14,verdict:'partially_correct',feedback_ar:'جزء صحيح وشرط ناقص.',feedback_en:'A correct component with a missing condition.',criteria:[{credit:.5,label_ar:'شرط الولادة',label_en:'Live birth condition',evidence:'<script>evidence</script>',explanation_ar:'ربطت الحق بالولادة؛ اشرح باقي الشروط.',explanation_en:'You connected the right to birth; explain the remaining conditions.'}]};return {status:'preliminary_ai'};},
+  gradeTrainingAi:async()=>{calls.push('grade');if(fail)throw Error('temporary outage');saved[0].evaluation={status:'preliminary_ai',rubric_version:'lexlearn-training-ai-v4',provisional_percent:14,verdict:'partially_correct',feedback_ar:'جزء صحيح وشرط ناقص.',feedback_en:'A correct component with a missing condition.',criteria:[{credit:.5,label_ar:'شرط الولادة',label_en:'Live birth condition',evidence:'<script>evidence</script>',explanation_ar:'ربطت الحق بالولادة؛ اشرح باقي الشروط.',explanation_en:'You connected the right to birth; explain the remaining conditions.'}]};return {status:'preliminary_ai'};},
   studentLifecycleRpc:async(action)=>{calls.push(action);return action==='trainingOverview'?{allowed:true,unlocked:2,completed_count:1}:{allowed:true,completed:true,tasks:[{id:saved[0].item_id,dimension:'understanding'}],saved};}};
  const window={document:{getElementById:()=>host},URLSearchParams,location:{search:'?session=1&lang='+lang},LEX_CLOUD:cloud,LEX_OFFICIAL_DIAGNOSTIC:{identity:async()=> 'learner'},console};window.window=window;
  vm.runInNewContext(fs.readFileSync('assets/student-path.js','utf8'),window);await window.LEX_STUDENT_PATH.mount();
@@ -47,6 +47,7 @@ async function recover(lang){
  assert.ok(!calls.includes('trainingSubmit'),'reassessment never resubmits or changes the answer');
 }
 (async()=>{for(const lang of ['ar','en']){await run({lang});await run({lang,fail:true});await run({lang,consent:false});await recover(lang);}console.log('Bilingual training: save before AI, registration acceptance, priority changes, provider failure and escaped feedback: PASS');})().catch(e=>{console.error(e);process.exitCode=1;});
+
 
 
 

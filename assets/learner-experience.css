@@ -1,0 +1,72 @@
+/* Learner surfaces only. This stylesheet is deliberately absent from conference.html. */
+html[data-learner-theme]{--lx-bg:#f8f4ee;--lx-surface:#fffdfa;--lx-raised:#f2ece5;--lx-ink:#18253b;--lx-muted:#536176;--lx-border:#cec7c1;--lx-accent:#8a1f39;--lx-good:#20604c;--lx-focus:#8a1f39;--ink:var(--lx-ink);--muted:var(--lx-muted);--paper:var(--lx-surface);--line:var(--lx-border);--paper-ink:var(--lx-ink);--paper-muted:var(--lx-muted)}
+html[data-learner-theme=dark]{--lx-bg:#101b2c;--lx-surface:#1b2a40;--lx-raised:#263750;--lx-ink:#f7f4ef;--lx-muted:#c1ccdd;--lx-border:#718099;--lx-accent:#ffb1c4;--lx-good:#a0e4c1;--lx-focus:#f3d598;--diag-navy:var(--lx-ink);--diag-muted:var(--lx-muted);--diag-border:var(--lx-border);--diag-burgundy:var(--lx-accent)}
+html[data-learner-theme] body{background:var(--lx-bg);color:var(--lx-ink);padding-bottom:80px;line-height:1.8}
+html[data-learner-theme] :is(input,textarea,select){background:var(--lx-surface);color:var(--lx-ink);border-color:var(--lx-border);caret-color:var(--lx-accent);font-size:max(16px,1em)}
+html[data-learner-theme] :is(input,textarea)::placeholder{color:var(--lx-muted);opacity:1}
+html[data-learner-theme] :is(input,textarea):autofill{-webkit-text-fill-color:var(--lx-ink);box-shadow:0 0 0 1000px var(--lx-surface) inset}
+html[data-learner-theme] :is(a,button,input,textarea,select,summary):focus-visible{outline:3px solid var(--lx-focus);outline-offset:4px}
+.learnerThemeToggle{position:fixed;inset-inline-end:18px;bottom:18px;z-index:80;border:1px solid var(--lx-border);border-radius:99px;padding:10px 18px;min-height:46px;background:var(--lx-surface);color:var(--lx-ink);font:600 14px/1.5 system-ui,Tahoma,sans-serif;box-shadow:0 6px 24px #0002;cursor:pointer}
+html[data-learner-theme] :is(.v9-top,.en-top,.top,.courseTop,.demoTop){background:var(--lx-surface);color:var(--lx-ink);border-color:var(--lx-border)}
+html[data-learner-theme] :is(.v9-app,.en-main,.wrap,.courseWrap,.demoWrap){max-width:1180px;margin-inline:auto}
+html[data-learner-theme] :is(.loginCard,.loginForm,.formCard,.heroSide,.simpleProfile,.resultCard,.week,.skill,.badge,.actionCard:not(.primary),.diagHeader,.diagCard,.diagScoreCard,.stageCard,.qualityExample,.qualityJurisdictions,.hero-card,.course-card,.progressReport,.caseAnswerStep,.paper,.resultMetric,.taskCard,.reviewCard){background:var(--lx-surface);color:var(--lx-ink);border-color:var(--lx-border)}
+html[data-learner-theme] :is(.prompt,.feedback,.scope,.progressSkill,.legalCitation,.legalStudyArticle,.caseFacts,.caseReview>div,.nextAdvice,.diagNotice,.note,.demoPill,.demoGhost,.topbtn,.topBtn,.tipCard,.weekIcon,.skillIcon,.profilePill,.progressTag,.empty,.readBox,.recallEvidence,.answerSaving){background:var(--lx-raised);color:var(--lx-ink);border-color:var(--lx-border)}
+html[data-learner-theme] :is(.loginForm p,.field label,.rememberRow,.loginForm small,.formCard>p,.formCard label small,.caseFacts p,.caseHelp,.caseHint,.caseIntro,.caseGuidance,.caseReview p,.progressReport small,.diagScoreCard small,.qualityCaption,.qualityLead,.stageCard p,.stageCard small,.demoHeroCopy p){color:var(--lx-muted)}
+html[data-learner-theme] :is(.brand b,.brandLearn,.en-brand b,.v9-brand b,.sectionHead h2,.formCard h2,.loginForm h2,.qualityHeroTitle,.qualitySlide h2,.stageCard h2,.simpleProfile h3,.simpleSkillCard b,.simpleSkillCard strong,.week b,.skill b,.badge b,.progressReport h2,.progressSkill h3,.progressSkill strong,.caseAnswerStep h3,.caseReview b,.taskType,.diagEyebrow,.diagScoreLabel,.diagScoreValue,.caseStepCount,.caseEyebrow){color:var(--lx-ink)}
+html[data-learner-theme] :is(.loginForm a,.formCard a,.diagLinks a,.heading a,.past summary,.allSessions summary,.qualityHeroSubtitle,.caseStatus){color:var(--lx-accent)}
+html[data-learner-theme] :is(.btn.secondary,.btn.soft-outline,.secondary,.passwordToggle,.caseBack,.diagLinks a,.session,.levelCard,.choice,.caseStep,.lang a){background:var(--lx-surface);color:var(--lx-ink);border:1px solid var(--lx-border)}
+html[data-learner-theme] :is(.btn.primary,.actionCard.primary,.caseNext,#serverNext,#beginLegalQuestions,#adaptiveSubmit,.stageCard button:not(.secondary),.momentDownload){background:#8a1f39;color:#fff;border-color:#8a1f39}
+html[data-learner-theme] :is(.choice:has(input:checked),.caseStep.active,.session.active,.levelCard.complete){background:var(--lx-raised);color:var(--lx-accent);border-color:var(--lx-accent)}
+html[data-learner-theme] :is(.completionState,.caseStep.filled,.criterionCorrect){color:var(--lx-good)}
+html[data-learner-theme=dark] :is([role=alert],.error,#status.error){color:#ffb9ca;background:#3d273b}
+html[data-learner-theme=dark] :is(.lexHomeLang,.qualityCarouselControls button,.lang-switch,.diagScoreTrack,.skillMeter,.momentJourney span,.caseMainQuestion){background:#263750;color:#f7f4ef;border-color:#718099}
+html[data-learner-theme=dark] :is(.brandTop,.brandTop b,.brandHero,.brandHero h1,.loginBrand p,.loginBrand small,.brandPoints,.heroMain,.heroMain h1,.heroMain p,.heroMain .eyebrow,.intro,.intro h1,.intro p){color:#fff}
+html[data-learner-theme] .loginBrand{background:linear-gradient(0deg,#111d31 12%,#111d3199 65%,#111d3155),url('conference-media/student-law.webp') center/cover;min-height:660px;padding:32px;color:#fff}
+html[data-learner-theme] .loginBrand .brandHero{margin-top:120px}
+html[data-learner-theme] .brandHero h1{font-size:clamp(30px,3vw,44px);line-height:1.45;color:#fff}
+html[data-learner-theme] .brandHero p{color:#f4efe7;font-size:16px}
+html[data-learner-theme] .brandPoints{display:grid;gap:8px;margin-top:20px}.brandPoint{font-size:14px}
+html[data-learner-theme] .loginForm{padding:clamp(24px,4vw,42px)}
+html[data-learner-theme] .loginForm>p{font-size:15px;line-height:1.85}
+.learnerJourney{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:24px 0}.learnerJourney>div{border:1px solid var(--lx-border);border-radius:18px;padding:18px;background:var(--lx-surface)}.learnerJourney b{color:var(--lx-accent);display:block;font-size:22px}.learnerJourney strong{display:block;font-size:17px}.learnerJourney p{margin:5px 0;color:var(--lx-muted);font-size:14px}
+.learnerWelcome{padding:24px;border:1px solid var(--lx-border);border-radius:22px;background:var(--lx-surface);display:flex;align-items:center;justify-content:space-between;gap:22px;margin:20px 0}.learnerWelcome h2{margin:0;font-size:26px}.learnerWelcome p{margin:6px 0;color:var(--lx-muted)}.learnerWelcome a{display:inline-flex;padding:12px 24px;border-radius:12px;background:#8a1f39;color:#fff;text-decoration:none;font-weight:750;white-space:nowrap}
+html[data-learner-theme] #studentTrainingApp{min-width:0}html[data-learner-theme] body:has(#studentTrainingApp)>main{background:var(--lx-surface);border:1px solid var(--lx-border);max-width:1100px}
+html[data-learner-theme] .stage:has(#adaptiveEssay){background:var(--lx-surface)}html[data-learner-theme] .prompt{font-size:1.08rem;line-height:2;border-inline-start:4px solid #c7a66a;padding:22px}
+.criterionFeedback{list-style:none;padding:0;display:grid;gap:12px}.criterionFeedback li{padding:16px;border:1px solid var(--lx-border);border-radius:14px;background:var(--lx-surface)}.criterionFeedback blockquote{margin:10px 0;padding:8px 14px;border-inline-start:3px solid var(--lx-accent);color:var(--lx-muted)}.criterionFeedback p{margin:6px 0}
+html[data-learner-theme] .legalStudyArticle blockquote{font-size:1.15rem;line-height:2.1;color:var(--lx-ink)}html[data-learner-theme] .legalStudyArticle figcaption{border-color:var(--lx-border);color:var(--lx-accent)}
+html[data-learner-theme] .momentHero{background:var(--lx-raised);color:var(--lx-ink)}html[data-learner-theme] :is(.momentHero h2,.momentHero p,.momentKicker){color:var(--lx-ink)}
+@media(max-width:760px){html[data-learner-theme] .loginBrand{min-height:320px;padding:24px}.loginBrand .brandTop{display:none}html[data-learner-theme] .loginBrand .brandHero{margin-top:60px}html[data-learner-theme] .brandPoints{display:none}.learnerJourney{grid-template-columns:1fr}.learnerWelcome{flex-direction:column;align-items:stretch}.learnerWelcome a{justify-content:center}.learnerThemeToggle{bottom:12px;inset-inline-end:12px}.criterionFeedback li{padding:12px}}
+@media(prefers-reduced-motion:reduce){html[data-learner-theme] *{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
+@media print{.learnerThemeToggle{display:none}}
+
+html[data-learner-theme][lang=en]{direction:ltr}
+
+html[data-learner-theme] .loginBrand{background-position:76% center}
+html[data-learner-theme] .loginForm .actions{display:flex;flex-wrap:wrap;gap:10px}
+html[data-learner-theme] .loginForm .actions>.btn{flex:1 1 45%;font-size:14px}
+html[data-learner-theme] .loginForm .actions>.primary{flex-basis:100%}
+html[data-learner-theme] :is(.overline,.section-overline){color:var(--lx-accent)}
+@media(max-width:900px){html[data-learner-theme] .loginCard{grid-template-columns:1fr}html[data-learner-theme] .loginBrand{min-height:280px;padding:24px;background-position:76% 30%}html[data-learner-theme] .loginBrand .brandHero{margin-top:60px}html[data-learner-theme] .brandPoints{display:none}html[data-learner-theme] .brandHero h1{font-size:30px}.loginBrand .brandTop{display:none}}
+
+html[data-learner-theme] #showcaseApp :is(.stageCard p,.stageCard small,.stageProgressText,.stageProgressText bdi,.demoFooter,.cycleLead,.cycleSmall){color:var(--lx-muted)}
+html[data-learner-theme] #showcaseApp :is(.legalPaper,.cycleSmall,.cyclePath,.planCard,.metric){background:var(--lx-raised);color:var(--lx-ink);border-color:var(--lx-border)}
+html[data-learner-theme] #showcaseApp :is(.legalPaper .txt,.legalPaper small,.metric b,.metric span,.planCard h3,.demoBrand b){color:var(--lx-ink)}
+html[data-learner-theme] #showcaseApp :is(input,textarea){background:var(--lx-surface);color:var(--lx-ink);border-color:var(--lx-border)}
+html[data-learner-theme] #showcaseApp .demoEyebrow{background:var(--lx-raised);color:var(--lx-ink);border-color:var(--lx-border)}
+html[data-learner-theme] #showcaseApp .demoLang{background:var(--lx-surface);color:var(--lx-ink);border-color:var(--lx-border)}
+html[data-learner-theme] #showcaseApp .demoLang[aria-current=page]{background:#8a1f39;color:white}
+
+html[data-learner-theme] :is(.stageCard p,.taskCard p,.entry-intro p,.pilot-course-copy p,.brand small,.v9-brand small,.en-brand small,.demoBrand small){color:var(--lx-muted)!important}
+html[data-learner-theme] :is(.qualityMethod,.cycleSmall,.cyclePath,.diagHeader>button,.stageCard details,.simpleSkillCard,.snapshotCard){background:var(--lx-surface);color:var(--lx-ink);border-color:var(--lx-border)}
+html[data-learner-theme] :is(.qualityMethod h2,.qualityJurisdictions h2,.qualityMethod p,.qualityJurisdictions p,.qualityExample p,.qualityExample span,.qualityExample small){color:var(--lx-ink)}
+html[data-learner-theme] .diagCard button:not(.secondary){background:#8a1f39;color:#fff}
+html[data-learner-theme] :is(.rubricEvidence,.cycleLead,.cycleSmall,.cyclePath,.stageCard summary){color:var(--lx-ink)}
+html[data-learner-theme] .loginBrand :is(.en-brand small,.brandTop small){color:#fff!important}
+
+html[data-learner-theme] :is(.legalStudyEyebrow,.legalStudy a,.legalCitation a,.caseEyebrow){color:var(--lx-accent)}
+html[data-learner-theme=dark] .momentRing.memory .ringValue{stroke:#ffb1c4}
+html[data-learner-theme=dark] .momentRing.meaning .ringValue{stroke:#85d6cc}
+
+html[data-learner-theme] .loginBrand h1{font-family:inherit}
+@media(max-width:900px){.loginBrand>.en-brand{display:none}}
+

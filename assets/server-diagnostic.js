@@ -73,7 +73,7 @@ function report(status,uid){
     understanding===null?tr("لم تتوفر إجابات فهم كافية","Insufficient understanding responses"):
     tr("تقدير أولي من أسئلة الفهم","Preliminary result from understanding questions"))+
   "</div>"+
-  "<p class='diagScoreDisclaimer'>"+tr("هذه تقديرات مبدئية للتدريب، وليست درجات جامعية أو قياسًا نهائيًا لمهاراتك.","These are preliminary practice estimates, not official grades or validated mastery measures.")+"</p>"+
+  "<p class='diagScoreDisclaimer'>"+tr("هذه تقديرات مبدئية للتدريب. التصحيح آلي، والمشرف لمتابعة التقدم. ليست درجات جامعية.","These are preliminary practice estimates, not official grades or validated mastery measures.")+"</p>"+
   (root.LEX_MOMENTS?root.LEX_MOMENTS.downloadButton(lang()):"")+
   "<div class='actions'><a class='actionCard' style='display:inline-block;background:#111D31;color:white;padding:1rem 1.3rem;border-radius:10px;text-decoration:none' href='student-path.html?lang="+lang()+"'>"+
   tr("ابدأ التدريب","Start training")+"</a></div></section>";
@@ -185,6 +185,7 @@ async function startUI(){
 root.LEX_SERVER_DIAGNOSTIC={mount:startUI};
 if(typeof module!=="undefined"&&module.exports)module.exports={mount:startUI};
 })(typeof window!=="undefined"?window:globalThis);
+
 
 
 

@@ -19,3 +19,6 @@ jobs:
 
 
 
+
+      - run: node tests/learner-experience.test.js
+

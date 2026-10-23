@@ -3,6 +3,7 @@ import fs from "node:fs";
 import vm from "node:vm";
 import {stripTypeScriptTypes} from "node:module";
 import {interpret,summarize,VERSION,SCHEMA} from "../supabase/functions/lexlearn-training-ai-grade/assessment.mjs";
+import {legalSources} from "../supabase/functions/_shared/qatar-civil-provisions.mjs";
 const rubric={criteria:[{id:"birth",weight:2},{id:"death",weight:1}]};
 const answer="Live birth begins personality; death ends it.";
 const valid={criteria:[{id:"birth",met:true,credit:1,evidence:"Live birth begins personality",explanation_ar:"ذكرت البداية بالولادة الحية.",explanation_en:"You stated the live-birth condition."},{id:"death",met:false,credit:0,evidence:"",explanation_ar:"لم تشرح النهاية.",explanation_en:"The end is not explained."}],confidence:.9,review_required:false,feedback_ar:"اذكر نهاية الشخصية بالوفاة.",feedback_en:"Include death as the end of personality."};
@@ -27,7 +28,8 @@ assert.deepEqual(summarize([],{}).skills,{recall:null,understanding:null});
 let handler,providerCalls=0;
 const source=stripTypeScriptTypes(fs.readFileSync("supabase/functions/lexlearn-training-ai-grade/index.ts","utf8").replace(/^import .*;\r?\n/gm,""));
 function environment({consent=true,providerFailure=false}={}){
- let evaluation=arguments[0]?.initialEvaluation||{status:"preliminary_internal",provisional_percent:50};
+ const options=arguments[0]||{};let localCalls=0;
+ let evaluation=options.initialEvaluation||{status:"preliminary_internal",provisional_percent:50};
  let auditCount=0;
  const admin={from(table){
   let operation="select",payload,filters=[];
@@ -36,11 +38,11 @@ function environment({consent=true,providerFailure=false}={}){
   function result(){
    if(table==="enrollments")return {data:{status:"active"}};
    if(table==="consent_records")return {data:{accepted:consent,notice_version:"lexlearn-ai-grading-v1"}};
-   if(table==="content_items")return {data:{status:"approved",prompt_ar:"The rule",rubric_json:rubric,source_ids:["source"]}};
-   if(table==="content_sources")return {data:[{id:"source",status:"approved",excerpt:"The approved source."}]};
+   if(table==="content_items")return {data:{status:"approved",prompt_ar:"The rule",rubric_json:rubric,source_ids:["qa-civil-2004-art39"]}};
+   if(table==="content_sources")return {data:[{id:"qa-civil-2004-art39",status:"approved",excerpt:"The approved source."}]};
    if(table==="ai_grading_runs"){
     if(operation==="insert"){auditCount++;return {data:{id:"audit"}};}
-    return {data:null,count:0};
+    return {data:null,count:filters.some(([k])=>k==="item_id")?(options.attempts||0):0};
    }
    if(table==="student_training_answers"){
     if(operation==="update"){
@@ -54,14 +56,14 @@ function environment({consent=true,providerFailure=false}={}){
   }return q;
  }};
  const context={Deno:{env:{get:()=>"fake-secret"},serve:f=>{handler=f;}},corsHeaders:{},json:(body,status=200)=>new Response(JSON.stringify(body),{status}),
-  requireUser:async()=>({user:{id:"student"},profile:{role:"student"},admin}),VERSION,SCHEMA,interpret,summarize,Response,AbortSignal,console,
-  fetch:async()=>{providerCalls++;return providerFailure?new Response("unavailable",{status:503}):new Response(JSON.stringify({status:"completed",output_text:JSON.stringify(valid)}));}};
+  requireUser:async()=>({user:{id:"student"},profile:{role:"student"},admin}),VERSION,SCHEMA,interpret,summarize,Response,AbortSignal,console,legalSources,
+  fetch:async(_url,request)=>{providerCalls++;localCalls++;const body=JSON.parse(request.body);assert.ok(body.input[1].content.includes("full_text_ar"));if(localCalls===2){assert.equal(body.model,"gpt-5.4");assert.equal(body.reasoning.effort,"medium");}return providerFailure||(options.verifierFailure&&localCalls===2)||(options.modelDenied&&localCalls===2)?new Response("unavailable",{status:options.modelDenied?403:503}):new Response(JSON.stringify({status:"completed",output_text:JSON.stringify(localCalls===2&&options.verifierResult?options.verifierResult:valid)}));}};
  vm.runInNewContext(source,context);
  return {call:()=>handler(new Request("https://test.invalid",{method:"POST",body:JSON.stringify({session:1,item_id:"rights-v1-s1-recall",answer:"caller cannot override saved answer"})})),grade:()=>evaluation,audits:()=>auditCount};
 }
 const denied=environment({consent:false});assert.equal((await denied.call()).status,403);assert.equal(providerCalls,0);
 const ok=environment();assert.equal((await ok.call()).status,200);assert.equal(ok.grade().provisional_percent,67);assert.equal(ok.audits(),1);
-await ok.call();assert.equal(providerCalls,1,"cached attempts never charge twice");
+await ok.call();assert.equal(providerCalls,2,"cached attempts never charge twice");
 const simultaneous=environment();await Promise.all([simultaneous.call(),simultaneous.call()]);assert.equal(simultaneous.audits(),1,"reservation must be atomic");
 const failed=environment({providerFailure:true});await failed.call();assert.equal(failed.grade().provisional_percent,null);assert.equal(failed.grade().status,"ai_review_required");
 assert.equal(failed.grade().reason,'provider_http_503');
@@ -70,4 +72,14 @@ const oldZero=environment({initialEvaluation:{status:'preliminary_ai',rubric_ver
 
 console.log("Training AI rubric evidence, consent, persistence, duplicate/concurrent requests, provider failures and adaptive priorities: PASS");
 
+
+
+const verifierFailed=environment({verifierFailure:true});await verifierFailed.call();assert.equal(verifierFailed.grade().provisional_percent,null,'never publish a draft when final AI verification fails');
+const corrected=environment({verifierResult:partial});await corrected.call();assert.equal(corrected.grade().provisional_percent,33,'final verification replaces a mistaken draft');assert.equal(corrected.grade().needs_human_review,false);
+const limited=environment({attempts:3});assert.equal((await limited.call()).status,429);
+
+const originalText=(await import("../assets/legal-study.js")).default.text;
+for(let n=39;n<=63;n++)assert.equal(legalSources([{id:"qa-civil-2004-art"+n}])[0].full_text_ar,originalText[n],"grading uses every complete provision shown to the learner");
+
+const restricted=environment({modelDenied:true});await restricted.call();assert.equal(restricted.grade().verification.verifier_model,"gpt-5.4-mini","an unavailable stronger model must not disable verified automatic grading");assert.equal(restricted.grade().provisional_percent,67);
 

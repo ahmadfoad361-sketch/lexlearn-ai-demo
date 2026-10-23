@@ -18,7 +18,7 @@ function previousAnswerTitle(item,task){
   return t("إجابتك السابقة — ","Your previous answer — ")+weakName(dimension)+(localizedTitle?" · "+String(localizedTitle):"");
 }
 function lawContext(ids){return root.LEX_LEGAL_STUDY?root.LEX_LEGAL_STUDY.context(ids||[],lang()):"";}
-function outdated(ev){return ev&&ev.rubric_version==="lexlearn-training-ai-v2";}
+function outdated(ev){return ev&&["lexlearn-training-ai-v2","lexlearn-training-ai-v3"].indexOf(ev.rubric_version)>=0;}
 function feedback(item){
  var ev=item&&item.evaluation||{};
  if(ev.status==="preliminary_ai"&&!outdated(ev)){
@@ -28,11 +28,11 @@ function feedback(item){
    var state=c.credit===1?t("✓ صحيح","✓ Correct"):c.credit>0?t("◐ صحيح جزئيًا","◐ Partly correct"):t("✗ ناقص أو يحتاج تصحيحًا","✗ Missing or needs correction");
    return "<li><b>"+esc(state)+" — "+esc(lang()==="en"?c.label_en:c.label_ar)+"</b>"+(c.evidence?"<blockquote>«"+esc(c.evidence)+"»</blockquote>":"")+"<p>"+esc(lang()==="en"?c.explanation_en:c.explanation_ar)+"</p></li>";
   }).join("")+"</ul>":"";
-  return "<div class='feedback' role='status'><b>"+esc(verdict)+": "+esc(noHtmlScore(ev.provisional_percent))+"</b><p style='white-space:pre-wrap'>"+esc(lang()==="en"?ev.feedback_en:ev.feedback_ar)+"</p>"+details+"<small>"+t("نسبة استيفاء متطلبات هذا السؤال، بتصحيح OpenAI. ليست حكمًا على قدرتك الكاملة على الفهم، وقابلة لمراجعة المشرف.","OpenAI assessment of this task’s requirements, not your entire understanding ability; subject to instructor review.")+"</small></div>";
+  return "<div class='feedback' role='status'><b>"+esc(verdict)+": "+esc(noHtmlScore(ev.provisional_percent))+"</b><p style='white-space:pre-wrap'>"+esc(lang()==="en"?ev.feedback_en:ev.feedback_ar)+"</p>"+details+"<small>"+t("نسبة استيفاء متطلبات هذا السؤال، بتصحيح OpenAI. ليست حكمًا على قدرتك الكاملة على الفهم، ووالمشرف يتابع تقدمك.","OpenAI assessment of this task’s requirements, not your entire understanding ability; instructor oversight only.")+"</small></div>";
  }
  return "<div class='feedback' role='status'><b>"+t("حُفظت الإجابة — التصحيح غير مكتمل","Answer saved — assessment incomplete")+"</b>"+
  "<p>"+t("لم يتأكد التصحيح بالذكاء الاصطناعي بعد. أعد طلب التصحيح من الزر أدناه؛ لن تُعرض نسبة قبل تأكيده.","AI assessment has not been confirmed. Retry below; no percentage is shown before confirmation.")+"</p>"+
- "<small>"+t("مؤشرات تدريبية أولية وليست درجة جامعية أو قياسًا معتمدًا. الملاحظات الدقيقة يراجعها المشرف.","Preliminary practice indicators, not an accredited mark. Instructor review is needed for detailed feedback.")+"</small></div>";
+ "<small>"+t("مؤشرات تدريبية أولية وليست درجة جامعية أو قياسًا معتمدًا. ستظهر الملاحظات فور اكتمال التصحيح الآلي.","Preliminary practice indicators, not an accredited mark. Detailed feedback appears when automatic assessment completes.")+"</small></div>";
 }
 
 function progressModel(rows,session){
@@ -57,11 +57,11 @@ function progressHtml(rows,session,historyAvailable){
  "<div class='progressSkills'>"+m.skills.map(function(x){
    var aiRows=(rows||[]).filter(function(r){return r.dimension===x.dimension&&r.session_number===session&&r.evaluation&&r.evaluation.status==="preliminary_ai"&&!outdated(r.evaluation);});
    var values=aiRows.map(function(r){return r.evaluation.provisional_percent;}).filter(function(v){return typeof v==="number"&&Number.isFinite(v)&&v>=0&&v<=100;});
-   var shown=values.length?noHtmlScore(values.reduce(function(a,b){return a+b;},0)/values.length):t("قيد المراجعة","Under review");
+   var shown=values.length?noHtmlScore(values.reduce(function(a,b){return a+b;},0)/values.length):t("بانتظار التصحيح الآلي","Awaiting AI assessment");
    return "<article class='progressSkill'><h3>"+esc(weakName(x.dimension))+"</h3>"+(visual?visual.ring(card[x.dimension],x.dimension):"")+"<strong>"+esc(shown)+"</strong>"+
    "<p>"+t("إجابات محفوظة: ","Saved answers: ")+x.current.total+"</p></article>";
  }).join("")+"</div>"+
- "<p class='nextAdvice'>"+t("خطوتك التالية: اختر جزءًا احتجت فيه إلى مساعدة، واشرحه بكلماتك، ثم جرّبه في مثال جديد.","Your next step: choose one part you needed help with, explain it in your own words, then try it in a new example.")+"</p>"+
+ "<p class='nextAdvice'>"+(card.recall!==null&&card.understanding!==null?(card.recall<card.understanding?t("الفهم أقوى في هذه الجلسة؛ حوّل المعنى إلى مفاتيح قصيرة ثم استرجع القاعدة.","Understanding was stronger in this session. Turn meaning into brief cues, then recall the rule."):card.understanding<card.recall?t("الحفظ أقوى في هذه الجلسة؛ اشرح السبب بكلماتك وجرّب تغيير شرط واحد.","Recall was stronger in this session. Explain why in your words, then change one condition."):t("نتيجتا الحفظ والفهم متقاربتان؛ طبّق القاعدة في مثال جديد.","Recall and understanding are close. Apply the rule in a new example.")):t("خطوتك التالية: اختر جزءًا احتجت فيه إلى مساعدة، واشرحه بكلماتك، ثم جرّبه في مثال جديد.","Your next step: choose one part you needed help with, explain it in your own words, then try it in a new example."))+"</p>"+
  "<small>"+t("هذه مؤشرات تدريبية أولية، وليست درجات رسمية. سيُعاد قياس المهارات بأسئلة مستقلة.","These are preliminary practice indicators, not official grades. Skills will be reassessed with independent questions.")+"</small>"+(visual?visual.downloadButton(lang()):"")+"</section>";
 }
 function momentData(rows,session){
@@ -104,7 +104,7 @@ async function boot(){
     t("الجلسة ","Session ")+(i+1);});
   function nav(){
    return "<div class='heading'><div><b>"+t("مسارك التدريبي المتكيف","Your adaptive learning path")+"</b><p>"+t("المقرر: نظرية الحق • 6 أسابيع • 30 جلسة • نتائج لكل طالب","Theory of Rights • 6 weeks • 30 sessions • individual results")+"</p>"+lawContext([])+"</div><a href='student"+(lang()==="en"?"-en":"")+".html'>"+t("حساب الطالب","Student account")+"</a></div>"+
-   "<p class='scope' role='note'>"+t("تدريب يتكيف مع أدائك، مع حفظ إجاباتك وتقدمك في حسابك. النتائج مؤشرات تدريبية قابلة لمراجعة المشرف، وليست درجات جامعية معتمدة.","Practice adapts to your performance, with answers and progress saved to your account. Results are training indicators subject to instructor review, not certified university marks.")+"</p>"+
+   "<p class='scope' role='note'>"+t("تدريب يتكيف مع أدائك، مع حفظ إجاباتك وتقدمك في حسابك. النتائج مؤشرات تدريبية والمشرف يتابع تقدمك، وليست درجات جامعية معتمدة.","Practice adapts to your performance, with answers and progress saved to your account. Results are training indicators instructor oversight only, not certified university marks.")+"</p>"+
    "<p class='overview'>"+t("التقدم المحفوظ: ","Verified practice progress: ")+overview.completed_count+" / 30 · "+t("الجلسة الحالية: ","Current session: ")+overview.unlocked+"</p>"+
    "<div class='levelStrip'>"+Array.from({length:6},function(_,i){
     var level=i+1,start=i*5+1,end=level*5,done=overview.completed_count>=end,unlocked=overview.unlocked>=start;
@@ -123,7 +123,7 @@ async function boot(){
     if(!result||!result.allowed||!Array.isArray(result.tasks)||!Array.isArray(result.saved))throw Error(result&&result.reason||"invalid_session");
     selected=n;data=result;studyRead=false;
     if(acceptedAi&&cloud.gradeTrainingAi){
-     var repair=(data.saved||[]).filter(function(v){return !v.evaluation||v.evaluation.rubric_version!=="lexlearn-training-ai-v3";});
+     var repair=(data.saved||[]).filter(function(v){return !v.evaluation||v.evaluation.rubric_version!=="lexlearn-training-ai-v4";});
      if(repair.length){
       show(nav()+"<p role='status'>"+t("نراجع إجاباتك المحفوظة بالتصحيح المحدّث…","Reviewing your saved answers with the updated assessment…")+"</p>");
       for(var previous of repair){try{await cloud.gradeTrainingAi(selected,previous.item_id);}catch(_){aiUnavailable=true;}}
@@ -161,7 +161,8 @@ async function boot(){
     var task=(data.tasks||[]).find(function(q){return q.id===v.item_id;});
     return "<details class='past'"+(v===saved[saved.length-1]?" open":"")+"><summary>"+esc(previousAnswerTitle(v,task))+"</summary>"+lawContext(task&&task.sources)+"<p style='white-space:pre-wrap'>"+esc(v.answer_text)+"</p>"+feedback(v)+((!v.evaluation||v.evaluation.status!=="preliminary_ai"||outdated(v.evaluation))&&acceptedAi&&cloud.gradeTrainingAi?"<button type='button' id='retryGrade"+index+"'>"+t("أعد تصحيح هذه الإجابة","Retry assessment of this answer")+"</button>":"")+"</details>";
    }).join("");
-   var main="<section class='stage'><h1>"+esc(name)+"</h1>"+why+
+   var resume=next?"<section class='learnerWelcome'><div><h2>"+t("تدريبك التالي جاهز","Your next practice is ready")+"</h2><p>"+t("إجاباتك السابقة محفوظة؛ أكمل خطوة واحدة الآن.","Your previous answers are saved. Continue one step at a time.")+"</p></div><a href='#currentPractice'>"+t("أكمل تدريبك","Continue practice")+"</a></section>":"";
+   var main=resume+"<section class='stage'><h1>"+esc(name)+"</h1>"+why+
     "<p>"+t("أُرسلت ","Saved ")+saved.length+" / "+data.tasks.length+t(" إجابات محفوظة في حسابك."," answers to your account.")+"</p>"+
     completedFeedback;
    if(completed){
@@ -175,7 +176,7 @@ async function boot(){
     if(root.LEX_LEGAL_STUDY)prompt=root.LEX_LEGAL_STUDY.qualify(prompt,lang());
     var guide=root.LEX_LEGAL_CASE_GUIDE;
     var guided=next.dimension==="exam_execution"&&guide&&guide.parse(prompt,lang());
-    main+="<h2>"+esc((lang()==="en"?next.title_en:next.title_ar)||weakName(next.dimension))+"</h2>"+
+    main+="<h2 id='currentPractice' tabindex='-1'>"+esc((lang()==="en"?next.title_en:next.title_ar)||weakName(next.dimension))+"</h2>"+
       lawContext(next.sources)+"<p class='taskType'>"+t("تدريب على: ","Focus: ")+esc(weakName(next.dimension))+"</p>";
     if(guided){
      // The preserved legal question is presented one step at a time, but the
@@ -251,6 +252,7 @@ async function boot(){
 root.LEX_STUDENT_PATH={mount:boot,noHtmlScore:noHtmlScore,previousAnswerTitle:previousAnswerTitle,progressModel:progressModel,progressHtml:progressHtml};
 if(typeof module!=="undefined"&&module.exports)module.exports=root.LEX_STUDENT_PATH;
 })(typeof window!=="undefined"?window:globalThis);
+
 
 
 

@@ -326,12 +326,13 @@ function render(){
       "<div class='topactions'><span class='topbtn countryTop staticCountry'>🇶🇦 Qatar</span><a class='topbtn' href='student.html'>العربية</a><button class='topbtn' id='changePass'>Change password</button><span class='topbtn' aria-disabled='true' title='Public demo is unavailable in student accounts' style='opacity:.42;cursor:not-allowed;filter:grayscale(1);pointer-events:none' tabindex='-1'>◈ Public demo · Visitors only</span><a class='topbtn' href='index-en.html'>Website</a><button class='topbtn' id='logout'>Sign out</button></div>"+
     "</div></header>"+
     "<main class='wrap'>"+
+      "<section class='learnerWelcome'><div><h2>Your next step</h2><p>Your saved progress is ready. Continue at your own pace.</p></div>"+actionPrimary+"</section>"+
       "<section class='hero "+(course.completedProgram?"heroComplete":"")+"'>"+
         "<div class='heroMain'><span class='eyebrow'>"+esc(student.cohort||"Training Program")+"</span><h1>"+(course.completedProgram?"Congratulations "+esc(student.name)+"!":"Welcome "+esc(student.name))+"</h1><p>"+countryLabel(country)+" • Theory of Rights • 6 weeks • 30 practical sessions</p>"+
         "<div class='heroMeta'><span>"+(course.completedProgram?"6 / 6 Stages completed":"Week "+w+" of 6")+"</span><span>"+(course.completedProgram?"30 / 30 Sessions":"Session "+(course.session||1)+" of 30")+"</span><span>"+(course.completedProgram?"Training completed":course.completed.length+" sessions completed")+"</span></div></div>"+
         "<div class='heroSide studentHeroSide'><div class='heroVisual'>"+icon(course.completedProgram?"trophy":"compass")+"</div><h3>"+(course.completedProgram?"Well done! You completed the program":"Ready for the next session?")+"</h3><p>"+(course.completedProgram?"You can view your final achievement at any time.":(result?"One short session whose content changes with your performance.":"Start the short diagnostic so we can determine the best starting point."))+"</p></div>"+
       "</section>"+
-      "<section class='actionGrid singleAction'>"+actionPrimary+"</section>"+
+      
       (result?"<p style='margin-top:1rem'><a class='topbtn' href='student-path.html?lang=en'>Open all 30 adaptive sessions</a> · <a class='topbtn' href='diagnostic.html?lang=en'>View saved diagnostic results and skill scores</a></p>":"")+
       "<div class='sectionHead'><div><h2>Your program</h2><p>Each stage unlocks after you complete the previous one.</p></div><span class='progressTag'>"+course.completed.length+" / 30</span></div>"+
       "<section class='weekGrid'>"+weeks+"</section>"+
