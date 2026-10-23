@@ -86,7 +86,7 @@ function make(uid,lang,data,opts={}){
   assert.ok(!env.nodes.aiConsent,"diagnostic must not ask for external AI permission again");
   env.nodes.ungradedText.value="تبدأ الشخصية القانونية بالولادة الحية وتنتهي بالوفاة";
   await env.nodes.serverNext.onclick();
-  assert.deepEqual(events,["grade"]);
+  assert.deepEqual(events,[["grade"]]);
   assert.match(env.main.html,/80%/,"persisted AI estimate shown");
   assert.match(env.main.html,/تقديرات مبدئية للتدريب/);
  }
