@@ -36,7 +36,7 @@ async function runSignup({email="",phone="",lang="ar"}={}){
   fullName:{value:"Test Learner"},email:{value:email},whatsapp:{value:phone},
   password:{value:"ConferenceTest!123"},university:{value:"Qatar University"},
   faculty:{value:"College of Law"},academicSection:{value:"Civil Law"},studentNumber:{value:"REG-001"},groupEmail:{value:"class@university.edu"},
-  year:{value:"Year 1"},country:{value:"qa"},consent:{checked:true}
+  year:{value:"Year 1"},country:{value:"qa"},consent:{checked:true},externalAiConsent:{checked:false}
  };
  const cloud={
   isConfigured:()=>true,
@@ -61,6 +61,7 @@ async function runSignup({email="",phone="",lang="ar"}={}){
  assert.equal(empty.signupArgs.whatsapp_e164,null);
  assert.equal(empty.signupArgs.email,null);
  assert.equal(empty.signupArgs.faculty,"College of Law");
+ assert.equal(empty.signupArgs.accepted_external_ai,false,"AI consent must default to opt-out");
  assert.equal(empty.signupArgs.academic_section,"Civil Law");
  assert.equal(empty.signupArgs.student_registration_number,"REG-001");
  assert.equal(empty.signupArgs.institutional_group_email,"class@university.edu");
