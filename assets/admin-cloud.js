@@ -4,7 +4,7 @@ var APP=document.getElementById("adminApp");
 var SKEY="lexlearn_admin_session";
 var ss=null;try{ss=JSON.parse(localStorage.getItem(SKEY)||"null");}catch(e){}
 if(!ss||!ss.cloud||!window.LEX_CLOUD||!LEX_CLOUD.isConfigured()){location.replace("admin-login.html");return;}
-var state={tab:"dashboard",students:[],cohorts:[],audit:[],content:[],snapshots:[],attempts:[],pilotAttempts:[],pilotGrades:[],pilotAi:[],selected:null,q:"",busy:false,error:"",creds:null,staffRole:null};
+var state={tab:"dashboard",students:[],cohorts:[],audit:[],content:[],snapshots:[],attempts:[],pilotAttempts:[],pilotGrades:[],pilotAi:[],diagnostics:[],selected:null,q:"",busy:false,error:"",creds:null,staffRole:null};
 
 function nextStudentUsername(){
  var used=new Set(state.students.map(function(s){return String(s.username||"").toLowerCase();}));
@@ -34,15 +34,21 @@ function countryName(c){return c==="eg"?"مصر":"قطر";}
 function courseKey(s){var country=s.country||"qa";return country+"-"+(country==="qa"?"rights":"sources");}
 function profileSnap(id,country){country=country||"qa";var key=country+"-"+(country==="qa"?"rights":"sources");return state.snapshots.find(function(x){return x.user_id===id&&x.course_id===key&&x.snapshot_type==="profile";});}
 function courseSnap(id,country){country=country||"qa";var key=country+"-"+(country==="qa"?"rights":"sources");return state.snapshots.find(function(x){return x.user_id===id&&x.course_id===key&&x.snapshot_type==="course";});}
+function officialDiagnostic(userId){return state.diagnostics.find(function(x){return x.user_id===userId&&x.course_id==="qa-qu-lawc101-rights";})||null;}
 function view(s){
  var ps=profileSnap(s.id,s.country),cs=courseSnap(s.id,s.country),profile=ps&&ps.state||{results:{}},course=cs&&cs.state||{};
  var res=profile.results&&profile.results[courseKey(s)]||{},base=res.metrics||{};
+ var diagnostic=officialDiagnostic(s.id),diagnosticMetrics=diagnostic&&diagnostic.status==="completed"&&diagnostic.result&&diagnostic.result.metrics||{};
+ var rec=diagnostic&&diagnostic.result&&diagnostic.result.measurements&&diagnostic.result.measurements.recall||{},ai=rec.ai_grade||{};
+ var aiRecall=ai.status==="preliminary_ai"&&Number.isFinite(ai.provisional_percent)?ai.provisional_percent:null;
  var model=course.adaptiveModel||res.adaptiveModel||{},m={};
  ["recall","understanding","application","legal_precision","retention","exam"].forEach(function(k){
    var axis=model.axes&&model.axes[k];
-   m[k]=(axis&&axis.evidence>0&&axis.value!=null)?axis.value:(base[k]==null?null:base[k]);
+   var value=base[k]!=null?base[k]:(diagnosticMetrics[k]==null?null:diagnosticMetrics[k]);
+   if(k==="recall"&&value==null)value=aiRecall;
+   m[k]=(axis&&axis.evidence>0&&axis.value!=null)?axis.value:value;
  });
- return {s:s,m:m,model:model,course:course,completed:(course.completed||[]).length,session:Number(course.session)||1,errors:course.errors||[],profileUpdated:ps&&ps.updated_at||null,courseUpdated:cs&&cs.updated_at||null};
+ return {s:s,m:m,model:model,course:course,diagnostic:diagnostic,completed:(course.completed||[]).length,session:Number(course.session)||1,errors:course.errors||[],profileUpdated:ps&&ps.updated_at||null,courseUpdated:cs&&cs.updated_at||null};
 }
 function risk(v){
  var vals=["recall","understanding","application","legal_precision","retention","exam"].map(function(k){return v.m[k];}).filter(function(x){return x!=null;});
@@ -51,7 +57,7 @@ function risk(v){
  var highConfidenceWrong=(state.attempts||[]).some(function(a){return a.user_id===v.s.id&&a.confidence===3&&a.score!=null&&Number(a.score)<.55;});
  return min<45||highConfidenceWrong?"high":min<65?"mid":"low";
 }
-function rlabel(r){return r==="high"?"عاجل":r==="mid"?"متابعة":r==="low"?"مستقر":"لم يبدأ";}
+function rlabel(r,diag){return r==="high"?"عاجل":r==="mid"?"متابعة":r==="low"?"مستقر":diag&&diag.status==="completed"?"أكمل التشخيص":diag&&diag.status==="in_progress"?"بدأ التشخيص":"لم يبدأ";}
 function metric(k,v,meta){
  var t=v==null?"—":Math.round(v)+"%";
  var note=meta&&meta.status?meta.status:(v==null?"لم يُقَس":v>=80?"قوي":v>=60?"نامٍ":"أولوية");
@@ -106,7 +112,7 @@ function shell(body){
 }
 function kpis(){
  var a=state.students.filter(function(s){return s.active!==false;}).map(view);
- return '<section class="kpis"><div><span>الطلاب النشطون</span><b>'+a.length+'</b></div><div><span>بدأوا القياس</span><b>'+a.filter(function(v){return Object.keys(v.m).some(function(k){return v.m[k]!=null;});}).length+'</b></div><div><span>متابعة عاجلة</span><b>'+a.filter(function(v){return risk(v)==="high";}).length+'</b></div><div><span>أكملوا البرنامج</span><b>'+a.filter(function(v){return v.course.completedProgram;}).length+'</b></div></section>';
+ return '<section class="kpis"><div><span>الطلاب النشطون</span><b>'+a.length+'</b></div><div><span>بدأوا القياس</span><b>'+a.filter(function(v){return (v.diagnostic&&v.diagnostic.status!=="not_started")||Object.keys(v.m).some(function(k){return v.m[k]!=null;});}).length+'</b></div><div><span>متابعة عاجلة</span><b>'+a.filter(function(v){return risk(v)==="high";}).length+'</b></div><div><span>أكملوا البرنامج</span><b>'+a.filter(function(v){return v.course.completedProgram;}).length+'</b></div></section>';
 }
 function studentList(){
  var q=state.q.trim().toLowerCase();
@@ -114,7 +120,7 @@ function studentList(){
 }
 function detail(v){
  var s=v.s,r=risk(v),axes=v.model.axes||{},advice=adminAdvice(v),lastUpdate=v.courseUpdated||v.profileUpdated;
- return '<div class="studentSectionBanner identitySection"><span>01</span><div><b>البيانات الأساسية للطالب</b><small>الهوية والجامعة والسنة الدراسية — لا يلزم وجود مجموعة أو أستاذ</small></div></div><section class="panel studentHero"><div><span class="overline">'+esc(s.cohort||"طالب مستقل · دون مجموعة")+'</span><h2>'+esc(s.name||s.username)+'</h2><p>@'+esc(s.username)+' • '+countryName(s.country)+' • '+esc(s.university||"—")+' • '+esc(s.year||"—")+'</p>'+(s.whatsapp?'<p class="studentPhone">واتساب: <b dir="ltr">'+esc(s.whatsapp)+'</b> • '+(s.whatsappVerified?'تم التحقق':'لم يتم التحقق بعد')+'</p>':'')+'</div><span class="risk big '+r+'">'+rlabel(r)+'</span></section>'+
+ return '<div class="studentSectionBanner identitySection"><span>01</span><div><b>البيانات الأساسية للطالب</b><small>الهوية والجامعة والسنة الدراسية — لا يلزم وجود مجموعة أو أستاذ</small></div></div><section class="panel studentHero"><div><span class="overline">'+esc(s.cohort||"طالب مستقل · دون مجموعة")+'</span><h2>'+esc(s.name||s.username)+'</h2><p>@'+esc(s.username)+' • '+countryName(s.country)+' • '+esc(s.university||"—")+' • '+esc(s.year||"—")+'</p>'+(s.whatsapp?'<p class="studentPhone">واتساب: <b dir="ltr">'+esc(s.whatsapp)+'</b> • '+(s.whatsappVerified?'تم التحقق':'لم يتم التحقق بعد')+'</p>':'')+'</div><span class="risk big '+r+'">'+rlabel(r,v.diagnostic)+'</span></section>'+
  '<div class="studentSectionBanner trainingSection"><span>02</span><div><b>التدريب والتقييم</b><small>مؤشرات الأداء والمهارات — منفصلة عن بيانات الطالب الشخصية</small></div></div><section class="panel metricsPanel"><div class="panelHead"><div><h3>الملف التكيفي</h3><p>'+esc(modelText(v))+'</p></div><span class="realTag">Central DB</span></div><div class="metricGrid">'+
  ["recall","understanding","application","legal_precision","retention","exam"].map(function(k){return metric(k,v.m[k],axes[k]);}).join("")+'</div>'+(lastUpdate?'<p style="margin:14px 0 0;color:#6f7782;font-size:13px">آخر بيانات مستلمة: '+new Date(lastUpdate).toLocaleString("ar-EG")+'</p>':'')+'</section>'+
  '<section class="panel"><div class="panelHead"><div><h3>ملاحظات ونصائح للمشرف</h3><p>قراءة تلقائية مبنية على تجربة الطالب الفعلية، وليست درجة جامعية.</p></div><span class="realTag">Supervisor Note</span></div>'+
@@ -138,11 +144,11 @@ function essayAttempts(v){
 function dashboard(){
  var list=studentList(),selected=state.students.find(function(s){return s.id===state.selected;})||list[0],v=selected?view(selected):null;if(selected)state.selected=selected.id;
  return '<section class="hero"><div><span class="demoTag">Production Supervisor View</span><h1>تحليل مركزي قابل للتفسير</h1><p>كل طالب وحسابه وتقدمه وأدلته محفوظة مركزيًا، مع فصل الصلاحيات عن المتصفح.</p></div><button class="btn light" id="refresh">تحديث البيانات</button></section>'+kpis()+
- '<section class="dashboardGrid"><aside class="panel studentAside"><div class="panelHead"><div><h3>الطلاب</h3><p>'+list.length+' حساب</p></div><button class="iconBtn" id="quickAdd">'+ico("plus")+'</button></div><input class="search" id="search" value="'+esc(state.q)+'" placeholder="اسم أو مستخدم..."><div class="studentList">'+list.map(function(s){var vv=view(s),rr=risk(vv);return '<button class="studentBtn '+(s.id===state.selected?"active":"")+'" data-student="'+s.id+'"><div><b>'+esc(s.name||s.username)+'</b><small>@'+esc(s.username)+' • '+vv.completed+'/30</small></div><span class="risk '+(s.active===false?"none":rr)+'">'+(s.active===false?(s.accountStatus==="pending"?"بانتظار الاعتماد":s.accountStatus==="paused"?"موقوف مؤقتًا":"معطّل"):rlabel(rr))+'</span></button>';}).join("")+'</div></aside><div>'+(v?detail(v):'<div class="panel empty">لا يوجد طلاب بعد.</div>')+'</div></section>';
+ '<section class="dashboardGrid"><aside class="panel studentAside"><div class="panelHead"><div><h3>الطلاب</h3><p>'+list.length+' حساب</p></div><button class="iconBtn" id="quickAdd">'+ico("plus")+'</button></div><input class="search" id="search" value="'+esc(state.q)+'" placeholder="اسم أو مستخدم..."><div class="studentList">'+list.map(function(s){var vv=view(s),rr=risk(vv);return '<button class="studentBtn '+(s.id===state.selected?"active":"")+'" data-student="'+s.id+'"><div><b>'+esc(s.name||s.username)+'</b><small>@'+esc(s.username)+' • '+vv.completed+'/30</small></div><span class="risk '+(s.active===false?"none":rr)+'">'+(s.active===false?(s.accountStatus==="pending"?"بانتظار الاعتماد":s.accountStatus==="paused"?"موقوف مؤقتًا":"معطّل"):rlabel(rr,vv.diagnostic))+'</span></button>';}).join("")+'</div></aside><div>'+(v?detail(v):'<div class="panel empty">لا يوجد طلاب بعد.</div>')+'</div></section>';
 }
 function studentsTab(){
  var a=studentList(),pending=state.students.filter(function(x){return x.accountStatus==="pending";}).length;
- return '<section class="pageTitle"><div><span class="overline">Central Accounts</span><h1>الطلاب</h1><p>'+(pending?'طلبات تسجيل بانتظار الاعتماد: '+pending+' • ':'')+'حسابات مركزية، والمجموعة والأستاذ اختياريان. يمكن للمشرف مساعدة أي طالب تعثر في التسجيل.</p></div><div class="pageActions"><button class="btn primary" id="add">'+ico("plus")+' إضافة طالب</button><button class="btn secondary" id="export">تصدير CSV</button></div></section><section class="panel"><input class="search" id="ssearch" value="'+esc(state.q)+'" placeholder="بحث..."><div class="studentTable"><div class="tr head"><span>الطالب</span><span>المجموعة</span><span>التقدم</span><span>الأولوية</span><span>الحالة</span></div>'+a.map(function(s){var v=view(s),r=risk(v);return '<button class="tr" data-open="'+s.id+'"><span><b>'+esc(s.name||s.username)+'</b><small>@'+esc(s.username)+'</small></span><span>'+esc(s.cohort||"—")+'</span><span>'+v.completed+'/30</span><span>'+esc(v.model.weakest?label(v.model.weakest):"—")+'</span><span class="risk '+(s.active===false?"none":r)+'">'+(s.active===false?(s.accountStatus==="pending"?"بانتظار الاعتماد":s.accountStatus==="paused"?"موقوف مؤقتًا":"معطّل"):rlabel(r))+'</span></button>';}).join("")+'</div></section>';
+ return '<section class="pageTitle"><div><span class="overline">Central Accounts</span><h1>الطلاب</h1><p>'+(pending?'طلبات تسجيل بانتظار الاعتماد: '+pending+' • ':'')+'حسابات مركزية، والمجموعة والأستاذ اختياريان. يمكن للمشرف مساعدة أي طالب تعثر في التسجيل.</p></div><div class="pageActions"><button class="btn primary" id="add">'+ico("plus")+' إضافة طالب</button><button class="btn secondary" id="export">تصدير CSV</button></div></section><section class="panel"><input class="search" id="ssearch" value="'+esc(state.q)+'" placeholder="بحث..."><div class="studentTable"><div class="tr head"><span>الطالب</span><span>المجموعة</span><span>التقدم</span><span>الأولوية</span><span>الحالة</span></div>'+a.map(function(s){var v=view(s),r=risk(v);return '<button class="tr" data-open="'+s.id+'"><span><b>'+esc(s.name||s.username)+'</b><small>@'+esc(s.username)+'</small></span><span>'+esc(s.cohort||"—")+'</span><span>'+v.completed+'/30</span><span>'+esc(v.model.weakest?label(v.model.weakest):"—")+'</span><span class="risk '+(s.active===false?"none":r)+'">'+(s.active===false?(s.accountStatus==="pending"?"بانتظار الاعتماد":s.accountStatus==="paused"?"موقوف مؤقتًا":"معطّل"):rlabel(r,v.diagnostic))+'</span></button>';}).join("")+'</div></section>';
 }
 function cohortsTab(){
  return '<section class="pageTitle"><div><span class="overline">Cohorts</span><h1>المجموعات</h1><p>مجموعات الـPilot والمؤسسات.</p></div><button class="btn primary" id="newCohort">'+ico("plus")+' مجموعة جديدة</button></section><section class="cohortGrid">'+state.cohorts.map(function(c){return '<div class="panel cohortCard"><span class="cohortIcon">'+ico("group")+'</span><h3>'+esc(c.name)+'</h3><p>'+state.students.filter(function(s){return s.cohort===c.name;}).length+' طالب</p><div class="cohortMeta"><span>'+esc(c.institution||"—")+'</span><span>'+esc(c.academic_year||"—")+'</span></div></div>';}).join("")+'</section>';
@@ -194,10 +200,11 @@ async function load(){
     c.from("attempts").select("user_id,course_id,dimension,answer_text,grading_method,score,confidence,error_type,created_at").order("created_at",{ascending:false}).limit(1000),
     c.from("attempts").select("id,user_id,answer_text,selected_option,created_at").eq("course_id","qa-qu-lawc101-rights").eq("grading_method","pilot_human_pending").order("created_at",{ascending:false}).limit(500),
     c.from("pilot_human_grades").select("attempt_id,passed,feedback,criteria,reviewed_at").order("reviewed_at",{ascending:false}).limit(500),
-    c.from("pilot_ai_grades").select("attempt_id,status,passed,score,feedback,model_confidence,criteria,source_ids,created_at").order("created_at",{ascending:false}).limit(500)
+    c.from("pilot_ai_grades").select("attempt_id,status,passed,score,feedback,model_confidence,criteria,source_ids,created_at").order("created_at",{ascending:false}).limit(500),
+    c.from("student_diagnostic_runs").select("user_id,course_id,status,attempt_id,result,training_plan,completed_at,updated_at").eq("course_id","qa-qu-lawc101-rights")
   ]);
   if(results.slice(4).some(function(x){return x.error;}))throw results.slice(4).find(function(x){return x.error;}).error;
-  state.students=results[0];state.cohorts=results[1];state.audit=results[2];state.content=results[3];state.snapshots=results[4].data||[];state.attempts=results[5].data||[];state.pilotAttempts=results[6].data||[];state.pilotGrades=results[7].data||[];state.pilotAi=results[8].data||[];
+  state.students=results[0];state.cohorts=results[1];state.audit=results[2];state.content=results[3];state.snapshots=results[4].data||[];state.attempts=results[5].data||[];state.pilotAttempts=results[6].data||[];state.pilotGrades=results[7].data||[];state.pilotAi=results[8].data||[];state.diagnostics=results[9].data||[];
   if(!state.selected&&state.students[0])state.selected=state.students[0].id;
  }catch(e){state.error=e&&e.message||String(e);}
  state.busy=false;render();
