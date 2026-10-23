@@ -167,7 +167,7 @@ async function startUI(){
       if(check.status!=="completed"||check.attempt_id!==reply.attempt_id)throw new Error("completion_readback_failed");
       saving=false;await showCompleted(check);
      }
-    }catch(e){error.textContent=tr("تعذّر تأكيد الحفظ: ","Save not confirmed: ")+String(e.message||e);saving=false;var btn=root.document.getElementById("serverNext");if(btn)btn.disabled=false;}
+    }catch(e){error.textContent=tr("تعذّر حفظ هذه الخطوة. إجابتك ما زالت موجودة؛ حاول مرة أخرى، وإذا استمرت المشكلة تواصل مع المشرف.","Could not save this step. Your answer is still here; retry or contact the supervisor.");saving=false;var btn=root.document.getElementById("serverNext");if(btn)btn.disabled=false;}
    };
   }
   page();
