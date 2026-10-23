@@ -20,6 +20,10 @@ for(const html of [ar,en]){
  "Status message must remain visible after form is hidden");
  assert.doesNotMatch(html,/id="whatsapp"[^>]*\srequired\b/);
  assert.doesNotMatch(html,/id="email"[^>]*\srequired\b/);
+ assert.match(html,/id="faculty"[^>]*required/);
+ assert.match(html,/id="academicSection"/);
+ assert.match(html,/id="studentNumber"/);
+ assert.match(html,/id="groupEmail"/);
 }
 async function runSignup({email="",phone="",lang="ar"}={}){
  let signupArgs=null,signedIn=null,submit=null,reset=false;
@@ -31,6 +35,7 @@ async function runSignup({email="",phone="",lang="ar"}={}){
   copyUsername:{textContent:"",addEventListener:()=>{}},startTraining:{href:"#",textContent:""},
   fullName:{value:"Test Learner"},email:{value:email},whatsapp:{value:phone},
   password:{value:"ConferenceTest!123"},university:{value:"Qatar University"},
+  faculty:{value:"College of Law"},academicSection:{value:"Civil Law"},studentNumber:{value:"REG-001"},groupEmail:{value:"class@university.edu"},
   year:{value:"Year 1"},country:{value:"qa"},consent:{checked:true}
  };
  const cloud={
@@ -55,6 +60,10 @@ async function runSignup({email="",phone="",lang="ar"}={}){
  const empty=await runSignup();
  assert.equal(empty.signupArgs.whatsapp_e164,null);
  assert.equal(empty.signupArgs.email,null);
+ assert.equal(empty.signupArgs.faculty,"College of Law");
+ assert.equal(empty.signupArgs.academic_section,"Civil Law");
+ assert.equal(empty.signupArgs.student_registration_number,"REG-001");
+ assert.equal(empty.signupArgs.institutional_group_email,"class@university.edu");
  assert.equal(empty.elements.conferenceAccount.hidden,false);
  assert.equal(empty.elements.registerForm.hidden,true);
  assert.equal(empty.elements.createdUsername.textContent,"lexabc123def456");
