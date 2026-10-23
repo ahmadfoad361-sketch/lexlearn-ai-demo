@@ -129,8 +129,8 @@ async function getDiagnosticAiAudit(attemptId){
   .eq("user_id",u.data.user.id)
   .eq("course_id","qa-qu-lawc101-rights")
   .eq("item_id","diagnostic-legal-personality:"+attemptId)
-  .eq("prompt_version","lexlearn-diagnostic-ai-v1")
-  .maybeSingle();
+  .in("prompt_version",["lexlearn-diagnostic-ai-v1","lexlearn-diagnostic-ai-v2"])
+  .order("created_at",{ascending:false}).limit(1).maybeSingle();
  if(r.error)throw r.error;
  return r.data&&r.data.result||null;
 }
