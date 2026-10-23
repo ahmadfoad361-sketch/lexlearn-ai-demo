@@ -125,34 +125,58 @@ async function boot(){
      "<p role='status'>"+t("اكتملت الجلسات التدريبية الثلاثون. احتفظ بنتائجك للمراجعة.","All 30 practice sessions completed; your results remain saved for review.")+"</p>");
    }else if(next){
     var prompt=lang()==="en"?next.prompt_en:next.prompt_ar;
+    var guide=root.LEX_LEGAL_CASE_GUIDE;
+    var guided=next.dimension==="exam_execution"&&guide&&guide.parse(prompt,lang());
     main+="<h2>"+esc((lang()==="en"?next.title_en:next.title_ar)||weakName(next.dimension))+"</h2>"+
-      "<p class='taskType'>"+t("تدريب على: ","Focus: ")+esc(weakName(next.dimension))+"</p>"+
-      "<div class='prompt' style='white-space:pre-wrap'>"+esc(prompt)+"</div>"+
+      "<p class='taskType'>"+t("تدريب على: ","Focus: ")+esc(weakName(next.dimension))+"</p>";
+    if(guided){
+     // The preserved legal question is presented one step at a time, but the
+     // answer goes to the existing server rubric with explicit section headings.
+     main+="<div id='legalExamGuide'></div>";
+    }else{
+     main+="<div class='prompt' style='white-space:pre-wrap'>"+esc(prompt)+"</div>"+
       "<label for='adaptiveEssay'>"+t("اكتب إجابتك القانونية بأسلوبك","Write your legal explanation in your own words")+"</label>"+
-      "<textarea id='adaptiveEssay' rows='7' maxlength='4000' placeholder='"+t("المسألة والقاعدة والتطبيق والنتيجة عند الحاجة...","Identify rule, facts, analysis and result where relevant...")+"'></textarea>"+
-      "<button type='button' id='adaptiveSubmit'>"+t("احفظ الإجابة وحللها ثم انتقل","Save, analyse, and continue")+"</button>"+
-      "<p id='adaptiveError' role='alert'></p>";
+      "<textarea id='adaptiveEssay' rows='7' maxlength='4000' placeholder='"+t("اكتب إجابتك بأسلوبك...","Write your answer in your own words...")+"'></textarea>"+
+      "<button type='button' id='adaptiveSubmit'>"+t("احفظ الإجابة وحللها ثم انتقل","Save, analyse, and continue")+"</button>";
+    }
+    main+="<p id='adaptiveError' role='alert' aria-live='polite'></p>";
    }
    main+="</section>";
    show(nav()+main);
    var nextButton=host.querySelector("#nextSession");
    if(nextButton)nextButton.onclick=function(){if(!busy){root.location.href=url(selected+1);}};
-   var submit=host.querySelector("#adaptiveSubmit");
-   if(submit)submit.onclick=async function(){
+   async function submitAnswer(answer,button){
     if(busy)return;
-    var answer=host.querySelector("#adaptiveEssay").value.trim();
-    if(answer.length<8){host.querySelector("#adaptiveError").textContent=t("اكتب إجابة من ثمانية أحرف على الأقل.","Write at least eight characters.");return;}
-    busy=true;submit.disabled=true;host.querySelector("#adaptiveError").textContent=t("جارٍ حفظ إجابتك وتحليلها...","Saving and performing provisional review...");
+    answer=String(answer||"").trim();
+    var error=host.querySelector("#adaptiveError");
+    if(answer.length<8){if(error)error.textContent=t("اكتب إجابة من ثمانية أحرف على الأقل.","Write at least eight characters.");return;}
+    busy=true;button.disabled=true;
+    if(error)error.textContent=t("جارٍ حفظ إجابتك وتحليلها...","Saving and performing provisional review...");
     try{
      var v=await cloud.studentLifecycleRpc("trainingSubmit",{courseId:COURSE,session:selected,itemId:next.id,answer:answer});
      if(!v||!v.allowed||!v.saved||!byId(v.saved,next.id))throw Error("answer_not_verified");
      var checked=await cloud.studentLifecycleRpc("trainingOpen",{courseId:COURSE,session:selected});
      if(!checked||!checked.allowed||!byId(checked.saved,next.id))throw Error("answer_readback_failed");
      data=checked;
-     if(data.completed){var fresh=await cloud.studentLifecycleRpc("trainingOverview",{courseId:COURSE});if(fresh&&fresh.allowed)overview=fresh;await loadProgress();}
+     if(data.completed){
+      var fresh=await cloud.studentLifecycleRpc("trainingOverview",{courseId:COURSE});
+      if(fresh&&fresh.allowed)overview=fresh;
+      await loadProgress();
+     }
      busy=false;render();
-    }catch(e){busy=false;submit.disabled=false;host.querySelector("#adaptiveError").textContent=t("تعذر تأكيد حفظ الإجابة. إجابتك ما زالت هنا؛ تحقق من الاتصال ثم أعد المحاولة.","We could not confirm your answer was saved. Your text is still here; check your connection and try again.");}
-   };
+    }catch(e){
+     busy=false;button.disabled=false;
+     if(error)error.textContent=t("تعذر تأكيد حفظ الإجابة. إجابتك ما زالت هنا؛ تحقق من الاتصال ثم أعد المحاولة.","We could not confirm your answer was saved. Your text is still here; check the connection and try again.");
+    }
+   }
+   if(next&&guided){
+    guide.mount(host.querySelector("#legalExamGuide"),{prompt:prompt,language:lang(),onSubmit:submitAnswer});
+   }else if(next){
+    var submit=host.querySelector("#adaptiveSubmit");
+    if(submit)submit.onclick=function(){
+     submitAnswer(host.querySelector("#adaptiveEssay").value,this);
+    };
+   }
   }
   await open(selected);
  }catch(e){reportError(e);}
