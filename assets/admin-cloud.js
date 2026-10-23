@@ -63,6 +63,23 @@ function metric(k,v,meta){
  var note=meta&&meta.status?meta.status:(v==null?"لم يُقَس":v>=80?"قوي":v>=60?"نامٍ":"أولوية");
  return '<div class="metric '+(k==='recall'?'axis-recall':k==='understanding'?'axis-understanding':'')+'"><span>'+label(k)+'</span><b>'+t+'</b><small>'+esc(note)+'</small><div class="bar"><i style="width:'+(v==null?((k==='recall'||k==='understanding')?0:3):Math.max((k==='recall'||k==='understanding')?0:3,Math.min(100,v)))+'%"></i></div></div>';
 }
+function officialDiagnosticSummary(v){
+ var d=v.diagnostic;
+ if(!d)return '<section class="panel"><h3>التقييم التشخيصي الرسمي</h3><p>لا يوجد اختبار تشخيصي مسجل لهذا الطالب حتى الآن.</p></section>';
+ var stateText=d.status==="completed"?"مكتمل":d.status==="in_progress"?"جارٍ":"لم يبدأ";
+ var result=d.status==="completed"?d.result||{}:{},metrics=result.metrics||{},rec=result.measurements&&result.measurements.recall||{},ai=rec.ai_grade||{};
+ var aiOk=ai.status==="preliminary_ai"&&Number.isFinite(ai.provisional_percent);
+ var metricText=function(v){return typeof v==="number"&&Number.isFinite(v)?Math.round(v)+"%":"لم يُقَس";};
+ var date=d.completed_at?new Date(d.completed_at).toLocaleString("ar-EG"):"—";
+ var appSkipped=Array.isArray(result.answers)&&result.answers.some(function(a){return a.question_id==="q63a"&&a.selected===-1;});
+ return '<section class="panel" aria-label="التقييم التشخيصي الرسمي"><h3>التقييم التشخيصي الرسمي · '+stateText+'</h3>'+
+  (d.status==="completed"?'<p>تاريخ الإكمال: '+esc(date)+' · النتيجة محفوظة على الخادم.</p>'+
+  '<p>التعرّف على القاعدة: '+metricText(metrics.recognition)+' • الفهم: '+metricText(metrics.understanding)+
+  ' • التطبيق: '+(appSkipped?"اختار لا أدري":metricText(metrics.application))+'</p>'+
+  '<p><b>تصحيح OpenAI للإجابة الحرة:</b> '+(aiOk?metricText(ai.provisional_percent)+" — تقدير مبدئي يحتاج مراجعة":"لا توجد نتيجة OpenAI محفوظة")+'</p>'+
+  '<p>نسبة المحرك الداخلي القديمة ليست دليلًا على اكتمال الحفظ؛ لا تُعرض كنسبة معتمدة.</p>':
+  '<p>حالة التشخيص: '+esc(stateText)+'، ولا توجد نتيجة مكتملة حتى الآن.</p>')+'</section>';
+}
 function modelText(v){
  if(v.model&&v.model.bridge&&v.model.bridge.label)return v.model.bridge.label;
  var entries=["recall","understanding","application","legal_precision","retention","exam"].filter(function(k){return v.m[k]!=null;}).sort(function(a,b){return v.m[a]-v.m[b];});
@@ -120,7 +137,7 @@ function studentList(){
 }
 function detail(v){
  var s=v.s,r=risk(v),axes=v.model.axes||{},advice=adminAdvice(v),lastUpdate=v.courseUpdated||v.profileUpdated;
- return '<div class="studentSectionBanner identitySection"><span>01</span><div><b>البيانات الأساسية للطالب</b><small>الهوية والجامعة والسنة الدراسية — لا يلزم وجود مجموعة أو أستاذ</small></div></div><section class="panel studentHero"><div><span class="overline">'+esc(s.cohort||"طالب مستقل · دون مجموعة")+'</span><h2>'+esc(s.name||s.username)+'</h2><p>@'+esc(s.username)+' • '+countryName(s.country)+' • '+esc(s.university||"—")+' • '+esc(s.year||"—")+'</p>'+(s.whatsapp?'<p class="studentPhone">واتساب: <b dir="ltr">'+esc(s.whatsapp)+'</b> • '+(s.whatsappVerified?'تم التحقق':'لم يتم التحقق بعد')+'</p>':'')+'</div><span class="risk big '+r+'">'+rlabel(r,v.diagnostic)+'</span></section>'+
+ return '<div class="studentSectionBanner identitySection"><span>01</span><div><b>البيانات الأساسية للطالب</b><small>الهوية والجامعة والسنة الدراسية — لا يلزم وجود مجموعة أو أستاذ</small></div></div><section class="panel studentHero"><div><span class="overline">'+esc(s.cohort||"طالب مستقل · دون مجموعة")+'</span><h2>'+esc(s.name||s.username)+'</h2><p>@'+esc(s.username)+' • '+countryName(s.country)+' • '+esc(s.university||"—")+' • '+esc(s.year||"—")+'</p>'+(s.whatsapp?'<p class="studentPhone">واتساب: <b dir="ltr">'+esc(s.whatsapp)+'</b> • '+(s.whatsappVerified?'تم التحقق':'لم يتم التحقق بعد')+'</p>':'')+'</div><span class="risk big '+r+'">'+rlabel(r,v.diagnostic)+'</span></section>'+officialDiagnosticSummary(v)+
  '<div class="studentSectionBanner trainingSection"><span>02</span><div><b>التدريب والتقييم</b><small>مؤشرات الأداء والمهارات — منفصلة عن بيانات الطالب الشخصية</small></div></div><section class="panel metricsPanel"><div class="panelHead"><div><h3>الملف التكيفي</h3><p>'+esc(modelText(v))+'</p></div><span class="realTag">Central DB</span></div><div class="metricGrid">'+
  ["recall","understanding","application","legal_precision","retention","exam"].map(function(k){return metric(k,v.m[k],axes[k]);}).join("")+'</div>'+(lastUpdate?'<p style="margin:14px 0 0;color:#6f7782;font-size:13px">آخر بيانات مستلمة: '+new Date(lastUpdate).toLocaleString("ar-EG")+'</p>':'')+'</section>'+
  '<section class="panel"><div class="panelHead"><div><h3>ملاحظات ونصائح للمشرف</h3><p>قراءة تلقائية مبنية على تجربة الطالب الفعلية، وليست درجة جامعية.</p></div><span class="realTag">Supervisor Note</span></div>'+
