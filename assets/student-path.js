@@ -174,7 +174,7 @@ async function boot(){
    }else if(next){
     var submit=host.querySelector("#adaptiveSubmit");
     if(submit)submit.onclick=function(){
-     submitAnswer(host.querySelector("#adaptiveEssay").value,this);
+     return submitAnswer(host.querySelector("#adaptiveEssay").value,this);
     };
    }
   }
