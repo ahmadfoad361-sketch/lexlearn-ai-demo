@@ -146,12 +146,14 @@ function make(uid,lang,data,opts={}){
  fail.choose(0);await fail.nodes.serverNext.onclick();
  assert.equal(data.failed.draft.length,0);
  assert.equal(fail.redirects.length,0);
- assert.match(fail.nodes.serverError.textContent,/network_lost/);
+ assert.match(fail.nodes.serverError.textContent,/إجابتك ما زالت موجودة/);
+ assert.doesNotMatch(fail.nodes.serverError.textContent,/network_lost/);
  // Content not approved -> no questions shown, no bypass.
  const denied=make("unreviewed","ar",data,{unapproved:true});
  await denied.win.LEX_SERVER_DIAGNOSTIC.mount();
  assert.equal(denied.nodes.beginDiagnostic,undefined,"unapproved questions never render a start button");
- assert.match(denied.main.html,/تنتظر مراجعة/);
+ assert.match(denied.main.html,/تعذّر فتح الاختبار/);
+ assert.doesNotMatch(denied.main.html,/اعتمادًا قانونيًا وأكاديميًا/);
  assert.ok(!denied.nodes.serverNext);
  console.log("Server-connected diagnostic UI mock PASS: AR/EN start/draft/readback, return, partial resume, failure, approval guard");
 })().catch(e=>{console.error(e);process.exitCode=1;});
