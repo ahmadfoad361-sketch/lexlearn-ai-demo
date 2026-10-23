@@ -14,5 +14,8 @@ jobs:
       - run: node tests/training-ai-client.test.js
       - run: node tests/admin-pilot-registration.test.mjs
       - run: node tests/legal-study.test.js
+      - run: node tests/learning-moments.test.js
+      - run: node tests/beginner-prompts.test.js
+
 
 

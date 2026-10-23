@@ -1,5 +1,5 @@
 // Scores are calculated from the approved rubric, never from a model-supplied total.
-export const VERSION = "lexlearn-training-ai-v1";
+export const VERSION = "lexlearn-training-ai-v2";
 export const SCHEMA = {type:"object",additionalProperties:false,properties:{
  criteria:{type:"array",items:{type:"object",additionalProperties:false,properties:{id:{type:"string"},met:{type:"boolean"},evidence:{type:"string"}},required:["id","met","evidence"]}},
  confidence:{type:"number"},review_required:{type:"boolean"},
@@ -39,4 +39,5 @@ export function summarize(rows, diagnostic) {
   measured.length===1?(measured[0]==="recall"?"understanding":"recall"):"foundation";
  return {skills,priority,status:measured.length?"preliminary_evidence":"insufficient_evidence"};
 }
+
 

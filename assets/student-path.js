@@ -1,6 +1,6 @@
 /* LexLearn: authenticated, server-gated, founder-authorized 30-session internal pilot.
  * The four-task public demo and browser local scores never enter this student path.
- * Heuristic rubric coverage is labelled provisional: it is not LLM semantic grading.
+ * Only confirmed semantic assessments enter the visual scores; completion remains server-authorized.
  */
 (function(root){
 "use strict";
@@ -39,19 +39,25 @@ function progressModel(rows,session){
  return {level:Math.ceil(session/5),checkpoint:checkpoint,skills:skills,needsReview:skills.filter(function(x){return x.current.score===null||x.current.score<70||x.current.assessed<x.current.total;}).map(function(x){return x.dimension;})};
 }
 function progressHtml(rows,session,historyAvailable){
- var m=progressModel(rows,session);
+ var m=progressModel(rows,session),visual=root.LEX_MOMENTS,card=momentData(rows,session);
  return "<section class='progressReport' aria-label='"+t("ملخص تقدمك","Your progress report")+"'><h2>"+
  (m.checkpoint?t("إتمام المستوى ","Level completion ")+m.level:t("ملخص الجلسة ","Session summary ")+session)+"</h2>"+
+ (visual?visual.completion(card,lang()):"")+
  "<p class='completionState'>✓ "+t("أكملت مهام هذه الجلسة وحُفظت إجاباتك.","You completed this session and your answers were saved.")+"</p>"+
  "<div class='progressSkills'>"+m.skills.map(function(x){
    var aiRows=(rows||[]).filter(function(r){return r.dimension===x.dimension&&r.session_number===session&&r.evaluation&&r.evaluation.status==="preliminary_ai";});
    var values=aiRows.map(function(r){return r.evaluation.provisional_percent;}).filter(function(v){return typeof v==="number"&&Number.isFinite(v)&&v>=0&&v<=100;});
    var shown=values.length?noHtmlScore(values.reduce(function(a,b){return a+b;},0)/values.length):t("قيد المراجعة","Under review");
-   return "<article class='progressSkill'><h3>"+esc(weakName(x.dimension))+"</h3><strong>"+esc(shown)+"</strong>"+
+   return "<article class='progressSkill'><h3>"+esc(weakName(x.dimension))+"</h3>"+(visual?visual.ring(card[x.dimension],x.dimension):"")+"<strong>"+esc(shown)+"</strong>"+
    "<p>"+t("إجابات محفوظة: ","Saved answers: ")+x.current.total+"</p></article>";
  }).join("")+"</div>"+
- "<p class='nextAdvice'>"+t("راجع عناصر القاعدة وطبّقها على مثال جديد. لا تُستخدم نسب مطابقة الكلمات للحكم على مستواك.","Review the legal rule elements and apply them to a new example. Word-match percentages do not determine your ability.")+"</p>"+
- "<small>"+t("هذه مؤشرات تدريبية أولية، وليست درجات رسمية. سيُعاد قياس المهارات بأسئلة مستقلة.","These are preliminary practice indicators, not official grades. Skills will be reassessed with independent questions.")+"</small></section>";
+ "<p class='nextAdvice'>"+t("خطوتك التالية: اختر جزءًا احتجت فيه إلى مساعدة، واشرحه بكلماتك، ثم جرّبه في مثال جديد.","Your next step: choose one part you needed help with, explain it in your own words, then try it in a new example.")+"</p>"+
+ "<small>"+t("هذه مؤشرات تدريبية أولية، وليست درجات رسمية. سيُعاد قياس المهارات بأسئلة مستقلة.","These are preliminary practice indicators, not official grades. Skills will be reassessed with independent questions.")+"</small>"+(visual?visual.downloadButton(lang()):"")+"</section>";
+}
+function momentData(rows,session){
+ var data={kind:session%5===0?"level":"session",level:Math.ceil(session/5),session:session};
+ ["recall","understanding"].forEach(function(dim){var a=(rows||[]).filter(function(r){return r.session_number===session&&r.dimension===dim&&r.evaluation&&r.evaluation.status==="preliminary_ai";}).map(function(r){return r.evaluation.provisional_percent;}).filter(function(v){return typeof v==="number"&&Number.isFinite(v)&&v>=0&&v<=100;});data[dim]=a.length?Math.round(a.reduce(function(x,y){return x+y;},0)/a.length):null;});
+ return data;
 }
 
 async function boot(){
@@ -145,7 +151,7 @@ async function boot(){
     (selected<30?"<button type='button' id='nextSession'>"+(selected%5===0?t("انتقل إلى المستوى ","Continue to level ")+(Math.ceil(selected/5)+1):t("انتقل للجلسة التالية","Continue to next session"))+"</button>":
      "<p role='status'>"+t("اكتملت الجلسات التدريبية الثلاثون. احتفظ بنتائجك للمراجعة.","All 30 practice sessions completed; your results remain saved for review.")+"</p>");
    }else if(next){
-    var prompt=lang()==="en"?next.prompt_en:next.prompt_ar;
+    var prompt=root.LEX_BEGINNER_PROMPTS?root.LEX_BEGINNER_PROMPTS.prepare(next,lang()):(lang()==="en"?next.prompt_en:next.prompt_ar);
     var guide=root.LEX_LEGAL_CASE_GUIDE;
     var guided=next.dimension==="exam_execution"&&guide&&guide.parse(prompt,lang());
     main+="<h2>"+esc((lang()==="en"?next.title_en:next.title_ar)||weakName(next.dimension))+"</h2>"+
@@ -160,10 +166,11 @@ async function boot(){
       "<textarea id='adaptiveEssay' rows='7' maxlength='4000' placeholder='"+t("اكتب إجابتك بأسلوبك...","Write your answer in your own words...")+"'></textarea>"+
       "<button type='button' id='adaptiveSubmit'>"+t("احفظ الإجابة وحللها ثم انتقل","Save, analyse, and continue")+"</button>";
     }
-    main+="<p id='adaptiveError' role='alert' aria-live='polite'></p>";
+    main+="<div id='answerSaveProgress'></div><p id='adaptiveError' role='alert' aria-live='polite'></p>";
    }
    main+="</section>";
    show(nav()+main);
+   if(completed&&root.LEX_MOMENTS)root.LEX_MOMENTS.bindDownload(host,momentData(progressRows,selected),lang());
    var nextButton=host.querySelector("#nextSession");
    if(nextButton)nextButton.onclick=function(){if(!busy){root.location.href=url(selected+1);}};
    async function submitAnswer(answer,button){
@@ -173,9 +180,12 @@ async function boot(){
     if(answer.length<8){if(error)error.textContent=t("اكتب إجابة من ثمانية أحرف على الأقل.","Write at least eight characters.");return;}
     busy=true;button.disabled=true;
     if(error)error.textContent=t("جارٍ حفظ إجابتك وتحليلها...","Saving and performing provisional review...");
+    var savingView=host.querySelector("#answerSaveProgress");
+    if(savingView&&root.LEX_MOMENTS){if(error)error.textContent="";savingView.innerHTML=root.LEX_MOMENTS.saveProgress("saving",lang());}
     try{
      var v=await cloud.studentLifecycleRpc("trainingSubmit",{courseId:COURSE,session:selected,itemId:next.id,answer:answer});
      if(!v||!v.allowed||!v.saved||!byId(v.saved,next.id))throw Error("answer_not_verified");
+     if(savingView&&root.LEX_MOMENTS)savingView.innerHTML=root.LEX_MOMENTS.saveProgress("assessment",lang());
      aiUnavailable=false;
      if(acceptedAi&&cloud.gradeTrainingAi){
       try{var ai=await cloud.gradeTrainingAi(selected,next.id);aiUnavailable=!ai||ai.status!=="preliminary_ai";}
@@ -190,8 +200,10 @@ async function boot(){
       await loadProgress();
      }
      busy=false;render();
+     if(data.completed&&selected%5===0&&overview.completed_count>=selected&&root.LEX_MOMENTS)root.LEX_MOMENTS.celebrate(host,uid+":"+COURSE+":"+selected);
     }catch(e){
      busy=false;button.disabled=false;
+     if(savingView)savingView.innerHTML="";
      if(error)error.textContent=t("تعذر تأكيد حفظ الإجابة. إجابتك ما زالت هنا؛ تحقق من الاتصال ثم أعد المحاولة.","We could not confirm your answer was saved. Your text is still here; check the connection and try again.");
     }
    }
@@ -210,6 +222,7 @@ async function boot(){
 root.LEX_STUDENT_PATH={mount:boot,noHtmlScore:noHtmlScore,previousAnswerTitle:previousAnswerTitle,progressModel:progressModel,progressHtml:progressHtml};
 if(typeof module!=="undefined"&&module.exports)module.exports=root.LEX_STUDENT_PATH;
 })(typeof window!=="undefined"?window:globalThis);
+
 
 
 

@@ -14,8 +14,8 @@ var copy={
       step:"خطوة",of:"من",previous:"السابق",next:"التالي",review:"راجع إجابتي",
       send:"احفظ الإجابة وانتقل",edit:"تعديل الإجابة",summary:"إجابتك قبل الحفظ",
       empty:"لم تكتب إجابة لهذا الجزء.",missing:"اكتب إجابتك أو أكمل باقي الخطوات قبل الحفظ.",
-      notes:["ما المسألة القانونية التي تحتاج إلى حسم؟","ما القاعدة القانونية المناسبة؟","كيف تنطبق القاعدة على وقائع السؤال؟","ما النتيجة القانونية؟ ولماذا؟"],
-      hints:["صِغ السؤال القانوني في جملة واحدة.","اكتب الشرط أو الحكم القانوني بأسلوبك.","اربط ما حدث في الواقعة بالشروط القانونية.","اذكر الإجابة النهائية وسببًا مختصرًا."],
+      notes:["ما السؤال الذي نريد الإجابة عنه في هذا المثال؟","ماذا يقول النص القانوني عن هذه الحالة؟","كيف يساعدنا النص في فهم ما حدث في المثال؟","ما إجابتك النهائية عن السؤال؟ ولماذا؟"],
+      hints:["المسألة تعني السؤال المطلوب حله. اكتبه في جملة واحدة.","القاعدة تعني الحكم أو الشرط الذي قرأته في المادة. اكتبه بأسلوبك.","التطبيق يعني الربط بين ما حدث وشروط المادة. اشرح هذا الربط.","النتيجة هي الإجابة التي وصلت إليها. اكتبها مع سبب قصير."],
       placeholders:["السؤال القانوني هو...","القاعدة التي أعتمد عليها...","في هذه الواقعة...","إذن... لأن..."],
       defaultQuestion:"ما الحكم القانوني الذي تثيره الواقعة؟",
       guidance:"يمكنك العودة لتعديل أي خطوة. إذا لم تعرف جزءًا، اتركه فارغًا بدل التخمين."},
@@ -23,8 +23,8 @@ var copy={
       step:"Step",of:"of",previous:"Back",next:"Next",review:"Review my answer",
       send:"Save answer and continue",edit:"Edit answer",summary:"Review before saving",
       empty:"No answer for this section.",missing:"Write your answer or complete the remaining steps before saving.",
-      notes:["What legal issue needs to be resolved?","Which legal rule applies?","How does the rule apply to these facts?","What is your conclusion, and why?"],
-      hints:["Write the legal question in one sentence.","State the relevant condition in your own words.","Connect the facts to the condition.","Give a clear conclusion with a short reason."],
+      notes:["What question do we need to answer in this example?","What does the legal text say about this situation?","How does the text help explain what happened?","What is your final answer, and why?"],
+      hints:["The issue is the question to solve. Write it in one sentence.","The rule is the condition or instruction you read in the article. Use your own words.","Application means connecting what happened to the article's conditions. Explain the connection.","The conclusion is the answer you reached. Give a short reason."],
       placeholders:["The legal issue is...","The rule I rely on is...","Here, the facts show...","Therefore... because..."],
       defaultQuestion:"What legal question do these facts raise?",
       guidance:"Go back to edit any step. If you're unsure about one part, leave it blank rather than guessing."}
@@ -102,3 +102,4 @@ function mount(host,opts){
 root.LEX_LEGAL_CASE_GUIDE={parse:parse,compose:compose,mount:mount};
 if(typeof module!=="undefined"&&module.exports)module.exports=root.LEX_LEGAL_CASE_GUIDE;
 })(typeof window!=="undefined"?window:globalThis);
+

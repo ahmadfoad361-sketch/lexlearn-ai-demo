@@ -2,6 +2,7 @@
 (function(root){
 "use strict";
 var D=root.LEX_OFFICIAL_DIAGNOSTIC, COURSE_ID="qa-qu-lawc101-rights", Q=D&&D.QUESTIONS||[];
+var exportData=null;
 function lang(){return new URLSearchParams(root.location.search).get("lang")==="en"?"en":"ar";}
 function tr(ar,en){return lang()==="en"?en:ar;}
 function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&quot;"}[c];});}
@@ -47,16 +48,19 @@ function report(status,uid){
   }
  }
  var understanding=score(d.metrics&&d.metrics.understanding);
+ exportData={kind:"diagnostic",recall:memory,understanding:understanding};
  // The outcome screen has exactly two skill indicators; the training link is navigation.
  function metric(name,value,id,description){
   var shown=value===null?tr("لم يتوفر تقدير بعد","Estimate not available"):value+"%";
   return "<article class='diagScoreCard' data-score='"+id+"' aria-label='"+esc(name)+"'>"+
    "<div class='diagScoreLabel'>"+esc(name)+"</div>"+
-   "<div class='diagScoreValue' data-score-value='"+id+"'>"+esc(shown)+"</div>"+
+   (root.LEX_MOMENTS?root.LEX_MOMENTS.ring(value,id):"")+
+   "<div class='diagScoreValue"+(value===null?" momentNoScore":"")+"' data-score-value='"+id+"'>"+esc(shown)+"</div>"+
    "<div class='diagScoreTrack' aria-hidden='true'><span style='width:"+(value===null?0:value)+"%'></span></div>"+
    "<small>"+esc(description)+"</small></article>";
  }
  return "<section class='diagnosticReport diagnosticTwoScores' role='region' aria-label='"+tr("نتيجة التشخيص","Diagnostic results")+"'>"+
+  (root.LEX_MOMENTS?root.LEX_MOMENTS.hero(exportData,lang()):"")+
   "<h2>"+tr("نتيجة الاختبار التشخيصي","Your diagnostic result")+"</h2>"+
   "<div class='diagScoresGrid'>"+
   metric(tr("تقدير الحفظ","Estimated recall"),memory,"recall",
@@ -68,6 +72,7 @@ function report(status,uid){
     tr("تقدير أولي من أسئلة الفهم","Preliminary result from understanding questions"))+
   "</div>"+
   "<p class='diagScoreDisclaimer'>"+tr("هذه تقديرات مبدئية للتدريب، وليست درجات جامعية أو قياسًا نهائيًا لمهاراتك.","These are preliminary practice estimates, not official grades or validated mastery measures.")+"</p>"+
+  (root.LEX_MOMENTS?root.LEX_MOMENTS.downloadButton(lang()):"")+
   "<div class='actions'><a class='actionCard' style='display:inline-block;background:#111D31;color:white;padding:1rem 1.3rem;border-radius:10px;text-decoration:none' href='student-path.html?lang="+lang()+"'>"+
   tr("ابدأ التدريب","Start training")+"</a></div></section>";
 }
@@ -78,6 +83,7 @@ async function startUI(){
  function render(html){area.innerHTML=html;}
  async function showCompleted(status){
   render(report(status,student));
+  if(root.LEX_MOMENTS)root.LEX_MOMENTS.bindDownload(area,exportData,lang());
  }
  function fail(err){
   if(root.console&&root.console.warn)root.console.warn("LexLearn diagnostic unavailable:",String(err&&err.message||err));
@@ -134,7 +140,7 @@ async function startUI(){
    }else{
     html+="<h2>"+tr("استرجاع من الذاكرة (اختياري)","Recall from memory (optional)")+"</h2>"+
       "<p>"+tr("اكتب من ذاكرتك: متى تبدأ الشخصية القانونية للإنسان؟ عبّر عن القاعدة بأسلوبك دون الرجوع إلى النص.","From memory, when does a human being’s legal personality begin? State the rule in your own words without consulting the text.")+"</p>"+
-      "<p>"+tr("ثم اذكر متى تنتهي الشخصية القانونية، وما حكم حقوق الحمل المستكن وفق المادة 40. لا تستعن بأي مصادر.","Also explain when personality ends and the status of an unborn child’s conditional rights under Article 40. Do not use outside sources.")+"</p>"+
+      "<p>"+tr("اكتب أيضًا: متى تنتهي الشخصية القانونية؟ وماذا يقول النص عن حقوق الجنين قبل ولادته (المادة 40)؟ اكتب بجمل قصيرة من ذاكرتك، دون فتح النص.","Also answer: when does legal personality end? What does Article 40 say about an unborn child's rights? Use short sentences from memory, without reopening the text.")+"</p>"+
       "<textarea id='ungradedText' rows='5' maxlength='2000' aria-label='"+tr("إجابة حرة","Free answer")+"'></textarea>";
    }
    html+="<button id='serverNext'>"+(done?tr("احفظ التقييم واعرض نتيجتي","Save assessment and show my result"):tr("حفظ والانتقال للسؤال التالي","Save and continue"))+"</button>"+
@@ -176,4 +182,5 @@ async function startUI(){
 root.LEX_SERVER_DIAGNOSTIC={mount:startUI};
 if(typeof module!=="undefined"&&module.exports)module.exports={mount:startUI};
 })(typeof window!=="undefined"?window:globalThis);
+
 
