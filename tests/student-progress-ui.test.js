@@ -25,17 +25,17 @@ function environment(session,lang='ar',failHistory=false,incomplete=false,course
  for(const lang of ['ar','en'])for(const session of [5,10,15,20,25,30]){
   const e=environment(session,lang);await e.window.LEX_STUDENT_PATH.mount();
   assert.match(e.host.innerHTML,/progressReport/);
-  assert.ok(e.host.innerHTML.includes((lang==='ar'?'نتيجة المستوى ':'Level result ')+session/5),'each of six levels has a clear report');
-  assert.ok(e.host.innerHTML.includes('aria-valuenow=\'80\'')&&e.host.innerHTML.includes('aria-valuenow=\'70\''),'recall and understanding must both have measured values');
-  assert.ok(e.host.innerHTML.includes('+40')&&e.host.innerHTML.includes('+10'),'compare checkpoint with earlier practice in the same level');
-  assert.ok(e.host.innerHTML.includes(lang==='ar'?'المقارنة بين مهام مختلفة':'Comparing different tasks'),'do not claim validated learning gains');
+  assert.ok(e.host.innerHTML.includes((lang==='ar'?'إتمام المستوى ':'Level completion ')+session/5),'each of six levels has a clear report');
+  assert.ok(!e.host.innerHTML.includes('aria-valuenow='),'unverified percentages must never appear in learner progress bars');
+  assert.ok(!e.host.innerHTML.includes('+40')&&!e.host.innerHTML.includes('+10'),'raw cross-task score differences must not be shown to learners');
+  assert.ok(e.host.innerHTML.includes(lang==='ar'?'مؤشرات تدريبية أولية':'preliminary practice indicators'),'show transparent non-certified assessment status');
   assert.ok(e.filters.some(([k,v])=>k==='user_id'&&v==='student-fixture'),'read only the authenticated learner history');
   if(session<30){assert.ok(e.nodes.nextSession);e.nodes.nextSession.onclick();assert.equal(e.window.location.href,'student-path.html?lang='+lang+'&session='+(session+1));}
   else assert.equal(e.nodes.nextSession,undefined,'final report has no invalid session 31 link');
  }
  const offline=environment(5,'ar',true);await offline.window.LEX_STUDENT_PATH.mount();
- assert.match(offline.host.innerHTML,/تعذر تحميل المقارنة السابقة/);
- assert.ok(offline.host.innerHTML.includes('80%'),'history outage must not erase verified current-session values');
+ assert.match(offline.host.innerHTML,/مؤشرات تدريبية أولية/);
+ assert.ok(!offline.host.innerHTML.includes('80%'),'unvalidated lexical percentages must never be shown');
  assert.ok(!offline.host.innerHTML.includes('تغيّر المؤشر:'),'do not invent an earlier baseline after query failure');
  const partial=environment(4,'en',false,true);await partial.window.LEX_STUDENT_PATH.mount();
  assert.equal(partial.nodes.nextSession,undefined,'no completion report or next action before server-verified completion');
@@ -54,6 +54,6 @@ function environment(session,lang='ar',failHistory=false,incomplete=false,course
  assert.equal(model.skills[1].current.score,null,'missing, invalid and future scores never become fabricated values');
  assert.equal(model.needsReview.length,2);
  const reentry=environment(5,'ar',false,false,true);await reentry.window.LEX_STUDENT_PATH.mount();
- assert.match(reentry.host.innerHTML,/نتيجة المستوى 1/,'report rebuilds from saved records after reopening');
+ assert.match(reentry.host.innerHTML,/إتمام المستوى 1/,'report rebuilds from saved records after reopening');
  console.log('Six-level progress reports: bilingual values, same-level comparisons, completion gates, query failures and reload: PASS');
 })().catch(e=>{console.error(e);process.exitCode=1;});
