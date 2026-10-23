@@ -10,14 +10,23 @@ function temporaryPassword(){
 
 Deno.serve(async(req)=>{
   if(req.method==="OPTIONS")return new Response("ok",{headers:corsHeaders});
+  if(req.method!=="POST")return json({error:"method_not_allowed"},405);
   try{
     const {user,admin,profile}=await requireStaff(req);
     const body=await req.json();
     const username=String(body.username||"").trim().toLowerCase();
     const password=String(body.password||temporaryPassword());
     const displayName=String(body.name||body.display_name||"").trim();
+    const pilotFields={faculty:String(body.faculty||"").trim(),academic_section:String(body.academic_section||"").trim()||null,
+      student_registration_number:String(body.student_registration_number||"").trim()||null,
+      institutional_group_email:String(body.institutional_group_email||"").trim().toLowerCase()||null};
+    if(!pilotFields.faculty||pilotFields.faculty.length>160||!String(body.university||"").trim()||
+       (pilotFields.academic_section?.length||0)>100||(pilotFields.student_registration_number?.length||0)>80||
+       (pilotFields.institutional_group_email&&(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(pilotFields.institutional_group_email)||pilotFields.institutional_group_email.length>254)))
+      return json({error:"invalid_pilot_profile_fields"},400);
+    if(!["qa","eg","sa","ae","other"].includes(body.country_code||"qa"))return json({error:"invalid_country"},400);
     if(!/^[a-z0-9._-]{3,32}$/.test(username))return json({error:"invalid_username"},400);
-    if(password.length<10)return json({error:"password_too_short"},400);
+    if(password.length<10||password.length>72)return json({error:"invalid_password_length"},400);
     if(!displayName)return json({error:"display_name_required"},400);
 
     let cohortId=body.cohort_id||null;
@@ -43,14 +52,21 @@ Deno.serve(async(req)=>{
     });
     if(created.error)return json({error:"create_user_failed",detail:created.error.message},409);
     const uid=created.data.user.id;
-    const upd=await admin.from("profiles").update({active:true,account_status:"active",cohort_id:cohortId,university:body.university||null,year_label:body.year||body.year_label||"السنة الأولى",country_code:body.country_code||"qa"}).eq("id",uid);
-    if(upd.error)throw upd.error;
-    const courseId=String(body.course_id||"qa-qu-lawc101-rights");
-    await admin.from("enrollments").upsert({user_id:uid,course_id:courseId,status:"active"},{onConflict:"user_id,course_id"});
-    await admin.from("admin_audit").insert({actor_user_id:user.id,target_user_id:uid,action:"CREATE_STUDENT",details:{username,course_id:courseId,cohort_id:cohortId}});
+    // The same reviewed Qatar pilot is used by self-registration, irrespective of residence.
+    const courseId="qa-qu-lawc101-rights";
+    try{
+      const upd=await admin.from("profiles").update({...pilotFields,active:true,account_status:"active",cohort_id:cohortId,university:body.university||null,year_label:body.year||body.year_label||"السنة الأولى",country_code:body.country_code||"qa"}).eq("id",uid).eq("role","student").select("id").single();
+      if(upd.error||!upd.data)throw Error("profile_save_failed");
+      const enrollment=await admin.from("enrollments").upsert({user_id:uid,course_id:courseId,status:"active"},{onConflict:"user_id,course_id"});
+      if(enrollment.error)throw enrollment.error;
+      const audit=await admin.from("admin_audit").insert({actor_user_id:user.id,target_user_id:uid,action:"CREATE_STUDENT",details:{username,course_id:courseId,cohort_id:cohortId}});
+      if(audit.error)throw audit.error;
+    }catch(e){await admin.auth.admin.deleteUser(uid);throw e;}
+    // Only the student can consent to external AI; staff registration never implies it.
     return json({ok:true,user_id:uid,username,temporary_password:password,course_id:courseId});
   }catch(e){
     const m=e instanceof Error?e.message:String(e);
     return json({error:m},m==="UNAUTHORIZED"?401:m==="FORBIDDEN"?403:500);
   }
 });
+

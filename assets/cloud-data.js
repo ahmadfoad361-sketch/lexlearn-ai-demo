@@ -121,6 +121,8 @@ async function updateOwnProfile(patch){return invoke("account-update-profile",pa
 async function gradeAnswer(data){return invoke("grade-answer",data);}
 async function gradePilot(data){return invoke("pilot-grade",data);}
 async function gradeDiagnosticAi(){return invoke("lexlearn-diagnostic-ai-grade",{});}
+async function gradeTrainingAi(session,itemId){return invoke("lexlearn-training-ai-grade",{session:session,item_id:itemId});}
+async function trainingAiSummary(){return invoke("lexlearn-training-ai-grade",{action:"summary"});}
 async function getDiagnosticAiAudit(attemptId){
  if(!/^[a-f0-9-]{36}$/i.test(String(attemptId||"")))return null;
  var c=db();if(!c)return null;
@@ -182,7 +184,7 @@ async function saveLearningPlan(row){
   row=Object.assign({},row,{user_id:u.data.user.id,updated_at:new Date().toISOString()});
   var r=await c.from("learning_plans").upsert(row,{onConflict:"user_id,course_id"}).select().single();if(r.error)throw r.error;return r.data;
 }
-root.LEX_CLOUD={isConfigured:isConfigured,db:db,rememberMe:rememberMe,setRememberMe:setRememberMe,studentEmail:studentEmail,profile:profile,signInStudent:signInStudent,signInAdmin:signInAdmin,signOut:signOut,requestPasswordReset:requestPasswordReset,loadSnapshot:loadSnapshot,saveSnapshot:saveSnapshot,listStudents:listStudents,listCohorts:listCohorts,listAudit:listAudit,listContentItems:listContentItems,reviewContent:reviewContent,createStudent:createStudent,manageStudent:manageStudent,createCohort:createCohort,setOwnPassword:setOwnPassword,updateOwnProfile:updateOwnProfile,studentLifecycleRpc:studentLifecycleRpc,gradeAnswer:gradeAnswer,gradePilot:gradePilot,gradeDiagnosticAi:gradeDiagnosticAi,getDiagnosticAiAudit:getDiagnosticAiAudit,getConsent:getConsent,recordConsent:recordConsent,logEvent:logEvent,recordAttempt:recordAttempt,saveLearningPlan:saveLearningPlan};
+root.LEX_CLOUD={isConfigured:isConfigured,db:db,rememberMe:rememberMe,setRememberMe:setRememberMe,studentEmail:studentEmail,profile:profile,signInStudent:signInStudent,signInAdmin:signInAdmin,signOut:signOut,requestPasswordReset:requestPasswordReset,loadSnapshot:loadSnapshot,saveSnapshot:saveSnapshot,listStudents:listStudents,listCohorts:listCohorts,listAudit:listAudit,listContentItems:listContentItems,reviewContent:reviewContent,createStudent:createStudent,manageStudent:manageStudent,createCohort:createCohort,setOwnPassword:setOwnPassword,updateOwnProfile:updateOwnProfile,studentLifecycleRpc:studentLifecycleRpc,gradeAnswer:gradeAnswer,gradePilot:gradePilot,gradeDiagnosticAi:gradeDiagnosticAi,gradeTrainingAi:gradeTrainingAi,trainingAiSummary:trainingAiSummary,getDiagnosticAiAudit:getDiagnosticAiAudit,getConsent:getConsent,recordConsent:recordConsent,logEvent:logEvent,recordAttempt:recordAttempt,saveLearningPlan:saveLearningPlan};
 if(typeof window!=="undefined"){
   window.addEventListener("error",function(ev){
     if(!isConfigured())return;
@@ -195,3 +197,4 @@ if(typeof window!=="undefined"){
   });
 }
 })(typeof globalThis!=="undefined"?globalThis:this);
+

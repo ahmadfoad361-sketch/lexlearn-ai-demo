@@ -1,5 +1,5 @@
 const assert=require('assert'),fs=require('fs'),vm=require('vm');
-const code=fs.readFileSync('supabase/functions/pilot-grade/index.ts','utf8').replace(/^import .*;\n/,'').replace(/^type Criterion=.*;\n/m,'').replace(/:Record<number,string\[\]>/g,'').replace(/:Criterion\[\]/g,'').replace(/:number\b|:string\b|:any\b/g,'');
+const code=fs.readFileSync('supabase/functions/pilot-grade/index.ts','utf8').replace(/\r\n/g,'\n').replace(/^import .*;\n/,'').replace(/^type Criterion=.*;\n/m,'').replace(/:Record<number,string\[\]>/g,'').replace(/:Criterion\[\]/g,'').replace(/:number\b|:string\b|:any\b/g,'');
 const ID='aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa';
 async function run(options={}){
  let handler,modelInput,saved=null;
@@ -30,3 +30,4 @@ async function run(options={}){
  assert.equal(r.result.body.status,'review_required');assert.equal(r.result.body.preview,true);assert.equal(r.modelInput,undefined);
  console.log('Pilot grader: release gate, approved content, source validation, no paid model, human queue PASS');
 })().catch(e=>{console.error(e);process.exit(1);});
+

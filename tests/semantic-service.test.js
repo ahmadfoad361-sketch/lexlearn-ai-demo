@@ -1,6 +1,6 @@
 // Executes the real Edge Function handler with isolated provider/auth/database doubles.
 const fs=require('fs'),vm=require('vm'),assert=require('assert');
-const source=fs.readFileSync('supabase/functions/grade-answer/index.ts','utf8').replace(/^import .*;\n/,'').replace(/:any\b/g,'').replace(/let result:any/g,'let result');
+const source=fs.readFileSync('supabase/functions/grade-answer/index.ts','utf8').replace(/\r\n/g,'\n').replace(/^import .*;\n/,'').replace(/:any\b/g,'').replace(/let result:any/g,'let result');
 async function run(options={}){
  let handler,sent,saved;const approved={id:'test-item',course_id:'course',prompt_ar:'State the legal outcome.',rubric_json:options.rubric||{lex_task_key:'rights-v1-s1-exam',criteria:[{id:'c1',weight:1}]},source_ids:['source'],status:'approved',dimension:'exam'};
  const admin={from(table){let b={select(){return b;},eq(){return b;},gte(){return b;},contains(){return b;},in(){return b;},single:async()=>({data:options.item===false?null:approved}),insert:async value=>{saved=value;return {error:null};},then(resolve){resolve(table==='content_sources'?{data:options.sources===false?[]:[{id:'source',status:'approved',excerpt:'Personality begins at live birth, not death.'}]}:{count:0});}};return b;}};
@@ -23,3 +23,4 @@ async function run(options={}){
  }
  console.log('General grading: approved sources only, no paid model, human review pending PASS');
 })().catch(e=>{console.error(e);process.exit(1);});
+
