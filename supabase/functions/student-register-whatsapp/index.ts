@@ -25,10 +25,14 @@ Deno.serve(async(req)=>{
   if(clean(body.website,120))return json({error:"registration_not_completed"},400);
   const name=clean(body.name,160),password=String(body.password||""),
    whatsapp=phoneNumber(body.whatsapp_e164),email=clean(body.email,254).toLowerCase(),
-   country=clean(body.country_code,8),university=clean(body.university,160),year=clean(body.year_label,80);
-  if(!name||!university||!year||whatsapp===undefined||password.length<10||password.length>72||
+   country=clean(body.country_code,8),university=clean(body.university,160),year=clean(body.year_label,80),
+   faculty=clean(body.faculty,160),academicSection=clean(body.academic_section,100),
+   studentNumber=clean(body.student_registration_number,80),
+   groupEmail=clean(body.institutional_group_email,254).toLowerCase();
+  if(!name||!university||!faculty||!year||whatsapp===undefined||password.length<10||password.length>72||
      !["qa","eg","sa","ae","other"].includes(country)||
-     (email&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)))
+     (email&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))||
+     (groupEmail&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(groupEmail)))
    return json({error:"invalid_registration_details"},400);
   if(body.accepted_privacy!==true)return json({error:"consent_required"},400);
   const admin=adminClient();
@@ -40,7 +44,9 @@ Deno.serve(async(req)=>{
   const created=await admin.auth.admin.createUser({
    email:internalEmail,password,email_confirm:true,
    user_metadata:{
-    username,display_name:name,university,year_label:year,country_code:country,
+    username,display_name:name,university,faculty,academic_section:academicSection||null,
+    student_registration_number:studentNumber||null,institutional_group_email:groupEmail||null,
+    year_label:year,country_code:country,
     whatsapp_e164:whatsapp,contact_email:email||null,
     registration_channel:"conference_self",
     privacy_notice_version:"2026-10-12-v4",
@@ -53,12 +59,18 @@ Deno.serve(async(req)=>{
    const p=await admin.from("profiles").select("id,role,active,account_status,username").eq("id",uid).single();
    if(p.error||p.data?.role!=="student"||p.data?.active!==false||p.data?.account_status!=="pending"||
        p.data?.username!==username)throw new Error("profile_creation_inconsistent");
-   if(country==="qa"){
-    const enrolled=await admin.from("enrollments").upsert({
-     user_id:uid,course_id:"qa-qu-lawc101-rights",status:"active"
-    },{onConflict:"user_id,course_id"});
-    if(enrolled.error)throw enrolled.error;
-   }
+   // All registrants enter the same clearly labeled Qatar-law internal pilot
+   // until separate country curricula are reviewed. Country is NEVER an auth role.
+   const enrolled=await admin.from("enrollments").upsert({
+    user_id:uid,course_id:"qa-qu-lawc101-rights",status:"active"
+   },{onConflict:"user_id,course_id"});
+   if(enrolled.error)throw enrolled.error;
+   const extra=await admin.from("profiles").update({
+    faculty,academic_section:academicSection||null,
+    student_registration_number:studentNumber||null,
+    institutional_group_email:groupEmail||null
+   }).eq("id",uid).eq("role","student").select("id").single();
+   if(extra.error||!extra.data)throw new Error("pilot_student_metadata_not_saved");
    const activated=await admin.from("profiles").update({active:true,account_status:"active"})
      .eq("id",uid).eq("role","student").eq("account_status","pending").select("id").single();
    if(activated.error||!activated.data)throw new Error("student_activation_failed");
