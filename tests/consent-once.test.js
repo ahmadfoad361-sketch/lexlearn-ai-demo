@@ -14,6 +14,9 @@ assert.match(diagnostic,/getConsent\("lexlearn-ai-grading-v1","external_ai_gradi
 assert.match(diagnostic,/var acceptedAi=false;/,"initial diagnostic reads saved AI permission");
 assert.match(diagnostic,/&&acceptedAi;/);
 assert.doesNotMatch(diagnostic,/id=\'aiConsent\'/);
-assert.match(signup,/if\(body.accepted_external_ai===true\)/);
+assert.match(signup,/body.accepted_terms_version!=="2026-10-23-v6"/);
+for(const page of ["student-register.html","student-register-en.html"]){const html=fs.readFileSync(page,"utf8");assert.doesNotMatch(html,/id="externalAiConsent"/);assert.equal((html.match(/type="checkbox"/g)||[]).length,1);assert.match(html,/OpenAI/);}
+assert.doesNotMatch(fs.readFileSync("assets/student-path.js","utf8"),/enableTrainingAi/);
 assert.match(signup,/consent_type:"external_ai_grading"/);
-console.log("First registration choice covers learning data once; external AI remains separate and reusable PASS");
+console.log("One disclosed registration acceptance covers learning and AI; training never asks again PASS");
+

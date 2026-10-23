@@ -15,8 +15,9 @@ async function run({consent=true,fail=false,lang='ar'}={}){
   }};
  const window={document:{getElementById:()=>host},URLSearchParams,location:{search:'?lang='+lang},LEX_CLOUD:cloud,LEX_OFFICIAL_DIAGNOSTIC:{identity:async()=> 'learner'},console};window.window=window;
  vm.runInNewContext(fs.readFileSync('assets/student-path.js','utf8'),window);await window.LEX_STUDENT_PATH.mount();
- if(!consent){assert.ok(nodes.enableTrainingAi);await nodes.enableTrainingAi.onclick();assert.ok(calls.includes('consent'));}
+ assert.equal(nodes.enableTrainingAi,undefined,'no second consent prompt in training');
  nodes.adaptiveEssay.value='Meaningful legal answer';await nodes.adaptiveSubmit.onclick();
+ if(!consent){assert.ok(!calls.includes('grade'),'legacy missing permission is not silently invented');assert.ok(!calls.includes('consent'));return;}
  assert.ok(calls.indexOf('grade')>calls.indexOf('trainingSubmit'),'persist the answer before paid inference');
  assert.equal(saved[0].item_id,'recall','server evidence takes priority over the original balanced task order');
  if(fail){assert.ok(host.html.includes(lang==='ar'?'لم يتأكد':'not confirmed'));assert.ok(!host.html.includes('50%'));}
@@ -25,5 +26,6 @@ async function run({consent=true,fail=false,lang='ar'}={}){
   assert.ok(host.html.includes(lang==='ar'?'الأولوية الآن للفهم':'Understanding priority'));
  }
 }
-(async()=>{for(const lang of ['ar','en']){await run({lang});await run({lang,fail:true});await run({lang,consent:false});}console.log('Bilingual training: save before AI, optional consent, priority changes, provider failure and escaped feedback: PASS');})().catch(e=>{console.error(e);process.exitCode=1;});
+(async()=>{for(const lang of ['ar','en']){await run({lang});await run({lang,fail:true});await run({lang,consent:false});}console.log('Bilingual training: save before AI, registration acceptance, priority changes, provider failure and escaped feedback: PASS');})().catch(e=>{console.error(e);process.exitCode=1;});
+
 

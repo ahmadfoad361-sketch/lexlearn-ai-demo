@@ -69,7 +69,7 @@ form.addEventListener("submit",async function(ev){
   var response=await db.functions.invoke("student-register-whatsapp",{body:{
    name:name,email:email||null,whatsapp_e164:whatsapp||null,
    password:password,university:university,faculty:faculty,academic_section:academicSection||null,student_registration_number:studentNumber||null,institutional_group_email:groupEmail||null,year_label:year,
-   country_code:country,accepted_privacy:true,accepted_external_ai:!!document.getElementById("externalAiConsent").checked,website:""
+   country_code:country,accepted_privacy:true,accepted_external_ai:true,accepted_terms_version:"2026-10-23-v6",website:""
   }});
   var code=response.data&&response.data.error;
   if(!code&&response.error&&response.error.context&&typeof response.error.context.json==="function"){
@@ -111,3 +111,4 @@ form.addEventListener("submit",async function(ev){
  }finally{button.disabled=false;}
 });
 })();
+

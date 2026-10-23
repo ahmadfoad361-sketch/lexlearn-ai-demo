@@ -14,6 +14,7 @@ Deno.serve(async(req)=>{
   try{
     const {user,admin,profile}=await requireStaff(req);
     const body=await req.json();
+    if(body.accepted_registration_terms!==true||body.accepted_terms_version!=="2026-10-23-v6")return json({error:"registration_terms_required"},400);
     const username=String(body.username||"").trim().toLowerCase();
     const password=String(body.password||temporaryPassword());
     const displayName=String(body.name||body.display_name||"").trim();
@@ -59,14 +60,20 @@ Deno.serve(async(req)=>{
       if(upd.error||!upd.data)throw Error("profile_save_failed");
       const enrollment=await admin.from("enrollments").upsert({user_id:uid,course_id:courseId,status:"active"},{onConflict:"user_id,course_id"});
       if(enrollment.error)throw enrollment.error;
+      const consent=await admin.from("consent_records").insert([
+        {user_id:uid,notice_version:"2026-10-06-v1",consent_type:"learning_data",accepted:true},
+        {user_id:uid,notice_version:"lexlearn-ai-grading-v1",consent_type:"external_ai_grading",accepted:true}
+      ]);
+      if(consent.error)throw consent.error;
       const audit=await admin.from("admin_audit").insert({actor_user_id:user.id,target_user_id:uid,action:"CREATE_STUDENT",details:{username,course_id:courseId,cohort_id:cohortId}});
       if(audit.error)throw audit.error;
     }catch(e){await admin.auth.admin.deleteUser(uid);throw e;}
-    // Only the student can consent to external AI; staff registration never implies it.
+    // Staff explicitly attests that the student accepted the complete registration terms.
     return json({ok:true,user_id:uid,username,temporary_password:password,course_id:courseId});
   }catch(e){
     const m=e instanceof Error?e.message:String(e);
     return json({error:m},m==="UNAUTHORIZED"?401:m==="FORBIDDEN"?403:500);
   }
 });
+
 

@@ -25,7 +25,7 @@ for(const html of [ar,en]){
  assert.match(html,/id="studentNumber"/);
  assert.match(html,/id="groupEmail"/);
 }
-async function runSignup({email="",phone="",lang="ar"}={}){
+async function runSignup({email="",phone="",lang="ar",accepted=true}={}){
  let signupArgs=null,signedIn=null,submit=null,reset=false;
  const storage=new Map();
  const elements={
@@ -36,7 +36,7 @@ async function runSignup({email="",phone="",lang="ar"}={}){
   fullName:{value:"Test Learner"},email:{value:email},whatsapp:{value:phone},
   password:{value:"ConferenceTest!123"},university:{value:"Qatar University"},
   faculty:{value:"College of Law"},academicSection:{value:"Civil Law"},studentNumber:{value:"REG-001"},groupEmail:{value:"class@university.edu"},
-  year:{value:"Year 1"},country:{value:"qa"},consent:{checked:true},externalAiConsent:{checked:false}
+  year:{value:"Year 1"},country:{value:"qa"},consent:{checked:accepted},unusedLegacyField:{checked:false}
  };
  const cloud={
   isConfigured:()=>true,
@@ -57,11 +57,12 @@ async function runSignup({email="",phone="",lang="ar"}={}){
  return {signupArgs,signedIn,reset,storage,elements};
 }
 (async()=>{
+ const rejected=await runSignup({accepted:false});assert.equal(rejected.signupArgs,null,"unchecked registration terms must not create an account");
  const empty=await runSignup();
  assert.equal(empty.signupArgs.whatsapp_e164,null);
  assert.equal(empty.signupArgs.email,null);
  assert.equal(empty.signupArgs.faculty,"College of Law");
- assert.equal(empty.signupArgs.accepted_external_ai,false,"AI consent must default to opt-out");
+ assert.equal(empty.signupArgs.accepted_terms_version,"2026-10-23-v6","single registration acceptance names the disclosed terms version");
  assert.equal(empty.signupArgs.academic_section,"Civil Law");
  assert.equal(empty.signupArgs.student_registration_number,"REG-001");
  assert.equal(empty.signupArgs.institutional_group_email,"class@university.edu");
@@ -81,3 +82,4 @@ async function runSignup({email="",phone="",lang="ar"}={}){
  assert.equal(contact.elements.startTraining.href,"student-en.html");
  console.log("conference registration optional-contact and instant-login smoke tests: PASS");
 })().catch(err=>{console.error(err);process.exitCode=1;});
+

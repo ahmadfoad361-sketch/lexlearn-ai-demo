@@ -35,6 +35,7 @@ Deno.serve(async(req)=>{
      (groupEmail&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(groupEmail)))
    return json({error:"invalid_registration_details"},400);
   if(body.accepted_privacy!==true)return json({error:"consent_required"},400);
+  if(body.accepted_terms_version!=="2026-10-23-v6")return json({error:"registration_terms_required"},400);
   const admin=adminClient();
   const rate=await admin.rpc("consume_student_signup_slot",await rateKey(req));
   if(rate.error)return json({error:"registration_temporarily_unavailable"},503);
@@ -49,7 +50,7 @@ Deno.serve(async(req)=>{
     year_label:year,country_code:country,
     whatsapp_e164:whatsapp,contact_email:email||null,
     registration_channel:"conference_self",
-    privacy_notice_version:"2026-10-12-v4",
+    privacy_notice_version:"2026-10-23-v6",
     must_change_password:false
    }
   });
@@ -76,14 +77,14 @@ Deno.serve(async(req)=>{
    if(activated.error||!activated.data)throw new Error("student_activation_failed");
    // The registration form already required affirmative acceptance of privacy/terms.
    // Persist that learning-data choice at creation to avoid a second consent prompt
-   // immediately after signing in. External AI grading remains a distinct optional choice.
+   // immediately after signing in. The same disclosed registration acceptance covers AI.
    const learningConsent=await admin.from("consent_records").insert({
      user_id:uid,notice_version:"2026-10-06-v1",consent_type:"learning_data",accepted:true
    });
    if(learningConsent.error)throw new Error("registration_learning_consent_failed");
-   // Optional third-party AI processing is separate from required learning-data
-   // acceptance. Do not infer this permission if checkbox was left unchecked.
-   if(body.accepted_external_ai===true){
+   // One explicit registration acceptance covers the disclosed learning and AI terms.
+   // Older forms without the current terms version are rejected above.
+   {
     const aiConsent=await admin.from("consent_records").insert({
      user_id:uid,notice_version:"lexlearn-ai-grading-v1",
      consent_type:"external_ai_grading",accepted:true
@@ -97,3 +98,4 @@ Deno.serve(async(req)=>{
   return json({ok:true,username,can_sign_in:true,confirmation_required:false});
  }catch(_){return json({error:"registration_not_completed"},503);}
 });
+

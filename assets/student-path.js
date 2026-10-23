@@ -122,7 +122,6 @@ async function boot(){
       t("نحتاج إجابات أكثر لتحديد الأولوية؛ ابدأ بشرح القاعدة ثم استرجاعها.","More evidence is needed; start by explaining and retrieving the rule."))+"</p><small>"+t("تقديرات مبدئية تتحدث بعد تصحيح إجاباتك؛ ليست درجات جامعية.","Preliminary estimates update after answer assessment; these are not university marks.")+"</small>";
    }
    if(aiUnavailable)why+="<p role='status'>"+t("حُفظت إجابتك، لكن التصحيح بالذكاء الاصطناعي لم يتأكد. يمكنك المتابعة؛ لن نمنح نسبة بديلة أو نغيّر الأولوية بناءً عليها.","Your answer is saved, but AI assessment was not confirmed. Continue practice; no replacement score or priority change is inferred.")+"</p>";
-   if(!acceptedAi&&cloud.recordConsent)why+="<div class='feedback'><p>"+t("لتفعيل التصحيح الشخصي تُرسل إجابتك ونص السؤال إلى OpenAI. الموافقة اختيارية؛ يمكنك متابعة التدريب دونها.","Personal assessment sends your answer and question to OpenAI. Consent is optional; you can continue without it.")+"</p><button type='button' id='enableTrainingAi'>"+t("أوافق وأفعّل التصحيح الشخصي","Agree and enable personal assessment")+"</button><span id='aiConsentStatus' role='status'></span></div>";
    var completedFeedback=saved.map(function(v){
     var task=(data.tasks||[]).find(function(q){return q.id===v.item_id;});
     return "<details class='past'"+(v===saved[saved.length-1]?" open":"")+"><summary>"+esc(previousAnswerTitle(v,task))+"</summary><p style='white-space:pre-wrap'>"+esc(v.answer_text)+"</p>"+feedback(v)+"</details>";
@@ -156,12 +155,6 @@ async function boot(){
    }
    main+="</section>";
    show(nav()+main);
-   var enable=host.querySelector("#enableTrainingAi");
-   if(enable)enable.onclick=async function(){
-    this.disabled=true;
-    try{await cloud.recordConsent("lexlearn-ai-grading-v1","external_ai_grading",true);acceptedAi=true;render();}
-    catch(_){this.disabled=false;host.querySelector("#aiConsentStatus").textContent=t("تعذر حفظ الموافقة؛ حاول مجددًا.","Consent could not be saved; retry.");}
-   };
    var nextButton=host.querySelector("#nextSession");
    if(nextButton)nextButton.onclick=function(){if(!busy){root.location.href=url(selected+1);}};
    async function submitAnswer(answer,button){
@@ -208,4 +201,5 @@ async function boot(){
 root.LEX_STUDENT_PATH={mount:boot,noHtmlScore:noHtmlScore,previousAnswerTitle:previousAnswerTitle,progressModel:progressModel,progressHtml:progressHtml};
 if(typeof module!=="undefined"&&module.exports)module.exports=root.LEX_STUDENT_PATH;
 })(typeof window!=="undefined"?window:globalThis);
+
 
