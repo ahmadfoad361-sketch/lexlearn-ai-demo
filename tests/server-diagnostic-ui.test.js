@@ -89,8 +89,8 @@ function make(uid,lang,data,opts={}){
   await env.nodes.serverNext.onclick();
   assert.deepEqual(events,[
    ["consent","lexlearn-ai-grading-v1","external_ai_grading",true],["grade"]]);
-  assert.match(env.main.html,/80%/,"preliminary AI recall is shown from saved server result");
-  assert.match(env.main.html,/تقدير أولي/);
+  assert.doesNotMatch(env.main.html,/80%/,"learner report must not show an unvalidated AI percentage");
+  assert.match(env.main.html,/مؤشرات تدريبية أولية/);
  }
  // Previously completed students can opt in later without restarting or overwriting the diagnostic.
  {
@@ -107,7 +107,7 @@ function make(uid,lang,data,opts={}){
    return {status:"completed"};
   };
   await env.win.LEX_SERVER_DIAGNOSTIC.mount();
-  assert.match(env.main.html,/لم يُعتمد قياس كافٍ بعد/,"unverified legacy scores must not appear as memorization percentages");
+  assert.match(env.main.html,/مؤشر أولي قيد المراجعة/,"learner sees review state rather than a raw percentage");
   assert.ok(env.nodes.retroAiGrade,"a completed learner can request AI grading after the fact");
   await env.nodes.retroAiGrade.onclick();
   assert.deepEqual(events,[],"no AI call without explicit opt-in");
@@ -115,7 +115,7 @@ function make(uid,lang,data,opts={}){
   env.nodes.retroAiConsent.checked=true;
   await env.nodes.retroAiGrade.onclick();
   assert.deepEqual(events,["consent","grade"]);
-  assert.match(env.main.html,/40%/,"readback displays the confirmed AI score");
+  assert.doesNotMatch(env.main.html,/40%/,"raw provisional percentages remain private");
   assert.equal(env.nodes.retroAiGrade,undefined,"no second grading button after score is saved");
   assert.equal(data[uid].attempt_id,"saved-once");
  }
@@ -141,7 +141,7 @@ function make(uid,lang,data,opts={}){
   assert.match(env.main.html,/ألغينا اعتماد نسبة 100%/,"old one-criterion grading is disclaimed");
   await env.nodes.retroAiGrade.onclick();
   assert.deepEqual(events,["grade"],"a saved consent causes no additional consent request");
-  assert.match(env.main.html,/40%/,"confirmed AI grading appears");
+  assert.doesNotMatch(env.main.html,/40%/,"raw provisional percentages remain private");
  }
  // An already-reviewed paid attempt must not display the technical review error
  // or offer an action that would try to spend another API call.
@@ -155,8 +155,8 @@ function make(uid,lang,data,opts={}){
   env.cloud.getDiagnosticAiAudit=async()=>({status:"review_required",reason:"academic_review_required"});
   env.cloud.gradeDiagnosticAi=async()=>{throw Error("Should not re-call OpenAI on a reviewed attempt");};
   await env.win.LEX_SERVER_DIAGNOSTIC.mount();
-  assert.match(env.main.html,/40%/,"old incomplete diagnostic has corrected 40% from internal rubric");
-  assert.match(env.main.html,/ليست نتيجة OpenAI المدفوعة/,"do not pass internal correction off as paid AI");
+  assert.doesNotMatch(env.main.html,/40%/,"raw provisional percentages remain private");
+  assert.match(env.main.html,/المؤشر الداخلي يفحص بعض عناصر الإجابة/,"learner receives cautious wording without false scores");
   assert.ok(env.nodes.retroAiPanel,"report contains the AI panel before state is checked");
   assert.equal(env.nodes.retroAiPanel.style.display,"none","one-use provider action is hidden");
   assert.doesNotMatch(env.main.html,/النتيجة تحتاج مراجعة المشرف أو التحقق من إعدادات OpenAI/);

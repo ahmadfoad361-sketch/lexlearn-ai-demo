@@ -53,7 +53,9 @@ jobs:
         with:
           deno-version: v2.x
       - name: Check diagnostic AI Edge Function
-        run: deno check supabase/functions/lexlearn-diagnostic-ai-grade/index.ts
+        run: |
+          deno check supabase/functions/lexlearn-diagnostic-ai-grade/index.ts
+          deno check supabase/functions/lexlearn-grading-smoke/index.ts
       - name: Adaptive engine tests
         run: |
           node tests/adaptive-engine.test.js
@@ -117,6 +119,7 @@ jobs:
         run: |
           psql -v ON_ERROR_STOP=1 -f tests/sql/lifecycle-bootstrap.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261019_001_student_diagnostic_lifecycle.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261023_004_diagnostic_not_sure_neutral.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261019_002_official_level_one.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261019_003_internal_provisional_essay_grading.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261022_002_diagnostic_three_element_rubric.sql
@@ -174,6 +177,7 @@ jobs:
         run: |
           psql -v ON_ERROR_STOP=1 -f tests/sql/lifecycle-bootstrap.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261019_001_student_diagnostic_lifecycle.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261023_004_diagnostic_not_sure_neutral.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261019_002_official_level_one.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261019_003_internal_provisional_essay_grading.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261022_002_diagnostic_three_element_rubric.sql
@@ -214,6 +218,7 @@ jobs:
         run: |
           psql -v ON_ERROR_STOP=1 -f tests/sql/lifecycle-bootstrap.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261019_001_student_diagnostic_lifecycle.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261023_004_diagnostic_not_sure_neutral.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261019_002_official_level_one.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261019_003_internal_provisional_essay_grading.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261022_002_diagnostic_three_element_rubric.sql
@@ -251,6 +256,7 @@ jobs:
         run: |
           psql -v ON_ERROR_STOP=1 -f tests/sql/lifecycle-bootstrap.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261019_001_student_diagnostic_lifecycle.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261023_004_diagnostic_not_sure_neutral.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261019_002_official_level_one.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261019_003_internal_provisional_essay_grading.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261022_002_diagnostic_three_element_rubric.sql
@@ -258,4 +264,5 @@ jobs:
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261019_004_founder_authorized_pilot_release.sql
           psql -v ON_ERROR_STOP=1 -f tests/sql/full-adaptive-fixture.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261019_005_full_adaptive_internal_pilot.sql
+           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261023_003_balanced_training_until_verified.sql
           psql -v ON_ERROR_STOP=1 -f tests/sql/full-adaptive-acceptance.sql

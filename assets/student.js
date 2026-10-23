@@ -129,41 +129,22 @@ function profileTitle(){
   return result.profileType==="insufficient_evidence"?"أدلة غير كافية — نبدأ تأسيسيًا":"مؤشرات أولية متقاربة — سنعيد القياس";
 }
 function studentInsight(){
-  var items=[
-    {key:"recall",label:"الحفظ",icon:"🧠",value:adaptiveValue("recall")},
-    {key:"understanding",label:"الفهم",icon:"💡",value:adaptiveValue("understanding")},
-    {key:"application",label:"التطبيق على الوقائع",icon:"⚖️",value:adaptiveValue("application")}
-  ].filter(function(x){return x.value!=null;});
-  if(!items.length)return {best:null,focus:null,tip:"ابدأ التقييم القصير وسنبني لك تدريبك."};
-  var sorted=items.slice().sort(function(a,b){return a.value-b.value;});
-  var focus=sorted[0],best=sorted[sorted.length-1];
-  var tips={
-    recall:"حاول تذكّر الفكرة من ذاكرتك قبل أن ترجع للنص.",
-    understanding:"اسأل نفسك: لماذا هذه القاعدة تعمل بهذه الطريقة؟",
-    application:"جرّب القاعدة على واقعة قصيرة وحدد العنصر الحاسم أولًا."
-  };
-  return {best:best,focus:focus,tip:tips[focus.key]};
+ // A diagnostic with one or two objective questions per skill is not enough to
+ // identify a validated strongest/weakest trait.
+ return {best:null,focus:null,tip:"ابدأ بالتدريبات المتوازنة، وسنراجع مؤشرات المهارات بعد تكرار القياس."};
 }
 function simpleSkillCard(item){
-  var grade=result&&result.measurements&&result.measurements.recall&&result.measurements.recall.ai_grade;
-  var provisional=item.key==="recall"&&grade&&grade.status==="preliminary_ai"&&Number.isFinite(grade.provisional_percent)&&adaptiveValue("recall")==null;
-  var value=provisional?grade.provisional_percent:adaptiveValue(item.key),level=provisional?"تقدير مبدئي يحتاج مراجعة":status(value),pct=value==null?0:Math.round(value);
-  return "<div class='simpleSkill "+item.key+"'>"+
-    "<div class='simpleIcon'>"+icon(item.icon)+"</div>"+
-    "<b>"+item.label+"</b>"+
-    "<strong>"+(value==null?"—":pct+"%")+"</strong>"+
-    "<span>"+level+"</span>"+
-    "<div class='miniBar'><i style='width:"+(value==null?5:Math.max(5,Math.min(100,value)))+"%'></i></div>"+
-  "</div>";
+ return "<div class='simpleSkill "+item.key+"'>"+
+ "<div class='simpleIcon'>"+icon(item.icon)+"</div>"+
+ "<b>"+item.label+"</b><strong>—</strong>"+
+ "<span>قيد التحقق</span><div class='miniBar'><i style='width:5%'></i></div></div>";
 }
 function skillCard(title,key,ic){
-  var value=adaptiveValue(key);
-  var width=value==null?6:Math.max(6,Math.min(100,value));
-  return "<div class='skill'>"+
-    "<div class='skillHead'><span class='skillIcon'>"+icon(ic)+"</span><div><b>"+esc(title)+"</b><small>"+status(value)+(value==null?"":" • "+value+"%")+"</small></div></div>"+
-    "<div class='bar'><i style='width:"+width+"%'></i></div>"+
-  "</div>";
+ return "<div class='skill'><div class='skillHead'><span class='skillIcon'>"+icon(ic)+"</span>"+
+ "<div><b>"+esc(title)+"</b><small>مؤشر أولي — قيد التحقق</small></div></div>"+
+ "<div class='bar'><i style='width:6%'></i></div></div>";
 }
+
 function achievementName(a){
   if(a.status==="program-complete")return "إتمام برنامج LexLearn";
   if(a.status==="mastered")return "إتقان المرحلة";
@@ -318,8 +299,8 @@ function render(){
           simpleSkillCard({key:"application",label:"التطبيق على الوقائع",icon:"scale"})+
         "</div>"+
         "<div class='studentTipGrid'>"+
-          "<div class='tipCard good'><span>"+icon("chart")+"</span><div><small>أقوى نقطة</small><b>"+esc(insight.best?insight.best.label:"—")+"</b></div></div>"+
-          "<div class='tipCard focus'><span>"+icon("target")+"</span><div><small>ركز الآن على</small><b>"+esc(insight.focus?insight.focus.label:"—")+"</b></div></div>"+
+          "<div class='tipCard good'><span>"+icon("chart")+"</span><div><small>أقوى مهارة — غير محددة بعد</small><b>"+esc(insight.best?insight.best.label:"—")+"</b></div></div>"+
+          "<div class='tipCard focus'><span>"+icon("target")+"</span><div><small>تدريبات متوازنة</small><b>"+esc(insight.focus?insight.focus.label:"—")+"</b></div></div>"+
           "<div class='tipCard today'><span>"+icon("book")+"</span><div><small>نصيحة اليوم</small><b>"+esc(insight.tip)+"</b></div></div>"+
         "</div>"+
       "</section>"
