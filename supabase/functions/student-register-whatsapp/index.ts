@@ -81,6 +81,15 @@ Deno.serve(async(req)=>{
      user_id:uid,notice_version:"2026-10-06-v1",consent_type:"learning_data",accepted:true
    });
    if(learningConsent.error)throw new Error("registration_learning_consent_failed");
+   // Optional third-party AI processing is separate from required learning-data
+   // acceptance. Do not infer this permission if checkbox was left unchecked.
+   if(body.accepted_external_ai===true){
+    const aiConsent=await admin.from("consent_records").insert({
+     user_id:uid,notice_version:"lexlearn-ai-grading-v1",
+     consent_type:"external_ai_grading",accepted:true
+    });
+    if(aiConsent.error)throw new Error("registration_ai_consent_failed");
+   }
   }catch(_){
    await admin.auth.admin.deleteUser(uid);
    return json({error:"registration_not_completed"},503);
