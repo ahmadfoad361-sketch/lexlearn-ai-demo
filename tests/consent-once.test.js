@@ -11,7 +11,7 @@ assert.match(signup,/notice_version:"2026-10-06-v1"/);
 assert.match(student,/CONSENT_VERSION="2026-10-06-v1"/);
 assert.match(cloud,/getConsent\(noticeVersion,consentType\)/);
 assert.match(diagnostic,/getConsent\("lexlearn-ai-grading-v1","external_ai_grading"\)/);
-assert.match(diagnostic,/if\(!existingConsent\)/);
+assert.match(diagnostic,/var acceptedAi=false;/,"initial diagnostic reads saved AI permission");
 assert.match(diagnostic,/if\(aiRequested&&!acceptedAi\)/);
 assert.doesNotMatch(signup,/consent_type:"external_ai_grading"/);
 console.log("First registration choice covers learning data once; external AI remains separate and reusable PASS");
