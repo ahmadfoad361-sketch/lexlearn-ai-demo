@@ -148,11 +148,15 @@ function make(uid,lang,data,opts={}){
  {
   const uid="review-pending",attempt="review-pending-attempt",env=make(uid,"ar",data);
   data[uid]={status:"completed",attempt_id:attempt,
-    result:{source:"server_finalized_diagnostic",student_id:uid,metrics:{understanding:50}},
+    result:{source:"server_finalized_diagnostic",student_id:uid,metrics:{understanding:50},
+      measurements:{recall:{internal_grade:{status:"preliminary_internal",provisional_percent:100},
+       corrected_internal_grade:{status:"preliminary_internal",provisional_percent:40}}}},
     training_plan:{mode:"balanced",firstTasks:["one_fact"]}};
   env.cloud.getDiagnosticAiAudit=async()=>({status:"review_required",reason:"academic_review_required"});
   env.cloud.gradeDiagnosticAi=async()=>{throw Error("Should not re-call OpenAI on a reviewed attempt");};
   await env.win.LEX_SERVER_DIAGNOSTIC.mount();
+  assert.match(env.main.html,/40%/,"old incomplete diagnostic has corrected 40% from internal rubric");
+  assert.match(env.main.html,/ليست نتيجة OpenAI المدفوعة/,"do not pass internal correction off as paid AI");
   assert.ok(env.nodes.retroAiPanel,"report contains the AI panel before state is checked");
   assert.equal(env.nodes.retroAiPanel.style.display,"none","one-use provider action is hidden");
   assert.doesNotMatch(env.main.html,/النتيجة تحتاج مراجعة المشرف أو التحقق من إعدادات OpenAI/);

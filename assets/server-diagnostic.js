@@ -29,6 +29,7 @@ function report(status,uid){
  function numberOrNot(v){return typeof v==="number"&&Number.isFinite(v)?Math.max(0,Math.min(100,Math.round(v)))+"%":tr("لم يُقَس","Not measured");}
  var rec=measurements.recall||{},internal=rec.internal_grade||{},ai=rec.ai_grade||{},p=status.training_plan||{};
  var aiRecall=ai.status==="preliminary_ai"&&Number.isFinite(ai.provisional_percent)?ai.provisional_percent:null;
+ var corrected=rec.corrected_internal_grade||{},internalCoverage=corrected.status==="preliminary_internal"&&Number.isFinite(corrected.provisional_percent)?corrected.provisional_percent:null;
  var oldCriterion=(Array.isArray(internal.criteria_met)?internal.criteria_met:[]);
  var oldCriterionCount=oldCriterion.length;
  // Legacy internal scorer uses ONE criterion as its whole denominator: 100% is NOT memorization mastery.
@@ -41,7 +42,7 @@ function report(status,uid){
    "foundation":tr("نبدأ من تأسيس القاعدة قبل رفع الصعوبة.","Begin with supported foundations.")};
  var mode=p.mode||"foundation";
  var tiles=[
-   [aiRecall!==null?tr("الاسترجاع — تقدير OpenAI مبدئي","Recall — provisional OpenAI result"):tr("الحفظ من الذاكرة","Recall from memory"),aiRecall,aiRecall===null?tr("لم يُعتمد قياس كافٍ بعد","Not sufficiently assessed"):null],
+   [aiRecall!==null?tr("استرجاع القاعدة — تقدير OpenAI مبدئي","Legal rule recall — preliminary OpenAI"):internalCoverage!==null?tr("تغطية عناصر القاعدة — محرك داخلي مبدئي","Rule-element coverage — preliminary internal"):tr("الحفظ من الذاكرة","Recall from memory"),aiRecall!==null?aiRecall:internalCoverage,(aiRecall===null&&internalCoverage===null)?tr("لم يُعتمد قياس كافٍ بعد","Not sufficiently assessed"):null],
    [tr("التعرّف على القاعدة","Rule recognition"),metrics.recognition],
    [tr("الفهم","Understanding"),metrics.understanding],
    [tr("التطبيق على الواقعة","Applying the rule"),metrics.application,applicationSkipped?tr("اختار لا أدري","Chose Not sure"):null]
@@ -51,6 +52,7 @@ function report(status,uid){
  "<p role='status'>"+tr("حُفظت نتيجتك في حسابك. يمكنك العودة إلى هذه الصفحة لمراجعتها في أي وقت.","Your result is saved to your account. Return to this page to review it at any time.")+"</p>"+
  "<div style='display:flex;flex-wrap:wrap;gap:.75rem'>"+tiles+"</div>"+
  (applicationSkipped?"<p class='diagMetricNote' role='note'>"+tr("التطبيق لم يأخذ نسبة لأن الإجابة المسجلة على سؤال التطبيق الوحيد كانت «لا أدري». هذا لا يعني 0%، وسنعيد قياس التطبيق في التدريبات.","No application percentage was calculated because the single application question was answered 'Not sure'. This is not 0%; application will be assessed again during practice.")+"</p>":"")+
+ (aiRecall===null&&internalCoverage!==null?"<p class='diagMetricNote' role='note'>"+tr("نسبة "+Math.round(internalCoverage)+"% تخص عناصر القاعدة التي ظهرت في الإجابة؛ أُعيد حسابها بمحرك قواعد داخلي بعد تصحيح معيار التقييم، وليست نتيجة OpenAI المدفوعة أو درجة لحفظ المقرر.","The "+Math.round(internalCoverage)+"% is an updated internal legal-element coverage estimate, NOT the paid OpenAI result or validated memory mastery.")+"</p>":"")+
  "<div class='resultMetric' style='margin:1rem 0;padding:1rem;border:1px solid #e5d9dc;border-radius:12px'><b>"+tr("الإجابة الحرة — ما اكتشفه المحرك الداخلي","Free response — what the internal engine detected")+": "+esc(free)+"</b>"+
  "<p>"+((internal.provisional_percent===100&&oldCriterionCount===1)?tr("ألغينا اعتماد نسبة 100% السابقة: كانت تعني تحقق عنصر واحد فقط هو بداية الشخصية بالولادة الحية، ولا تُثبت حفظ بقية القاعدة.","The previous 100% is no longer treated as a recall score: it represented only one matched legal element (the start of personality at live birth)."):
  tr("المؤشر الداخلي يفحص بعض عناصر الإجابة، ولا يُعتبر وحده قياسًا معتمدًا للحفظ أو درجة نهائية.","Internal rule matching checks some parts of the response and does not establish memorization mastery or a final grade."))+"</p>"+

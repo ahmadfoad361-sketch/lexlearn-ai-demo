@@ -73,6 +73,7 @@ jobs:
           node tests/official-diagnostic.test.js
           node tests/official-diagnostic-dom-flow.test.js
           node tests/server-diagnostic-ui.test.js
+          node tests/diagnostic-ai-v2.test.mjs
           node tests/consent-once.test.js
           node tests/diagnostic-layout.test.js
           node tests/student-gate-source.test.js
