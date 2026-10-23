@@ -1,0 +1,41 @@
+.legalCaseGuide{margin:1rem 0 1.5rem;color:#111d31;line-height:1.75}
+.legalCaseGuide *{box-sizing:border-box}
+.caseFacts,.caseMainQuestion{border-radius:16px;padding:1rem 1.2rem;margin-bottom:12px}
+.caseFacts{border:1px solid #e5ddd9;background:#f9f4ef}
+.caseEyebrow{display:block;font-size:.78rem;color:#7b243c;letter-spacing:.01em;font-weight:800;margin-bottom:.2rem}
+.caseFacts p{margin:0;color:#26354b;font-size:1rem;line-height:1.9}
+.caseMainQuestion{background:#111d31;color:white;position:relative;border-inline-start:5px solid #ae5268}
+.caseMainQuestion .caseEyebrow{color:#f0b8c5}
+.caseMainQuestion h3{color:#fff;margin:0;font-size:clamp(1.06rem,2.25vw,1.38rem);line-height:1.7}
+.caseIntro{margin:.8rem 0;color:#526176;font-size:.92rem}
+.caseSteps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin:14px 0}
+.caseStep{border:1px solid #e5e0de;border-radius:10px;background:#faf8f6;color:#5f697b;padding:.55rem .3rem;text-align:center;font-size:.76rem;font-weight:650;white-space:normal;line-height:1.4}
+.caseStep.active{background:#fff2f5;color:#8a1f39;border-color:#ad6175;font-weight:800}
+.caseStep.filled:not(.active){color:#196f5d;border-color:#b6d7cd;background:#f0faf5}
+.caseAnswerStep{border-radius:18px;border:1px solid #e4e0e2;background:#fff;padding:clamp(14px,3vw,24px);box-shadow:0 8px 22px #111d3108}
+.caseStepCount{color:#8a1f39;font-size:.82rem;font-weight:800;margin-bottom:.4rem}
+.caseAnswerStep h3{margin:.1rem 0 .5rem;font-size:1.24rem}
+.caseHelp{margin:.2rem 0 .35rem;color:#26354b;font-weight:650}
+.caseHint{display:block;color:#647184;font-size:.84rem}
+.legalCaseGuide textarea{width:100%;margin:.65rem 0 0;min-height:115px;resize:vertical;border:1px solid #bfc7d1;border-radius:12px;padding:.9rem 1rem;background:#fff;color:#111d31;font:inherit;line-height:1.8}
+.legalCaseGuide textarea:focus{border-color:#8a1f39;outline:3px solid #e5cbd2}
+.caseActions{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-top:14px}
+.legalCaseGuide button{padding:.75rem 1.25rem;border-radius:11px;font-weight:800;min-height:44px}
+.legalCaseGuide .caseBack{background:#f8f4f2;color:#111d31;border:1px solid #dcd6d6}
+.legalCaseGuide .caseNext{background:#8a1f39;color:white;border:1px solid #8a1f39;margin-inline-start:auto}
+.legalCaseGuide button:focus-visible{outline:3px solid #8a1f39;outline-offset:3px}
+.caseReview{display:grid;gap:.6rem}
+.caseReview>div{border-inline-start:3px solid #8a1f39;background:#faf8f6;border-radius:8px;padding:.6rem .9rem}
+.caseReview b{font-size:.89rem;color:#8a1f39}
+.caseReview p{white-space:pre-wrap;margin:.25rem 0;color:#182840;overflow-wrap:anywhere}
+.caseEmpty{font-style:italic;color:#7e8490}
+.caseGuidance{font-size:.86rem;color:#657185}
+.caseStatus{font-size:.88rem;color:#8a1f39;margin:.5rem 0 0;min-height:1.1em}
+@media(max-width:560px){
+.caseSteps{gap:3px}
+.caseStep{font-size:.65rem;padding:.45rem .15rem}
+.caseFacts,.caseMainQuestion{padding:.85rem .9rem}
+.caseAnswerStep{padding:14px 12px}
+.caseActions button{flex:1}
+}
+@media(prefers-reduced-motion:reduce){.legalCaseGuide *{scroll-behavior:auto!important}}
