@@ -102,7 +102,7 @@ function weekStatus(n){
   var r=course.weekResults[n];
   if(!result)return ["locked",n===1?"يتاح بعد التقييم التشخيصي":"مغلق حتى اجتياز المرحلة السابقة","lock"];
   if(r&&r.status==="repair")return ["need","يحتاج تثبيت","repeat"];
-  if(r)return ["done",r.status==="mastered"?"مكتمل بإتقان":"مكتمل","check"];
+  if(r)return ["done",r.status==="mastered"?"مكتمل التدريب":"مكتمل","check"];
   if(course.adminOverrideWeeks[n])return ["current","مفتوح بواسطة المشرف","play"];
   if(n===1||passedWeek(n-1))return ["current","متاح الآن","play"];
   return ["locked","مغلق حتى اجتياز المرحلة السابقة","lock"];
@@ -120,6 +120,7 @@ function status(value){
   return "أولوية تدريب";
 }
 function profileTitle(){
+  if(result)return "القياس أولي؛ نراجع المهارات مع استمرار التدريب المتوازن";
   if(result&&result.trainingPlan)return result.trainingPlan.reason_ar;
   var model=course&&course.adaptiveModel;
   if(model&&model.bridge&&model.bridge.label)return model.bridge.label;
@@ -147,7 +148,7 @@ function skillCard(title,key,ic){
 
 function achievementName(a){
   if(a.status==="program-complete")return "إتمام برنامج LexLearn";
-  if(a.status==="mastered")return "إتقان المرحلة";
+  if(a.status==="mastered")return "إتمام تدريب المرحلة";
   if(a.status==="completed_with_support")return "تقدم بعد الدعم";
   return "إنهاء المرحلة";
 }
@@ -308,7 +309,7 @@ function render(){
 
   var achievements=course.achievements.length
     ? course.achievements.map(function(a){
-        var sub=a.status==="program-complete"?"6 مراحل • 30 جلسة • مكتمل":("الأسبوع "+a.week+" • "+(a.status==="mastered"?"بإتقان":"مكتمل"));
+        var sub=a.status==="program-complete"?"6 مراحل • 30 جلسة • مكتمل":("الأسبوع "+a.week+" • "+(a.status==="mastered"?"مكتمل التدريب":"مكتمل"));
         return "<div class='badge "+(a.status==="program-complete"?"finalBadge":"")+"'><span class='badgeIcon'>"+icon("trophy")+"</span><div><b>"+achievementName(a)+"</b><small>"+sub+"</small></div></div>";
       }).join("")
     : "<div class='empty'>أول Badge يظهر بعد إنهاء تقييم الأسبوع الأول.</div>";

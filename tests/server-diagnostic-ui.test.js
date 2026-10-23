@@ -138,7 +138,7 @@ function make(uid,lang,data,opts={}){
   await env.win.LEX_SERVER_DIAGNOSTIC.mount();
   assert.equal(env.nodes.retroAiConsentLabel.style.display,"none","previous AI consent must not be shown again");
   assert.match(env.main.html,/اختار لا أدري/,"application was skipped, not graded zero");
-  assert.match(env.main.html,/ألغينا اعتماد نسبة 100%/,"old one-criterion grading is disclaimed");
+  assert.match(env.main.html,/التقييم الداخلي القديم اعتمد عنصرًا واحدًا/,"legacy scoring is described without displaying raw percentages");
   await env.nodes.retroAiGrade.onclick();
   assert.deepEqual(events,["grade"],"a saved consent causes no additional consent request");
   assert.doesNotMatch(env.main.html,/40%/,"raw provisional percentages remain private");
