@@ -117,13 +117,13 @@ Deno.serve(async(req:Request)=>{
     const parsed=extract(await response.json());
     const evaluated=parsed.ok?interpret(parsed.data,answer):{ok:false,reason:parsed.reason};
     if(evaluated.ok && "grade" in evaluated && evaluated.grade){
-     evaluated.grade.verification={...evaluated.grade.verification,models:usedModels};
-     confidence=evaluated.grade.confidence;
-     result={status:"completed",score:evaluated.grade.provisional_percent,grade:evaluated.grade};
+     const verifiedGrade={...evaluated.grade,verification:{...evaluated.grade.verification,models:usedModels}};
+     confidence=verifiedGrade.confidence;
+     result={status:"completed",score:verifiedGrade.provisional_percent,grade:verifiedGrade};
      // Atomic attempt ID check prevents grading one student's later attempt with stale data.
      const next=structuredClone(run.result);
      next.measurements=next.measurements||{};
-     next.measurements.recall={...(next.measurements.recall||{}),ai_grade:evaluated.grade};
+     next.measurements.recall={...(next.measurements.recall||{}),ai_grade:verifiedGrade};
      // The independent recall metric remains null until academic validation/review.
      const saved=await db.from("student_diagnostic_runs").update({result:next,updated_at:new Date().toISOString()})
       .eq("user_id",user.id).eq("course_id",COURSE).eq("attempt_id",run.attempt_id)
@@ -140,4 +140,5 @@ Deno.serve(async(req:Request)=>{
   return json({status:"completed",grade:result.grade,score_type:"provisional_recall_criterion_coverage_not_mastery"});
  }catch{return json({status:"review_required",score:null,reason:"grading_unavailable"},503)}
 });
+
 
