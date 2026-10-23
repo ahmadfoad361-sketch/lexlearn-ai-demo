@@ -33,13 +33,16 @@ async function lifecycle({saveFails=false,session=5,precompleted=false}={}){
   return {allowed:true,tasks:[task],saved:saved(),completed:done};
  }};
  const visual={...moments,bindDownload(){},celebrate(){calls.push('celebration');}};
- const window={LEX_MOMENTS:visual,LEX_CLOUD:cloud,LEX_OFFICIAL_DIAGNOSTIC:{identity:async()=> 'student'},document:{getElementById:()=>host},URLSearchParams,location:{search:'?session='+session},console};window.window=window;
+ const window={LEX_SESSION_MOMENTS:{render:()=>'<section>Research encouragement</section>',show(){calls.push('sessionMoment');}},LEX_MOMENTS:visual,LEX_CLOUD:cloud,LEX_OFFICIAL_DIAGNOSTIC:{identity:async()=> 'student'},document:{getElementById:()=>host},URLSearchParams,location:{search:'?session='+session},console};window.window=window;
  vm.runInNewContext(fs.readFileSync('assets/student-path.js','utf8'),window);await window.LEX_STUDENT_PATH.mount();
- if(precompleted){assert.ok(!calls.includes('celebration'),'opening an old report must not replay celebrations');return;}
+ if(precompleted){assert.ok(!calls.includes('celebration'),'opening an old report must not replay celebrations');assert.ok(!calls.includes('sessionMoment'),'old reports keep the inline message without replaying the screen');return;}
  nodes.adaptiveEssay.value='Meaningful student answer';await nodes.adaptiveSubmit.onclick();
  assert.equal(calls.includes('celebration'),!saveFails&&session%5===0);
+ assert.equal(calls.includes('sessionMoment'),!saveFails,'every completed session receives a moment, not just checkpoints');
+ if(!saveFails)assert.ok(calls.lastIndexOf('trainingOpen')<calls.indexOf('sessionMoment'),'only after confirmed saved completion');
  if(!saveFails&&session%5===0)assert.ok(calls.lastIndexOf('trainingOpen')<calls.indexOf('celebration'),'read back persisted work before celebration');
  if(saveFails){assert.ok(nodes.adaptiveEssay);assert.equal(nodes.adaptiveEssay.value,'Meaningful student answer');}
 }
-(async()=>{await lifecycle();await lifecycle({saveFails:true});await lifecycle({session:4});await lifecycle({precompleted:true});console.log('Learning moments: real/missing scores, image export, reduced motion, once-only confetti and confirmed checkpoint completion PASS');})().catch(e=>{console.error(e);process.exitCode=1;});
+(async()=>{for(let session=1;session<=30;session++)await lifecycle({session});await lifecycle({saveFails:true});await lifecycle({precompleted:true});console.log('Learning moments: real/missing scores, image export, reduced motion, once-only confetti and confirmed checkpoint completion PASS');})().catch(e=>{console.error(e);process.exitCode=1;});
+
 

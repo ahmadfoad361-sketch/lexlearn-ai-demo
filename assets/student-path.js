@@ -53,6 +53,7 @@ function progressHtml(rows,session,historyAvailable){
  return "<section class='progressReport' aria-label='"+t("ملخص تقدمك","Your progress report")+"'><h2>"+
  (m.checkpoint?t("إتمام المستوى ","Level completion ")+m.level:t("ملخص الجلسة ","Session summary ")+session)+"</h2>"+
  (visual?visual.completion(card,lang()):"")+
+ (root.LEX_SESSION_MOMENTS?root.LEX_SESSION_MOMENTS.render(session,lang()):"")+
  "<p class='completionState'>✓ "+t("أكملت مهام هذه الجلسة وحُفظت إجاباتك.","You completed this session and your answers were saved.")+"</p>"+
  "<div class='progressSkills'>"+m.skills.map(function(x){
    var aiRows=(rows||[]).filter(function(r){return r.dimension===x.dimension&&r.session_number===session&&r.evaluation&&r.evaluation.status==="preliminary_ai"&&!outdated(r.evaluation);});
@@ -230,7 +231,8 @@ async function boot(){
       await loadProgress();
      }
      busy=false;render();
-     if(data.completed&&selected%5===0&&overview.completed_count>=selected&&root.LEX_MOMENTS)root.LEX_MOMENTS.celebrate(host,uid+":"+COURSE+":"+selected);
+     if(data.completed&&root.LEX_SESSION_MOMENTS)root.LEX_SESSION_MOMENTS.show(selected,lang(),uid+":"+COURSE+":"+selected);
+     if(data.completed&&selected%5===0&&overview.completed_count>=selected&&root.LEX_MOMENTS)root.LEX_MOMENTS.celebrate((root.document.querySelector&&root.document.querySelector(".sessionMomentDialog[open]"))||host,uid+":"+COURSE+":"+selected);
     }catch(e){
      busy=false;button.disabled=false;
      if(savingView)savingView.innerHTML="";
@@ -252,6 +254,7 @@ async function boot(){
 root.LEX_STUDENT_PATH={mount:boot,noHtmlScore:noHtmlScore,previousAnswerTitle:previousAnswerTitle,progressModel:progressModel,progressHtml:progressHtml};
 if(typeof module!=="undefined"&&module.exports)module.exports=root.LEX_STUDENT_PATH;
 })(typeof window!=="undefined"?window:globalThis);
+
 
 
 
