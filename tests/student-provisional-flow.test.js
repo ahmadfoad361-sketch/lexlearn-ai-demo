@@ -12,5 +12,6 @@ assert.equal(typeof s.hint("تبدأ الشخصية القانونية عند ا
 const src=fs.readFileSync("assets/student-practice.js","utf8");
 for(const forbidden of ["saveSnapshot(","lex_diagnostic_complete","saveLearningPlan(","student_level_releases","student_level_completions"]){assert.ok(!src.includes(forbidden),"non-credit preview must not mutate official "+forbidden);}
 const page=fs.readFileSync("student-practice.html","utf8");assert.ok(page.includes("assets/student-practice.js"));
-const server=fs.readFileSync("assets/server-diagnostic.js","utf8");assert.ok(server.includes("student-practice.html?lang="),"locked official bank must offer independent student-only rehearsal");
+const server=fs.readFileSync("assets/server-diagnostic.js","utf8");assert.ok(!server.includes("question_not_approved"),"raw server approval codes must not be rendered to students");
+assert.ok(!server.includes("اعتمادًا قانونيًا وأكاديميًا مستقلًا"),"founder pilot must not imply unavailable university clearance");
 console.log("Non-credit authenticated practice: PASS");
