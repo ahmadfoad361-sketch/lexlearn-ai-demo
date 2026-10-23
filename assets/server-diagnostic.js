@@ -117,8 +117,13 @@ async function startUI(){
   if(answers.some(function(x,i){return !Q[i]||x.question_id!==Q[i].id;})){fail(new Error("inconsistent_server_draft"));return;}
   var acceptedAi=false;
   try{if(cloud.getConsent)acceptedAi=!!await cloud.getConsent("lexlearn-ai-grading-v1","external_ai_grading");}catch(_){}
-  var idx=answers.length, saving=false;
+  var idx=answers.length, saving=false,studyRead=false;
   function page(){
+   if(idx===0&&!studyRead&&root.LEX_LEGAL_STUDY){
+    render(root.LEX_LEGAL_STUDY.render([39,40,49,50,62,63],lang()));
+    root.document.getElementById("beginLegalQuestions").onclick=function(){studyRead=true;page();};
+    return;
+   }
    var done=idx===Q.length,q=Q[idx],progress=Math.round(100*idx/(Q.length+1));
    var html="<div class='diagProgressHeader' role='status'><span>"+tr("السؤال ","Question ")+(idx+1)+" / "+(Q.length+1)+"</span><strong>"+progress+"%</strong></div>"+
     "<div class='diagProgressTrack' role='progressbar' aria-label='"+tr("تقدّم الاختبار","Assessment progress")+"' aria-valuemin='0' aria-valuemax='100' aria-valuenow='"+progress+"'><span class='diagProgressFill' style='width:"+progress+"%'></span></div>";
@@ -171,3 +176,4 @@ async function startUI(){
 root.LEX_SERVER_DIAGNOSTIC={mount:startUI};
 if(typeof module!=="undefined"&&module.exports)module.exports={mount:startUI};
 })(typeof window!=="undefined"?window:globalThis);
+

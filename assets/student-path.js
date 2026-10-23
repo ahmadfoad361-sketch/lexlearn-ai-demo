@@ -68,7 +68,7 @@ async function boot(){
   }
   var selected=Number(new URLSearchParams(root.location.search).get("session"));
   if(!Number.isInteger(selected)||selected<1||selected>30||selected>overview.unlocked)selected=overview.unlocked;
-  var data=null,busy=false,progressRows=[],historyAvailable=false,adaptation=null,acceptedAi=false,aiUnavailable=false;
+  var data=null,busy=false,progressRows=[],historyAvailable=false,adaptation=null,acceptedAi=false,aiUnavailable=false,studyRead=false;
   try{if(cloud.getConsent)acceptedAi=!!await cloud.getConsent("lexlearn-ai-grading-v1","external_ai_grading");}catch(_){}
   async function refreshAdaptation(){
    if(cloud.trainingAiSummary)try{adaptation=await cloud.trainingAiSummary();}catch(_){adaptation=null;}
@@ -105,11 +105,20 @@ async function boot(){
    try{
     var result=await cloud.studentLifecycleRpc("trainingOpen",{courseId:COURSE,session:n});
     if(!result||!result.allowed||!Array.isArray(result.tasks)||!Array.isArray(result.saved))throw Error(result&&result.reason||"invalid_session");
-    selected=n;data=result;await refreshAdaptation();if(data.completed)await loadProgress();busy=false;render();
+    selected=n;data=result;studyRead=false;await refreshAdaptation();if(data.completed)await loadProgress();busy=false;render();
    }catch(e){reportError(e);}
   }
   function render(){
    if(!data)return;
+   if(!studyRead&&!(data.saved||[]).length&&!data.completed&&root.LEX_LEGAL_STUDY){
+    var sourceIds=[];(data.tasks||[]).forEach(function(q){sourceIds=sourceIds.concat(q.sources||[]);});
+    var reading=root.LEX_LEGAL_STUDY.render(sourceIds,lang());
+    if(reading){
+     show(nav()+reading);
+     host.querySelector("#beginLegalQuestions").onclick=function(){studyRead=true;render();};
+     return;
+    }
+   }
    var saved=data.saved||[],remaining=(data.tasks||[]).filter(function(q){return !byId(saved,q.id);});
    if(adaptation&&adaptation.priority!=="foundation")remaining.sort(function(a,b){return (a.dimension===adaptation.priority?0:1)-(b.dimension===adaptation.priority?0:1);});
    var next=remaining[0],completed=data.completed;
@@ -201,5 +210,6 @@ async function boot(){
 root.LEX_STUDENT_PATH={mount:boot,noHtmlScore:noHtmlScore,previousAnswerTitle:previousAnswerTitle,progressModel:progressModel,progressHtml:progressHtml};
 if(typeof module!=="undefined"&&module.exports)module.exports=root.LEX_STUDENT_PATH;
 })(typeof window!=="undefined"?window:globalThis);
+
 
 

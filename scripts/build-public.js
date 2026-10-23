@@ -15,7 +15,7 @@ const assets=[
   "v9-law.css","v9-law-content.js","v9-law.js",
   "adaptive-engine.js","learning-quality.js","pilot-learning.js","pilot-review.js","pilot-qa.js","quality.css",
   "analysis-faces.svg","student-demo-guard.js","showcase-recall.js","showcase.css","showcase-learning-cycle.css","showcase-learning-cycle.js","showcase.js","showcase-en.js",
-  "program.css","program.js","program-en.js","diagnostic.css","official-diagnostic.js","server-diagnostic.js","official-level-one.js","student-practice.js","student-path.js","legal-case-guide.js","legal-case-guide.css",
+  "program.css","program.js","program-en.js","diagnostic.css","legal-study.js","legal-study.css","official-diagnostic.js","server-diagnostic.js","official-level-one.js","student-practice.js","student-path.js","legal-case-guide.js","legal-case-guide.css",
   "portal.css","register.css","auth-controls.js","student-register.js","student-login.js","student-login-en.js","admin-login-v2.js",
   "student.css","student.js","student-en.js",
   "english.css",
@@ -96,3 +96,4 @@ for(const forbidden of [
   if(fs.existsSync(path.join(out,forbidden)))throw new Error("Forbidden production artifact: "+forbidden);
 }
 console.log("LexLearn public build ready:",pages.length,"pages,",assets.length,"assets");
+
