@@ -80,11 +80,9 @@ async function startUI(){
   render(report(status,student));
  }
  function fail(err){
-  var msg=String(err&&err.message||err);
-  if(/diagnostic_academic_approval_pending/i.test(msg)){
-   render("<p role='status'>"+tr("أسئلة التشخيص الرسمية تنتظر مراجعة واعتمادًا قانونيًا وأكاديميًا مستقلًا. يمكنك الآن تجربة تقييم تدريبي متكيف داخل حسابك، ولن يُحتسب ضمن نتائجك الرسمية.","The official questions await independent review. You can now start a signed-in adaptive rehearsal, separate from official records.")+"</p><p><a class='practice-start' href='student-practice.html?lang="+lang()+"'>"+tr("ابدأ التقييم التدريبي التكيفي الآن","Start adaptive student practice now")+"</a></p><a href='"+portal()+"'>"+tr("حساب الطالب","Student portal")+"</a>");return;
-  }
-  render("<p role='alert'>"+tr("تعذّر تأكيد حالة التشخيص بالخادم. لا توجد نتيجة محفوظة مؤكدة. ","Unable to confirm the server diagnostic state. No result can be assumed. ")+esc(msg)+"</p><a href='"+portal()+"'>"+tr("حساب الطالب","Student portal")+"</a>");
+  if(root.console&&root.console.warn)root.console.warn("LexLearn diagnostic unavailable:",String(err&&err.message||err));
+  render("<p role='alert'>"+tr("تعذّر فتح الاختبار أو تأكيد حفظه. بياناتك المحفوظة لم تُحذف. حاول إعادة فتح الصفحة، وإذا استمرت المشكلة تواصل مع المشرف.","Unable to open or confirm this assessment. Your saved work has not been deleted. Reload or contact the supervisor.")+
+   "</p><a href='"+portal()+"'>"+tr("حساب الطالب","Student account")+"</a>");
  }
  render("<p role='status'>"+tr("جارٍ تحميل تقييمك…","Loading your assessment…")+"</p>");
  var student,studentName;
