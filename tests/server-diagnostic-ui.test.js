@@ -143,6 +143,35 @@ function make(uid,lang,data,opts={}){
   assert.deepEqual(events,["grade"],"a saved consent causes no additional consent request");
   assert.match(env.main.html,/40%/,"confirmed AI grading appears");
  }
+ // An already-reviewed paid attempt must not display the technical review error
+ // or offer an action that would try to spend another API call.
+ {
+  const uid="review-pending",attempt="review-pending-attempt",env=make(uid,"ar",data);
+  data[uid]={status:"completed",attempt_id:attempt,
+    result:{source:"server_finalized_diagnostic",student_id:uid,metrics:{understanding:50}},
+    training_plan:{mode:"balanced",firstTasks:["one_fact"]}};
+  env.cloud.getDiagnosticAiAudit=async()=>({status:"review_required",reason:"academic_review_required"});
+  env.cloud.gradeDiagnosticAi=async()=>{throw Error("Should not re-call OpenAI on a reviewed attempt");};
+  await env.win.LEX_SERVER_DIAGNOSTIC.mount();
+  assert.ok(env.nodes.retroAiPanel,"report contains the AI panel before state is checked");
+  assert.equal(env.nodes.retroAiPanel.style.display,"none","one-use provider action is hidden");
+  assert.doesNotMatch(env.main.html,/النتيجة تحتاج مراجعة المشرف أو التحقق من إعدادات OpenAI/);
+ }
+ // If a first-time request cannot produce a grade, remove the action silently.
+ {
+  const uid="grading-unavailable",env=make(uid,"ar",data);
+  data[uid]={status:"completed",attempt_id:"unavailable-attempt",
+    result:{source:"server_finalized_diagnostic",student_id:uid,metrics:{understanding:50}},
+    training_plan:{mode:"balanced",firstTasks:["one_fact"]}};
+  env.cloud.getConsent=async()=>({accepted:true});
+  env.cloud.gradeDiagnosticAi=async()=>({status:"review_required",reason:"provider_http_429"});
+  await env.win.LEX_SERVER_DIAGNOSTIC.mount();
+  await env.nodes.retroAiGrade.onclick();
+  assert.equal(env.nodes.retroAiPanel.style.display,"none","failed provider action is hidden");
+  assert.equal(env.nodes.retroAiMessage.textContent,"","students do not receive provider errors");
+  assert.doesNotMatch(source,/النتيجة تحتاج مراجعة المشرف أو التحقق من إعدادات OpenAI/);
+  assert.doesNotMatch(source,/تعذر تأكيد التصحيح. لا تكرر العملية قبل مراجعة المشرف/);
+ }
  // Partial draft is truly server-originating, and is resumed in another language.
  const part={partial:{status:"in_progress",attempt_id:"partial-attempt",draft:[{question_id:"q39r",selected:0}]}};
  const resumed=make("partial","en",part);
