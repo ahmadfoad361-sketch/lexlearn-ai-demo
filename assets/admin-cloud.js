@@ -114,7 +114,11 @@ function studentList(){
 }
 function detail(v){
  var s=v.s,r=risk(v),axes=v.model.axes||{},advice=adminAdvice(v),lastUpdate=v.courseUpdated||v.profileUpdated;
- return '<div class="studentSectionBanner identitySection"><span>01</span><div><b>البيانات الأساسية للطالب</b><small>الهوية والجامعة والسنة الدراسية — لا يلزم وجود مجموعة أو أستاذ</small></div></div><section class="panel studentHero"><div><span class="overline">'+esc(s.cohort||"طالب مستقل · دون مجموعة")+'</span><h2>'+esc(s.name||s.username)+'</h2><p>@'+esc(s.username)+' • '+countryName(s.country)+' • '+esc(s.university||"—")+' • '+esc(s.year||"—")+'</p>'+(s.whatsapp?'<p class="studentPhone">واتساب: <b dir="ltr">'+esc(s.whatsapp)+'</b> • '+(s.whatsappVerified?'تم التحقق':'لم يتم التحقق بعد')+'</p>':'')+'</div><span class="risk big '+r+'">'+rlabel(r)+'</span></section>'+
+ return '<div class="studentSectionBanner identitySection"><span>01</span><div><b>البيانات الأساسية للطالب</b><small>الهوية والجامعة والسنة الدراسية — لا يلزم وجود مجموعة أو أستاذ</small></div></div><section class="panel studentHero"><div><span class="overline">'+esc(s.cohort||"طالب مستقل · دون مجموعة")+'</span><h2>'+esc(s.name||s.username)+'</h2><p>@'+esc(s.username)+' • '+countryName(s.country)+' • '+esc(s.university||"—")+' • '+esc(s.year||"—")+'</p>'+
+ '<p>الكلية: '+esc(s.faculty||"—")+' • الشعبة/القسم: '+esc(s.section||"—")+'</p>'+
+ (s.studentRegistrationNumber?'<p>رقم القيد الجامعي: <b>'+esc(s.studentRegistrationNumber)+'</b></p>':'')+
+ (s.groupEmail?'<p>بريد المجموعة: <b dir="ltr">'+esc(s.groupEmail)+'</b></p>':'')+
+ (s.whatsapp?'<p class="studentPhone">واتساب: <b dir="ltr">'+esc(s.whatsapp)+'</b> • '+(s.whatsappVerified?'تم التحقق':'لم يتم التحقق بعد')+'</p>':'')+'</div><span class="risk big '+r+'">'+rlabel(r)+'</span></section>'+
  '<div class="studentSectionBanner trainingSection"><span>02</span><div><b>التدريب والتقييم</b><small>مؤشرات الأداء والمهارات — منفصلة عن بيانات الطالب الشخصية</small></div></div><section class="panel metricsPanel"><div class="panelHead"><div><h3>الملف التكيفي</h3><p>'+esc(modelText(v))+'</p></div><span class="realTag">Central DB</span></div><div class="metricGrid">'+
  ["recall","understanding","application","legal_precision","retention","exam"].map(function(k){return metric(k,v.m[k],axes[k]);}).join("")+'</div>'+(lastUpdate?'<p style="margin:14px 0 0;color:#6f7782;font-size:13px">آخر بيانات مستلمة: '+new Date(lastUpdate).toLocaleString("ar-EG")+'</p>':'')+'</section>'+
  '<section class="panel"><div class="panelHead"><div><h3>ملاحظات ونصائح للمشرف</h3><p>قراءة تلقائية مبنية على تجربة الطالب الفعلية، وليست درجة جامعية.</p></div><span class="realTag">Supervisor Note</span></div>'+
@@ -305,7 +309,7 @@ async function snapshotAction(id,mode){
  try{await LEX_CLOUD.manageStudent({action:"save_snapshot",user_id:id,course_id:courseKey(s),snapshot_type:"course",state:course,details:{mode:mode}});await load();}catch(e){alert("تعذر حفظ التدخل");}
 }
 function exportCsv(){
- var rows=[["name","username","cohort","university","year","country","active"]].concat(state.students.map(function(s){return[s.name,s.username,s.cohort,s.university,s.year,s.country,s.active!==false];}));
+ var rows=[["name","username","cohort","university","faculty","year","section","student_registration_number_optional","institutional_group_email_optional","country","active"]].concat(state.students.map(function(s){return[s.name,s.username,s.cohort,s.university,s.faculty,s.year,s.section,s.studentRegistrationNumber,s.groupEmail,s.country,s.active!==false];}));
  var csv=rows.map(function(row){return row.map(function(v){return '"'+String(v==null?"":v).replace(/"/g,'""')+'"';}).join(",");}).join("\n");
  var blob=new Blob(["\ufeff"+csv],{type:"text/csv"}),u=URL.createObjectURL(blob),a=document.createElement("a");a.href=u;a.download="lexlearn-central-students.csv";a.click();URL.revokeObjectURL(u);
 }

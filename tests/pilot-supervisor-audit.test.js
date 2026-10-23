@@ -15,4 +15,11 @@ assert.ok(grader.includes('review_required'),'If scoring fails the supervisor mu
 assert.ok(grader.includes('score:null,passed:null'),'Unverified output must not be counted as success');
 assert.ok(!grader.includes('api.openai.com'),'No paid model usage in academic pilot');
 assert.ok(grader.includes('x.status!=="approved"'),'Only fully approved educational content may be used');
+const cloud=fs.readFileSync('assets/cloud-data.js','utf8');
+for(const field of ['faculty','academic_section','student_registration_number','institutional_group_email']){
+ assert.ok(cloud.includes(field),'Staff view must load '+field+' from scoped learner profiles');
+}
+assert.ok(admin.includes('رقم القيد الجامعي'),'Supervisor must show student enrollment number only in the protected dashboard');
+assert.ok(admin.includes('بريد المجموعة'),'Supervisor must show optional cohort contact');
+assert.ok(admin.includes('student_registration_number_optional'),'CSV export must include optional research identifier');
 console.log('Pilot supervisor and grading audit guards: PASS (static, not a live AI accuracy measurement)');
