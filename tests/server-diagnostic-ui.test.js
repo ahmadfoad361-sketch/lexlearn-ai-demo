@@ -56,7 +56,7 @@ function make(uid,lang,data,opts={}){
   await env.nodes.serverNext.onclick();
   assert.equal(env.redirects.length,0,"show verified result before any training navigation");
   assert.ok(!/memory_cues|live_birth|prenatal_conditional_rights/.test(env.main.html),"internal plan and criterion keys must never render to a learner");
-  assert.match(env.main.html,lang==="ar"?/مفاتيح للذاكرة/:/Memory cues/,"training plan must use localized task names");
+  assert.equal((env.main.html.match(/class='diagScoreCard'/g)||[]).length,2,'two scores only');
   assert.match(env.main.html,/diagnosticReport/,"student sees persisted result report");
   assert.match(env.main.html,/student-path\.html/,"result opens the server-side adaptive learning journey");
   assert.equal(env.calls.filter(c=>c==="draft").length,6);
@@ -89,92 +89,48 @@ function make(uid,lang,data,opts={}){
   await env.nodes.serverNext.onclick();
   assert.deepEqual(events,[
    ["consent","lexlearn-ai-grading-v1","external_ai_grading",true],["grade"]]);
-  assert.doesNotMatch(env.main.html,/80%/,"learner report must not show an unvalidated AI percentage");
-  assert.match(env.main.html,/مؤشرات تدريبية أولية/);
+  assert.match(env.main.html,/80%/,"persisted AI estimate shown");
+  assert.match(env.main.html,/تقديرات مبدئية للتدريب/);
  }
- // Previously completed students can opt in later without restarting or overwriting the diagnostic.
+ // Completed result shows exactly two skill indicators, no old inflated recall.
  {
-  const uid="older-learner",events=[];
-  data[uid]={status:"completed",attempt_id:"saved-once",
-   result:{source:"server_finalized_diagnostic",student_id:uid,measurements:{recall:{
-    internal_grade:{status:"preliminary_internal",provisional_percent:100}}}},
-   training_plan:{mode:"balanced",firstTasks:["supported_rule"]}};
-  const env=make(uid,"ar",data);
-  env.cloud.recordConsent=async(version,type,accepted)=>{events.push("consent");return {accepted};};
-  env.cloud.gradeDiagnosticAi=async()=>{
-   events.push("grade");
-   data[uid].result.measurements.recall.ai_grade={status:"preliminary_ai",provisional_percent:40};
-   return {status:"completed"};
-  };
+  const uid="legacy",env=make(uid,"ar",data);
+  data[uid]={status:"completed",attempt_id:"saved-once",result:{
+   source:"server_finalized_diagnostic",student_id:uid,metrics:{understanding:50},
+   measurements:{recall:{internal_grade:{status:"preliminary_internal",provisional_percent:100,criteria_met:["live_birth"]},
+    corrected_internal_grade:{status:"preliminary_internal",provisional_percent:40}}}
+  },training_plan:{mode:"balanced"}};
   await env.win.LEX_SERVER_DIAGNOSTIC.mount();
-  assert.match(env.main.html,/مؤشر أولي قيد المراجعة/,"learner sees review state rather than a raw percentage");
-  assert.ok(env.nodes.retroAiGrade,"a completed learner can request AI grading after the fact");
-  await env.nodes.retroAiGrade.onclick();
-  assert.deepEqual(events,[],"no AI call without explicit opt-in");
-  assert.match(env.nodes.retroAiMessage.textContent,/الموافقة/);
-  env.nodes.retroAiConsent.checked=true;
-  await env.nodes.retroAiGrade.onclick();
-  assert.deepEqual(events,["consent","grade"]);
-  assert.doesNotMatch(env.main.html,/40%/,"raw provisional percentages remain private");
-  assert.equal(env.nodes.retroAiGrade,undefined,"no second grading button after score is saved");
-  assert.equal(data[uid].attempt_id,"saved-once");
+  assert.equal((env.main.html.match(/class='diagScoreCard'/g)||[]).length,2);
+  assert.match(env.main.html,/تقدير الحفظ/);assert.match(env.main.html,/تقدير الفهم/);
+  assert.match(env.main.html,/40%/);assert.match(env.main.html,/50%/);
+  assert.doesNotMatch(env.main.html,/100%/);
+  assert.ok(!env.nodes.retroAiGrade);
+  assert.match(env.main.html,/student-path.html/);
  }
- // Saved consent is re-used. No second checkbox requirement or second consent record.
+ // A three-element weighted rubric can give a provisional score.
  {
-  const uid="consented-learner",events=[];
-  data[uid]={status:"completed",attempt_id:"consent-existing",result:{
-   source:"server_finalized_diagnostic",student_id:uid,
-   measurements:{recall:{internal_grade:{status:"preliminary_internal",provisional_percent:100,criteria_met:["live_birth"]}}},
-   answers:[{question_id:"q63a",selected:-1}]
-  },training_plan:{mode:"foundation",firstTasks:["memory_cues"]}};
-  const env=make(uid,"ar",data);
-  env.cloud.getConsent=async()=>({accepted:true});
-  env.cloud.recordConsent=async()=>{events.push("duplicate consent");throw Error("duplicate");};
-  env.cloud.gradeDiagnosticAi=async()=>{
-   events.push("grade");
-   data[uid].result.measurements.recall.ai_grade={status:"preliminary_ai",provisional_percent:40};
-   return {status:"completed"};
-  };
+  const uid="weighted",env=make(uid,"ar",data);
+  data[uid]={status:"completed",result:{source:"server_finalized_diagnostic",student_id:uid,
+   metrics:{understanding:100},measurements:{recall:{internal_grade:{
+    status:"preliminary_internal",provisional_percent:40,
+    criteria_met:["live_birth"],criteria_missing:["death_end","prenatal_conditional_rights"]}}}},
+    training_plan:{mode:"balanced"}};
   await env.win.LEX_SERVER_DIAGNOSTIC.mount();
-  assert.equal(env.nodes.retroAiConsentLabel.style.display,"none","previous AI consent must not be shown again");
-  assert.match(env.main.html,/اختار لا أدري/,"application was skipped, not graded zero");
-  assert.match(env.main.html,/التقييم الداخلي القديم اعتمد عنصرًا واحدًا/,"legacy scoring is described without displaying raw percentages");
-  await env.nodes.retroAiGrade.onclick();
-  assert.deepEqual(events,["grade"],"a saved consent causes no additional consent request");
-  assert.doesNotMatch(env.main.html,/40%/,"raw provisional percentages remain private");
+  assert.equal((env.main.html.match(/class='diagScoreCard'/g)||[]).length,2);
+  assert.match(env.main.html,/40%/);assert.match(env.main.html,/100%/);
  }
- // An already-reviewed paid attempt must not display the technical review error
- // or offer an action that would try to spend another API call.
+ // An old one-element grade, or missing objective answers, never generate made-up scores.
  {
-  const uid="review-pending",attempt="review-pending-attempt",env=make(uid,"ar",data);
-  data[uid]={status:"completed",attempt_id:attempt,
-    result:{source:"server_finalized_diagnostic",student_id:uid,metrics:{understanding:50},
-      measurements:{recall:{internal_grade:{status:"preliminary_internal",provisional_percent:100},
-       corrected_internal_grade:{status:"preliminary_internal",provisional_percent:40}}}},
-    training_plan:{mode:"balanced",firstTasks:["one_fact"]}};
-  env.cloud.getDiagnosticAiAudit=async()=>({status:"review_required",reason:"academic_review_required"});
-  env.cloud.gradeDiagnosticAi=async()=>{throw Error("Should not re-call OpenAI on a reviewed attempt");};
+  const uid="no-evidence",env=make(uid,"ar",data);
+  data[uid]={status:"completed",result:{source:"server_finalized_diagnostic",student_id:uid,
+   metrics:{understanding:null},measurements:{recall:{internal_grade:{
+    status:"preliminary_internal",provisional_percent:100,criteria_met:["live_birth"]}}}},
+    training_plan:{mode:"balanced"}};
   await env.win.LEX_SERVER_DIAGNOSTIC.mount();
-  assert.doesNotMatch(env.main.html,/40%/,"raw provisional percentages remain private");
-  assert.match(env.main.html,/المؤشر الداخلي يفحص بعض عناصر الإجابة/,"learner receives cautious wording without false scores");
-  assert.ok(env.nodes.retroAiPanel,"report contains the AI panel before state is checked");
-  assert.equal(env.nodes.retroAiPanel.style.display,"none","one-use provider action is hidden");
-  assert.doesNotMatch(env.main.html,/النتيجة تحتاج مراجعة المشرف أو التحقق من إعدادات OpenAI/);
- }
- // If a first-time request cannot produce a grade, remove the action silently.
- {
-  const uid="grading-unavailable",env=make(uid,"ar",data);
-  data[uid]={status:"completed",attempt_id:"unavailable-attempt",
-    result:{source:"server_finalized_diagnostic",student_id:uid,metrics:{understanding:50}},
-    training_plan:{mode:"balanced",firstTasks:["one_fact"]}};
-  env.cloud.getConsent=async()=>({accepted:true});
-  env.cloud.gradeDiagnosticAi=async()=>({status:"review_required",reason:"provider_http_429"});
-  await env.win.LEX_SERVER_DIAGNOSTIC.mount();
-  await env.nodes.retroAiGrade.onclick();
-  assert.equal(env.nodes.retroAiPanel.style.display,"none","failed provider action is hidden");
-  assert.equal(env.nodes.retroAiMessage.textContent,"","students do not receive provider errors");
-  assert.doesNotMatch(source,/النتيجة تحتاج مراجعة المشرف أو التحقق من إعدادات OpenAI/);
-  assert.doesNotMatch(source,/تعذر تأكيد التصحيح. لا تكرر العملية قبل مراجعة المشرف/);
+  assert.doesNotMatch(env.main.html,/100%/);
+  assert.equal((env.main.html.match(/class='diagScoreCard'/g)||[]).length,2);
+  assert.match(env.main.html,/لم يتوفر تقدير بعد/);
  }
  // Partial draft is truly server-originating, and is resumed in another language.
  const part={partial:{status:"in_progress",attempt_id:"partial-attempt",draft:[{question_id:"q39r",selected:0}]}};

@@ -24,97 +24,60 @@ function criterionLabel(key){
  return (labels[key]||["عنصر من القاعدة يحتاج مراجعة","Rule element to review"])[lang()==="en"?1:0];
 }
 function report(status,uid){
- var d=status&&status.result||{},metrics=d.metrics||{},measurements=d.measurements||{};
- if(status.status!=="completed"||d.source!=="server_finalized_diagnostic"||d.student_id!==uid)throw Error("unverified_diagnostic_report");
- function numberOrNot(v){return typeof v==="number"&&Number.isFinite(v)?Math.max(0,Math.min(100,Math.round(v)))+"%":tr("لم يُقَس","Not measured");}
- var rec=measurements.recall||{},internal=rec.internal_grade||{},ai=rec.ai_grade||{},p=status.training_plan||{};
- var aiRecall=ai.status==="preliminary_ai"&&Number.isFinite(ai.provisional_percent)?ai.provisional_percent:null;
- var corrected=rec.corrected_internal_grade||{},internalCoverage=corrected.status==="preliminary_internal"&&Number.isFinite(corrected.provisional_percent)?corrected.provisional_percent:null;
- var oldCriterion=(Array.isArray(internal.criteria_met)?internal.criteria_met:[]);
- var oldCriterionCount=oldCriterion.length;
- // Legacy internal scorer uses ONE criterion as its whole denominator: 100% is NOT memorization mastery.
- var applicationSkipped=metrics.application==null&&Array.isArray(d.answers)&&d.answers.some(function(a){return a.question_id==="q63a"&&a.selected===-1;});
- var free=oldCriterionCount?tr("تم رصد "+oldCriterionCount+" عنصر صحيح مبدئيًا","Detected "+oldCriterionCount+" provisional legal element(s)"):
-   tr("لا توجد أدلة كافية لتقدير الإجابة","Insufficient evidence for grading");
- var reasons={"recall-led":tr("نبدأ بتقوية الفهم والتحليل.","Focus first on explanation and understanding."),
-   "understanding-led":tr("نبدأ بتقوية الاسترجاع من الذاكرة.","Start with unaided retrieval practice."),
-   "balanced":tr("نبدأ بالتطبيق مع الحفاظ على توازن المهارات.","Begin with application and balanced practice."),
-   "foundation":tr("نبدأ من تأسيس القاعدة قبل رفع الصعوبة.","Begin with supported foundations.")};
- var mode=p.mode||"foundation";
- var tiles=[
-   [tr("استرجاع القاعدة","Legal rule recall"),tr("مؤشر أولي قيد المراجعة","Preliminary; under review")],
-   [tr("التعرّف على القاعدة","Rule recognition"),tr("تحتاج إعادة قياس","Needs repeat assessment")],
-   [tr("الفهم","Understanding"),tr("تحتاج إعادة قياس","Needs repeat assessment")],
-   [tr("التطبيق","Application"),applicationSkipped?tr("اختار لا أدري — سنعيد السؤال","Not sure — will reassess"):tr("تحتاج إعادة قياس","Needs repeat assessment")]
- ].map(function(x){return "<div class='resultMetric' style='background:#F9F4EF;border-radius:12px;padding:1rem;min-width:130px;flex:1'><small>"+esc(x[0])+"</small><div style='font-weight:700;font-size:1rem'>"+esc(x[1])+"</div></div>";}).join("");
- return "<section class='diagnosticReport' role='region' aria-label='"+tr("نتيجة التشخيص","Diagnostic results")+"'>"+
- "<h2>"+tr("نتيجة تقييمك التشخيصي","Your diagnostic result")+"</h2>"+
- "<p role='status'>"+tr("حُفظت نتيجتك في حسابك. يمكنك العودة إلى هذه الصفحة لمراجعتها في أي وقت.","Your result is saved to your account. Return to this page to review it at any time.")+"</p>"+
- "<div style='display:flex;flex-wrap:wrap;gap:.75rem'>"+tiles+"</div>"+
- (applicationSkipped?"<p class='diagMetricNote' role='note'>"+tr("التطبيق لم يأخذ نسبة لأن الإجابة المسجلة على سؤال التطبيق الوحيد كانت «لا أدري». هذا لا يعني 0%، وسنعيد قياس التطبيق في التدريبات.","No application percentage was calculated because the single application question was answered 'Not sure'. This is not 0%; application will be assessed again during practice.")+"</p>":"")+
- "<div class='resultMetric' style='margin:1rem 0;padding:1rem;border:1px solid #e5d9dc;border-radius:12px'><b>"+tr("الإجابة الحرة — عناصر يُنصح بمراجعتها","Free response — review checklist")+": "+esc(free)+"</b>"+
- "<p>"+((internal.provisional_percent===100&&oldCriterionCount===1)?tr("التقييم الداخلي القديم اعتمد عنصرًا واحدًا فقط؛ لم يعد يُستخدم للحكم على مستوى الحفظ.","The earlier one-element text matching is not used to determine memory ability."):
- tr("المؤشر الداخلي يفحص بعض عناصر الإجابة، ولا يُعتبر وحده قياسًا معتمدًا للحفظ أو درجة نهائية.","Internal rule matching checks some parts of the response and does not establish memorization mastery or a final grade."))+"</p>"+
- (Array.isArray(internal.criteria_met)&&internal.criteria_met.length?"<p>"+tr("عناصر ظهرت في إجابتك","Detected elements")+": "+esc(internal.criteria_met.map(criterionLabel).join(lang()==="en"?", ":"، "))+"</p>":"")+
- (Array.isArray(internal.criteria_missing)&&internal.criteria_missing.length?"<p>"+tr("عناصر راجعها","Review these elements")+": "+esc(internal.criteria_missing.map(criterionLabel).join(lang()==="en"?", ":"، "))+"</p>":"")+
- "</div>"+
- (aiRecall!==null?"<p class='diagMetricNote'>"+tr("تم تحليل الإجابة باستخدام الذكاء الاصطناعي. هذه مؤشرات تدريبية أولية وليست درجة أكاديمية.","The answer was reviewed with AI. Findings are preliminary practice indicators, not an academic mark.")+"</p>":"")+
- (aiRecall===null?"<section class='retroAiPanel' id='retroAiPanel'><h3>"+tr("تصحيح الإجابة المحفوظة باستخدام OpenAI","Grade your saved answer using OpenAI")+"</h3><p>"+tr("يمكن تقييم إجابتك الحرة المحفوظة بمساعدة الذكاء الاصطناعي دون إعادة الاختبار.","Your saved free-text answer can be reviewed with AI without repeating the assessment.")+"</p><label class='retroAiLabel' id='retroAiConsentLabel'><input id='retroAiConsent' type='checkbox'>"+tr("أوافق على إرسال نص إجابتي فقط إلى OpenAI للتقييم المبدئي، دون إرسال اسمي أو بيانات حسابي.","I consent to sending only my saved answer text to OpenAI for a preliminary assessment, without my name or account details.")+"</label><button id='retroAiGrade' type='button'>"+tr("راجع إجابتي بالذكاء الاصطناعي","Review my answer with AI")+"</button><p id='retroAiMessage' role='status' aria-live='polite'></p></section>":"")+
- "<h2>"+tr("خطة تدريبك المتكيفة","Your adaptive practice plan")+"</h2>"+
- "<p>"+esc((lang()==="en"?p.reason_en:p.reason_ar)||reasons[mode]||reasons.foundation)+"</p>"+
- "<p>"+tr("الترتيب المبدئي: ","Initial order: ")+esc(Array.isArray(p.firstTasks)&&p.firstTasks.length?p.firstTasks.map(taskLabel).join(lang()==="en"?" → ":" ← "):taskLabel("worked_example"))+"</p>"+
- "<div class='actions'><a class='actionCard' style='display:inline-block;background:#111D31;color:white;padding:1rem 1.3rem;border-radius:10px;text-decoration:none' href='student-path.html?lang="+lang()+"'>"+tr("ابدأ المستوى الأول المتكيف","Start your adaptive first level")+"</a></div>"+
- "<p><a href='"+portal()+"'>"+tr("العودة لحساب الطالب","Back to student account")+"</a></p></section>";
+ var d=status&&status.result||{};
+ if(status.status!=="completed"||d.source!=="server_finalized_diagnostic"||d.student_id!==uid)
+  throw Error("unverified_diagnostic_report");
+ var rec=d.measurements&&d.measurements.recall||{},
+  ai=rec.ai_grade||{},corrected=rec.corrected_internal_grade||{},internal=rec.internal_grade||{};
+ function score(value){return typeof value==="number"&&Number.isFinite(value)&&value>=0&&value<=100?Math.round(value):null;}
+ // Academic estimate, not a validated memory-capacity measure:
+ // 1. successfully saved semantic AI weighted criterion coverage;
+ // 2. the corrected three-criterion server rubric, including legacy correction;
+ // 3. only a new internal grade that explicitly covers all three criteria.
+ var memory=null,origin="";
+ if(ai.status==="preliminary_ai"&&score(ai.provisional_percent)!==null){
+  memory=score(ai.provisional_percent);origin="openai";
+ }else if(corrected.status==="preliminary_internal"&&score(corrected.provisional_percent)!==null){
+  memory=score(corrected.provisional_percent);origin="internal";
+ }else if(internal.status==="preliminary_internal"&&score(internal.provisional_percent)!==null){
+  var names=(Array.isArray(internal.criteria_met)?internal.criteria_met:[])
+    .concat(Array.isArray(internal.criteria_missing)?internal.criteria_missing:[]);
+  if(["live_birth","death_end","prenatal_conditional_rights"].every(function(c){return names.indexOf(c)>=0;})){
+   memory=score(internal.provisional_percent);origin="internal";
+  }
+ }
+ var understanding=score(d.metrics&&d.metrics.understanding);
+ // The outcome screen has exactly two skill indicators; the training link is navigation.
+ function metric(name,value,id,description){
+  var shown=value===null?tr("لم يتوفر تقدير بعد","Estimate not available"):value+"%";
+  return "<article class='diagScoreCard' data-score='"+id+"' aria-label='"+esc(name)+"'>"+
+   "<div class='diagScoreLabel'>"+esc(name)+"</div>"+
+   "<div class='diagScoreValue' data-score-value='"+id+"'>"+esc(shown)+"</div>"+
+   "<div class='diagScoreTrack' aria-hidden='true'><span style='width:"+(value===null?0:value)+"%'></span></div>"+
+   "<small>"+esc(description)+"</small></article>";
+ }
+ return "<section class='diagnosticReport diagnosticTwoScores' role='region' aria-label='"+tr("نتيجة التشخيص","Diagnostic results")+"'>"+
+  "<h2>"+tr("نتيجة الاختبار التشخيصي","Your diagnostic result")+"</h2>"+
+  "<div class='diagScoresGrid'>"+
+  metric(tr("تقدير الحفظ","Estimated recall"),memory,"recall",
+    origin==="openai"?tr("تقدير أولي من تحليل الإجابة الحرة","Preliminary assessment of your free answer"):
+    origin==="internal"?tr("تقدير أولي لتغطية عناصر القاعدة","Preliminary legal-rule coverage"):
+    tr("الإجابة الحرة لم تُقيّم بدرجة موثوقة","No reliable free-answer estimate"))+
+  metric(tr("تقدير الفهم","Estimated understanding"),understanding,"understanding",
+    understanding===null?tr("لم تتوفر إجابات فهم كافية","Insufficient understanding responses"):
+    tr("تقدير أولي من أسئلة الفهم","Preliminary result from understanding questions"))+
+  "</div>"+
+  "<p class='diagScoreDisclaimer'>"+tr("هذه تقديرات مبدئية للتدريب، وليست درجات جامعية أو قياسًا نهائيًا لمهاراتك.","These are preliminary practice estimates, not official grades or validated mastery measures.")+"</p>"+
+  "<div class='actions'><a class='actionCard' style='display:inline-block;background:#111D31;color:white;padding:1rem 1.3rem;border-radius:10px;text-decoration:none' href='student-path.html?lang="+lang()+"'>"+
+  tr("ابدأ التدريب","Start training")+"</a></div></section>";
 }
 
 async function startUI(){
  var area=root.document.getElementById("officialDiagnostic");if(!area)return;
  var cloud=root.LEX_CLOUD;
  function render(html){area.innerHTML=html;}
- function concealAiAction(){
-  var panel=root.document.getElementById("retroAiPanel");
-  if(panel)panel.style.display="none";
- }
  async function showCompleted(status){
   render(report(status,student));
-  var btn=root.document.getElementById("retroAiGrade");if(!btn)return;
-  // One paid invocation per diagnostic: never offer a reviewed/reserved attempt again.
-  try{
-   var prior=cloud.getDiagnosticAiAudit&&await cloud.getDiagnosticAiAudit(status.attempt_id);
-   if(prior&&["completed","reserved","review_required"].indexOf(prior.status)>=0){
-    concealAiAction();return;
-   }
-  }catch(_){}
-  var existingConsent=false;
-  try{if(cloud.getConsent)existingConsent=!!await cloud.getConsent("lexlearn-ai-grading-v1","external_ai_grading");}catch(_){}
-  var label=root.document.getElementById("retroAiConsentLabel");
-  if(existingConsent&&label)label.style.display="none";
-  btn.onclick=async function(){
-   var box=root.document.getElementById("retroAiConsent"),msg=root.document.getElementById("retroAiMessage");
-   if(!existingConsent&&(!box||!box.checked)){
-    if(msg)msg.textContent=tr("يلزم اختيار الموافقة قبل إرسال الإجابة للتصحيح.","Choose the optional consent before submitting your answer for grading.");
-    return;
-   }
-   btn.disabled=true;
-   if(msg)msg.textContent=tr("جارٍ تقييم إجابتك…","Assessing your answer…");
-   try{
-    if(!existingConsent){
-     await cloud.recordConsent("lexlearn-ai-grading-v1","external_ai_grading",true);
-     existingConsent=true;
-    }
-    await cloud.gradeDiagnosticAi();
-    var saved=await cloud.studentLifecycleRpc("status",{courseId:COURSE_ID});
-    var recall=saved.result&&saved.result.measurements&&saved.result.measurements.recall;
-    var ai=recall&&recall.ai_grade;
-    if(saved.status==="completed"&&saved.result.student_id===student&&
-       ai&&ai.status==="preliminary_ai"&&Number.isFinite(ai.provisional_percent)){
-     await showCompleted(saved);return;
-    }
-   }catch(_){}
-   // Provider/review details remain in server audit only, not the student UI.
-   if(msg)msg.textContent="";
-   concealAiAction();
-  };
  }
  function fail(err){
   var msg=String(err&&err.message||err);
