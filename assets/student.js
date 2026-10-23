@@ -134,11 +134,26 @@ function studentInsight(){
  // identify a validated strongest/weakest trait.
  return {best:null,focus:null,tip:"ابدأ بالتدريبات المتوازنة، وسنراجع مؤشرات المهارات بعد تكرار القياس."};
 }
+function diagnosticSkillPercent(key){
+ if(!result||!result.measurements)return null;
+ function valid(x){return typeof x==="number"&&Number.isFinite(x)&&x>=0&&x<=100?Math.round(x):null;}
+ if(key==="understanding")return valid(result.metrics&&result.metrics.understanding);
+ if(key!=="recall")return null;
+ var rec=result.measurements.recall||{},ai=rec.ai_grade||{},fix=rec.corrected_internal_grade||{},internal=rec.internal_grade||{};
+ if(ai.status==="preliminary_ai"&&valid(ai.provisional_percent)!==null)return valid(ai.provisional_percent);
+ if(fix.status==="preliminary_internal"&&valid(fix.provisional_percent)!==null)return valid(fix.provisional_percent);
+ var criteria=(Array.isArray(internal.criteria_met)?internal.criteria_met:[]).concat(Array.isArray(internal.criteria_missing)?internal.criteria_missing:[]);
+ if(internal.status==="preliminary_internal"&&["live_birth","death_end","prenatal_conditional_rights"].every(function(x){return criteria.includes(x);}))
+  return valid(internal.provisional_percent);
+ return null;
+}
 function simpleSkillCard(item){
+ var value=diagnosticSkillPercent(item.key);
+ var text=value===null?"لم يتوفر تقدير بعد":value+"%";
  return "<div class='simpleSkill "+item.key+"'>"+
  "<div class='simpleIcon'>"+icon(item.icon)+"</div>"+
- "<b>"+item.label+"</b><strong>—</strong>"+
- "<span>قيد التحقق</span><div class='miniBar'><i style='width:5%'></i></div></div>";
+ "<b>تقدير "+item.label+"</b><strong>"+text+"</strong>"+
+ "<span>تقدير مبدئي للتدريب</span><div class='miniBar'><i style='width:"+(value===null?0:value)+"%'></i></div></div>";
 }
 function skillCard(title,key,ic){
  return "<div class='skill'><div class='skillHead'><span class='skillIcon'>"+icon(ic)+"</span>"+
@@ -297,7 +312,6 @@ function render(){
         "<div class='simpleSkillGrid'>"+
           simpleSkillCard({key:"recall",label:"الحفظ",icon:"brain"})+
           simpleSkillCard({key:"understanding",label:"الفهم",icon:"bulb"})+
-          simpleSkillCard({key:"application",label:"التطبيق على الوقائع",icon:"scale"})+
         "</div>"+
         "<div class='studentTipGrid'>"+
           "<div class='tipCard good'><span>"+icon("chart")+"</span><div><small>أقوى مهارة — غير محددة بعد</small><b>"+esc(insight.best?insight.best.label:"—")+"</b></div></div>"+
@@ -305,7 +319,7 @@ function render(){
           "<div class='tipCard today'><span>"+icon("book")+"</span><div><small>نصيحة اليوم</small><b>"+esc(insight.tip)+"</b></div></div>"+
         "</div>"+
       "</section>"
-    : "<div class='empty studentEmpty'>ابدأ التقييم القصير، وبعده سترى 3 مؤشرات بسيطة: الحفظ، الفهم، والتطبيق على الوقائع.</div>";
+    : "<div class='empty studentEmpty'>ابدأ التقييم القصير، وبعده سترى تقديرين مبدئيين فقط: الحفظ والفهم.</div>";
 
   var achievements=course.achievements.length
     ? course.achievements.map(function(a){
@@ -326,7 +340,7 @@ function render(){
         "<div class='heroSide studentHeroSide'><div class='heroVisual'>"+icon(course.completedProgram?"trophy":"compass")+"</div><h3>"+(course.completedProgram?"أحسنت! أنهيت البرنامج":"جاهز للجلسة التالية؟")+"</h3><p>"+(course.completedProgram?"يمكنك عرض إنجازك النهائي في أي وقت.":(result?"جلسة واحدة قصيرة، ومحتواها يتغير حسب مستواك.":"ابدأ التقييم القصير لنحدد أفضل بداية لك."))+"</p></div>"+
       "</section>"+
       "<section class='actionGrid singleAction'>"+actionPrimary+"</section>"+
-      (result?"<p style='margin-top:1rem'><a class='topbtn' href='student-path.html?lang=ar'>افتح الـ30 جلسة التكيفية</a> · <a class='topbtn' href='diagnostic.html?lang=ar'>عرض نتيجة التشخيص المحفوظة ونسب المهارات</a></p>":"")+
+      (result?"<p style='margin-top:1rem'><a class='topbtn' href='student-path.html?lang=ar'>افتح الـ30 جلسة التكيفية</a> · <a class='topbtn' href='diagnostic.html?lang=ar'>عرض نسبتي الحفظ والفهم</a></p>":"")+
       "<div class='sectionHead'><div><h2>رحلتك</h2><p>كلما أنهيت مرحلة، تفتح التالية تلقائيًا.</p></div><span class='progressTag'>"+course.completed.length+" / 30</span></div>"+
       "<section class='weekGrid'>"+weeks+"</section>"+
       "<div class='sectionHead'><div><h2>مستواك ببساطة</h2><p>الحفظ: تذكّر القاعدة دون النص • الفهم: معرفة لماذا تعمل • التطبيق على الوقائع: استخدام القاعدة في واقعة قانونية جديدة.</p></div></div>"+
