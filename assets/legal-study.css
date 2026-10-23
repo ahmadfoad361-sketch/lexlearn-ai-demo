@@ -1,2 +1,5 @@
 .legalStudy{margin:1rem 0;min-width:0}.legalStudyEyebrow{color:#8a1f39;font-weight:800;margin-bottom:.3rem}.legalStudy>h2{margin-top:0}.legalStudyArticle{margin:1rem 0;padding:clamp(1rem,3vw,1.5rem);background:#f9f4ef;border:1px solid #e5d8dd;border-radius:14px}.legalStudyArticle blockquote{white-space:pre-line;margin:0;line-height:2;font-size:1.05rem;overflow-wrap:anywhere;text-align:right}.legalStudyArticle figcaption{display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-top:1rem;padding-top:.7rem;border-top:1px solid #e5d8dd;color:#8a1f39}.legalStudyArticle a{font-size:.8rem;color:#566174}.legalStudy button{margin-top:.5rem}.legalStudy a:focus-visible,.legalStudy button:focus-visible{outline:3px solid #8a1f39;outline-offset:3px}
 
+
+.legalCitation{padding:.7rem 1rem;border-inline-start:4px solid #b58129;background:#faf5e9;color:#28364a;font-size:.95rem;line-height:1.8;overflow-wrap:anywhere}.legalStudyArticle figcaption strong{flex:1 1 260px;line-height:1.8}
+

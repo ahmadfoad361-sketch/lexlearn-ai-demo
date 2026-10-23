@@ -1,6 +1,29 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
 const study=require('../assets/legal-study.js');
 const questions=require('../assets/official-diagnostic.js').QUESTIONS;
+for(const language of ['ar','en']){
+ for(let n=39;n<=63;n++){
+  const html=study.render([n],language), caption=html.match(/<figcaption>(.*?)<\/figcaption>/s)[1];
+  assert.ok(caption.includes(study.law(language)), 'every article identifies its own law');
+  const raw=language==='en'?'Article '+n:'المادة '+n;
+  const full=study.qualify(raw,language);
+  assert.ok(full.includes(study.law(language)));
+  assert.equal(study.qualify(full,language),full,'do not duplicate complete citations');
+  assert.ok(study.context(['qa-civil-2004-art'+n],language).includes(study.law(language)));
+ }
+ assert.equal(study.qualify(language==='en'?'Article 999':'المادة 999',language),language==='en'?'Article 999':'المادة 999','unknown provisions must not acquire an invented law');
+ const svg=require('../assets/learning-moments.js').resultSvg({kind:'diagnostic',recall:72,understanding:88},language);
+ assert.ok(svg.includes('2004')&&svg.includes('22'));
+}
+
+const bank=JSON.parse(fs.readFileSync('validation/content-review-bank.json','utf8')).items;
+const beginner=require('../assets/beginner-prompts.js'),guide=require('../assets/legal-case-guide.js');
+for(const item of bank)for(const language of ['ar','en']){
+ const task={...item,prompt_en:item.rubric_json.prompt_en};
+ const prompt=study.qualify(beginner.prepare(task,language),language);
+ assert.ok(study.context(item.sources,language).includes(study.law(language)));
+ if(item.dimension==='exam_execution')assert.ok(guide.parse(prompt,language),'complete law citations preserve the four-step case guide');
+}
 assert.equal(Object.keys(study.text).length,25);
 for(const lang of ['ar','en']){
  const html=study.render(['qa-civil-2004-art40','qa-civil-2004-art39','qa-civil-2004-art40'],lang);
@@ -28,6 +51,7 @@ async function diagnostic(lang,resume=false){
  assert.equal((el.html.match(/<figure /g)||[]).length,6);
  await nodes.beginLegalQuestions.onclick();
  assert.ok(nodes.serverNext);assert.equal(nodes.beginLegalQuestions,undefined);assert.ok(!el.html.includes('legalStudyArticle'));
+ assert.ok(el.html.includes(study.reference('39',lang)),'law context remains visible while statutory text is hidden');
  assert.deepEqual(calls,['status'],'reading is not submitted as an assessment answer');
 }
 async function training(session,lang,resume=false){
@@ -41,6 +65,7 @@ async function training(session,lang,resume=false){
  assert.ok(nodes.beginLegalQuestions);assert.equal(nodes.adaptiveSubmit,undefined);assert.equal((el.html.match(/<figure /g)||[]).length,1);
  assert.ok(el.html.includes("data-article='"+article+"'"));await nodes.beginLegalQuestions.onclick();
  assert.ok(nodes.adaptiveSubmit);assert.ok(!el.html.includes('legalStudyArticle'));assert.ok(!calls.includes('trainingSubmit'));
+ assert.ok(el.html.includes(study.reference(String(article),lang)),'each question keeps the verified provision identity');
 }
 (async()=>{
  for(const lang of ['ar','en']){await diagnostic(lang);await diagnostic(lang,true);for(let s=1;s<=30;s++)await training(s,lang);await training(5,lang,true);}
@@ -48,4 +73,5 @@ async function training(session,lang,resume=false){
  const build=fs.readFileSync('scripts/build-public.js','utf8');assert.ok(build.includes('"legal-study.js"')&&build.includes('"legal-study.css"'));
  console.log('Legal reading before questions: AR/EN, 25 full provisions, article numbers after text, diagnostic, all 30 sessions, hidden text and partial resume PASS');
 })().catch(e=>{console.error(e);process.exitCode=1;});
+
 

@@ -17,6 +17,7 @@ function previousAnswerTitle(item,task){
   var localizedTitle=task&&(lang()==="en"?task.title_en:task.title_ar);
   return t("إجابتك السابقة — ","Your previous answer — ")+weakName(dimension)+(localizedTitle?" · "+String(localizedTitle):"");
 }
+function lawContext(ids){return root.LEX_LEGAL_STUDY?root.LEX_LEGAL_STUDY.context(ids||[],lang()):"";}
 function feedback(item){
  var ev=item&&item.evaluation||{};
  if(ev.status==="preliminary_ai")return "<div class='feedback' role='status'><b>"+t("تصحيح إجابتك: ","Your answer assessment: ")+esc(noHtmlScore(ev.provisional_percent))+"</b><p style='white-space:pre-wrap'>"+esc(lang()==="en"?ev.feedback_en:ev.feedback_ar)+"</p><small>"+t("تقدير تدريبي مبدئي من OpenAI، قابل لمراجعة المشرف.","Preliminary OpenAI practice assessment, subject to instructor review.")+"</small></div>";
@@ -93,7 +94,7 @@ async function boot(){
     t("تقييم ومراجعة الأسبوع ","Week checkpoint ")+Math.ceil((i+1)/5):
     t("الجلسة ","Session ")+(i+1);});
   function nav(){
-   return "<div class='heading'><div><b>"+t("مسارك التدريبي المتكيف","Your adaptive learning path")+"</b><p>"+t("المقرر: نظرية الحق • 6 أسابيع • 30 جلسة • نتائج لكل طالب","Theory of Rights • 6 weeks • 30 sessions • individual results")+"</p></div><a href='student"+(lang()==="en"?"-en":"")+".html'>"+t("حساب الطالب","Student account")+"</a></div>"+
+   return "<div class='heading'><div><b>"+t("مسارك التدريبي المتكيف","Your adaptive learning path")+"</b><p>"+t("المقرر: نظرية الحق • 6 أسابيع • 30 جلسة • نتائج لكل طالب","Theory of Rights • 6 weeks • 30 sessions • individual results")+"</p>"+lawContext([])+"</div><a href='student"+(lang()==="en"?"-en":"")+".html'>"+t("حساب الطالب","Student account")+"</a></div>"+
    "<p class='scope' role='note'>"+t("تدريب يتكيف مع أدائك، مع حفظ إجاباتك وتقدمك في حسابك. النتائج مؤشرات تدريبية قابلة لمراجعة المشرف، وليست درجات جامعية معتمدة.","Practice adapts to your performance, with answers and progress saved to your account. Results are training indicators subject to instructor review, not certified university marks.")+"</p>"+
    "<p class='overview'>"+t("التقدم المحفوظ: ","Verified practice progress: ")+overview.completed_count+" / 30 · "+t("الجلسة الحالية: ","Current session: ")+overview.unlocked+"</p>"+
    "<div class='levelStrip'>"+Array.from({length:6},function(_,i){
@@ -139,7 +140,7 @@ async function boot(){
    if(aiUnavailable)why+="<p role='status'>"+t("حُفظت إجابتك، لكن التصحيح بالذكاء الاصطناعي لم يتأكد. يمكنك المتابعة؛ لن نمنح نسبة بديلة أو نغيّر الأولوية بناءً عليها.","Your answer is saved, but AI assessment was not confirmed. Continue practice; no replacement score or priority change is inferred.")+"</p>";
    var completedFeedback=saved.map(function(v){
     var task=(data.tasks||[]).find(function(q){return q.id===v.item_id;});
-    return "<details class='past'"+(v===saved[saved.length-1]?" open":"")+"><summary>"+esc(previousAnswerTitle(v,task))+"</summary><p style='white-space:pre-wrap'>"+esc(v.answer_text)+"</p>"+feedback(v)+"</details>";
+    return "<details class='past'"+(v===saved[saved.length-1]?" open":"")+"><summary>"+esc(previousAnswerTitle(v,task))+"</summary>"+lawContext(task&&task.sources)+"<p style='white-space:pre-wrap'>"+esc(v.answer_text)+"</p>"+feedback(v)+"</details>";
    }).join("");
    var main="<section class='stage'><h1>"+esc(name)+"</h1>"+why+
     "<p>"+t("أُرسلت ","Saved ")+saved.length+" / "+data.tasks.length+t(" إجابات محفوظة في حسابك."," answers to your account.")+"</p>"+
@@ -152,10 +153,11 @@ async function boot(){
      "<p role='status'>"+t("اكتملت الجلسات التدريبية الثلاثون. احتفظ بنتائجك للمراجعة.","All 30 practice sessions completed; your results remain saved for review.")+"</p>");
    }else if(next){
     var prompt=root.LEX_BEGINNER_PROMPTS?root.LEX_BEGINNER_PROMPTS.prepare(next,lang()):(lang()==="en"?next.prompt_en:next.prompt_ar);
+    if(root.LEX_LEGAL_STUDY)prompt=root.LEX_LEGAL_STUDY.qualify(prompt,lang());
     var guide=root.LEX_LEGAL_CASE_GUIDE;
     var guided=next.dimension==="exam_execution"&&guide&&guide.parse(prompt,lang());
     main+="<h2>"+esc((lang()==="en"?next.title_en:next.title_ar)||weakName(next.dimension))+"</h2>"+
-      "<p class='taskType'>"+t("تدريب على: ","Focus: ")+esc(weakName(next.dimension))+"</p>";
+      lawContext(next.sources)+"<p class='taskType'>"+t("تدريب على: ","Focus: ")+esc(weakName(next.dimension))+"</p>";
     if(guided){
      // The preserved legal question is presented one step at a time, but the
      // answer goes to the existing server rubric with explicit section headings.
@@ -222,6 +224,7 @@ async function boot(){
 root.LEX_STUDENT_PATH={mount:boot,noHtmlScore:noHtmlScore,previousAnswerTitle:previousAnswerTitle,progressModel:progressModel,progressHtml:progressHtml};
 if(typeof module!=="undefined"&&module.exports)module.exports=root.LEX_STUDENT_PATH;
 })(typeof window!=="undefined"?window:globalThis);
+
 
 
 

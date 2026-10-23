@@ -6,3 +6,6 @@
 - Display only saved, server-confirmed completion and supported scores. Celebrate effort/completion without claiming legal mastery or a passing academic grade.
 - Keep celebration brief, silent, dismiss-free and compatible with reduced-motion preferences. Never replay it automatically on report reload or use celebration state to authorize progress.
 
+
+- Identify each legal provision with its jurisdiction, law name, number and year. Keep this context visible during questions, feedback and results, even when statutory texts are hidden. Never infer a law from an article number alone.
+

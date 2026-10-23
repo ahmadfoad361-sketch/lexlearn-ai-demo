@@ -15,6 +15,7 @@ function resultSvg(data,lang){
  var en=lang==="en",title=data.kind==="diagnostic"?(en?"Your starting point":"نقطة انطلاقك"):data.kind==="level"?(en?"Level "+data.level+" complete":"أنجزت المستوى "+data.level):(en?"Session "+data.session+" complete":"أنجزت الجلسة "+data.session);
  var cells=[{name:en?"Understanding":"الفهم",value:score(data.understanding),color:'#247b78'},{name:en?"Recall":"الحفظ",value:score(data.recall),color:'#8a1f39'}];
  return "<svg xmlns='http://www.w3.org/2000/svg' width='1200' height='800' viewBox='0 0 1200 800' role='img'><title>"+esc(title)+"</title><rect width='1200' height='800' rx='32' fill='#f9f4ef'/><path d='M0 0h1200v190H0Z' fill='#111d31'/><g font-family='Arial,Tahoma,sans-serif' text-anchor='middle'><text x='600' y='85' fill='#eedba9' font-size='30'>LexLearn</text><text x='600' y='147' fill='white' font-size='42' direction='"+(en?'ltr':'rtl')+"'>"+esc(title)+"</text>"+
+ "<text x='600' y='228' fill='#526074' font-size='22' direction='"+(en?'ltr':'rtl')+"'>"+(en?"Qatar Civil Code · Law No. 22 of 2004":"القانون المدني القطري · القانون رقم (22) لسنة 2004")+"</text>"+
  cells.map(function(c,i){var x=360+i*480;return "<circle cx='"+x+"' cy='390' r='128' fill='white' stroke='#e7e1df' stroke-width='20'/><circle cx='"+x+"' cy='390' r='128' fill='none' stroke='"+c.color+"' stroke-width='20' stroke-dasharray='"+((c.value===null?0:c.value)/100*2*Math.PI*128)+" "+(2*Math.PI*128)+"' transform='rotate(-90 "+x+" 390)'/><text x='"+x+"' y='410' fill='#111d31' font-size='"+(c.value===null?28:64)+"'>"+esc(c.value===null?(en?'Under review':'قيد المراجعة'):c.value+'%')+"</text><text x='"+x+"' y='575' fill='"+c.color+"' font-size='36'>"+c.name+"</text>";}).join("")+
  "<text x='600' y='680' fill='#111d31' font-size='26'>"+(en?"Your answers are saved. Your next step starts here.":"إجاباتك محفوظة. وخطوتك التالية تبدأ من هنا.")+"</text><text x='600' y='735' fill='#526074' font-size='22'>"+(en?"Preliminary practice estimates · Not a university grade":"تقديرات تدريبية مبدئية · ليست درجة جامعية")+"</text></g></svg>";
 }
@@ -32,4 +33,5 @@ function saveProgress(step,lang){var en=lang==='en';return "<div class='answerSa
 var api={score:score,ring:ring,hero:hero,completion:completion,downloadButton:downloadButton,resultSvg:resultSvg,bindDownload:bindDownload,celebrate:celebrate,saveProgress:saveProgress};root.LEX_MOMENTS=api;
 if(typeof module!=="undefined"&&module.exports)module.exports=api;
 })(typeof window!=="undefined"?window:globalThis);
+
 

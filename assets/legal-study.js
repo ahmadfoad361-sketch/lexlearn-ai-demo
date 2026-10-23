@@ -34,14 +34,29 @@ var TEXT={
 function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
 function numbers(ids){return Array.from(new Set((ids||[]).map(function(id){var m=/^qa-civil-2004-art(\d+)$/.exec(String(id));return m?Number(m[1]):Number(id);}))).filter(function(n){return Number.isInteger(n)&&TEXT[n];}).sort(function(a,b){return a-b;});}
 function sourceUrl(n){return "https://www.almeezan.qa/PrintArticle_section.aspx?LawTreeSectionID="+(n<=52?8882:n<=55?8883:n<=61?8884:8885)+"&language=ar&lawId=2559";}
+function law(lang){return lang==="en"?"Qatar Civil Code, promulgated by Law No. 22 of 2004":"القانون المدني القطري الصادر بالقانون رقم (22) لسنة 2004";}
+function reference(ref,lang){return (lang==="en"?(/^[0-9]+$/.test(String(ref))?"Article ":"Articles "):(/^[0-9]+$/.test(String(ref))?"المادة ":"المواد "))+ref+(lang==="en"?" of the ":" من ")+law(lang);}
+function context(ids,lang){
+ var ns=numbers(ids),label=ns.length?reference(ns.join(lang==="en"?", ":"، "),lang):law(lang);
+ return "<p class='legalCitation' role='note'>"+(lang==="en"?"Applicable law: ":"القانون محل التدريب: ")+esc(label)+"</p>";
+}
+// Only use for the approved Qatar course, never to infer a law for unknown content.
+function qualify(text,lang){
+ return String(text||"").replace(lang==="en"?/\bArticles?\s+(\d+(?:\s*[–—-]\s*\d+)?)(?!\d)/gi:/(?:المادة|المواد)\s+(\d+(?:\s*[–—-]\s*\d+)?)(?!\d)/g,function(match,ref,offset,all){
+  if(!ref.split(/[–—-]/).every(function(n){return !!TEXT[Number(n.trim())];}))return match;
+  if(/^\s+(?:of\b|من\s+القانون)/i.test(all.slice(offset+match.length)))return match;
+  return match+(lang==="en"?" of the ":" من ")+law(lang);
+ });
+}
 function render(ids,lang){
  var ns=numbers(ids),en=lang==="en";
  if(!ns.length)return "";
  return "<section class='legalStudy' aria-labelledby='legalStudyTitle'><p class='legalStudyEyebrow'>"+(en?"Before question one":"قبل السؤال الأول")+"</p><h2 id='legalStudyTitle'>"+(en?"Read the legal provisions first":"اقرأ المواد القانونية أولًا")+"</h2><p>"+(en?"Qatar Civil Code — Law 22 of 2004. The original Arabic text is shown below. Read it, then start the questions. The text will be hidden while you answer.":"القانون المدني القطري رقم (22) لسنة 2004. اقرأ النصوص التالية، ثم ابدأ الأسئلة. ستختفي النصوص أثناء الإجابة.")+"</p>"+
- ns.map(function(n){return "<figure class='legalStudyArticle' data-article='"+n+"'><blockquote lang='ar' dir='rtl'>"+esc(TEXT[n])+"</blockquote><figcaption><strong>"+(en?"Article ":"المادة ")+n+"</strong><a href='"+esc(sourceUrl(n))+"' target='_blank' rel='noopener noreferrer'>"+(en?"Legal source":"المصدر القانوني")+"</a></figcaption></figure>";}).join("")+
+ ns.map(function(n){return "<figure class='legalStudyArticle' data-article='"+n+"'><blockquote lang='ar' dir='rtl'>"+esc(TEXT[n])+"</blockquote><figcaption><strong>"+(en?"Article ":"المادة ")+n+(en?" of the ":" من ")+esc(law(lang))+"</strong><a href='"+esc(sourceUrl(n))+"' target='_blank' rel='noopener noreferrer'>"+(en?"Legal source":"المصدر القانوني")+"</a></figcaption></figure>";}).join("")+
  "<button type='button' id='beginLegalQuestions'>"+(en?"Start question one":"ابدأ السؤال الأول")+"</button></section>";
 }
-var api={render:render,numbers:numbers,text:TEXT};root.LEX_LEGAL_STUDY=api;
+var api={render:render,numbers:numbers,text:TEXT,law:law,reference:reference,context:context,qualify:qualify};root.LEX_LEGAL_STUDY=api;
 if(typeof module!=="undefined"&&module.exports)module.exports=api;
 })(typeof window!=="undefined"?window:globalThis);
+
 
