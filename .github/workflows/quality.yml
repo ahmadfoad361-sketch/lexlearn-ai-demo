@@ -80,6 +80,7 @@ jobs:
           node tests/student-provisional-flow.test.js
           node tests/founder-pilot-release.test.js
           node tests/student-full-path.test.js
+          node tests/legal-case-guide.test.js
           node tests/official-level-one-ui.test.js
       - name: Production boundary tests
         run: node tests/production-boundaries.test.js
@@ -140,6 +141,7 @@ jobs:
           python3 -m http.server 18765 --bind 127.0.0.1 --directory dist-site >/tmp/lexlearn-lifecycle-serve.log 2>&1 &
           sleep 2
           node tests/student-path-browser.cjs
+          node tests/legal-case-guide-browser.cjs
           node tests/student-adaptive-browser.cjs
           node tests/conference-viewport-browser.cjs
 
