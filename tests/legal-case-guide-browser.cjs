@@ -11,6 +11,7 @@ const PROMPT_EN="Facts: A prenatal right requiring no acceptance arises, and the
    const ctx=await browser.newContext({viewport:mobile?{width:390,height:844}:{width:1280,height:900}});
    const page=await ctx.newPage(),errors=[];
    page.on("pageerror",e=>errors.push(e.message));
+   await page.goto((process.env.BASE_URL||"http://127.0.0.1:18765/")+".nojekyll",{waitUntil:"domcontentloaded"});
    await page.setContent('<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"></head><body><main><div id="studentTrainingApp"></div></main></body></html>');
    await page.addStyleTag({path:path.resolve("assets/legal-case-guide.css")});
    await page.addScriptTag({path:path.resolve("assets/legal-case-guide.js")});
