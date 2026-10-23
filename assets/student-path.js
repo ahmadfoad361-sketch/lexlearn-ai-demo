@@ -18,11 +18,12 @@ function previousAnswerTitle(item,task){
   return t("إجابتك السابقة — ","Your previous answer — ")+weakName(dimension)+(localizedTitle?" · "+String(localizedTitle):"");
 }
 function feedback(item){
- var ev=item&&item.evaluation||{},provisional=noHtmlScore(ev.provisional_percent);
- return "<div class='feedback' role='status'><b>"+t("تغطية مبدئية لعناصر القاعدة: ","Provisional legal-rule coverage: ")+esc(provisional)+"</b>"+
- "<p>"+esc((lang()==="en"?ev.feedback_en:ev.feedback_ar)||t("يلزم التأكد من المعنى القانوني مع مراجعة علمية.","Legal meaning still needs independent review."))+"</p>"+
- "<small>"+t("تقدير أولي لتغطية عناصر القاعدة، وقد لا يلتقط بعض الصياغات أو الاستثناءات. راجع الملاحظات مع المشرف عند الحاجة.","Preliminary coverage of rule elements may miss paraphrases or exceptions. Discuss the feedback with your instructor when needed.")+"</small></div>";
+ var ev=item&&item.evaluation||{};
+ return "<div class='feedback' role='status'><b>"+t("تم حفظ إجابتك — مراجعة مبدئية","Your answer was saved — preliminary review")+"</b>"+
+ "<p>"+t("قارن القاعدة التي كتبتها بنص المقرر. قد تكون الإجابة صحيحة حتى لو اختلفت ألفاظها عن نموذج الإجابة.","Compare your legal reasoning with the course material. Alternative wording may be correct.")+"</p>"+
+ "<small>"+t("مؤشرات تدريبية أولية وليست درجة جامعية أو قياسًا معتمدًا. الملاحظات الدقيقة يراجعها المشرف.","Preliminary practice indicators, not an accredited mark. Instructor review is needed for detailed feedback.")+"</small></div>";
 }
+
 function progressModel(rows,session){
  var start=Math.floor((session-1)/5)*5+1,checkpoint=session%5===0;
  function metric(dim,from,to){
@@ -39,21 +40,16 @@ function progressModel(rows,session){
 function progressHtml(rows,session,historyAvailable){
  var m=progressModel(rows,session);
  return "<section class='progressReport' aria-label='"+t("ملخص تقدمك","Your progress report")+"'><h2>"+
- (m.checkpoint?t("نتيجة المستوى ","Level result ")+m.level:t("ملخص الجلسة ","Session summary ")+session)+"</h2>"+
- "<p class='completionState'>✓ "+(m.checkpoint?t("أتممت مهام هذا المستوى وتقييمه.","You completed this level and its checkpoint."):t("أتممت مهام هذه الجلسة.","You completed this session's tasks."))+"</p>"+
+ (m.checkpoint?t("إتمام المستوى ","Level completion ")+m.level:t("ملخص الجلسة ","Session summary ")+session)+"</h2>"+
+ "<p class='completionState'>✓ "+t("أكملت مهام هذه الجلسة وحُفظت إجاباتك.","You completed this session and your answers were saved.")+"</p>"+
  "<div class='progressSkills'>"+m.skills.map(function(x){
-  var v=x.current.score;
-  return "<article class='progressSkill'><h3>"+esc(weakName(x.dimension))+"</h3><strong>"+noHtmlScore(v)+"</strong>"+
-  (v===null?"":"<div class='skillMeter' role='progressbar' aria-label='"+esc(weakName(x.dimension))+"' aria-valuemin='0' aria-valuemax='100' aria-valuenow='"+v+"'><i style='width:"+v+"%'></i></div>")+
-  "<p>"+t("إجابات جرى تقييمها: ","Assessed answers: ")+x.current.assessed+" / "+x.current.total+"</p>"+
-  (historyAvailable&&x.earlier.total?"<p>"+t("متوسط التدريب السابق في المستوى: ","Earlier practice average in this level: ")+noHtmlScore(x.earlier.score)+"</p>":"")+
-  (historyAvailable&&x.change!==null?"<p class='scoreChange'>"+t("تغيّر المؤشر: ","Indicator change: ")+(x.change>0?"+":"")+x.change+t(" نقطة"," points")+"</p>":"")+"</article>";
+   return "<article class='progressSkill'><h3>"+esc(weakName(x.dimension))+"</h3><strong>"+t("قيد المراجعة","Under review")+"</strong>"+
+   "<p>"+t("إجابات محفوظة: ","Saved answers: ")+x.current.total+"</p></article>";
  }).join("")+"</div>"+
- "<p class='nextAdvice'><b>"+t("خطوتك التالية: ","Your next step: ")+"</b>"+
- (m.needsReview.length?t("راجع ملاحظات ","Review the feedback for ")+m.needsReview.map(weakName).join(t(" و"," and "))+t(" وأعد المحاولة قبل الاعتماد على هذا المؤشر."," and practise again before relying on this estimate."):t("يمكنك متابعة التدريب مع الاحتفاظ بملاحظاتك للمراجعة.","Continue practising and keep your feedback for later review."))+"</p>"+
- (!historyAvailable?"<p>"+t("تعذر تحميل المقارنة السابقة؛ المعروض هنا من إجابات هذه الجلسة المحفوظة فقط.","Earlier comparison could not load; the results shown use only this session's saved answers.")+"</p>":"")+
- "<small>"+t("النسب مؤشرات أولية لتغطية عناصر الإجابة، وليست درجات إتقان معتمدة. المقارنة بين مهام مختلفة لا تثبت وحدها تحسن التعلم. نوصي بالمراجعة إذا قل المؤشر عن 70% أو بقيت إجابات دون تقدير.","Percentages are preliminary answer-coverage indicators, not certified mastery scores. Comparing different tasks alone does not establish learning gains. Review is recommended below 70% or when answers remain ungraded.")+"</small></section>";
+ "<p class='nextAdvice'>"+t("راجع عناصر القاعدة وطبّقها على مثال جديد. لا تُستخدم نسب مطابقة الكلمات للحكم على مستواك.","Review the legal rule elements and apply them to a new example. Word-match percentages do not determine your ability.")+"</p>"+
+ "<small>"+t("هذه مؤشرات تدريبية أولية، وليست درجات رسمية. سيُعاد قياس المهارات بأسئلة مستقلة.","These are preliminary practice indicators, not official grades. Skills will be reassessed with independent questions.")+"</small></section>";
 }
+
 async function boot(){
  if(!host)return;
  var cloud=root.LEX_CLOUD;
@@ -108,8 +104,7 @@ async function boot(){
    if(!data)return;
    var saved=data.saved||[],next=(data.tasks||[]).find(function(q){return !byId(saved,q.id);}),completed=data.completed;
    var name=t("الأسبوع ","Week ")+Math.ceil(selected/5)+" · "+programLabels[selected-1];
-   var why="<p>"+t("الأولوية الحالية حسب التشخيص والتدريب المحفوظ: ","Current priority from diagnostic and saved performance: ")+"<b>"+esc(weakName(data.weakest))+"</b>. "+
-    t("لذلك يختلف ترتيب الأسئلة بين الطلاب، ويعاد حسابه في الجلسات التالية.","Task order changes with each learner's measured practice; it is recalculated for later sessions.")+"</p>";
+   var why="<p>"+t("ترتيب تدريبي مبدئي وفق المعلومات المتاحة، وسيُراجع بعد جمع أدلة أكثر.","Preliminary practice sequence based on available evidence; this will be revisited as more evidence is collected.")+"</p>";
    var completedFeedback=saved.map(function(v){
     var task=(data.tasks||[]).find(function(q){return q.id===v.item_id;});
     return "<details class='past'><summary>"+esc(previousAnswerTitle(v,task))+"</summary><p style='white-space:pre-wrap'>"+esc(v.answer_text)+"</p>"+feedback(v)+"</details>";
