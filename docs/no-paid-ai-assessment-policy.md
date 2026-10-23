@@ -22,3 +22,9 @@ Decision: LexLearn public demonstration must run with **zero paid external AI in
 - A fallback rule score is not evidence of long-term retention, understanding or exam readiness.
 - A local check not saved to the server is not an official assessment.
 - Do not request OpenAI API billing or API keys as a prerequisite for the no-cost demonstration.
+
+
+## Signed-in operational pilot (23 October 2026)
+
+The owner has authorized paid OpenAI assessment for consented, authenticated diagnostic and training answers. This exception is implemented in the dedicated `lexlearn-diagnostic-ai-grade` and `lexlearn-training-ai-grade` services. It does not enable paid inference in the public demonstration, general legacy grader or public pilot handlers. See `docs/adaptive-ai-pilot-20261023.md` for consent, evidence, budget and persistence controls.
+
