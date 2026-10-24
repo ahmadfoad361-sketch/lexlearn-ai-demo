@@ -1301,6 +1301,11 @@ function completion(){
 }
 function assessmentResult(){state.view="achievement";render();}
 async function boot(){
+ // Authenticated students always use the single server-gated OpenAI training path.
+ // Keep public showcase-level1 previews unchanged.
+ if(!DEMO&&STUDENT_SESSION&&STUDENT_SESSION.cloud&&STUDENT_SESSION.studentId){
+  location.replace("student-path.html?lang=ar");return;
+ }
  if(!DEMO){
   if(!STUDENT_SESSION||!STUDENT_SESSION.cloud||!STUDENT_SESSION.studentId||!window.LEX_CLOUD||!LEX_CLOUD.isConfigured()){
    APP.innerHTML='<main class="courseWrap"><h1>هذا مسار الطالب المسجل</h1><p>سجّل الدخول لبدء التشخيص الحقيقي. الديمو العام مسار منفصل ولا ينقل أي درجات.</p><a class="primary" href="student-login.html">دخول الطالب</a><a class="secondary" href="showcase.html">الديمو العام</a></main>';return;

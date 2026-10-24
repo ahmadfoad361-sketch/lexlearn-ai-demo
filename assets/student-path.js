@@ -18,11 +18,13 @@ function previousAnswerTitle(item,task){
   return t("إجابتك السابقة — ","Your previous answer — ")+weakName(dimension)+(localizedTitle?" · "+String(localizedTitle):"");
 }
 function lawContext(ids){return root.LEX_LEGAL_STUDY?root.LEX_LEGAL_STUDY.context(ids||[],lang()):"";}
-function outdated(ev){return ev&&["lexlearn-training-ai-v2","lexlearn-training-ai-v3"].indexOf(ev.rubric_version)>=0;}
-function needsAssessment(v){var e=v&&v.evaluation;return !e||e.status!=="preliminary_ai"||outdated(e)||e.rubric_version!=="lexlearn-training-ai-v4";}
+// Only verified current-version OpenAI rubric results may affect displayed scores.
+function confirmedGrade(ev){return !!(ev&&ev.status==="preliminary_ai"&&ev.rubric_version==="lexlearn-training-ai-v4"&&
+ typeof ev.provisional_percent==="number"&&Number.isFinite(ev.provisional_percent)&&ev.provisional_percent>=0&&ev.provisional_percent<=100);}
+function needsAssessment(v){return !confirmedGrade(v&&v.evaluation);}
 function feedback(item){
  var ev=item&&item.evaluation||{};
- if(ev.status==="preliminary_ai"&&!outdated(ev)){
+ if(confirmedGrade(ev)){
   var verdict={correct:t("إجابة صحيحة","Correct answer"),partially_correct:t("إجابة صحيحة جزئيًا","Partly correct answer"),needs_revision:t("الإجابة تحتاج تصحيحًا","Answer needs correction")}[ev.verdict]||t("تصحيح إجابتك","Your answer assessment");
   var details=Array.isArray(ev.criteria)?"<ul class='criterionFeedback'>"+ev.criteria.map(function(c){
    if(typeof c.credit!=="number")return "";
@@ -40,7 +42,7 @@ function progressModel(rows,session){
  var start=Math.floor((session-1)/5)*5+1,checkpoint=session%5===0;
  function metric(dim,from,to){
   var all=(rows||[]).filter(function(x){return x.dimension===dim&&x.session_number>=from&&x.session_number<=to;});
-  var scored=all.filter(function(x){return !outdated(x.evaluation);}).map(function(x){return x.evaluation&&x.evaluation.provisional_percent;}).filter(function(v){return typeof v==="number"&&Number.isFinite(v)&&v>=0&&v<=100;});
+  var scored=all.filter(function(x){return confirmedGrade(x.evaluation);}).map(function(x){return x.evaluation&&x.evaluation.provisional_percent;}).filter(function(v){return typeof v==="number"&&Number.isFinite(v)&&v>=0&&v<=100;});
   return {score:scored.length?Math.round(scored.reduce(function(a,b){return a+b;},0)/scored.length):null,assessed:scored.length,total:all.length};
  }
  var skills=["recall","understanding"].map(function(dim){
@@ -57,7 +59,7 @@ function progressHtml(rows,session,historyAvailable){
  (root.LEX_SESSION_MOMENTS?root.LEX_SESSION_MOMENTS.render(session,lang()):"")+
  "<p class='completionState'>✓ "+t("أكملت مهام هذه الجلسة وحُفظت إجاباتك.","You completed this session and your answers were saved.")+"</p>"+
  "<div class='progressSkills'>"+m.skills.map(function(x){
-   var aiRows=(rows||[]).filter(function(r){return r.dimension===x.dimension&&r.session_number===session&&r.evaluation&&r.evaluation.status==="preliminary_ai"&&!outdated(r.evaluation);});
+   var aiRows=(rows||[]).filter(function(r){return r.dimension===x.dimension&&r.session_number===session&&r.evaluation&&confirmedGrade(r.evaluation);});
    var values=aiRows.map(function(r){return r.evaluation.provisional_percent;}).filter(function(v){return typeof v==="number"&&Number.isFinite(v)&&v>=0&&v<=100;});
    var shown=values.length?noHtmlScore(values.reduce(function(a,b){return a+b;},0)/values.length):t("التصحيح غير مكتمل","Assessment incomplete");
    return "<article class='progressSkill'><h3>"+esc(weakName(x.dimension))+"</h3>"+(visual&&values.length?visual.ring(card[x.dimension],x.dimension):"")+"<strong class='"+(values.length?"":"assessmentMissing")+"'>"+esc(values.length?shown:t("التصحيح غير مكتمل","Assessment incomplete"))+"</strong>"+
@@ -68,7 +70,7 @@ function progressHtml(rows,session,historyAvailable){
 }
 function momentData(rows,session){
  var data={kind:session%5===0?"level":"session",level:Math.ceil(session/5),session:session};
- ["recall","understanding"].forEach(function(dim){var a=(rows||[]).filter(function(r){return r.session_number===session&&r.dimension===dim&&r.evaluation&&r.evaluation.status==="preliminary_ai"&&!outdated(r.evaluation);}).map(function(r){return r.evaluation.provisional_percent;}).filter(function(v){return typeof v==="number"&&Number.isFinite(v)&&v>=0&&v<=100;});data[dim]=a.length?Math.round(a.reduce(function(x,y){return x+y;},0)/a.length):null;});
+ ["recall","understanding"].forEach(function(dim){var a=(rows||[]).filter(function(r){return r.session_number===session&&r.dimension===dim&&r.evaluation&&confirmedGrade(r.evaluation);}).map(function(r){return r.evaluation.provisional_percent;}).filter(function(v){return typeof v==="number"&&Number.isFinite(v)&&v>=0&&v<=100;});data[dim]=a.length?Math.round(a.reduce(function(x,y){return x+y;},0)/a.length):null;});
  return data;
 }
 
@@ -134,15 +136,7 @@ async function boot(){
     var result=await cloud.studentLifecycleRpc("trainingOpen",{courseId:COURSE,session:n});
     if(!result||!result.allowed||!Array.isArray(result.tasks)||!Array.isArray(result.saved))throw Error(result&&result.reason||"invalid_session");
     selected=n;data=result;studyRead=false;
-    if(acceptedAi&&cloud.gradeTrainingAi){
-     var repair=(data.saved||[]).filter(function(v){return needsAssessment(v);});
-     if(repair.length){
-      show(nav()+"<p role='status'>"+t("نراجع إجاباتك المحفوظة بالتصحيح المحدّث…","Reviewing your saved answers with the updated assessment…")+"</p>");
-      for(var previous of repair){show(nav()+"<p role='status'>"+t("نصحح الإجابة المحفوظة ","Assessing saved answer ")+(repair.indexOf(previous)+1)+" / "+repair.length+"</p>");try{var recovered=await requestAssessment(previous.item_id);if(!recovered||recovered.status!=="preliminary_ai")aiUnavailable=true;}catch(_){aiUnavailable=true;}}
-      var repaired=await cloud.studentLifecycleRpc("trainingOpen",{courseId:COURSE,session:selected});
-      if(repaired&&repaired.allowed&&Array.isArray(repaired.saved))data=repaired;
-     }
-    }
+    // Do not silently regrade saved work on navigation; use explicit retry controls.
     await refreshAdaptation();if(data.completed)await loadProgress();busy=false;render();
    }catch(e){reportError(e);}
   }
@@ -171,7 +165,7 @@ async function boot(){
    if(aiUnavailable)why+="<p role='status'>"+t("حُفظت إجابتك، لكن التصحيح بالذكاء الاصطناعي لم يتأكد. يمكنك المتابعة؛ لن نمنح نسبة بديلة أو نغيّر الأولوية بناءً عليها.","Your answer is saved, but AI assessment was not confirmed. Continue practice; no replacement score or priority change is inferred.")+"</p>";
    var completedFeedback=saved.map(function(v,index){
     var task=(data.tasks||[]).find(function(q){return q.id===v.item_id;});
-    return "<details class='past'"+(v===saved[saved.length-1]?" open":"")+"><summary>"+esc(previousAnswerTitle(v,task))+"</summary>"+lawContext(task&&task.sources)+"<p style='white-space:pre-wrap'>"+esc(v.answer_text)+"</p>"+feedback(v)+((!v.evaluation||v.evaluation.status!=="preliminary_ai"||outdated(v.evaluation))&&acceptedAi&&cloud.gradeTrainingAi?"<button type='button' id='retryGrade"+index+"'>"+t("أعد تصحيح هذه الإجابة","Retry assessment of this answer")+"</button>":"")+"</details>";
+    return "<details class='past'"+(v===saved[saved.length-1]?" open":"")+"><summary>"+esc(previousAnswerTitle(v,task))+"</summary>"+lawContext(task&&task.sources)+"<p style='white-space:pre-wrap'>"+esc(v.answer_text)+"</p>"+feedback(v)+(needsAssessment(v)&&acceptedAi&&cloud.gradeTrainingAi?"<button type='button' id='retryGrade"+index+"'>"+t("أعد تصحيح هذه الإجابة","Retry assessment of this answer")+"</button>":"")+"</details>";
    }).join("");
    var resume=next?"<section class='learnerWelcome'><div><h2>"+t("تدريبك التالي جاهز","Your next practice is ready")+"</h2><p>"+t("إجاباتك السابقة محفوظة؛ أكمل خطوة واحدة الآن.","Your previous answers are saved. Continue one step at a time.")+"</p></div><a href='#currentPractice'>"+t("أكمل تدريبك","Continue practice")+"</a></section>":"";
    var main=resume+"<section class='stage'><h1>"+esc(name)+"</h1>"+why+

@@ -43,7 +43,7 @@ function environment(session,lang='ar',failHistory=false,incomplete=false,course
  assert.match(partial.host.innerHTML,/Session summary 4/);
  assert.ok(partial.calls.includes('trainingSubmit')&&partial.calls.filter(x=>x==='trainingOpen').length===2,'read back saved completion before reporting');
  const model=partial.window.LEX_STUDENT_PATH.progressModel([
-  {session_number:4,dimension:'recall',evaluation:{provisional_percent:0}},
+  {session_number:4,dimension:'recall',evaluation:{status:'preliminary_ai',rubric_version:'lexlearn-training-ai-v4',provisional_percent:0}},
   {session_number:4,dimension:'recall',evaluation:{provisional_percent:null}},
   {session_number:4,dimension:'understanding',evaluation:{provisional_percent:'90'}},
   {session_number:4,dimension:'understanding',evaluation:{provisional_percent:150}},

@@ -1,0 +1,28 @@
+name: LexLearn AI grading regression
+on:
+  pull_request:
+    paths:
+      - 'assets/student-path.js'
+      - 'assets/program.js'
+      - 'assets/program-en.js'
+      - 'supabase/functions/lexlearn-training-ai-grade/assessment.mjs'
+      - 'tests/training-grade-consistency.test.mjs'
+      - '.github/workflows/ai-grade-consistency.yml'
+  push:
+    branches:
+      - fix/ai-grading-consistency-20261024
+jobs:
+  grading-consistency:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run grading regression tests
+        run: node --test tests/training-grade-consistency.test.mjs
+      - name: Parse edited browser scripts
+        run: |
+          node --check assets/student-path.js
+          node --check assets/program.js
+          node --check assets/program-en.js

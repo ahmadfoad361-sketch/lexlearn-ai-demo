@@ -6,7 +6,7 @@ async function run({consent=true,fail=false,lang='ar'}={}){
  const tasks=['understanding','recall','exam_execution'].map(d=>({id:d,dimension:d,prompt_ar:'اكتب القاعدة بأسلوبك',prompt_en:'Explain the legal rule in your own words.'}));
  const cloud={getConsent:async()=>consent,recordConsent:async()=>{calls.push('consent');consent=true;},
   trainingAiSummary:async()=>({priority,skills:{recall:priority==='recall'?40:90,understanding:70}}),
-  gradeTrainingAi:async(session,id)=>{calls.push('grade');if(fail)throw Error('provider offline');saved.find(x=>x.item_id===id).evaluation={status:'preliminary_ai',provisional_percent:90,feedback_ar:'استكمل الشرط <script>alert(1)</script>',feedback_en:'Explain the missing condition <script>alert(1)</script>'};priority='understanding';return {status:'preliminary_ai'};},
+  gradeTrainingAi:async(session,id)=>{calls.push('grade');if(fail)throw Error('provider offline');saved.find(x=>x.item_id===id).evaluation={status:'preliminary_ai',rubric_version:'lexlearn-training-ai-v4',provisional_percent:90,feedback_ar:'استكمل الشرط <script>alert(1)</script>',feedback_en:'Explain the missing condition <script>alert(1)</script>'};priority='understanding';return {status:'preliminary_ai'};},
   studentLifecycleRpc:async(action,p)=>{
    calls.push(action);
    if(action==='trainingOverview')return {allowed:true,unlocked:1,completed_count:0};
@@ -37,9 +37,11 @@ async function recover(lang,currentFailure=false){
   studentLifecycleRpc:async(action)=>{calls.push(action);return action==='trainingOverview'?{allowed:true,unlocked:2,completed_count:1}:{allowed:true,completed:true,tasks:[{id:saved[0].item_id,dimension:'understanding'}],saved};}};
  const window={document:{getElementById:()=>host},URLSearchParams,location:{search:'?session=1&lang='+lang},LEX_CLOUD:cloud,LEX_OFFICIAL_DIAGNOSTIC:{identity:async()=> 'learner'},console};window.window=window;
  vm.runInNewContext(fs.readFileSync('assets/student-path.js','utf8'),window);await window.LEX_STUDENT_PATH.mount();
- assert.ok(calls.includes('grade'),'automatically re-assess previously saved binary grades');
+ assert.ok(!calls.includes('grade'),'opening a saved session must not trigger paid grading without an explicit retry');
  assert.ok(!host.html.includes('0%'),'outdated binary zero is not shown as current understanding');
  assert.ok(nodes.retryGrade0,'saved work has a retry action');
+ await nodes.retryGrade0.onclick();
+ assert.ok(!host.html.includes('14%'),'a failed retry must not invent a score');
  fail=false;await nodes.retryGrade0.onclick();
  assert.ok(host.html.includes('14%'));assert.ok(host.html.includes(lang==='ar'?'صحيحة جزئيًا':'Partly correct answer'));
  assert.ok(host.html.includes(lang==='ar'?'شرط الولادة':'Live birth condition'));

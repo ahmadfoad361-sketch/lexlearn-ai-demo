@@ -22,7 +22,8 @@ assert.throws(()=>interpret({...valid,review_required:true},rubric,answer),/huma
 const diagnostic={metrics:{understanding:80},measurements:{recall:{ai_grade:{status:"preliminary_ai",provisional_percent:40}}}};
 assert.equal(summarize([],diagnostic).priority,"recall");
 assert.equal(summarize([{dimension:"recall",evaluation:{status:"preliminary_internal",provisional_percent:100}}],diagnostic).skills.recall,40);
-assert.equal(summarize([{dimension:"recall",evaluation:{status:"preliminary_ai",provisional_percent:95}}],diagnostic).priority,"understanding");
+assert.equal(summarize([{dimension:"recall",evaluation:{status:"preliminary_ai",rubric_version:VERSION,provisional_percent:95}}],diagnostic).priority,"understanding");
+assert.equal(summarize([{dimension:"recall",evaluation:{status:"preliminary_ai",provisional_percent:95}}],diagnostic).skills.recall,40,"unversioned historical scores must not supersede a verified diagnostic result");
 assert.deepEqual(summarize([],{}).skills,{recall:null,understanding:null});
 // Exercise the actual deployed handler with fake database/provider boundaries.
 let handler,providerCalls=0;
