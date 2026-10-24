@@ -21,7 +21,7 @@ const assets=[
   "portal.css","register.css","auth-controls.js","student-register.js","student-login.js","student-login-en.js","admin-login-v2.js",
   "student.css","student.js","student-en.js",
   "english.css",
-  "admin.css","admin-entry.js","admin-cloud.js","student-report.js","admin.js",
+  "admin.css","admin-experience.css","admin-entry.js","admin-cloud.js","student-records.js","student-report.js","admin.js",
   "lexlearn-config.js","cloud-data.js","lexlearn-grading-console.js","reset-password.js",
   "legal-pages.css"
 ];

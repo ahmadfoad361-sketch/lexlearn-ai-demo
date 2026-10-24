@@ -28,6 +28,7 @@ function buildText(d){
  records("مواعيد المراجعة","reviews");
  records("سجلات التصحيح الآلي","ai_grading_runs");
  if(d.truncated&&d.truncated.length)lines.push("","تنبيه: يوجد اقتطاع بيانات بسبب حد التصدير في: "+d.truncated.join("، "));
+ if(root.LEX_STUDENT_RECORDS)lines.push("",root.LEX_STUDENT_RECORDS.text(r));
  return lines.join("\n");
 }
 function section(title,body,klass){return '<section class="section '+(klass||"")+'"><h2>'+escapeHTML(title)+'</h2>'+body+'</section>';}
@@ -44,23 +45,27 @@ function render(d,raw){
   (h?'<div class="details"><b>مراجعة المشرف:</b><pre>'+escapeHTML(str({passed:h.passed,feedback:h.feedback,criteria:h.criteria,reviewed_at:h.reviewed_at}))+'</pre></div>':'')+'</article>';
  }).join("")||'<p>لا توجد محاولات محفوظة.</p>';
  function other(title,key){return section(title,(records[key]||[]).map(function(x,i){return '<article class="entry"><b>السجل '+(i+1)+'</b><pre>'+escapeHTML(JSON.stringify(x,null,2))+'</pre></article>';}).join("")||'<p>لا توجد بيانات.</p>',"data");}
+ var activityCount=arr.length+(records.student_training_answers||[]).length+(records.student_diagnostic_runs||[]).reduce(function(n,d){return n+((d.result&&d.result.answers)||d.answers||d.draft||[]).length+(d.free_text?1:0);},0);
+ var assessedCount=arr.filter(function(a){return a.score!=null;}).length+(records.student_training_answers||[]).filter(function(a){return root.LEX_STUDENT_RECORDS&&root.LEX_STUDENT_RECORDS.confirmed(a.evaluation);}).length+(records.student_diagnostic_runs||[]).reduce(function(n,d){var g=d.result&&d.result.measurements&&d.result.measurements.recall&&d.result.measurements.recall.ai_grade;return n+((d.result&&d.result.answers)||[]).filter(function(a){return typeof a.correct==='boolean';}).length+(root.LEX_STUDENT_RECORDS&&root.LEX_STUDENT_RECORDS.confirmed(g)?1:0);},0);
+ var activityDates=arr.map(function(a){return a.created_at;}).concat((records.student_training_answers||[]).map(function(a){return a.submitted_at;}),(records.student_diagnostic_runs||[]).map(function(d){return d.updated_at||d.completed_at||d.created_at;})).filter(Boolean).sort();
  var imageUrl=new URL("assets/lexlearn-logo.svg",root.location.href).href;
- var style='@page{size:A4;margin:16mm}*{box-sizing:border-box}body{font-family:Tahoma,Arial,sans-serif;color:#162b48;background:#f4f6fa;direction:rtl;line-height:1.8;margin:0}header{background:#142B5F;color:white;padding:24px 5%;display:flex;align-items:center;gap:20px}header img{width:65px;background:white;border-radius:10px;padding:7px}header h1{margin:0;font-size:25px}header small{color:#dce5f6}.toolbar{padding:14px 5%;display:flex;gap:9px;flex-wrap:wrap;background:#fff;border-bottom:1px solid #dae0e7}.toolbar button{border:0;border-radius:9px;background:#142B5F;color:#fff;padding:10px 18px;cursor:pointer;font:inherit}.toolbar .accent{background:#8F1D3F}.wrap{max-width:980px;margin:auto;padding:28px 20px}.section{background:white;border:1px solid #d9e0ea;border-radius:14px;padding:20px;margin:16px 0;break-inside:avoid-page}.section h2{margin:0 0 16px;color:#8F1D3F;font-size:20px;border-bottom:2px solid #f1e0e7;padding-bottom:9px}.section.training h2{color:#142B5F;border-color:#e4e9f5}.fieldgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.fieldgrid div{background:#f8f5f7;padding:8px 12px;border-radius:8px}.fieldgrid small{display:block;color:#606775}.fieldgrid b{overflow-wrap:anywhere}.entry{margin:12px 0;padding:12px 15px;background:#f8fafc;border:1px solid #e4e8ef;border-radius:8px;break-inside:avoid-page}.entry h3{font-size:16px;margin:0;color:#142B5F}.entry h3 span{font-size:12px;font-weight:normal;color:#667}.answer{background:#fff;border-right:4px solid #8F1D3F;padding:10px;margin:8px 0}.answer pre,.details pre,.data pre{white-space:pre-wrap;overflow-wrap:anywhere;font-family:inherit;font-size:13px}.answer p{margin:5px 0}.footnote{color:#657080;font-size:12px}.copyArea{display:none;width:100%;min-height:250px}body.showText .copyArea{display:block}.warn{background:#fff3dc;border-radius:9px;padding:12px}@media print{body{background:white}header{color:#142B5F;background:white;border-bottom:3px solid #8F1D3F;padding:0 0 10px}header small{color:#142B5F}.toolbar,.copyArea{display:none!important}.wrap{padding:0}.section{box-shadow:none;border:0;padding:7px 0;margin:11px 0;break-inside:auto}.entry{break-inside:avoid-page}.section h2{font-size:17px}.fieldgrid{grid-template-columns:repeat(2,1fr)}}';
+ var style='.recordCorrect{color:#20604c}.recordIncorrect{color:#a71d36}.recordPartial{color:#735010}.recordCriterion{margin-block:12px}@page{size:A4;margin:16mm}*{box-sizing:border-box}body{font-family:Tahoma,Arial,sans-serif;color:#162b48;background:#f4f6fa;direction:rtl;line-height:1.8;margin:0}header{background:#142B5F;color:white;padding:24px 5%;display:flex;align-items:center;gap:20px}header img{width:65px;background:white;border-radius:10px;padding:7px}header h1{margin:0;font-size:25px}header small{color:#dce5f6}.toolbar{padding:14px 5%;display:flex;gap:9px;flex-wrap:wrap;background:#fff;border-bottom:1px solid #dae0e7}.toolbar button{border:0;border-radius:9px;background:#142B5F;color:#fff;padding:10px 18px;cursor:pointer;font:inherit}.toolbar .accent{background:#8F1D3F}.wrap{max-width:980px;margin:auto;padding:28px 20px}.section{background:white;border:1px solid #d9e0ea;border-radius:14px;padding:20px;margin:16px 0;break-inside:avoid-page}.section h2{margin:0 0 16px;color:#8F1D3F;font-size:20px;border-bottom:2px solid #f1e0e7;padding-bottom:9px}.section.training h2{color:#142B5F;border-color:#e4e9f5}.fieldgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.fieldgrid div{background:#f8f5f7;padding:8px 12px;border-radius:8px}.fieldgrid small{display:block;color:#606775}.fieldgrid b{overflow-wrap:anywhere}.entry{margin:12px 0;padding:12px 15px;background:#f8fafc;border:1px solid #e4e8ef;border-radius:8px;break-inside:avoid-page}.entry h3{font-size:16px;margin:0;color:#142B5F}.entry h3 span{font-size:12px;font-weight:normal;color:#667}.answer{background:#fff;border-right:4px solid #8F1D3F;padding:10px;margin:8px 0}.answer pre,.details pre,.data pre{white-space:pre-wrap;overflow-wrap:anywhere;font-family:inherit;font-size:13px}.answer p{margin:5px 0}.footnote{color:#657080;font-size:12px}.copyArea{display:none;width:100%;min-height:250px}body.showText .copyArea{display:block}.warn{background:#fff3dc;border-radius:9px;padding:12px}@media print{body{background:white}header{color:#142B5F;background:white;border-bottom:3px solid #8F1D3F;padding:0 0 10px}header small{color:#142B5F}.toolbar,.copyArea{display:none!important}.wrap{padding:0}.section{box-shadow:none;border:0;padding:7px 0;margin:11px 0;break-inside:auto}.entry{break-inside:avoid-page}.section h2{font-size:17px}.fieldgrid{grid-template-columns:repeat(2,1fr)}}';
  return '<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>LexLearn — تقرير الطالب '+escapeHTML(p.username)+'</title><style>'+style+'</style></head><body>'+
  '<header><img src="'+escapeHTML(imageUrl)+'" alt="LexLearn"><div><h1>تقرير الطالب التعليمي — LexLearn</h1><small>تقرير قابل للطباعة والتوثيق | '+escapeHTML(fmtDate(d.generated_at))+'</small></div></header>'+
  '<div class="toolbar"><button id="printPdf">طباعة / حفظ PDF</button><button class="accent" id="copyText">نسخ التقرير كنص</button><button id="saveText">حفظ ملف نصي</button><button id="toggleText">إظهار النص</button></div>'+
- '<main class="wrap"><p class="footnote">تقرير إداري مستخرج من السجلات التعليمية المتاحة للمشرف. المؤشرات الآلية أولية وليست درجات جامعية معتمدة.</p>'+
+ '<main class="wrap"><p class="footnote">تقرير إداري مستخرج من السجلات التعليمية المتاحة للمشرف. نص السؤال من سجل الجلسة عند توافره، وإلا فمن بنك المقرر الحالي. المؤشرات الآلية أولية وليست درجات جامعية معتمدة.</p>'+
  (d.truncated&&d.truncated.length?'<p class="warn">تنبيه: تم تجاوز حد تصدير بعض الجداول. يلزم استكمال الأرشفة قبل حذف الطالب.</p>':'')+
  section("01 — بيانات الطالب",html)+
  section("ملخص النشاط التعليمي",
-   '<div class="fieldgrid"><div><small>إجمالي المحاولات</small><b>'+arr.length+'</b></div>'+
-   '<div><small>محاولات بتقدير مسجل</small><b>'+arr.filter(function(a){return a.score!=null;}).length+'</b></div>'+
+   '<div class="fieldgrid"><div><small>الإجابات والمحاولات المحفوظة</small><b>'+activityCount+'</b></div>'+
+   '<div><small>إجابات بتصحيح مسجل</small><b>'+assessedCount+'</b></div>'+
    '<div><small>مراجعات المشرف</small><b>'+(records.pilot_human_grades||[]).length+'</b></div>'+
-   '<div><small>تاريخ آخر محاولة</small><b>'+escapeHTML(fmtDate(arr.length?arr.slice().sort(function(a,b){return new Date(b.created_at)-new Date(a.created_at);})[0].created_at:null))+'</b></div></div>'+
+   '<div><small>تاريخ آخر محاولة</small><b>'+escapeHTML(fmtDate(activityDates[activityDates.length-1]))+'</b></div></div>'+
    '<p class="footnote">ملخص وصفي للسجلات المتاحة، لا يثبت تحسنًا أكاديميًا ولا يعادل اعتماد الدرجة.</p>',
    "training")+
  section("المقررات المسجلة",enroll)+
- section("02 — الاختبارات والإجابات ("+arr.length+")",tests,"training")+
+ (root.LEX_STUDENT_RECORDS?root.LEX_STUDENT_RECORDS.html(records):"")+
+ section("02 — المحاولات الأخرى ("+arr.length+")",tests,"training")+
  other("ملخصات التقدم والتدريب","learner_snapshots")+
  other("خطط التدريب الشخصية","learning_plans")+
  other("أدلة التقييم","mastery_evidence")+
@@ -68,14 +73,16 @@ function render(d,raw){
  other("سجل عمليات التصحيح الآلي","ai_grading_runs")+
  '<p class="footnote">رقم الحساب: '+escapeHTML(p.id)+' | تاريخ الاستخراج: '+escapeHTML(d.generated_at)+'</p><textarea class="copyArea" id="fullReportText" readonly>'+escapeHTML(raw)+'</textarea></main></body></html>';
 }
+async function fetchReport(userId){
+ var res=await root.LEX_CLOUD.db().functions.invoke("admin-export-student",{body:{user_id:userId}});
+ if(res.error||!res.data||res.data.ok!==true)throw Error("student_report_unavailable");return res.data;
+}
 async function open(userId){
  var w=root.open("","_blank");
  if(!w){alert("اسمح بالنوافذ المنبثقة لإنشاء تقرير الطالب PDF.");return;}
  w.document.write('<html lang="ar" dir="rtl"><meta charset="utf-8"><title>تقرير LexLearn</title><body style="font-family:Tahoma"><h3>جارٍ إعداد ملف الطالب...</h3></body></html>');
  try{
-  var db=root.LEX_CLOUD.db(),res=await db.functions.invoke("admin-export-student",{body:{user_id:userId}});
-  if(res.error||!res.data||res.data.ok!==true)throw new Error(res.data&&res.data.error||res.error&&res.error.message||"تعذر استخراج التقرير");
-  var d=res.data,raw=buildText(d),html=render(d,raw);w.document.open();w.document.write(html);w.document.close();
+  var d=await fetchReport(userId),raw=buildText(d),html=render(d,raw);w.document.open();w.document.write(html);w.document.close();
   w.document.getElementById("printPdf").onclick=function(){w.focus();w.print();};
   w.document.getElementById("copyText").onclick=async function(){
    try{await w.navigator.clipboard.writeText(raw);this.textContent="تم النسخ";}catch(e){w.document.body.classList.add("showText");var box=w.document.getElementById("fullReportText");box.focus();box.select();this.textContent="انسخ النص المحدد";}
@@ -87,5 +94,5 @@ async function open(userId){
   };
  }catch(e){w.document.body.textContent="تعذر إنشاء تقرير الطالب: "+(e&&e.message||e);}
 }
-root.LEX_STUDENT_REPORT={open:open};
+root.LEX_STUDENT_REPORT={open:open,fetch:fetchReport,render:render,buildText:buildText};
 })(window);

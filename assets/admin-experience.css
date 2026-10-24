@@ -1,0 +1,65 @@
+/* Supervisor presentation; printable reports have their own paper stylesheet. */
+html[data-learner-theme]{--ad-bg:#f7f3ed;--ad-surface:#fffdfa;--ad-raised:#f1ece5;--ad-ink:#18253b;--ad-muted:#536176;--ad-line:#cec7c1;--ad-accent:#8a1f39;--ad-good:#20604c;--ad-good-bg:#e4f2e9;--ad-warn:#735010;--ad-warn-bg:#fff0d1;--ad-bad:#a71d36;--ad-bad-bg:#fae7eb;--paper:var(--ad-surface);--ink:var(--ad-ink);--muted:var(--ad-muted);--line:var(--ad-line);--shadow:0 12px 34px #18253b0b}
+html[data-learner-theme=dark]{--ad-bg:#101b2c;--ad-surface:#1b2a40;--ad-raised:#263750;--ad-ink:#f7f4ef;--ad-muted:#c1ccdd;--ad-line:#718099;--ad-accent:#ffb1c4;--ad-good:#a0e4c1;--ad-good-bg:#183e34;--ad-warn:#ffe0a3;--ad-warn-bg:#49381d;--ad-bad:#ff9da9;--ad-bad-bg:#452737;--shadow:0 12px 34px #0002}
+html[data-learner-theme] body{background:var(--ad-bg);color:var(--ad-ink);font-size:16px;line-height:1.8;padding-bottom:70px}
+html[data-learner-theme] .top{background:var(--ad-surface);border-color:var(--ad-line)}
+html[data-learner-theme] :is(.panel,.modal,.kpis>div){background:var(--ad-surface);border-color:var(--ad-line);color:var(--ad-ink)}
+html[data-learner-theme] :is(.brand b,.panel h2,.panel h3,.panel h4,.kpis b,.pageTitle h1,.metric>b,.evidenceGrid b,.studentBtn b,.tr b,.auditRow b,.modal h2,.credentials b){color:var(--ad-ink)}
+html[data-learner-theme] :is(.panel p,.panel small,.panelHead p,.studentBtn small,.metric>span,.metric>small,.evidenceGrid span,.tr small,.auditRow small,.auditRow time,.registrationHint,.managementHint,.formGrid label,.credentials span,.brand small,.kpis span){color:var(--ad-muted);font-size:14px;line-height:1.85}
+html[data-learner-theme] :is(.nav button,.topLink,.studentBtn,.search,.filterRow button,.btn.secondary,.adminActions button,.toolbar select,.formGrid input,.formGrid select,.modal textarea,.modal input[type=file],.close){background:var(--ad-surface);color:var(--ad-ink);border-color:var(--ad-line);font-size:14px}
+html[data-learner-theme] :is(input,textarea,select){color:var(--ad-ink);caret-color:var(--ad-accent)}
+html[data-learner-theme] :is(input,textarea)::placeholder{color:var(--ad-muted);opacity:1}
+html[data-learner-theme] :is(.nav button.active,.studentBtn.active){background:var(--ad-raised);color:var(--ad-accent);border-color:var(--ad-accent)}
+html[data-learner-theme] :is(.metric,.evidenceGrid>div,.tr.head,.empty,.weekMini>div,.credentials,.cohortMeta span,.entry,.answer){background:var(--ad-raised);border-color:var(--ad-line);color:var(--ad-ink)}
+html[data-learner-theme] :is(.bar,.progressLine){background:var(--ad-line)}
+html[data-learner-theme] :is(.iconBtn,.cohortIcon,.auditIcon,.realTag){background:var(--ad-raised);color:var(--ad-accent)}
+html[data-learner-theme] :is(.recommend,.warn){background:var(--ad-warn-bg);border-color:var(--ad-line);color:var(--ad-warn)}
+html[data-learner-theme] .recommend :is(b,span,p,small){color:var(--ad-warn);font-size:14px;line-height:1.9}
+html[data-learner-theme] :is(.risk.high,.accountState.disabled,.deleteStudentButton){background:var(--ad-bad-bg)!important;color:var(--ad-bad)!important;border-color:var(--ad-bad)!important}
+html[data-learner-theme] :is(.risk.mid,.accountState.paused){background:var(--ad-warn-bg);color:var(--ad-warn)}
+html[data-learner-theme] :is(.risk.low,.accountState.active,.importResult.ok){background:var(--ad-good-bg);color:var(--ad-good)}
+html[data-learner-theme] :is(.risk.none,.accountState.pending){background:var(--ad-raised);color:var(--ad-muted)}
+html[data-learner-theme] :is(.risk,.realTag,.topLink){font-size:13px}
+html[data-learner-theme] .metric.axis-recall :is(span,b){color:var(--ad-accent)}
+html[data-learner-theme] .metric.axis-understanding :is(span,b){color:var(--ad-good)}
+html[data-learner-theme] .panel :is(pre,blockquote){color:var(--ad-ink);white-space:pre-wrap;overflow-wrap:anywhere;font:inherit;line-height:2}
+html[data-learner-theme] .panel h3{font-size:21px}.panel h4{font-size:17px}
+html[data-learner-theme] .panelHead{gap:16px;align-items:center;flex-wrap:wrap}
+html[data-learner-theme] .panel{padding:24px;border-radius:22px}
+html[data-learner-theme] .panel .panel{box-shadow:none;margin-top:24px;border-top:3px solid var(--ad-accent)}
+html[data-learner-theme] .entry{padding:20px;margin:18px 0;border:1px solid var(--ad-line);border-radius:16px}
+html[data-learner-theme] .answer{padding:18px;margin:14px 0;border:1px solid var(--ad-line);border-inline-start:3px solid var(--ad-accent);border-radius:12px}
+html[data-learner-theme] .entry h3{margin-bottom:12px}
+html[data-learner-theme] .reportBtn{background:#8a1f39;color:#fff;border:0;border-radius:12px;padding:12px 18px;cursor:pointer;font-weight:750;font-size:15px}
+html[data-learner-theme] :is(.studentManagement .adminActions .reportBtn,.btn.primary){background:#8a1f39;color:#fff;border-color:#8a1f39}
+html[data-learner-theme] .topin{max-width:1550px;gap:20px}.topActions{flex-wrap:wrap;justify-content:flex-end}
+html[data-learner-theme] .wrap{max-width:1550px;padding-top:28px}
+html[data-learner-theme] .hero{background:linear-gradient(120deg,#142b5f,#202e4c);padding:32px;border:1px solid var(--ad-line)}
+html[data-learner-theme] .hero h1{font-size:clamp(27px,3vw,38px)}
+html[data-learner-theme] .kpis>div{padding:22px;border-top:3px solid #8a1f39}.kpis>div:nth-child(2){border-top-color:#247b78}.kpis>div:nth-child(3){border-top-color:#b58129}.kpis>div:nth-child(4){border-top-color:#5878a7}
+html[data-learner-theme] .kpis b{font-size:32px}.kpis span{font-size:14px}
+html[data-learner-theme] .metricGrid,html[data-learner-theme] .evidenceGrid{grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+html[data-learner-theme] .metric{padding:18px}.metric>b{font-size:28px}
+html[data-learner-theme] .studentBtn{padding:16px}.studentBtn b{font-size:16px}
+html[data-learner-theme] :is(a,button,input,textarea,select):focus-visible{outline:3px solid var(--ad-accent);outline-offset:4px}
+.learnerThemeToggle{position:fixed;bottom:18px;inset-inline-end:18px;z-index:90;padding:12px 18px;min-height:46px;border:1px solid var(--ad-line);border-radius:99px;background:var(--ad-surface);color:var(--ad-ink);font:700 14px/1.5 system-ui,Tahoma,sans-serif;box-shadow:var(--shadow);cursor:pointer}
+.learnerBrandHome{display:inline-flex;align-items:center;text-decoration:none;color:inherit;max-width:100%;min-width:0}
+.learnerLogoOrbit{display:inline-flex;position:relative;flex:none;border-radius:50%;background:radial-gradient(ellipse,#ffffffed 0%,#ffffffb0 48%,#ffffff10 72%);box-shadow:0 0 14px #ffffff50}
+.learnerLogoOrbit>img{display:block;max-width:100%;object-fit:contain;filter:drop-shadow(0 0 4px #fff9)}
+.learnerLogoOrbit:before{content:'';position:absolute;inset:-3px;border:1px solid #ffffffcc;border-radius:50%;pointer-events:none}
+.learnerLogoOrbit:after{content:'';position:absolute;inset:-3px;border-radius:50%;background:radial-gradient(circle at 50% 1%,#fff 0 3px,#efafc4 4px,transparent 5px);animation:adminMoon 12s linear infinite;pointer-events:none}
+html[data-learner-theme] .legalArticleNumber{font-weight:850;color:var(--ad-warn)!important;background:var(--ad-warn-bg);border:1px solid var(--ad-line);border-radius:.4em;padding:.03em .3em;box-decoration-break:clone;-webkit-box-decoration-break:clone}
+@keyframes adminMoon{to{transform:rotate(360deg)}}
+@media(min-width:1101px){.studentAside{position:sticky;top:116px;align-self:start;max-height:calc(100vh - 140px);overflow:auto}}
+@media(max-width:1100px){html[data-learner-theme] .topin{grid-template-columns:auto 1fr}.topActions{display:flex}.nav button{flex-shrink:0}.nav{padding-bottom:4px}}
+@media(max-width:720px){html[data-learner-theme] .panel{padding:18px}.topActions{display:none}.brand small{display:none}.nav button span{display:inline}.nav{gap:4px}.nav button{font-size:13px}.metricGrid,.evidenceGrid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.panelHead>.reportBtn{width:100%}.hero{grid-template-columns:1fr}.kpis>div{padding:16px!important}.learnerThemeToggle{bottom:12px;inset-inline-end:12px}.twoCols{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){.learnerLogoOrbit:after{animation:none}}
+@media print{.learnerThemeToggle,[data-record],[data-report]{display:none!important}html[data-learner-theme] body,html[data-learner-theme] .panel{background:#fff;color:#18253b}.studentAside{position:static;max-height:none}}
+
+html[data-learner-theme] .overline{color:var(--ad-accent)}
+@media(min-width:1101px) and (max-width:1400px){html[data-learner-theme] .topin{grid-template-columns:auto 1fr}.nav{order:3;grid-column:1/-1;justify-content:flex-start;overflow:auto}.topActions{justify-content:flex-end}}
+
+html[data-learner-theme] .panel .recordCorrect,html[data-learner-theme] .panel .recordCorrect :is(b,p,blockquote){color:var(--ad-good)}
+html[data-learner-theme] .panel .recordIncorrect,html[data-learner-theme] .panel .recordIncorrect :is(b,p,blockquote){color:var(--ad-bad)}
+html[data-learner-theme] .panel .recordPartial,html[data-learner-theme] .panel .recordPartial :is(b,p,blockquote){color:var(--ad-warn)}
+.recordCriterion{margin-block:14px;padding-inline:8px}

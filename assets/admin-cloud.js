@@ -4,7 +4,7 @@ var APP=document.getElementById("adminApp");
 var SKEY="lexlearn_admin_session";
 var ss=null;try{ss=JSON.parse(localStorage.getItem(SKEY)||"null");}catch(e){}
 if(!ss||!ss.cloud||!window.LEX_CLOUD||!LEX_CLOUD.isConfigured()){location.replace("admin-login.html");return;}
-var state={tab:"dashboard",students:[],cohorts:[],audit:[],content:[],snapshots:[],attempts:[],pilotAttempts:[],pilotGrades:[],pilotAi:[],selected:null,q:"",busy:false,error:"",creds:null,staffRole:null};
+var state={tab:"dashboard",students:[],cohorts:[],audit:[],content:[],snapshots:[],attempts:[],pilotAttempts:[],pilotGrades:[],pilotAi:[],selected:null,q:"",busy:false,error:"",creds:null,staffRole:null,officialRecords:{},recordDetail:null,recordStudent:null,recordError:""};
 
 function nextStudentUsername(){
  var used=new Set(state.students.map(function(s){return String(s.username||"").toLowerCase();}));
@@ -42,6 +42,8 @@ function view(s){
    var axis=model.axes&&model.axes[k];
    m[k]=(axis&&axis.evidence>0&&axis.value!=null)?axis.value:(base[k]==null?null:base[k]);
  });
+ var official=window.LEX_STUDENT_RECORDS&&window.LEX_STUDENT_RECORDS.summary(state.officialRecords,s.id);
+ if(official&&official.hasRecords)return {s:s,m:official.metrics,model:{},course:{completed:official.completedSessions,completedProgram:official.complete},completed:official.completed,session:official.session,errors:[],profileUpdated:official.updated,courseUpdated:official.updated,official:official};
  return {s:s,m:m,model:model,course:course,completed:(course.completed||[]).length,session:Number(course.session)||1,errors:course.errors||[],profileUpdated:ps&&ps.updated_at||null,courseUpdated:cs&&cs.updated_at||null};
 }
 function risk(v){
@@ -51,7 +53,7 @@ function risk(v){
  var highConfidenceWrong=(state.attempts||[]).some(function(a){return a.user_id===v.s.id&&a.confidence===3&&a.score!=null&&Number(a.score)<.55;});
  return min<45||highConfidenceWrong?"high":min<65?"mid":"low";
 }
-function rlabel(r){return r==="high"?"عاجل":r==="mid"?"متابعة":r==="low"?"مستقر":"لم يبدأ";}
+function rlabel(r,v){if(r==="none"&&v&&v.official&&v.official.started)return "قيد التصحيح";return r==="high"?"عاجل":r==="mid"?"متابعة":r==="low"?"مستقر":"لم يبدأ";}
 function metric(k,v,meta){
  var t=v==null?"—":Math.round(v)+"%";
  var note=meta&&meta.status?meta.status:(v==null?"لم يُقَس":v>=80?"قوي":v>=60?"نامٍ":"أولوية");
@@ -60,7 +62,7 @@ function metric(k,v,meta){
 function modelText(v){
  if(v.model&&v.model.bridge&&v.model.bridge.label)return v.model.bridge.label;
  var entries=["recall","understanding","application","legal_precision","retention","exam"].filter(function(k){return v.m[k]!=null;}).sort(function(a,b){return v.m[a]-v.m[b];});
- return entries.length?"الأولوية الحالية: "+label(entries[0]):"يحتاج تقييمًا تشخيصيًا أولًا.";
+ return entries.length?"الأولوية الحالية: "+label(entries[0]):v.official&&v.official.started?"بدأ الطالب المسار؛ بعض التصحيحات لم تكتمل بعد.":"يحتاج تقييمًا تشخيصيًا أولًا.";
 }
 function adminAdvice(v){
  var keys=["recall","understanding","application","legal_precision","retention","exam"];
@@ -68,7 +70,7 @@ function adminAdvice(v){
  var essay=v.course&&v.course.lastEssayProfile||null;
  var measured=keys.filter(function(k){return v.m[k]!=null;}).sort(function(a,b){return v.m[a]-v.m[b];});
  if(!measured.length)return {
-   summary:"لا توجد نتائج حقيقية لهذا الطالب حتى الآن. اطلب منه إكمال التقييم التشخيصي من حسابه المسجل.",
+   summary:v.official&&v.official.started?"أكمل الطالب "+v.completed+" جلسات وحفظ "+v.official.answers+" إجابات. التصحيح المؤكد لم يكتمل بعد.":"لا توجد نتائج حقيقية لهذا الطالب حتى الآن. اطلب منه إكمال التقييم التشخيصي من حسابه المسجل.",
    advice:"لا تتخذ قرار تدريب قبل ظهور بيانات الطالب المركزية.",
    watch:"بعد التقييم، راقب أول جلستين للتأكد من أن البرنامج يتغير وفق الأداء."
  };
@@ -106,7 +108,7 @@ function shell(body){
 }
 function kpis(){
  var a=state.students.filter(function(s){return s.active!==false;}).map(view);
- return '<section class="kpis"><div><span>الطلاب النشطون</span><b>'+a.length+'</b></div><div><span>بدأوا القياس</span><b>'+a.filter(function(v){return Object.keys(v.m).some(function(k){return v.m[k]!=null;});}).length+'</b></div><div><span>متابعة عاجلة</span><b>'+a.filter(function(v){return risk(v)==="high";}).length+'</b></div><div><span>أكملوا البرنامج</span><b>'+a.filter(function(v){return v.course.completedProgram;}).length+'</b></div></section>';
+ return '<section class="kpis"><div><span>الطلاب النشطون</span><b>'+a.length+'</b></div><div><span>بدأوا القياس</span><b>'+a.filter(function(v){return v.official&&v.official.started||Object.keys(v.m).some(function(k){return v.m[k]!=null;});}).length+'</b></div><div><span>متابعة عاجلة</span><b>'+a.filter(function(v){return risk(v)==="high";}).length+'</b></div><div><span>أكملوا البرنامج</span><b>'+a.filter(function(v){return v.course.completedProgram;}).length+'</b></div></section>';
 }
 function studentList(){
  var q=state.q.trim().toLowerCase();
@@ -118,9 +120,9 @@ function detail(v){
  '<p>الكلية: '+esc(s.faculty||"—")+' • الشعبة/القسم: '+esc(s.section||"—")+'</p>'+
  (s.studentRegistrationNumber?'<p>رقم القيد الجامعي: <b>'+esc(s.studentRegistrationNumber)+'</b></p>':'')+
  (s.groupEmail?'<p>بريد المجموعة: <b dir="ltr">'+esc(s.groupEmail)+'</b></p>':'')+
- (s.whatsapp?'<p class="studentPhone">واتساب: <b dir="ltr">'+esc(s.whatsapp)+'</b> • '+(s.whatsappVerified?'تم التحقق':'لم يتم التحقق بعد')+'</p>':'')+'</div><span class="risk big '+r+'">'+rlabel(r)+'</span></section>'+
+ (s.whatsapp?'<p class="studentPhone">واتساب: <b dir="ltr">'+esc(s.whatsapp)+'</b> • '+(s.whatsappVerified?'تم التحقق':'لم يتم التحقق بعد')+'</p>':'')+'</div><span class="risk big '+r+'">'+(v.official&&r==="none"?"التصحيح غير مكتمل":rlabel(r,v))+'</span></section>'+
  '<div class="studentSectionBanner trainingSection"><span>02</span><div><b>التدريب والتقييم</b><small>مؤشرات الأداء والمهارات — منفصلة عن بيانات الطالب الشخصية</small></div></div><section class="panel metricsPanel"><div class="panelHead"><div><h3>الملف التكيفي</h3><p>'+esc(modelText(v))+'</p></div><span class="realTag">Central DB</span></div><div class="metricGrid">'+
- ["recall","understanding","application","legal_precision","retention","exam"].map(function(k){return metric(k,v.m[k],axes[k]);}).join("")+'</div>'+(lastUpdate?'<p style="margin:14px 0 0;color:#6f7782;font-size:13px">آخر بيانات مستلمة: '+new Date(lastUpdate).toLocaleString("ar-EG")+'</p>':'')+'</section>'+
+ ["recall","understanding","application","legal_precision","retention","exam"].map(function(k){return metric(k,v.m[k],axes[k]);}).join("")+'</div>'+(lastUpdate?'<p style="margin:14px 0 0">آخر بيانات مستلمة: '+new Date(lastUpdate).toLocaleString("ar-EG")+'</p>':'')+'</section>'+
  '<section class="panel"><div class="panelHead"><div><h3>ملاحظات ونصائح للمشرف</h3><p>قراءة تلقائية مبنية على تجربة الطالب الفعلية، وليست درجة جامعية.</p></div><span class="realTag">Supervisor Note</span></div>'+
  '<div class="recommend"><b>ملحوظة على الأداء</b><span>'+esc(advice.summary)+'</span></div>'+
  '<div class="recommend" style="margin-top:10px"><b>النصيحة للمشرف</b><span>'+esc(advice.advice)+'</span></div>'+
@@ -128,11 +130,15 @@ function detail(v){
  (advice.plan?'<div class="recommend appliedPlan" style="margin-top:10px"><b>ما يطبقه LexLearn فعليًا في الجلسات التالية</b><span>'+esc(advice.plan.method)+'<br><small>'+esc((advice.plan.tasks||[]).join(" • "))+'</small></span></div>':'')+
  (advice.essay?'<div class="recommend" style="margin-top:10px"><b>تحليل آخر إجابة مقالية</b><span>'+esc(advice.essay.style||"—")+' — '+esc(advice.essay.note||"")+'</span></div>':'')+
  (advice.essay&&advice.essay.answer?'<details class="recommend"><summary>إجابة الطالب وأدلة المعيار</summary><p style="white-space:pre-wrap">'+esc(advice.essay.answer)+'</p><ul>'+(advice.essay.checks||[]).map(function(c){return '<li>'+esc(c.label)+' — '+(c.matched?'ظهر مؤشر: '+esc(c.evidence):'يحتاج مراجعة')+'</li>';}).join('')+'</ul><small>فحص أولي؛ اعتماد صحة الإجابة للمشرف. راجع النفي والاستثناء وصحة ربط القاعدة بالوقائع، حتى لو ظهرت جميع الكلمات المطلوبة.</small></details>':'')+
- essayAttempts(v)+
+ officialSteps(v)+essayAttempts(v)+
  '</section>'+
  '<section class="twoCols"><div class="panel"><h3>التقدم</h3><div class="progressWrap"><div class="progressLine"><i style="width:'+Math.round(v.completed/30*100)+'%"></i></div><b>'+v.completed+'/30</b></div><p>الجلسة الحالية: '+v.session+' • '+(v.course.completedProgram?"البرنامج مكتمل":"البرنامج مستمر")+'</p><div class="recommend"><b>التدخل المقترح</b><span>'+esc(modelText(v))+'</span></div></div>'+
  '<div class="panel studentManagement"><h3>إدارة حساب الطالب</h3><p class="managementHint">إيقاف مؤقت أو تعطيل دون حذف نتائج التدريب. يمكنك استخراج ملف PDF أو نص كامل للتوثيق قبل أي حذف نهائي.</p><div class="accountState '+(s.accountStatus||"active")+'">حالة الحساب: '+({"active":"نشط","paused":"موقوف مؤقتًا","disabled":"معطّل","pending":"بانتظار الاعتماد"}[s.accountStatus||"active"]||"غير محددة")+'</div><div class="adminActions"><button class="reportBtn" data-report="'+s.id+'">'+ico("audit")+' تصدير ملف الطالب / PDF</button><button data-reset="'+s.id+'">'+ico("key")+' كلمة مرور مؤقتة</button>'+(s.accountStatus!=="paused"&&s.active!==false?'<button data-set-status="paused" data-user="'+s.id+'">إيقاف مؤقت</button>':'')+(s.accountStatus!=="disabled"?'<button data-set-status="disabled" data-user="'+s.id+'">تعطيل الحساب</button>':'')+(s.active===false?'<button data-set-status="active" data-user="'+s.id+'">'+(s.accountStatus==="pending"?"اعتماد الطالب وتفعيل حسابه":"إعادة التفعيل")+'</button>':'')+'<button data-unlock="'+s.id+'">فتح الأسبوع التالي</button><button data-repair="'+s.id+'">جلسة تثبيت</button>'+(["owner","admin"].indexOf(state.staffRole)>=0?'<button class="deleteStudentButton" data-delete-student="'+s.id+'">حذف الحساب نهائيًا</button>':'')+'</div></div></section>'+
- '<section class="panel evidence"><h3>لماذا اتخذ النظام هذا القرار؟</h3><div class="evidenceGrid">'+["recall","understanding","application","legal_precision","retention","exam"].map(function(k){var a=axes[k];return '<div><b>'+label(k)+'</b><span>'+(a?("تقدير "+a.value+"% • عدم يقين ±"+a.uncertainty+" • اتجاه "+(a.trend>0?"+":"")+a.trend):"لا توجد أدلة كافية بعد")+'</span></div>';}).join("")+'</div></section>';
+ '<section class="panel evidence"><h3>لماذا اتخذ النظام هذا القرار؟</h3><div class="evidenceGrid">'+["recall","understanding","application","legal_precision","retention","exam"].map(function(k){var a=axes[k];return '<div><b>'+label(k)+'</b><span>'+(a?("تقدير "+a.value+"% • عدم يقين ±"+a.uncertainty+" • اتجاه "+(a.trend>0?"+":"")+a.trend):v.official&&v.m[k]!==null?"مؤشر مسجل: "+Math.round(v.m[k])+"% — من التشخيص أو التصحيح المحفوظ":"لا توجد أدلة كافية بعد")+'</span></div>';}).join("")+'</div></section>';
+}
+function officialSteps(v){
+ var loaded=state.recordStudent===v.s.id&&state.recordDetail;
+ return '<section class="panel"><div class="panelHead"><div><h3>سجل الطالب الكامل</h3><p>التشخيص والجلسات والخطوات والأسئلة والإجابات والتصحيح المحفوظ.</p></div><button class="reportBtn" data-report="'+esc(v.s.id)+'">طباعة / حفظ PDF</button></div><button class="btn secondary" data-record="'+esc(v.s.id)+'">'+(loaded?'تحديث سجل الطالب':'عرض جميع خطوات الطالب وإجاباته')+'</button>'+(state.recordError?'<p role="alert">'+esc(state.recordError)+'</p>':'')+(loaded?window.LEX_STUDENT_RECORDS.html(state.recordDetail.records):'')+'</section>';
 }
 function essayAttempts(v){
  var rows=state.attempts.filter(function(a){return a.user_id===v.s.id&&a.answer_text&&a.course_id==='qa-qu-lawc101-rights';}).slice(0,20);
@@ -141,12 +147,12 @@ function essayAttempts(v){
 }
 function dashboard(){
  var list=studentList(),selected=state.students.find(function(s){return s.id===state.selected;})||list[0],v=selected?view(selected):null;if(selected)state.selected=selected.id;
- return '<section class="hero"><div><span class="demoTag">Production Supervisor View</span><h1>تحليل مركزي قابل للتفسير</h1><p>كل طالب وحسابه وتقدمه وأدلته محفوظة مركزيًا، مع فصل الصلاحيات عن المتصفح.</p></div><button class="btn light" id="refresh">تحديث البيانات</button></section>'+kpis()+
- '<section class="dashboardGrid"><aside class="panel studentAside"><div class="panelHead"><div><h3>الطلاب</h3><p>'+list.length+' حساب</p></div><button class="iconBtn" id="quickAdd">'+ico("plus")+'</button></div><input class="search" id="search" value="'+esc(state.q)+'" placeholder="اسم أو مستخدم..."><div class="studentList">'+list.map(function(s){var vv=view(s),rr=risk(vv);return '<button class="studentBtn '+(s.id===state.selected?"active":"")+'" data-student="'+s.id+'"><div><b>'+esc(s.name||s.username)+'</b><small>@'+esc(s.username)+' • '+vv.completed+'/30</small></div><span class="risk '+(s.active===false?"none":rr)+'">'+(s.active===false?(s.accountStatus==="pending"?"بانتظار الاعتماد":s.accountStatus==="paused"?"موقوف مؤقتًا":"معطّل"):rlabel(rr))+'</span></button>';}).join("")+'</div></aside><div>'+(v?detail(v):'<div class="panel empty">لا يوجد طلاب بعد.</div>')+'</div></section>';
+ return '<section class="hero"><div><span class="demoTag">لوحة المشرف</span><h1>متابعة الطالب خطوة بخطوة</h1><p>التشخيص والجلسات والإجابات والتصحيح في مكان واحد، مع تقارير قابلة للطباعة والحفظ PDF.</p></div><button class="btn light" id="refresh">تحديث البيانات</button></section>'+kpis()+
+ '<section class="dashboardGrid"><aside class="panel studentAside"><div class="panelHead"><div><h3>الطلاب</h3><p>'+list.length+' حساب</p></div><button class="iconBtn" id="quickAdd">'+ico("plus")+'</button></div><input class="search" id="search" value="'+esc(state.q)+'" placeholder="اسم أو مستخدم..."><div class="studentList">'+list.map(function(s){var vv=view(s),rr=risk(vv);return '<button class="studentBtn '+(s.id===state.selected?"active":"")+'" data-student="'+s.id+'"><div><b>'+esc(s.name||s.username)+'</b><small>@'+esc(s.username)+' • '+vv.completed+'/30</small></div><span class="risk '+(s.active===false?"none":rr)+'">'+(s.active===false?(s.accountStatus==="pending"?"بانتظار الاعتماد":s.accountStatus==="paused"?"موقوف مؤقتًا":"معطّل"):rlabel(rr,vv))+'</span></button>';}).join("")+'</div></aside><div>'+(v?detail(v):'<div class="panel empty">لا يوجد طلاب بعد.</div>')+'</div></section>';
 }
 function studentsTab(){
  var a=studentList(),pending=state.students.filter(function(x){return x.accountStatus==="pending";}).length;
- return '<section class="pageTitle"><div><span class="overline">Central Accounts</span><h1>الطلاب</h1><p>'+(pending?'طلبات تسجيل بانتظار الاعتماد: '+pending+' • ':'')+'حسابات مركزية، والمجموعة والأستاذ اختياريان. يمكن للمشرف مساعدة أي طالب تعثر في التسجيل.</p></div><div class="pageActions"><button class="btn primary" id="add">'+ico("plus")+' إضافة طالب</button><button class="btn secondary" id="export">تصدير CSV</button></div></section><section class="panel"><input class="search" id="ssearch" value="'+esc(state.q)+'" placeholder="بحث..."><div class="studentTable"><div class="tr head"><span>الطالب</span><span>المجموعة</span><span>التقدم</span><span>الأولوية</span><span>الحالة</span></div>'+a.map(function(s){var v=view(s),r=risk(v);return '<button class="tr" data-open="'+s.id+'"><span><b>'+esc(s.name||s.username)+'</b><small>@'+esc(s.username)+'</small></span><span>'+esc(s.cohort||"—")+'</span><span>'+v.completed+'/30</span><span>'+esc(v.model.weakest?label(v.model.weakest):"—")+'</span><span class="risk '+(s.active===false?"none":r)+'">'+(s.active===false?(s.accountStatus==="pending"?"بانتظار الاعتماد":s.accountStatus==="paused"?"موقوف مؤقتًا":"معطّل"):rlabel(r))+'</span></button>';}).join("")+'</div></section>';
+ return '<section class="pageTitle"><div><span class="overline">Central Accounts</span><h1>الطلاب</h1><p>'+(pending?'طلبات تسجيل بانتظار الاعتماد: '+pending+' • ':'')+'حسابات مركزية، والمجموعة والأستاذ اختياريان. يمكن للمشرف مساعدة أي طالب تعثر في التسجيل.</p></div><div class="pageActions"><button class="btn primary" id="add">'+ico("plus")+' إضافة طالب</button><button class="btn secondary" id="export">تصدير CSV</button></div></section><section class="panel"><input class="search" id="ssearch" value="'+esc(state.q)+'" placeholder="بحث..."><div class="studentTable"><div class="tr head"><span>الطالب</span><span>المجموعة</span><span>التقدم</span><span>الأولوية</span><span>الحالة</span></div>'+a.map(function(s){var v=view(s),r=risk(v);return '<button class="tr" data-open="'+s.id+'"><span><b>'+esc(s.name||s.username)+'</b><small>@'+esc(s.username)+'</small></span><span>'+esc(s.cohort||"—")+'</span><span>'+v.completed+'/30</span><span>'+esc(v.model.weakest?label(v.model.weakest):"—")+'</span><span class="risk '+(s.active===false?"none":r)+'">'+(s.active===false?(s.accountStatus==="pending"?"بانتظار الاعتماد":s.accountStatus==="paused"?"موقوف مؤقتًا":"معطّل"):rlabel(r,v))+'</span></button>';}).join("")+'</div></section>';
 }
 function cohortsTab(){
  return '<section class="pageTitle"><div><span class="overline">Cohorts</span><h1>المجموعات</h1><p>مجموعات الـPilot والمؤسسات.</p></div><button class="btn primary" id="newCohort">'+ico("plus")+' مجموعة جديدة</button></section><section class="cohortGrid">'+state.cohorts.map(function(c){return '<div class="panel cohortCard"><span class="cohortIcon">'+ico("group")+'</span><h3>'+esc(c.name)+'</h3><p>'+state.students.filter(function(s){return s.cohort===c.name;}).length+' طالب</p><div class="cohortMeta"><span>'+esc(c.institution||"—")+'</span><span>'+esc(c.academic_year||"—")+'</span></div></div>';}).join("")+'</section>';
@@ -198,9 +204,12 @@ async function load(){
     c.from("attempts").select("user_id,course_id,dimension,answer_text,grading_method,score,confidence,error_type,created_at").order("created_at",{ascending:false}).limit(1000),
     c.from("attempts").select("id,user_id,answer_text,selected_option,created_at").eq("course_id","qa-qu-lawc101-rights").eq("grading_method","pilot_human_pending").order("created_at",{ascending:false}).limit(500),
     c.from("pilot_human_grades").select("attempt_id,passed,feedback,criteria,reviewed_at").order("reviewed_at",{ascending:false}).limit(500),
-    c.from("pilot_ai_grades").select("attempt_id,status,passed,score,feedback,model_confidence,criteria,source_ids,created_at").order("created_at",{ascending:false}).limit(500)
+    c.from("pilot_ai_grades").select("attempt_id,status,passed,score,feedback,model_confidence,criteria,source_ids,created_at").order("created_at",{ascending:false}).limit(500),
+    c.functions.invoke("admin-export-student",{body:{action:"overview"}})
   ]);
   if(results.slice(4).some(function(x){return x.error;}))throw results.slice(4).find(function(x){return x.error;}).error;
+  if(!results[9].data||results[9].data.ok!==true)throw Error("تعذر تحميل سجل التقدم الحالي");
+  state.officialRecords=results[9].data.records||{};state.recordDetail=null;state.recordError="";
   state.students=results[0];state.cohorts=results[1];state.audit=results[2];state.content=results[3];state.snapshots=results[4].data||[];state.attempts=results[5].data||[];state.pilotAttempts=results[6].data||[];state.pilotGrades=results[7].data||[];state.pilotAi=results[8].data||[];
   if(!state.selected&&state.students[0])state.selected=state.students[0].id;
  }catch(e){state.error=e&&e.message||String(e);}
@@ -209,6 +218,7 @@ async function load(){
 function renderLoading(){APP.innerHTML='<main class="wrap"><section class="panel"><h2>تحميل البيانات المركزية…</h2><p>يتم التحقق من الحسابات والتقدم والسجل.</p></section></main>';}
 function render(){if(state.error){APP.innerHTML='<main class="wrap"><section class="panel"><h2>تعذر تحميل لوحة الإدارة</h2><p>'+esc(state.error)+'</p><button class="btn primary" id="retry">إعادة المحاولة</button></section></main>';var r=document.getElementById("retry");if(r)r.onclick=load;return;}shell(state.tab==="dashboard"?dashboard():state.tab==="students"?studentsTab():state.tab==="cohorts"?cohortsTab():state.tab==="grading"?gradingTab():state.tab==="content"?contentTab():auditTab());}
 function bind(){
+ document.querySelectorAll("[data-record]").forEach(function(button){button.onclick=async function(){button.disabled=true;button.textContent="جارٍ تحميل جميع الخطوات…";state.recordError="";try{state.recordDetail=await window.LEX_STUDENT_REPORT.fetch(button.dataset.record);state.recordStudent=button.dataset.record;render();}catch(e){state.recordError="تعذر تحميل سجل الطالب. أعد المحاولة.";render();}};});
  var live=document.getElementById("pilotLiveCheck");
  if(live)live.onclick=async function(){
   var out=document.getElementById("pilotLiveResults");
