@@ -106,6 +106,26 @@ function make(uid,lang,data,opts={}){
   assert.ok(!env.nodes.retroAiGrade);
   assert.match(env.main.html,/student-path.html/);
  }
+ // Previously typed, but substantively empty, seven-letter free answer:
+ // show the independently computed 0% *legal-rule coverage* and the unchanged
+ // two-question 0% understanding. Both are provisional, not permanent aptitude.
+ {
+  const uid="short-word",env=make(uid,"ar",data);
+  data[uid]={status:"completed",attempt_id:"already-completed",result:{
+   source:"server_finalized_diagnostic",student_id:uid,metrics:{understanding:0},
+   measurements:{recall:{
+    internal_grade:{status:"needs_human_review",reason:"insufficient_diagnostic_evidence",provisional_percent:null},
+    corrected_internal_grade:{status:"preliminary_internal",provisional_percent:0,
+      criteria_met:[],criteria_missing:["live_birth","death_end","prenatal_conditional_rights"],
+      grade_origin:"server_rubric_not_openai"}
+   }}
+  },training_plan:{mode:"balanced"}};
+  await env.win.LEX_SERVER_DIAGNOSTIC.mount();
+  assert.equal((env.main.html.match(/class='diagScoreCard'/g)||[]).length,2);
+  assert.equal((env.main.html.match(/data-score-value='(?:recall|understanding)'>0%/g)||[]).length,2);
+  assert.match(env.main.html,/تقدير أولي لتغطية عناصر القاعدة/);
+  assert.doesNotMatch(env.main.html,/OpenAI/);
+ }
  // A three-element weighted rubric can give a provisional score.
  {
   const uid="weighted",env=make(uid,"ar",data);
