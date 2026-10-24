@@ -88,6 +88,9 @@ async function boot(){
  show("<p role='status'>"+t("جارٍ تحميل تدريبك المحفوظ...","Loading your saved training...")+"</p>");
  try{
   var uid=await root.LEX_OFFICIAL_DIAGNOSTIC.identity(cloud);
+  // The real authenticated profile is the only source for the personalized wait screen.
+  var learnerDisplayName="";
+  try{var ownProfile=await cloud.profile();if(ownProfile&&ownProfile.id===uid)learnerDisplayName=String(ownProfile.display_name||"");}catch(_){}
   var overview=await cloud.studentLifecycleRpc("trainingOverview",{courseId:COURSE});
   if(!overview||!overview.allowed){
     show("<p>"+t("ابدأ التقييم التشخيصي أولًا حتى تتكوّن خطتك.","Complete the diagnostic first to create your individual plan.")+"</p><a href='diagnostic.html?lang="+lang()+"'>"+t("ابدأ التشخيص","Start diagnostic")+"</a>");return;
@@ -208,22 +211,29 @@ async function boot(){
    if(completed&&root.LEX_MOMENTS)root.LEX_MOMENTS.bindDownload(host,momentData(progressRows,selected),lang());
    saved.forEach(function(v,index){var retry=host.querySelector("#retryGrade"+index);if(retry)retry.onclick=async function(){
     if(busy)return;busy=true;retry.disabled=true;retry.textContent=t("نصحح إجابتك…","Assessing your answer…");
+    var wait=root.LEX_GRADING_WAIT?root.LEX_GRADING_WAIT.begin({name:learnerDisplayName,language:lang(),dimension:v.dimension,stage:"grading"}):null;
+    if(wait)wait.setPhase("grading");
     try{var graded=await requestAssessment(v.item_id);aiUnavailable=!graded||graded.status!=="preliminary_ai";
      var reread=await cloud.studentLifecycleRpc("trainingOpen",{courseId:COURSE,session:selected});
      if(!reread||!reread.allowed||!Array.isArray(reread.saved))throw Error("grade_readback_failed");
      data=reread;await refreshAdaptation();if(data.completed)await loadProgress();busy=false;render();
     }catch(_){busy=false;retry.disabled=false;retry.textContent=t("التصحيح غير متاح الآن؛ حاول لاحقًا","Assessment unavailable; retry later");}
+    finally{if(wait)wait.finish();}
    };});
    var allRetry=host.querySelector("#retrySessionGrades");
    if(allRetry)allRetry.onclick=async function(){
     if(busy)return;busy=true;allRetry.disabled=true;
     var missing=saved.filter(needsAssessment),note=host.querySelector("#sessionGradeStatus");
+    var wait=root.LEX_GRADING_WAIT?root.LEX_GRADING_WAIT.begin({name:learnerDisplayName,language:lang(),dimension:"exam_execution",stage:"grading"}):null;
+    if(wait)wait.setPhase("grading");
     for(var i=0;i<missing.length;i++){
      if(note)note.textContent=t("نصحح الإجابة ","Assessing answer ")+(i+1)+" / "+missing.length;
+     if(wait)wait.setStep(i+1,missing.length);
      try{var outcome=await requestAssessment(missing[i].item_id);aiUnavailable=!outcome||outcome.status!=="preliminary_ai";}catch(_){aiUnavailable=true;}
     }
     try{var updated=await cloud.studentLifecycleRpc("trainingOpen",{courseId:COURSE,session:selected});if(!updated||!updated.allowed||!Array.isArray(updated.saved))throw Error();data=updated;await refreshAdaptation();await loadProgress();busy=false;render();}
     catch(_){busy=false;allRetry.disabled=false;if(note)note.textContent=t("تعذر تحديث النتيجة الآن. أعد المحاولة.","Results could not refresh. Retry.");}
+    finally{if(wait)wait.finish();}
    };
    var nextButton=host.querySelector("#nextSession");
    if(nextButton)nextButton.onclick=function(){if(!busy){root.location.href=url(selected+1);}};
@@ -236,10 +246,13 @@ async function boot(){
     if(error)error.textContent=t("جارٍ حفظ إجابتك وتحليلها...","Saving and performing provisional review...");
     var savingView=host.querySelector("#answerSaveProgress");
     if(savingView&&root.LEX_MOMENTS){if(error)error.textContent="";savingView.innerHTML=root.LEX_MOMENTS.saveProgress("saving",lang());}
+    var wait=acceptedAi&&cloud.gradeTrainingAi&&root.LEX_GRADING_WAIT?
+      root.LEX_GRADING_WAIT.begin({name:learnerDisplayName,language:lang(),dimension:next.dimension,stage:"saving"}):null;
     try{
      var v=await cloud.studentLifecycleRpc("trainingSubmit",{courseId:COURSE,session:selected,itemId:next.id,answer:answer});
      if(!v||!v.allowed||!v.saved||!byId(v.saved,next.id))throw Error("answer_not_verified");
      if(savingView&&root.LEX_MOMENTS)savingView.innerHTML=root.LEX_MOMENTS.saveProgress("assessment",lang());
+     if(wait)wait.setPhase("grading");
      aiUnavailable=false;
      if(acceptedAi&&cloud.gradeTrainingAi){
       try{var ai=await requestAssessment(next.id);aiUnavailable=!ai||ai.status!=="preliminary_ai";}
@@ -260,7 +273,7 @@ async function boot(){
      busy=false;button.disabled=false;
      if(savingView)savingView.innerHTML="";
      if(error)error.textContent=t("تعذر تأكيد حفظ الإجابة. إجابتك ما زالت هنا؛ تحقق من الاتصال ثم أعد المحاولة.","We could not confirm your answer was saved. Your text is still here; check the connection and try again.");
-    }
+    }finally{if(wait)wait.finish();}
    }
    if(next&&guided){
     guide.mount(host.querySelector("#legalExamGuide"),{prompt:prompt,language:lang(),onSubmit:submitAnswer});
