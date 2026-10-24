@@ -38,7 +38,7 @@ export function interpret(result, rubric, answer) {
 export function summarize(rows, diagnostic) {
  const skills={recall:null,understanding:null};
  for(const dimension of Object.keys(skills)){
-  const values=rows.filter(r=>r.dimension===dimension&&r.evaluation?.status==="preliminary_ai"&&!["lexlearn-training-ai-v2","lexlearn-training-ai-v3"].includes(r.evaluation?.rubric_version))
+  const values=rows.filter(r=>r.dimension===dimension&&r.evaluation?.status==="preliminary_ai"&&r.evaluation?.rubric_version===VERSION)
    .slice(0,3).map(r=>r.evaluation.provisional_percent).filter(v=>typeof v==="number"&&Number.isFinite(v)&&v>=0&&v<=100);
   if(values.length)skills[dimension]=Math.round(values.reduce((a,b)=>a+b,0)/values.length);
  }
