@@ -70,12 +70,15 @@ html[data-learner-theme=dark] .momentRing.meaning .ringValue{stroke:#85d6cc}
 html[data-learner-theme] .loginBrand h1{font-family:inherit}
 @media(max-width:900px){.loginBrand>.en-brand{display:none}}
 
-/* Color-only conference promotion changes: retain the established dimensions. */
-html[data-learner-theme] .wsqHomeFeature{background:var(--lx-bg)}
-html[data-learner-theme] .wsqEventCTA{background:var(--lx-surface);color:var(--lx-ink);border-color:var(--lx-border);border-top-color:#8a1f39}
-html[data-learner-theme] :is(.wsqEventCopy strong,.wsqParticipantName){color:var(--lx-ink)}
-html[data-learner-theme] :is(.wsqEventName,.wsqParticipantName>span){color:var(--lx-accent)}
-html[data-learner-theme] .wsqEventCopy small{color:var(--lx-muted)}
+/* Preserve the conference promotion's original palette in both themes; geometry stays in conference-promo.css. */
+html[data-learner-theme] .wsqHomeFeature{background:#f9f4ef}
+html[data-learner-theme] .wsqEventCTA{background:#fffdfb;color:#111d31;border-color:#e5d9d9;border-top-color:#8a1f39}
+html[data-learner-theme] .wsqEventCopy strong{color:#111d31}
+html[data-learner-theme] .wsqParticipantName{color:#142b5f}
+html[data-learner-theme] .wsqEventName{color:#8a1f39}
+html[data-learner-theme] .wsqParticipantName>span{color:#8f1d3f}
+html[data-learner-theme] .wsqEventCopy small{color:#586174}
+html[data-learner-theme] .wsqEventAction{background:#8a1f39;color:#fff}
 .wsqParticipant,.wsqEventAction{text-decoration:none}
 html[data-learner-theme] #showcaseApp :is(.skillCard,.criterion,.deliveryState){background:var(--lx-surface);color:var(--lx-ink);border-color:var(--lx-border)}
 html[data-learner-theme] #showcaseApp :is(.skillCard h3,.skillCard .skillValue,.criterion>div span){color:var(--lx-ink)}
@@ -127,3 +130,16 @@ html[data-learner-theme=dark] :is(.criterion.contradicted,.criterion.conflicting
 html[data-learner-theme=dark] :is(.criterion.contradicted,.criterion.conflicting,.criterionIncorrect) blockquote{color:#c1ccdd!important;border-inline-start-color:#a16c79}
 html[data-learner-theme=dark] .criterionPartial :is(p,blockquote){color:#dce4ed!important}
 .examSummary{padding:14px 18px;border:1px solid var(--lx-border);border-radius:12px;color:var(--lx-ink);background:var(--lx-raised)}
+
+/* The issued credentials must use one consistent palette, including their nested text and actions. */
+html[data-learner-theme] .conferenceAccount{background:var(--lx-raised);color:var(--lx-ink);border-color:var(--lx-border)}
+html[data-learner-theme] .conferenceAccount :is(.studentGreeting,p){color:var(--lx-ink)}
+html[data-learner-theme] .conferenceAccount .studentGreeting span{color:var(--lx-accent)}
+html[data-learner-theme] .conferenceAccount strong{background:var(--lx-surface);color:var(--lx-ink);border-color:var(--lx-border)}
+html[data-learner-theme] .conferenceAccount small{color:var(--lx-muted)}
+html[data-learner-theme] .conferenceAccount .accountButtons button{background:var(--lx-surface);color:var(--lx-ink);border-color:var(--lx-border)}
+html[data-learner-theme] .conferenceAccount .accountButtons .startBtn{background:#8f1d3f;color:#fff;border-color:#8f1d3f}
+html[data-learner-theme] #status.ok{color:var(--lx-good)}
+
+html[data-learner-theme] .top>.brand{color:var(--lx-ink)}
+html[data-learner-theme] .top>.brand em,html[data-learner-theme] .top>.langs a{color:var(--lx-accent)}
