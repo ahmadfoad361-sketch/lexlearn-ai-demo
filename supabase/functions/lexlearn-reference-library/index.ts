@@ -62,7 +62,7 @@ Deno.serve(async(req:Request)=>{
    const r=await db.from("lex_law_universities").insert({country_code:country,institution_key:key,name_ar:name,official_url:officialUrl||null,provenance:"staff_added",created_by:u.data.user.id}).select("id,institution_key").single();
    if(r.error)return err("university_create_failed",503);
    const f=await db.from("lex_law_faculties").insert({university_id:r.data.id,name_ar:faculty,official_url:officialUrl||null,provenance:"staff_added",created_by:u.data.user.id}).select("id").single();
-   if(f.error)return err("faculty_create_failed",503);
+   if(f.error){await db.from("lex_law_universities").delete().eq("id",r.data.id);return err("faculty_create_failed",503);}
    return json({created:true,university_id:r.data.id,faculty_id:f.data.id,institution_key:r.data.institution_key});
  }
  if(act==="add_faculty"){
