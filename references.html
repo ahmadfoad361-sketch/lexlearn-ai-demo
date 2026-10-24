@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LexLearn — المراجع العلمية ومعايير التصحيح</title>
+<link rel="icon" type="image/svg+xml" href="assets/lexlearn-logo.svg">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{font-family:"IBM Plex Sans Arabic",sans-serif;color:#192b43;background:#f1f5fa}*{box-sizing:border-box}
+body{margin:0}header{background:#111d31;color:white;padding:18px max(20px,calc((100vw - 1160px)/2));display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+header a{color:#d9e9ff;text-decoration:none}h1{font-size:1.65rem}h2{font-size:1.2rem;margin:0 0 12px}small,.muted{color:#596e88}header small{color:#c2d2e7}
+main{max-width:1160px;padding:24px 16px 80px;margin:auto}.grid{display:grid;grid-template-columns:350px minmax(0,1fr);gap:18px}.panel{background:white;border:1px solid #dce4ee;border-radius:15px;padding:20px;margin-bottom:18px}
+label{font-weight:600;display:block;margin:12px 0 5px}input,textarea,select{font-family:inherit;width:100%;padding:10px 12px;border:1px solid #bfcddd;border-radius:9px;color:#17283f;background:white;font-size:15px}textarea{min-height:110px}button{font-family:inherit;cursor:pointer;padding:10px 16px;border:0;border-radius:9px;background:#135ca4;color:#fff;font-weight:600;margin-top:12px}
+button.secondary{background:#e8eef7;color:#164270}button:disabled{opacity:.5;cursor:not-allowed}.stack{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.bookBtn{display:block;text-align:right;width:100%;background:#f2f6fb;color:#1b3557;margin:7px 0;border:1px solid #dce5f0}.bookBtn.active{background:#dcecff;border-color:#6ba5dc}.tag{font-size:12px;background:#edf3f9;border-radius:99px;padding:3px 9px;color:#3e5d82}
+.page{border:1px solid #e0e8f1;border-radius:11px;padding:15px;margin:12px 0}.page p{white-space:pre-wrap;font-size:14px;max-height:180px;overflow:auto;line-height:1.8}#msg{margin:10px 0;padding:12px;border-radius:10px;background:#e6f0fa;display:none;white-space:pre-wrap}
+.warn{background:#fff6df;border:1px solid #f4dca2;border-radius:10px;padding:13px;color:#684b07}#loading{padding:30px;text-align:center}a{color:#125c9f}
+@media(max-width:850px){.grid{grid-template-columns:1fr}header{padding:16px}.panel{padding:16px}}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/lexlearn-config.js?v=1.3"></script>
+<script src="assets/cloud-data.js?v=20261023.ai2"></script></head>
+<body><header><div><b>LexLearn</b><div><small>المراجع العلمية ومعايير التصحيح</small></div></div><div class="stack"><a href="admin.html">← لوحة المشرف</a><a href="index.html">الموقع</a></div></header>
+<main><h1>المكتبة العلمية للتصحيح بالذكاء الاصطناعي</h1>
+<p>أضف الكتب وصور الصفحات أو نصوصها، وراجع التفريغ، ثم اعتمد الصفحات واربطها بأسئلة محددة ليستخدمها محرك OpenAI في التصحيح.</p>
+<div class="warn">صفحات الكتاب الجديدة لا تدخل في تصحيح الطلاب قبل اعتمادها وربطها بالسؤال. لا نستخدم كتاب قانون مصري لتغيير حكم مقرر قطري دون مراجعة قانونية.</div>
+<div id="msg" role="status"></div><div id="loading">جاري التحقق من صلاحيات المشرف وتحميل المكتبة…</div><div class="grid" id="workspace" hidden>
+<aside><section class="panel"><h2>إنشاء مرجع جديد</h2>
+<form id="bookForm"><label>عنوان الكتاب أو المرجع<input name="title" required minlength="3" maxlength="240" placeholder="نظرية الحق — المرجع الأكاديمي"></label>
+<label>المؤلف (اختياري)<input name="author" maxlength="240"></label>
+<label>النطاق القانوني<select name="jurisdiction"><option value="general">نظرية قانونية عامة</option><option value="eg">مصر</option><option value="qa">قطر</option></select></label>
+<label>معرّف المقرر (اختياري)<input name="course_id" placeholder="يُترك فارغًا للمرجع العام"></label><button>إنشاء مرجع مسودة</button></form></section>
+<section class="panel"><h2>الكتب المسجلة</h2><div id="books"></div></section></aside>
+<section><div id="detail" class="panel">اختر كتابًا من القائمة.</div></section></div></main>
+<script src="assets/lex-references.js?v=20261024.1"></script></body></html>
