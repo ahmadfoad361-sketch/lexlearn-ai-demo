@@ -126,6 +126,7 @@ jobs:
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261019_002_official_level_one.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261019_003_internal_provisional_essay_grading.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261022_002_diagnostic_three_element_rubric.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261024_001_diagnostic_short_answer_rule_coverage.sql
           psql -v ON_ERROR_STOP=1 -f tests/sql/lifecycle-scenarios.sql
           psql -v ON_ERROR_STOP=1 -f tests/sql/level-one-acceptance.sql
           psql -v ON_ERROR_STOP=1 -f tests/sql/internal-grader-acceptance.sql
@@ -186,6 +187,7 @@ jobs:
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261019_002_official_level_one.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261019_003_internal_provisional_essay_grading.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261022_002_diagnostic_three_element_rubric.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261024_001_diagnostic_short_answer_rule_coverage.sql
       - name: Run real PostgreSQL RLS, idempotency and level progression cases
         run: |
           psql -v ON_ERROR_STOP=1 -f tests/sql/lifecycle-acceptance.sql
@@ -229,6 +231,7 @@ jobs:
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261019_002_official_level_one.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261019_003_internal_provisional_essay_grading.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261022_002_diagnostic_three_element_rubric.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261024_001_diagnostic_short_answer_rule_coverage.sql
           psql -v ON_ERROR_STOP=1 -f tests/sql/founder-pilot-fixture.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261019_004_founder_authorized_pilot_release.sql
           psql -v ON_ERROR_STOP=1 -f tests/sql/founder-pilot-acceptance.sql
@@ -269,6 +272,7 @@ jobs:
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261019_002_official_level_one.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261019_003_internal_provisional_essay_grading.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261022_002_diagnostic_three_element_rubric.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261024_001_diagnostic_short_answer_rule_coverage.sql
           psql -v ON_ERROR_STOP=1 -f tests/sql/founder-pilot-fixture.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261019_004_founder_authorized_pilot_release.sql
           psql -v ON_ERROR_STOP=1 -f tests/sql/full-adaptive-fixture.sql
