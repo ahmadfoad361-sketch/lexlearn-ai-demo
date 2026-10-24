@@ -18,6 +18,39 @@ function previousAnswerTitle(item,task){
   return t("إجابتك السابقة — ","Your previous answer — ")+weakName(dimension)+(localizedTitle?" · "+String(localizedTitle):"");
 }
 function lawContext(ids){return root.LEX_LEGAL_STUDY?root.LEX_LEGAL_STUDY.context(ids||[],lang()):"";}
+// Built-in fallback: render a visible logo wait even if the optional widget file is unavailable.
+function startGradingWait(settings){
+ if(root.LEX_GRADING_WAIT&&typeof root.LEX_GRADING_WAIT.begin==="function"){
+  try{return root.LEX_GRADING_WAIT.begin(settings);}catch(_){}
+ }
+ var doc=root.document;if(!doc||!doc.body)return null;
+ var name=String(settings.name||"").trim().slice(0,65),english=settings.language==="en",done=false;
+ var el=doc.createElement("div");
+ el.className="lexGradingWait";el.setAttribute("role","dialog");el.setAttribute("aria-modal","true");
+ el.setAttribute("aria-label",english?"Processing the saved answer":"جاري حفظ الإجابة ومراجعتها");
+ el.style.cssText="position:fixed;inset:0;z-index:2147483000;display:grid;place-items:center;padding:16px;background:rgba(8,16,30,.93);color:white";
+ var research=root.LEX_SESSION_MOMENTS&&root.LEX_SESSION_MOMENTS.phrases||[];
+ var quote=research.length?(english?research[0].en:research[0].ar):(english?"Learning grows through practice and review.":"التعلّم ينمو بالمحاولة والمراجعة.");
+ el.innerHTML="<section style='background:#111d31;color:white;border:1px solid #c4a773;border-radius:24px;padding:32px 22px;max-width:520px;width:100%;text-align:center'>"+
+ "<img src='assets/lexlearn-logo.svg' alt='LexLearn' style='width:96px;height:96px;object-fit:contain' />"+
+ "<h2 id='lexWaitFallbackTitle' style='color:white;margin:15px 0;font-size:1.5rem'></h2>"+
+ "<p id='lexWaitFallbackLead' role='status' aria-live='polite' style='color:#dce7f5'></p>"+
+ "<p style='color:#efcf92;line-height:1.85'>"+esc(quote)+"</p>"+
+ "<span style='color:#c9d6e6;font-size:.8rem'>"+(english?"No score has been issued yet":"لم تصدر درجة بعد")+"</span></section>";
+ doc.body.appendChild(el);
+ var title=el.querySelector("#lexWaitFallbackTitle"),lead=el.querySelector("#lexWaitFallbackLead");
+ function setPhase(phase){
+  if(done)return;
+  var grade=phase==="grading";
+  title.textContent=english?(grade?"Reviewing your answer":"Saving your answer")+(name?", "+name:""):
+   (name?"يا "+name+"، ":"")+(grade?"بنراجع إجابتك بعناية":"بنحفظ إجابتك");
+  lead.textContent=english?(grade?"Reviewing against the approved rubric and legal sources.":"Confirming your saved work."):
+   (grade?"نراجع إجابتك وفق معايير السؤال والمراجع المعتمدة.":"نتأكد من حفظ إجابتك.");
+ }
+ setPhase(settings.stage);
+ return {setPhase:setPhase,setStep:function(i,total){setPhase("grading");lead.textContent=(english?"Reviewing answer ":"نراجع الإجابة ")+i+(english?" of ":" من ")+total;},finish:function(){if(!done){done=true;el.remove();}}};
+}
+
 // Only verified current-version OpenAI rubric results may affect displayed scores.
 function confirmedGrade(ev){return !!(ev&&ev.status==="preliminary_ai"&&ev.rubric_version==="lexlearn-training-ai-v4"&&
  typeof ev.provisional_percent==="number"&&Number.isFinite(ev.provisional_percent)&&ev.provisional_percent>=0&&ev.provisional_percent<=100);}
@@ -211,7 +244,7 @@ async function boot(){
    if(completed&&root.LEX_MOMENTS)root.LEX_MOMENTS.bindDownload(host,momentData(progressRows,selected),lang());
    saved.forEach(function(v,index){var retry=host.querySelector("#retryGrade"+index);if(retry)retry.onclick=async function(){
     if(busy)return;busy=true;retry.disabled=true;retry.textContent=t("نصحح إجابتك…","Assessing your answer…");
-    var wait=root.LEX_GRADING_WAIT?root.LEX_GRADING_WAIT.begin({name:learnerDisplayName,language:lang(),dimension:v.dimension,stage:"grading"}):null;
+    var wait=startGradingWait({name:learnerDisplayName,language:lang(),dimension:v.dimension,stage:"grading"});
     if(wait)wait.setPhase("grading");
     try{var graded=await requestAssessment(v.item_id);aiUnavailable=!graded||graded.status!=="preliminary_ai";
      var reread=await cloud.studentLifecycleRpc("trainingOpen",{courseId:COURSE,session:selected});
@@ -224,7 +257,7 @@ async function boot(){
    if(allRetry)allRetry.onclick=async function(){
     if(busy)return;busy=true;allRetry.disabled=true;
     var missing=saved.filter(needsAssessment),note=host.querySelector("#sessionGradeStatus");
-    var wait=root.LEX_GRADING_WAIT?root.LEX_GRADING_WAIT.begin({name:learnerDisplayName,language:lang(),dimension:"exam_execution",stage:"grading"}):null;
+    var wait=startGradingWait({name:learnerDisplayName,language:lang(),dimension:"exam_execution",stage:"grading"});
     if(wait)wait.setPhase("grading");
     for(var i=0;i<missing.length;i++){
      if(note)note.textContent=t("نصحح الإجابة ","Assessing answer ")+(i+1)+" / "+missing.length;
@@ -248,8 +281,7 @@ async function boot(){
     if(savingView&&root.LEX_MOMENTS){if(error)error.textContent="";savingView.innerHTML=root.LEX_MOMENTS.saveProgress("saving",lang());}
     // The wait experience is for EVERY submission, not just students who opted into external AI.
     // Previously the acceptedAi gate suppressed the entire overlay for some students.
-    var wait=root.LEX_GRADING_WAIT?
-      root.LEX_GRADING_WAIT.begin({name:learnerDisplayName,language:lang(),dimension:next.dimension,stage:"saving"}):null;
+    var wait=startGradingWait({name:learnerDisplayName,language:lang(),dimension:next.dimension,stage:"saving"});
     try{
      var v=await cloud.studentLifecycleRpc("trainingSubmit",{courseId:COURSE,session:selected,itemId:next.id,answer:answer});
      if(!v||!v.allowed||!v.saved||!byId(v.saved,next.id))throw Error("answer_not_verified");
