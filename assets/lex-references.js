@@ -5,7 +5,7 @@ const msg=document.getElementById("msg"), booksEl=document.getElementById("books
 let state={books:[],pages:[],links:[],items:[],courses:[],uploads:[],can_approve:false},selected=null,locked=false;
 const $=id=>document.getElementById(id);
 const escape=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const kind={textbook:"كتاب",legislation:"تشريع",exam:"امتحان",lecture:"محاضرة",academic_study:"بحث علمي",model_answer:"نموذج إجابة"};
+const kind={textbook:"كتاب",legislation:"تشريع",exam:"امتحان",lecture:"محاضرة",academic_study:"بحث علمي",model_answer:"نموذج إجابة",course_outline:"خطة مقرر",summary:"ملخص أو مذكرة"};
 const semesterText={first:"الفصل الأول",second:"الفصل الثاني",both:"الفصلان",unassigned:"لم يُحدد الفصل"};
 const country={qa:"قطر",eg:"مصر",sa:"السعودية",ae:"الإمارات",kw:"الكويت",bh:"البحرين",om:"عُمان",jo:"الأردن",ma:"المغرب",tn:"تونس",dz:"الجزائر",general:"عام"};
 function notice(t,fail=false){msg.style.display="block";msg.textContent=t;msg.style.background=fail?"#ffece9":"#e6f0fa";msg.scrollIntoView({behavior:"smooth",block:"nearest"});}
