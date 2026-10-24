@@ -63,3 +63,7 @@ html[data-learner-theme] .panel .recordCorrect,html[data-learner-theme] .panel .
 html[data-learner-theme] .panel .recordIncorrect,html[data-learner-theme] .panel .recordIncorrect :is(b,p,blockquote){color:var(--ad-bad)}
 html[data-learner-theme] .panel .recordPartial,html[data-learner-theme] .panel .recordPartial :is(b,p,blockquote){color:var(--ad-warn)}
 .recordCriterion{margin-block:14px;padding-inline:8px}
+
+html[data-learner-theme=dark] .panel .recordIncorrect{color:#e4aab2}
+html[data-learner-theme=dark] .panel .recordIncorrect b{color:#e4aab2}
+html[data-learner-theme=dark] .panel .recordIncorrect :is(p,blockquote){color:#dce4ed}

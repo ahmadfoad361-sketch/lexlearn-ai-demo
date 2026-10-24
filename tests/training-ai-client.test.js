@@ -54,3 +54,6 @@ async function recover(lang,currentFailure=false){
 
 
 
+
+// A session can have two zero results and a separate partial application result.
+{const host={},w={document:{getElementById:()=>host},location:{search:'?lang=ar'},URLSearchParams};w.window=w;vm.runInNewContext(fs.readFileSync('assets/student-path.js','utf8'),w);const rows=['recall','understanding','exam_execution'].map((dimension,i)=>({session_number:4,dimension,evaluation:{status:'preliminary_ai',rubric_version:'lexlearn-training-ai-v4',provisional_percent:i===2?17:0}}));const h=w.LEX_STUDENT_PATH.progressHtml(rows,4,true);assert.ok(h.includes('17%'));assert.ok(h.includes('بناء الإجابة والتطبيق'));assert.ok(h.includes('0%'));rows[2].evaluation={status:'ai_review_required',provisional_percent:null};const pending=w.LEX_STUDENT_PATH.progressHtml(rows,4,true);assert.ok(!pending.includes('17%'));assert.ok(pending.includes('التصحيح غير مكتمل'));}

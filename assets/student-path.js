@@ -51,6 +51,12 @@ function progressModel(rows,session){
  });
  return {level:Math.ceil(session/5),checkpoint:checkpoint,skills:skills,needsReview:skills.filter(function(x){return x.current.score===null||x.current.score<70||x.current.assessed<x.current.total;}).map(function(x){return x.dimension;})};
 }
+function examSummary(rows,session){
+ var entries=(rows||[]).filter(function(r){return r.session_number===session&&r.dimension==="exam_execution";});
+ if(!entries.length)return "";
+ var values=entries.filter(function(r){return confirmedGrade(r.evaluation);}).map(function(r){return r.evaluation.provisional_percent;}).filter(function(v){return typeof v==="number"&&Number.isFinite(v)&&v>=0&&v<=100;});
+ return "<p class='examSummary'><b>"+t("بناء الإجابة والتطبيق في هذه الجلسة: ","Answer structure and application in this session: ")+(values.length?noHtmlScore(values.reduce(function(a,b){return a+b;},0)/values.length):t("التصحيح غير مكتمل","Assessment incomplete"))+"</b><br><small>"+t("هذه نتيجة سؤال التطبيق، وتُعرض منفصلة عن الحفظ والفهم.","This is the application question result, shown separately from recall and understanding.")+"</small></p>";
+}
 function progressHtml(rows,session,historyAvailable){
  var m=progressModel(rows,session),visual=root.LEX_MOMENTS,card=momentData(rows,session);
  return "<section class='progressReport' aria-label='"+t("ملخص تقدمك","Your progress report")+"'><h2>"+
@@ -64,7 +70,7 @@ function progressHtml(rows,session,historyAvailable){
    var shown=values.length?noHtmlScore(values.reduce(function(a,b){return a+b;},0)/values.length):t("التصحيح غير مكتمل","Assessment incomplete");
    return "<article class='progressSkill'><h3>"+esc(weakName(x.dimension))+"</h3>"+(visual&&values.length?visual.ring(card[x.dimension],x.dimension):"")+"<strong class='"+(values.length?"":"assessmentMissing")+"'>"+esc(values.length?shown:t("التصحيح غير مكتمل","Assessment incomplete"))+"</strong>"+
    "<p>"+t("إجابات محفوظة: ","Saved answers: ")+x.current.total+"</p></article>";
- }).join("")+"</div>"+
+ }).join("")+"</div>"+examSummary(rows,session)+
  "<p class='nextAdvice'>"+(card.recall!==null&&card.understanding!==null?(card.recall<card.understanding?t("الفهم أقوى في هذه الجلسة؛ حوّل المعنى إلى مفاتيح قصيرة ثم استرجع القاعدة.","Understanding was stronger in this session. Turn meaning into brief cues, then recall the rule."):card.understanding<card.recall?t("الحفظ أقوى في هذه الجلسة؛ اشرح السبب بكلماتك وجرّب تغيير شرط واحد.","Recall was stronger in this session. Explain why in your words, then change one condition."):t("نتيجتا الحفظ والفهم متقاربتان؛ طبّق القاعدة في مثال جديد.","Recall and understanding are close. Apply the rule in a new example.")):t("خطوتك التالية: اختر جزءًا احتجت فيه إلى مساعدة، واشرحه بكلماتك، ثم جرّبه في مثال جديد.","Your next step: choose one part you needed help with, explain it in your own words, then try it in a new example."))+"</p>"+
  "<small>"+t("هذه مؤشرات تدريبية أولية، وليست درجات رسمية. سيُعاد قياس المهارات بأسئلة مستقلة.","These are preliminary practice indicators, not official grades. Skills will be reassessed with independent questions.")+"</small>"+(visual?visual.downloadButton(lang()):"")+"</section>";
 }
