@@ -7,7 +7,7 @@ const pages=[
   "index.html","conference.html","go/index.html","showcase.html","showcase-level1.html","program.html","diagnostic.html","student-practice.html","student-path.html",
   "index-en.html","showcase-en.html","showcase-level1-en.html","program-en.html",
   "student-login.html","student-register.html","student.html","student-login-en.html","student-register-en.html","student-en.html",
-  "admin-login.html","admin.html","lexlearn-grading-console.html","demo-supervisor.html","pilot-review.html","pilot-qa.html",
+  "admin-login.html","admin.html","references.html","lexlearn-grading-console.html","demo-supervisor.html","pilot-review.html","pilot-qa.html",
   "privacy.html","privacy-en.html","terms.html","terms-en.html","reset-password.html",".nojekyll"
 ];
 const assets=[
@@ -21,7 +21,7 @@ const assets=[
   "portal.css","register.css","auth-controls.js","student-register.js","student-login.js","student-login-en.js","admin-login-v2.js",
   "student.css","student.js","student-en.js",
   "english.css",
-  "admin.css","admin-experience.css","admin-entry.js","admin-cloud.js","student-records.js","student-report.js","admin.js",
+  "admin.css","admin-experience.css","admin-entry.js","admin-cloud.js","lex-references.js","student-records.js","student-report.js","admin.js",
   "lexlearn-config.js","cloud-data.js","lexlearn-grading-console.js","reset-password.js",
   "legal-pages.css"
 ];
@@ -78,6 +78,7 @@ for(const required of [
   "conference.html","go/index.html","assets/conference.js","assets/conference-pdf.js","assets/conference.css","assets/lexlearn-navigation.js","assets/lexlearn-navigation.css","assets/lexlearn-learning-lines.js","assets/lexlearn-investor-quotes.js","assets/lexlearn-go-qr.svg","assets/lexlearn-public-pitch-en.pdf",
   "student-register.html","student-register-en.html","diagnostic.html","assets/diagnostic.css","student-practice.html","student-path.html","assets/student-practice.js","assets/student-path.js","assets/legal-case-guide.js","assets/legal-case-guide.css","assets/official-diagnostic.js","assets/server-diagnostic.js","assets/official-level-one.js","showcase-level1.html","showcase-level1-en.html",
   "privacy-en.html","terms-en.html",
+  "references.html","assets/lex-references.js",
   "assets/student-register.js","assets/register.css","assets/auth-controls.js","assets/student-report.js",
   "assets/showcase-learning-cycle.js","assets/showcase-learning-cycle.css"
 ]) {
@@ -88,6 +89,13 @@ for(const login of ["student-login.html","student-login-en.html"]) {
   if(!fs.readFileSync(path.join(out,login),"utf8").includes("student-register"))
     throw new Error("Student login page has no registration link: "+login);
 }
+
+// Supervisor reference library must be present in the public artifact; access is still gated by backend staff auth.
+const refsPage=fs.readFileSync(path.join(out,"references.html"),"utf8");
+if(!refsPage.includes("assets/lex-references.js"))throw new Error("Supervisor reference library has no script");
+const adminPage=fs.readFileSync(path.join(out,"admin.html"),"utf8");
+const cloudAdmin=fs.readFileSync(path.join(out,"assets/admin-cloud.js"),"utf8");
+if(!cloudAdmin.includes('href="references.html"'))throw new Error("Supervisor has no link to reference library");
 
 // Production artifact must not publish repository internals or abandoned prototypes.
 for(const forbidden of [
