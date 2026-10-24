@@ -94,6 +94,13 @@ for(const login of ["student-login.html","student-login-en.html"]) {
 // Supervisor reference library must be present in the public artifact; access is still gated by backend staff auth.
 const refsPage=fs.readFileSync(path.join(out,"references.html"),"utf8");
 if(!refsPage.includes("assets/lex-references.js"))throw new Error("Supervisor reference library has no script");
+for(const requiredControl of ['id="jurisdictionSelect"','id="universitySelect"','id="facultySelect"','id="countryForm"','id="universityForm"','id="facultyForm"']){
+  if(!refsPage.includes(requiredControl))throw new Error("Academic reference directory UI missing: "+requiredControl);
+}
+const refJs=fs.readFileSync(path.join(out,"assets/lex-references.js"),"utf8");
+for(const handler of ["renderDirectory","updateUniversities","updateFaculties","add_country","add_university","add_faculty"]){
+  if(!refJs.includes(handler))throw new Error("Academic reference directory logic missing: "+handler);
+}
 const adminPage=fs.readFileSync(path.join(out,"admin.html"),"utf8");
 const cloudAdmin=fs.readFileSync(path.join(out,"assets/admin-cloud.js"),"utf8");
 if(!cloudAdmin.includes('href="references.html"'))throw new Error("Supervisor has no link to reference library");
