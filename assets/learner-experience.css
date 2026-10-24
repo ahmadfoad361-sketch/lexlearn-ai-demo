@@ -114,3 +114,8 @@ html[data-learner-theme] .assessmentRecovery{padding:20px;margin:16px 0;border:1
 html[data-learner-theme] .assessmentRecovery p{margin:0 0 12px}
 html[data-learner-theme] .learnerLogoOrbit>img{background:transparent!important;border-radius:50%}
 html[data-learner-theme] :is(.mark,.v9-mark,.demoLogo,.diagLogo):has(.learnerLogoOrbit){background:transparent!important;box-shadow:none;border-color:transparent}
+
+/* Article numbers keep the same distinctive identity in every learning stage. */
+html[data-learner-theme]{--lx-article-ink:#634008;--lx-article-bg:#f7e6b7;--lx-article-border:#b58a32}
+html[data-learner-theme=dark]{--lx-article-ink:#ffe4aa;--lx-article-bg:#49381d;--lx-article-border:#c6a56c}
+html[data-learner-theme] strong.legalArticleNumber{display:inline;font-weight:850;color:var(--lx-article-ink)!important;background:var(--lx-article-bg);border:1px solid var(--lx-article-border);border-radius:.4em;padding:.04em .32em;box-decoration-break:clone;-webkit-box-decoration-break:clone;line-height:inherit}

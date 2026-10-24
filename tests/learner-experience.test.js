@@ -15,3 +15,17 @@ for(const page of pages)assert.ok(fs.readFileSync(page,'utf8').includes('assets/
 const brand=fs.readFileSync('assets/learner-brand.js','utf8');assert.ok(brand.includes('MutationObserver')&&brand.includes("a.href=home"));
 for(const page of ['showcase.html','showcase-en.html'])assert.ok(fs.readFileSync(page,'utf8').includes('assets/legal-study.js'));
 for(const js of ['assets/showcase.js','assets/showcase-en.js'])assert.ok(fs.readFileSync(js,'utf8').includes('LEX_LEGAL_STUDY.render([39,40],lang)'));
+
+const emphasis=require('../assets/legal-emphasis.js');
+for(const [text,marked] of [
+ ['راجع المادة 39 من القانون المدني القطري رقم (22) لسنة 2004.',['المادة 39']],
+ ['المادتان 39 و40 من القانون المدني القطري',['المادتان 39 و40']],
+ ['المادتين (٣٩) و(٤٠)',['المادتين (٣٩) و(٤٠)']],
+ ['المواد 39–63',['المواد 39–63']],
+ ['Articles 39 and 40 of Qatar Civil Code, Law No. 22 of 2004',['Articles 39 and 40']],
+ ['Article 39: text. Article 40: another text.',['Article 39','Article 40']],
+ ['جلسة 4، القانون 22 لسنة 2004، نتيجتك 39%.',[]],
+ ['رقم المادة غير محدد',[]]
+ ]){const parts=emphasis.segments(text);assert.equal(parts.map(x=>x.text).join(''),text,'all learner wording stays verbatim');assert.deepEqual(parts.filter(x=>x.article).map(x=>x.text),marked);}
+for(const page of pages)assert.ok(fs.readFileSync(page,'utf8').includes('assets/legal-emphasis.js'),page+' highlights article references');
+for(const [fg,bg] of [['634008','f7e6b7'],['ffe4aa','49381d']])assert.ok(ratio(fg,bg)>=4.5,'article reference contrast');

@@ -9,3 +9,5 @@
 
 - Identify each legal provision with its jurisdiction, law name, number and year. Keep this context visible during questions, feedback and results, even when statutory texts are hidden. Never infer a law from an article number alone.
 
+
+- Make every displayed article reference visually prominent in all learner stages: bold text and a distinct accessible accent in light and dark modes. Preserve the wording, law identity, and the citation at the end of each provision.
