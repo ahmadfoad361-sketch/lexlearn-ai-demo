@@ -6,6 +6,7 @@ let state={books:[],pages:[],links:[],items:[],courses:[],uploads:[],can_approve
 const $=id=>document.getElementById(id);
 const escape=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const kind={textbook:"كتاب",legislation:"تشريع",exam:"امتحان",lecture:"محاضرة",academic_study:"بحث علمي",model_answer:"نموذج إجابة"};
+const semesterText={first:"الفصل الأول",second:"الفصل الثاني",both:"الفصلان",unassigned:"لم يُحدد الفصل"};
 const country={qa:"قطر",eg:"مصر",sa:"السعودية",ae:"الإمارات",kw:"الكويت",bh:"البحرين",om:"عُمان",jo:"الأردن",ma:"المغرب",tn:"تونس",dz:"الجزائر",general:"عام"};
 function notice(t,fail=false){msg.style.display="block";msg.textContent=t;msg.style.background=fail?"#ffece9":"#e6f0fa";msg.scrollIntoView({behavior:"smooth",block:"nearest"});}
 async function call(body){
@@ -18,11 +19,12 @@ function liveCourseOptions(){
  const sel=$("courseSelect");if(!sel)return;
  sel.innerHTML='<option value="">بدون مقرر محدد</option>'+state.courses.map(c=>'<option value="'+escape(c.id)+'">'+escape((country[c.country_code]||c.country_code)+" · "+c.title_ar+" — "+c.id)+'</option>').join("");
 }
+function placement(form){return {semester_scope:form.elements.namedItem("semester_scope")?.value||"",lecture_number:form.elements.namedItem("lecture_number")?.value||"",unit_title:form.elements.namedItem("unit_title")?.value||""};}
 function renderBooks(){
  if(!state.books.length){booksEl.innerHTML='<p class="muted">لا توجد كتب مسجلة بعد.</p>';return;}
- const groups={};state.books.forEach(b=>{let k=(country[b.jurisdiction]||b.jurisdiction)+" · "+(b.education_stage==="university"?"جامعي":b.education_stage)+" · "+b.subject_name;(groups[k]||(groups[k]=[])).push(b);});
+ const groups={};state.books.forEach(b=>{let c=state.courses.find(x=>x.id===b.course_id);let k=(country[b.jurisdiction]||b.jurisdiction)+" · "+(c?.institution_key||b.institution_key||"مرجع عام")+" · "+(c?.title_ar||b.subject_name)+" · "+(semesterText[b.semester_scope]||"لم يُحدد الفصل");(groups[k]||(groups[k]=[])).push(b);});
  booksEl.innerHTML=Object.entries(groups).map(([group,books])=>'<h3 style="font-size:14px;margin:14px 0 5px">'+escape(group)+'</h3>'+books.map(b=>
-   '<button type="button" class="bookBtn '+(b.id===selected?"active":"")+'" data-book="'+escape(b.id)+'"><b>'+escape(b.title)+'</b><br><small>'+escape(b.curriculum_name||"عام")+' · '+escape(b.status==="approved"?"معتمد":"مسودة")+'</small></button>').join("")).join("");
+   '<button type="button" class="bookBtn '+(b.id===selected?"active":"")+'" data-book="'+escape(b.id)+'"><b>'+escape(b.title)+'</b><br><small>'+escape((semesterText[b.semester_scope]||"غير محدد")+" · "+(b.lecture_number?"محاضرة "+b.lecture_number:"كل المحاضرات/غير محدد")+" · "+(b.curriculum_name||"عام"))+' · '+escape(b.status==="approved"?"معتمد":"مسودة")+'</small></button>').join("")).join("");
  booksEl.querySelectorAll("[data-book]").forEach(btn=>btn.addEventListener("click",()=>{selected=btn.dataset.book;renderBooks();renderDetail();}));
 }
 function renderDetail(){
@@ -35,21 +37,26 @@ function renderDetail(){
     (b.jurisdiction==="qa"||b.jurisdiction==="general")&&(!b.course_id||b.course_id===diagCourse);
  const diagLinks=state.diagnostic_links||[];
  detail.innerHTML='<h2>'+escape(b.title)+'</h2><p class="muted">'+escape((country[b.jurisdiction]||b.jurisdiction)+" · "+b.curriculum_name+" · "+b.subject_name+" · "+(kind[b.reference_kind]||b.reference_kind))+'</p>'+
+ '<p class="muted">الجامعة: '+escape(state.courses.find(c=>c.id===b.course_id)?.institution_key||b.institution_key||"عام")+' · '+escape(semesterText[b.semester_scope]||"غير محدد")+' · '+escape(b.lecture_number?"المحاضرة "+b.lecture_number:"رقم المحاضرة غير محدد")+' · '+escape(b.unit_title||"لم يحدد الموضوع")+'</p>'+
+ (b.source_url&&/^https:\/\//.test(b.source_url)?'<p><a href="'+escape(b.source_url)+'" target="_blank" rel="noopener noreferrer">فتح المصدر الأصلي ↗</a></p>':"")+
+ '<p class="muted">التوثيق: '+escape(b.authenticity||"unverified")+' · حقوق الاستخدام: '+escape(b.rights_status||"link_only")+'</p>'+
+ (b.source_note?'<p class="muted">'+escape(b.source_note)+'</p>':"")+
  '<div class="stack"><span class="tag">حالة المرجع: '+escape(b.status)+'</span>'+
  (state.can_approve&&b.status==="draft"?'<button type="button" id="approveBook">اعتماد المرجع</button>':"")+'</div><hr>'+
  '<h2>تغذية الذكاء الاصطناعي بملفات وصور</h2>'+
  '<p class="muted">ارفع صورة أو PDF. سنحفظ الملف الأصلي بصورة خاصة ونستخرج النص إلى صفحات مسودة قابلة للتصحيح. في كل دفعة من PDF نعالج حتى 8 صفحات لتجنب التكاليف المفاجئة.</p>'+
  '<form id="fileForm"><label>اختر ملف PDF أو صورة (بحد أقصى 12 ميجابايت)<input id="sourceFile" type="file" accept=".pdf,application/pdf,image/jpeg,image/png,image/webp" required></label>'+
+ '<label>الفصل المرتبط بالصفحات<select name="semester_scope"><option value="">حسب المرجع</option><option value="first">الأول</option><option value="second">الثاني</option></select></label><label>رقم المحاضرة<input type="number" name="lecture_number" min="1" max="100" placeholder="حسب المرجع"></label><label>موضوع المحاضرة<input name="unit_title" maxlength="180" placeholder="حسب المرجع"></label>'+
  '<div class="stack"><div style="flex:1"><label>من صفحة PDF<input name="start" type="number" min="1" value="1"></label></div>'+
  '<div style="flex:1"><label>إلى صفحة PDF (8 كحد أقصى)<input name="end" type="number" min="1" placeholder="تلقائي"></label></div>'+
  '<div style="flex:1"><label>رقم صفحة الصورة<input name="imagePage" type="number" min="1" value="1"></label></div></div>'+
  '<button type="submit">حفظ الملف واستخراج النصوص</button></form><hr>'+
- '<h2>إضافة نص علمي يدويًا</h2><form id="textForm"><label>رقم الصفحة<input type="number" name="page_number" min="1" max="9999" required></label>'+
+ '<h2>إضافة نص علمي يدويًا</h2><form id="textForm"><label>الفصل المرتبط بالصفحة<select name="semester_scope"><option value="">حسب المرجع</option><option value="first">الأول</option><option value="second">الثاني</option></select></label><label>رقم المحاضرة<input name="lecture_number" type="number" min="1" max="100" placeholder="حسب المرجع"></label><label>موضوع المحاضرة<input name="unit_title" maxlength="180" placeholder="حسب المرجع"></label><label>رقم الصفحة<input type="number" name="page_number" min="1" max="9999" required></label>'+
  '<label>النص المرجعي للصفحة<textarea name="excerpt" minlength="5" maxlength="7000" required placeholder="انسخ النص كما ورد بالكتاب"></textarea></label>'+
  '<button type="submit" class="secondary">إضافة الصفحة كمسودة</button></form><hr>'+
  '<h2>صفحات المرجع ('+pages.length+')</h2>'+
  (pages.length?pages.map(p=>{const links=state.links.filter(l=>l.page_id===p.id);
- return '<article class="page"><b>صفحة '+p.page_number+'</b> <span class="tag">'+escape(p.status==="approved"?"معتمدة":"غير معتمدة")+'</span><p>'+escape(p.excerpt)+'</p>'+
+ return '<article class="page"><b>صفحة '+p.page_number+'</b> <small>'+escape(semesterText[p.semester_scope]||"غير محدد")+' · '+escape(p.lecture_number?"محاضرة "+p.lecture_number:"المحاضرة غير محددة")+' · '+escape(p.unit_title||"غير محدد")+'</small> <span class="tag">'+escape(p.status==="approved"?"معتمدة":"غير معتمدة")+'</span><p>'+escape(p.excerpt)+'</p>'+
  '<details><summary>مراجعة وتعديل النص</summary><textarea id="edit-'+p.id+'">'+escape(p.excerpt)+'</textarea><button type="button" class="secondary" data-save="'+p.id+'">حفظ التعديل كمسودة</button></details>'+
  '<div class="stack">'+(p.storage_path?'<button class="secondary" data-image="'+p.id+'">عرض الصورة الأصلية</button>':"")+
  (p.status==="draft"&&state.can_approve?'<button data-approve="'+p.id+'">اعتماد هذه الصفحة</button>':"")+'</div>'+
@@ -64,7 +71,7 @@ function renderDetail(){
  }).join(""):'<p class="muted">لا توجد صفحات لهذا المرجع. ابدأ برفع ملف أو إدخال نص.</p>')+
  '<hr><h2>الملفات المحفوظة ('+ups.length+')</h2>'+
  (ups.length?ups.map(x=>'<p class="muted">'+escape(x.original_filename)+' · '+escape(new Date(x.created_at).toLocaleString("ar-EG"))+'</p>').join(""):'<p class="muted">لا يوجد ملف أصلي محفوظ بعد.</p>');
- const f=$("textForm");f.onsubmit=async e=>{e.preventDefault();await guarded(async()=>{await call({action:"save_page",book_id:b.id,page_number:Number(f.page_number.value),excerpt:f.excerpt.value});notice("أضيف النص كمسودة. راجعه ثم اعتمده.");await refresh(b.id);});};
+ const f=$("textForm");f.onsubmit=async e=>{e.preventDefault();await guarded(async()=>{await call({action:"save_page",book_id:b.id,page_number:Number(f.page_number.value),excerpt:f.excerpt.value,...placement(f)});notice("أضيف النص كمسودة. راجعه ثم اعتمده.");await refresh(b.id);});};
  $("fileForm").onsubmit=async e=>{e.preventDefault();await guarded(()=>ingest($("fileForm"),b));};
  if($("approveBook"))$("approveBook").onclick=()=>guarded(async()=>{await call({action:"approve_book",book_id:b.id});notice("تم اعتماد بيانات المرجع.");await refresh(b.id);});
  detail.querySelectorAll("[data-save]").forEach(x=>x.onclick=()=>guarded(async()=>{await call({action:"update_page",page_id:x.dataset.save,excerpt:$("edit-"+x.dataset.save).value});notice("تم حفظ النص؛ يحتاج إعادة اعتماد.");await refresh(b.id);}));
@@ -99,7 +106,7 @@ async function ingest(form,b){
  if(mime!=="application/pdf"){
    const n=Number(form.imagePage.value);
    notice("تم حفظ الصورة. جارٍ استخراج النص من الصفحة رقم "+n+"…");
-   await call({action:"extract_page",book_id:b.id,page_number:n,mime,image_base64:data});
+   await call({action:"extract_page",book_id:b.id,page_number:n,mime,image_base64:data,...placement(form)});
    notice("تم حفظ الصورة ونصها المستخرج كمسودة للمراجعة.");
    await refresh(b.id);return;
  }
@@ -116,14 +123,14 @@ async function ingest(form,b){
     const text=await page.getTextContent();
     const content=(text.items||[]).map(t=>t.str||"").join(" ").replace(/\s+/g," ").trim();
     if(content.length>=120){
-      await call({action:"save_page",book_id:b.id,page_number:n,excerpt:content.slice(0,7000)});
+      await call({action:"save_page",book_id:b.id,page_number:n,excerpt:content.slice(0,7000),...placement(form)});
     }else{
       const viewport=page.getViewport({scale:1.2});
       const canvas=document.createElement("canvas");
       canvas.width=Math.ceil(viewport.width);canvas.height=Math.ceil(viewport.height);
       await page.render({canvasContext:canvas.getContext("2d"),viewport}).promise;
       const base64Image=canvas.toDataURL("image/jpeg",.76).split(",")[1];
-      await call({action:"extract_page",book_id:b.id,page_number:n,mime:"image/jpeg",image_base64:base64Image});
+      await call({action:"extract_page",book_id:b.id,page_number:n,mime:"image/jpeg",image_base64:base64Image,...placement(form)});
     }
     done++;
    }catch(e){errors.push("صفحة "+n+": "+e.message);}
