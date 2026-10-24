@@ -48,10 +48,27 @@ WITH data(country_code,institution_key,name_ar,faculty_name,official_url) AS (VA
   ('sa','king-abdulaziz-university','جامعة الملك عبدالعزيز','كلية الحقوق','https://www.kau.edu.sa/faculty/ar/law'),
   ('ae','united-arab-emirates-university','جامعة الإمارات العربية المتحدة','كلية القانون','https://www.uaeu.ac.ae/en/cl/'),
   ('ae','university-of-sharjah','جامعة الشارقة','كلية القانون','https://www.sharjah.ac.ae/en/Academics/Law')
-), uni AS (
- INSERT INTO public.lex_law_universities(country_code,institution_key,name_ar,official_url,provenance)
- SELECT country_code,institution_key,name_ar,official_url,'official' FROM data
- ON CONFLICT(institution_key) DO NOTHING RETURNING id
+)
+INSERT INTO public.lex_law_universities(country_code,institution_key,name_ar,official_url,provenance)
+SELECT country_code,institution_key,name_ar,official_url,'official' FROM data
+ON CONFLICT(institution_key) DO NOTHING;
+WITH data(country_code,institution_key,name_ar,faculty_name,official_url) AS (VALUES
+  ('qa','qatar-university','جامعة قطر','كلية القانون','https://www.qu.edu.qa/en-us/Colleges/Pages/default.aspx'),
+  ('qa','lusail-university','جامعة لوسيل','كلية القانون','https://www.lu.edu.qa/'),
+  ('eg','cairo-university','جامعة القاهرة','كلية الحقوق','https://law.sohag-univ.edu.eg/main/الجامعات-المصرية/'),
+  ('eg','ain-shams-university','جامعة عين شمس','كلية الحقوق','https://law.sohag-univ.edu.eg/main/الجامعات-المصرية/'),
+  ('eg','alexandria-university','جامعة الإسكندرية','كلية الحقوق','https://law.sohag-univ.edu.eg/main/الجامعات-المصرية/'),
+  ('eg','mansoura-university','جامعة المنصورة','كلية الحقوق','https://law.sohag-univ.edu.eg/main/الجامعات-المصرية/'),
+  ('eg','tanta-university','جامعة طنطا','كلية الحقوق','https://law.sohag-univ.edu.eg/main/الجامعات-المصرية/'),
+  ('eg','zagazig-university','جامعة الزقازيق','كلية الحقوق','https://law.sohag-univ.edu.eg/main/الجامعات-المصرية/'),
+  ('eg','assiut-university','جامعة أسيوط','كلية الحقوق','https://law.sohag-univ.edu.eg/main/الجامعات-المصرية/'),
+  ('eg','helwan-university','جامعة حلوان','كلية الحقوق','https://law.sohag-univ.edu.eg/main/الجامعات-المصرية/'),
+  ('eg','benha-university','جامعة بنها','كلية الحقوق','https://law.sohag-univ.edu.eg/main/الجامعات-المصرية/'),
+  ('eg','menoufia-university','جامعة المنوفية','كلية الحقوق','https://law.sohag-univ.edu.eg/main/الجامعات-المصرية/'),
+  ('sa','king-saud-university','جامعة الملك سعود','كلية الحقوق والعلوم السياسية','https://clps.ksu.edu.sa/ar/node/1218'),
+  ('sa','king-abdulaziz-university','جامعة الملك عبدالعزيز','كلية الحقوق','https://www.kau.edu.sa/faculty/ar/law'),
+  ('ae','united-arab-emirates-university','جامعة الإمارات العربية المتحدة','كلية القانون','https://www.uaeu.ac.ae/en/cl/'),
+  ('ae','university-of-sharjah','جامعة الشارقة','كلية القانون','https://www.sharjah.ac.ae/en/Academics/Law')
 )
 INSERT INTO public.lex_law_faculties(university_id,name_ar,official_url,provenance)
 SELECT u.id,d.faculty_name,d.official_url,'official'
