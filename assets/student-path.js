@@ -246,13 +246,15 @@ async function boot(){
     if(error)error.textContent=t("جارٍ حفظ إجابتك وتحليلها...","Saving and performing provisional review...");
     var savingView=host.querySelector("#answerSaveProgress");
     if(savingView&&root.LEX_MOMENTS){if(error)error.textContent="";savingView.innerHTML=root.LEX_MOMENTS.saveProgress("saving",lang());}
-    var wait=acceptedAi&&cloud.gradeTrainingAi&&root.LEX_GRADING_WAIT?
+    // The wait experience is for EVERY submission, not just students who opted into external AI.
+    // Previously the acceptedAi gate suppressed the entire overlay for some students.
+    var wait=root.LEX_GRADING_WAIT?
       root.LEX_GRADING_WAIT.begin({name:learnerDisplayName,language:lang(),dimension:next.dimension,stage:"saving"}):null;
     try{
      var v=await cloud.studentLifecycleRpc("trainingSubmit",{courseId:COURSE,session:selected,itemId:next.id,answer:answer});
      if(!v||!v.allowed||!v.saved||!byId(v.saved,next.id))throw Error("answer_not_verified");
      if(savingView&&root.LEX_MOMENTS)savingView.innerHTML=root.LEX_MOMENTS.saveProgress("assessment",lang());
-     if(wait)wait.setPhase("grading");
+     if(wait&&acceptedAi&&cloud.gradeTrainingAi)wait.setPhase("grading");
      aiUnavailable=false;
      if(acceptedAi&&cloud.gradeTrainingAi){
       try{var ai=await requestAssessment(next.id);aiUnavailable=!ai||ai.status!=="preliminary_ai";}
