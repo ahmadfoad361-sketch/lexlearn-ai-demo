@@ -62,7 +62,7 @@ function renderDirectory(preserve={}){
  const codes=state.countries||[];
  countrySelect.innerHTML='<option value="general">مرجع عام غير مرتبط بدولة</option>'+
  codes.map(c=>'<option value="'+escape(c.code)+'">'+escape(c.name_ar)+'</option>').join("");
- countrySelect.value=codes.some(c=>c.code===preserve.country)?preserve.country:(codes.some(c=>c.code==="qa")?"qa":codes[0]?.code||"general");
+ countrySelect.value=preserve.country==="general"?"general":(codes.some(c=>c.code===preserve.country)?preserve.country:(codes.some(c=>c.code==="qa")?"qa":codes[0]?.code||"general"));
  updateUniversities(preserve.university||"",preserve.faculty||"",preserve.course||"");
  const enabled=new Set(codes.map(c=>c.code));
  const avail=regionOptions.filter(r=>!enabled.has(r.code));
