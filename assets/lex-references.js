@@ -30,6 +30,10 @@ function renderDetail(){
  const pages=state.pages.filter(x=>x.book_id===b.id).sort((x,y)=>x.page_number-y.page_number);
  const items=state.items.filter(x=>(!b.course_id||x.course_id===b.course_id)&&(b.jurisdiction==="general"||state.courses.find(c=>c.id===x.course_id)?.country_code===b.jurisdiction));
  const ups=state.uploads.filter(x=>x.book_id===b.id);
+ const diagCourse="qa-qu-lawc101-rights";
+ const diagAllowed=state.can_approve&&b.status==="approved"&&
+    (b.jurisdiction==="qa"||b.jurisdiction==="general")&&(!b.course_id||b.course_id===diagCourse);
+ const diagLinks=state.diagnostic_links||[];
  detail.innerHTML='<h2>'+escape(b.title)+'</h2><p class="muted">'+escape((country[b.jurisdiction]||b.jurisdiction)+" · "+b.curriculum_name+" · "+b.subject_name+" · "+(kind[b.reference_kind]||b.reference_kind))+'</p>'+
  '<div class="stack"><span class="tag">حالة المرجع: '+escape(b.status)+'</span>'+
  (state.can_approve&&b.status==="draft"?'<button type="button" id="approveBook">اعتماد المرجع</button>':"")+'</div><hr>'+
@@ -52,7 +56,11 @@ function renderDetail(){
  (p.status==="approved"&&b.status==="approved"&&state.can_approve?
  '<div><label>اربط الصفحة بسؤال من نفس الدولة والمقرر</label><select id="item-'+p.id+'"><option value="">اختر السؤال…</option>'+items.map(i=>
  '<option value="'+escape(i.id)+'">'+escape(i.dimension+" — "+i.prompt_ar.slice(0,140))+'</option>').join("")+'</select><button class="secondary" data-link="'+p.id+'">ربط الصفحة بالسؤال</button></div>':"")+
- '<div class="muted">الأسئلة المرتبطة: '+(links.length?links.map(l=>escape(l.item_id)+' <button class="secondary" data-unlink="'+escape(p.id)+'" data-item="'+escape(l.item_id)+'">إزالة الربط</button>').join("، "):"لا يوجد")+'</div></article>';
+ '<div class="muted">الأسئلة المرتبطة: '+(links.length?links.map(l=>escape(l.item_id)+' <button class="secondary" data-unlink="'+escape(p.id)+'" data-item="'+escape(l.item_id)+'">إزالة الربط</button>').join("، "):"لا يوجد")+'</div>'+
+ (diagAllowed&&p.status==="approved"?
+ (diagLinks.some(l=>l.page_id===p.id&&l.course_id===diagCourse)?
+ '<button type="button" class="secondary" data-unlink-diagnostic="'+escape(p.id)+'">إزالة مرجع التشخيص القطري</button>':
+ '<button type="button" class="secondary" data-link-diagnostic="'+escape(p.id)+'">ربط بمراجعة الإجابة الحرة في التشخيص القطري</button>'):"")+'</article>';
  }).join(""):'<p class="muted">لا توجد صفحات لهذا المرجع. ابدأ برفع ملف أو إدخال نص.</p>')+
  '<hr><h2>الملفات المحفوظة ('+ups.length+')</h2>'+
  (ups.length?ups.map(x=>'<p class="muted">'+escape(x.original_filename)+' · '+escape(new Date(x.created_at).toLocaleString("ar-EG"))+'</p>').join(""):'<p class="muted">لا يوجد ملف أصلي محفوظ بعد.</p>');
@@ -64,6 +72,14 @@ function renderDetail(){
  detail.querySelectorAll("[data-image]").forEach(x=>x.onclick=()=>guarded(async()=>{const d=await call({action:"signed_image",page_id:x.dataset.image});window.open(d.url,"_blank","noopener");}));
  detail.querySelectorAll("[data-link]").forEach(x=>x.onclick=()=>guarded(async()=>{const id=$("item-"+x.dataset.link).value;if(!id){notice("اختر سؤالًا أولًا.",true);return;}await call({action:"link",page_id:x.dataset.link,item_id:id});notice("تم الربط. سيُرسل نص هذه الصفحة تلقائيًا مع سؤال التدريب المعني إلى محرك OpenAI.");await refresh(b.id);}));
  detail.querySelectorAll("[data-unlink]").forEach(x=>x.onclick=()=>guarded(async()=>{await call({action:"unlink",page_id:x.dataset.unlink,item_id:x.dataset.item});notice("أزيل الربط دون حذف النص.");await refresh(b.id);}));
+ detail.querySelectorAll("[data-link-diagnostic]").forEach(x=>x.onclick=()=>guarded(async()=>{
+   await call({action:"link_diagnostic",page_id:x.dataset.linkDiagnostic,course_id:diagCourse});
+   notice("تم الربط بسؤال الاسترجاع الحر في الاختبار التشخيصي القطري.");await refresh(b.id);
+ }));
+ detail.querySelectorAll("[data-unlink-diagnostic]").forEach(x=>x.onclick=()=>guarded(async()=>{
+   await call({action:"unlink_diagnostic",page_id:x.dataset.unlinkDiagnostic,course_id:diagCourse});
+   notice("أزيل ربط التشخيص.");await refresh(b.id);
+ }));
 }
 async function guarded(task){
  if(locked)return;locked=true;
