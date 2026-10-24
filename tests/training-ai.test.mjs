@@ -38,7 +38,10 @@ function environment({consent=true,providerFailure=false}={}){
   function result(){
    if(table==="enrollments")return {data:{status:"active"}};
    if(table==="consent_records")return {data:{accepted:consent,notice_version:"lexlearn-ai-grading-v1"}};
-   if(table==="content_items")return {data:{status:"approved",prompt_ar:"The rule",rubric_json:rubric,source_ids:["qa-civil-2004-art39"]}};
+   if(table==="content_items"){
+    const item={status:options.itemStatus||"approved",metadata:options.itemMetadata||{},prompt_ar:"The rule",rubric_json:{...rubric,human_review_required_before_activation:true},source_ids:["qa-civil-2004-art39"]};
+    const filter=filters.find(([k])=>k==='status');return {data:filter&&filter[1]!==item.status?null:item};
+   }
    if(table==="content_sources")return {data:[{id:"qa-civil-2004-art39",status:"approved",excerpt:"The approved source."}]};
    if(table==="ai_grading_runs"){
     if(operation==="insert"){auditCount++;return {data:{id:"audit"}};}
@@ -57,7 +60,7 @@ function environment({consent=true,providerFailure=false}={}){
  }};
  const context={Deno:{env:{get:()=>"fake-secret"},serve:f=>{handler=f;}},corsHeaders:{},json:(body,status=200)=>new Response(JSON.stringify(body),{status}),
   requireUser:async()=>({user:{id:"student"},profile:{role:"student"},admin}),VERSION,SCHEMA,interpret,summarize,Response,AbortSignal,console,legalSources,
-  fetch:async(_url,request)=>{providerCalls++;localCalls++;const body=JSON.parse(request.body);assert.ok(body.input[1].content.includes("full_text_ar"));if(localCalls===2){assert.equal(body.model,"gpt-5.4");assert.equal(body.reasoning.effort,"medium");}return providerFailure||(options.verifierFailure&&localCalls===2)||(options.modelDenied&&localCalls===2)?new Response("unavailable",{status:options.modelDenied?403:503}):new Response(JSON.stringify({status:"completed",output_text:JSON.stringify(localCalls===2&&options.verifierResult?options.verifierResult:valid)}));}};
+  fetch:async(_url,request)=>{providerCalls++;localCalls++;const body=JSON.parse(request.body);assert.ok(body.input[1].content.includes("full_text_ar"));assert.ok(!body.input[1].content.includes("human_review_required_before_activation"),"activation metadata cannot override the released practice assessment");if(localCalls===2){assert.equal(body.model,"gpt-5.4");assert.equal(body.reasoning.effort,"medium");}return providerFailure||(options.verifierFailure&&localCalls===2)||(options.modelDenied&&localCalls===2)?new Response("unavailable",{status:options.modelDenied?403:503}):new Response(JSON.stringify({status:"completed",output_text:JSON.stringify(localCalls===2&&options.verifierResult?options.verifierResult:valid)}));}};
  vm.runInNewContext(source,context);
  return {call:()=>handler(new Request("https://test.invalid",{method:"POST",body:JSON.stringify({session:1,item_id:"rights-v1-s1-recall",answer:"caller cannot override saved answer"})})),grade:()=>evaluation,audits:()=>auditCount};
 }
@@ -83,3 +86,16 @@ for(let n=39;n<=63;n++)assert.equal(legalSources([{id:"qa-civil-2004-art"+n}])[0
 
 const restricted=environment({modelDenied:true});await restricted.call();assert.equal(restricted.grade().verification.verifier_model,"gpt-5.4-mini","an unavailable stronger model must not disable verified automatic grading");assert.equal(restricted.grade().provisional_percent,67);
 
+
+// Regression: later sessions are already released by the founder for internal practice.
+const pilotMetadata={owner_pilot_approved:true,pilot_scope:'non_certified_educational_practice',pilot_review_mode:'founder_authorized_ai_assisted_20261019'};
+const pilot=environment({itemStatus:'legal_review',itemMetadata:pilotMetadata});
+assert.equal((await pilot.call()).status,200);assert.equal(pilot.grade().status,'preliminary_ai');
+assert.equal(pilot.grade().practice_authorization,'founder_authorized_internal_pilot');
+for(const options of [
+ {itemStatus:'legal_review'},
+ {itemStatus:'draft',itemMetadata:pilotMetadata},
+ {itemStatus:'legal_review',itemMetadata:{...pilotMetadata,owner_pilot_approved:false}},
+ {itemStatus:'legal_review',itemMetadata:{...pilotMetadata,owner_pilot_approved:'true'}},
+ {itemStatus:'legal_review',itemMetadata:{...pilotMetadata,pilot_scope:'another_scope'}}
+]){const rejected=environment(options),before=providerCalls;assert.equal((await rejected.call()).status,422);assert.equal(providerCalls,before,'unreleased work never reaches the paid provider');}

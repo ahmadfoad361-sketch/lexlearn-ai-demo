@@ -30,7 +30,7 @@ function environment(session,lang='ar',failHistory=false,incomplete=false,course
   assert.ok(!e.host.innerHTML.includes('+40')&&!e.host.innerHTML.includes('+10'),'raw cross-task score differences must not be shown to learners');
   assert.ok(e.host.innerHTML.includes(lang==='ar'?'مؤشرات تدريبية أولية':'preliminary practice indicators'),'show transparent non-certified assessment status');
   assert.ok(e.filters.some(([k,v])=>k==='user_id'&&v==='student-fixture'),'read only the authenticated learner history');
-  if(session<30){assert.ok(e.nodes.nextSession);e.nodes.nextSession.onclick();assert.equal(e.window.location.href,'student-path.html?lang='+lang+'&session='+(session+1));}
+  if(session<30){assert.ok(e.nodes.nextSession);e.nodes.nextSession.onclick();assert.equal(e.window.location.href,'student-path.html?lang='+lang+'&session='+(session+1)+'&app=20261024-assessment-release');}
   else assert.equal(e.nodes.nextSession,undefined,'final report has no invalid session 31 link');
  }
  const offline=environment(5,'ar',true);await offline.window.LEX_STUDENT_PATH.mount();

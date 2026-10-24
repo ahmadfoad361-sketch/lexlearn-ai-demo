@@ -121,7 +121,14 @@ async function updateOwnProfile(patch){return invoke("account-update-profile",pa
 async function gradeAnswer(data){return invoke("grade-answer",data);}
 async function gradePilot(data){return invoke("pilot-grade",data);}
 async function gradeDiagnosticAi(){return invoke("lexlearn-diagnostic-ai-grade",{});}
-async function gradeTrainingAi(session,itemId){return invoke("lexlearn-training-ai-grade",{session:session,item_id:itemId});}
+async function gradeTrainingAi(session,itemId){
+ try{return await invoke("lexlearn-training-ai-grade",{session:session,item_id:itemId});}
+ catch(error){
+  var code='assessment_unavailable';
+  if(error&&error.context&&typeof error.context.json==='function')try{var detail=await error.context.json();if(detail&&typeof detail.error==='string')code=detail.error;}catch(_){}
+  var failure=new Error(code);failure.code=code;throw failure;
+ }
+}
 async function trainingAiSummary(){return invoke("lexlearn-training-ai-grade",{action:"summary"});}
 async function getDiagnosticAiAudit(attemptId){
  if(!/^[a-f0-9-]{36}$/i.test(String(attemptId||"")))return null;
