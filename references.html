@@ -9,7 +9,7 @@ body{margin:0}header{background:#111d31;color:white;padding:18px max(20px,calc((
 header a{color:#d9e9ff;text-decoration:none}h1{font-size:1.65rem}h2{font-size:1.2rem;margin:0 0 12px}small,.muted{color:#596e88}header small{color:#c2d2e7}
 main{max-width:1160px;padding:24px 16px 80px;margin:auto}.grid{display:grid;grid-template-columns:350px minmax(0,1fr);gap:18px}.panel{background:white;border:1px solid #dce4ee;border-radius:15px;padding:20px;margin-bottom:18px}
 label{font-weight:600;display:block;margin:12px 0 5px}input,textarea,select{font-family:inherit;width:100%;padding:10px 12px;border:1px solid #bfcddd;border-radius:9px;color:#17283f;background:white;font-size:15px}textarea{min-height:110px}button{font-family:inherit;cursor:pointer;padding:10px 16px;border:0;border-radius:9px;background:#135ca4;color:#fff;font-weight:600;margin-top:12px}
-button.secondary{background:#e8eef7;color:#164270}button:disabled{opacity:.5;cursor:not-allowed}.stack{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+button.secondary{background:#e8eef7;color:#164270}button:disabled{opacity:.5;cursor:not-allowed}details{margin:12px 0}summary{cursor:pointer;color:#164270;font-weight:600}select:disabled{opacity:.6;background:#f5f7fb}.hint{font-size:13px;line-height:1.8;color:#516680}.stack{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .bookBtn{display:block;text-align:right;width:100%;background:#f2f6fb;color:#1b3557;margin:7px 0;border:1px solid #dce5f0}.bookBtn.active{background:#dcecff;border-color:#6ba5dc}.tag{font-size:12px;background:#edf3f9;border-radius:99px;padding:3px 9px;color:#3e5d82}
 .page{border:1px solid #e0e8f1;border-radius:11px;padding:15px;margin:12px 0}.page p{white-space:pre-wrap;font-size:14px;max-height:180px;overflow:auto;line-height:1.8}#msg{margin:10px 0;padding:12px;border-radius:10px;background:#e6f0fa;display:none;white-space:pre-wrap}
 .warn{background:#fff6df;border:1px solid #f4dca2;border-radius:10px;padding:13px;color:#684b07}#loading{padding:30px;text-align:center}a{color:#125c9f}
@@ -26,11 +26,14 @@ button.secondary{background:#e8eef7;color:#164270}button:disabled{opacity:.5;cur
 <aside><section class="panel"><h2>إنشاء مرجع جديد</h2>
 <form id="bookForm"><label>عنوان الكتاب أو المرجع<input name="title" required minlength="3" maxlength="240" placeholder="نظرية الحق — المرجع الأكاديمي"></label>
 <label>المؤلف (اختياري)<input name="author" maxlength="240"></label>
-<label>الدولة / النطاق القانوني<input name="jurisdiction" list="countries" value="qa" maxlength="7" pattern="general|[a-z]{2}" required placeholder="eg أو qa أو sa…"><datalist id="countries"><option value="general">عام غير مرتبط بدولة</option><option value="eg">مصر</option><option value="qa">قطر</option><option value="sa">السعودية</option><option value="ae">الإمارات</option><option value="kw">الكويت</option><option value="bh">البحرين</option><option value="om">عُمان</option><option value="jo">الأردن</option><option value="ma">المغرب</option><option value="tn">تونس</option><option value="dz">الجزائر</option></datalist><small>لأي دولة أخرى، أدخل رمز الدولة من حرفين (ISO 3166-1 alpha-2).</small></label>
+<label>الدولة / النظام القانوني<select name="jurisdiction" id="jurisdictionSelect" required><option value="qa">قطر</option></select></label>
+<label>الجامعة التي تضم كلية قانون<select name="institution_key" id="universitySelect"><option value="">مرجع عام للدولة (بدون جامعة)</option></select></label>
+<label>اسم كلية القانون في الجامعة<select name="faculty_id" id="facultySelect" disabled><option value="">اختر الجامعة أولًا</option></select></label>
+<p class="hint" id="directoryHint" aria-live="polite">اختر الدولة، ثم الجامعة وكلية القانون. يمكنك إضافة الناقص من النماذج أسفل هذه الاستمارة.</p>
 <label>المرحلة التعليمية<select name="education_stage"><option value="university">جامعي</option><option value="secondary">ثانوي</option><option value="preparatory">إعدادي</option><option value="primary">ابتدائي</option><option value="professional">مهني</option><option value="other">أخرى</option></select></label>
 <label>المنهج / البرنامج<input name="curriculum_name" placeholder="مثال: كلية الحقوق — السنة الأولى" required value="كلية الحقوق — السنة الأولى"></label>
 <label>المادة العلمية<input name="subject_name" value="نظرية الحق" required></label>
-<label>الجامعة / الجهة (اختياري عند اختيار مقرر)<input name="institution_key" placeholder="مثال: qatar-university أو lusail-university"></label>
+
 <label>الفصل الدراسي<select name="semester_scope" required><option value="unassigned">غير محدد حتى التحقق</option><option value="first">الفصل الأول / الخريف</option><option value="second">الفصل الثاني / الربيع</option><option value="both">الفصلان (مرجع عام)</option></select></label>
 <label>رقم المحاضرة (إن كان مؤكدًا)<input type="number" name="lecture_number" min="1" max="100" placeholder="مثال: 3"></label>
 <label>موضوع المحاضرة / الوحدة<input name="unit_title" maxlength="180" placeholder="مثال: مصادر القانون أو نظرية الحق"></label>
@@ -41,6 +44,23 @@ button.secondary{background:#e8eef7;color:#164270}button:disabled{opacity:.5;cur
 <label>العام الدراسي (اختياري)<input name="academic_year" placeholder="2026–2027"></label>
 <label>نوع المرجع<select name="reference_kind"><option value="textbook">كتاب مقرر</option><option value="legislation">قانون / تشريع</option><option value="exam">امتحانات سابقة</option><option value="lecture">محاضرات</option><option value="academic_study">دراسة علمية</option><option value="model_answer">نموذج إجابة معتمد</option><option value="course_outline">خطة وتوصيف مقرر</option><option value="summary">ملخص أو مذكرة</option></select></label>
 <label>المقرر المرتبط<select name="course_id" id="courseSelect"><option value="">بدون مقرر محدد (مرجع عام)</option></select></label><button>إنشاء مرجع مسودة</button></form></section>
+<section class="panel" id="directoryAdmin">
+<h2>إدارة الدول والجامعات وكليات القانون</h2>
+<p class="hint">دليل قابل للتوسيع: الدول المضافة تظهر في قائمة إنشاء المرجع، والجامعات والكليات المسجلة تظهر بحسب الدولة. إضافة جهة جديدة لا تعني اعتماد مناهجها أو امتحاناتها.</p>
+<details><summary>+ إضافة دولة جديدة</summary>
+<form id="countryForm"><label>اختر الدولة المراد إضافتها<select id="countryToAdd" required></select></label><button type="submit" class="secondary">إضافة الدولة للدليل</button></form></details>
+<details><summary>+ إضافة جامعة وكلية قانون</summary>
+<form id="universityForm"><p class="hint" id="universityCountryHint"></p>
+<label>اسم الجامعة<input name="university_name_ar" required maxlength="180" minlength="3" placeholder="مثال: جامعة جديدة"></label>
+<label>اسم كلية القانون<input name="faculty_name_ar" required maxlength="180" minlength="3" placeholder="مثل كلية الحقوق / كلية القانون والشريعة"></label>
+<label>الرابط الرسمي للجامعة أو الكلية (اختياري)<input type="url" name="official_url" placeholder="https://..."></label>
+<button type="submit" class="secondary">حفظ الجامعة والكلية</button></form></details>
+<details><summary>+ إضافة كلية قانون أخرى لجامعة مسجلة</summary>
+<form id="facultyForm"><p class="hint">اختر الجامعة من القائمة الموجودة بالأعلى أولًا.</p>
+<label>اسم الكلية الإضافية<input name="faculty_name_ar" required maxlength="180" minlength="3"></label>
+<label>رابط الجامعة أو الكلية (اختياري)<input type="url" name="official_url" placeholder="https://..."></label>
+<button type="submit" class="secondary">حفظ الكلية</button></form></details>
+</section>
 <section class="panel"><h2>المراجع المسجلة حسب الجامعة والفصل</h2><div id="books"></div></section></aside>
 <section><div id="detail" class="panel">اختر كتابًا من القائمة.</div></section></div></main>
-<script src="assets/lex-references.js?v=20261024.semester1"></script></body></html>
+<script src="assets/lex-references.js?v=20261024.schools1"></script></body></html>
