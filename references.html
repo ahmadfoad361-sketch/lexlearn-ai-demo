@@ -20,7 +20,7 @@ button.secondary{background:#e8eef7;color:#164270}button:disabled{opacity:.5;cur
 <script src="assets/cloud-data.js?v=20261023.ai2"></script></head>
 <body><header><div><b>LexLearn</b><div><small>تغذية الذكاء الاصطناعي بالمناهج والمواد العلمية</small></div></div><div class="stack"><a href="admin.html">← لوحة المشرف</a><a href="index.html">الموقع</a></div></header>
 <main><h1>تغذية الذكاء الاصطناعي بالمراجع العلمية</h1>
-<p>رتّب المراجع حسب الدولة، والمرحلة، والمادة، والمنهج، ثم أضف ملفات PDF أو صور الكتب والقوانين والامتحانات. يستعين بها OpenAI عند تصحيح السؤال المرتبط بها، مع مراعاة قانون الدولة الصحيحة.</p>
+<p>رتّب المراجع حسب الدولة والجامعة والمقرر والفصل والمحاضرة، ثم أضف فقط الملفات التي تملك حق استخدامها؛ ويمكن حفظ روابط الكتب والمذكرات والامتحانات للفهرسة دون نسخها. يستعين بها OpenAI عند تصحيح السؤال المرتبط بها، مع مراعاة قانون الدولة الصحيحة.</p>
 <div class="warn">لن تؤثر المواد الجديدة على درجات الطلاب قبل مراجعة نصها واعتمادها وربطها بالأسئلة. مرجع القانون المصري لا يُستخدم للتصحيح في مقرر قطري، والعكس.</div>
 <div id="msg" role="status"></div><div id="loading">جاري التحقق من صلاحيات المشرف وتحميل المكتبة…</div><div class="grid" id="workspace" hidden>
 <aside><section class="panel"><h2>إنشاء مرجع جديد</h2>
@@ -30,9 +30,17 @@ button.secondary{background:#e8eef7;color:#164270}button:disabled{opacity:.5;cur
 <label>المرحلة التعليمية<select name="education_stage"><option value="university">جامعي</option><option value="secondary">ثانوي</option><option value="preparatory">إعدادي</option><option value="primary">ابتدائي</option><option value="professional">مهني</option><option value="other">أخرى</option></select></label>
 <label>المنهج / البرنامج<input name="curriculum_name" placeholder="مثال: كلية الحقوق — السنة الأولى" required value="كلية الحقوق — السنة الأولى"></label>
 <label>المادة العلمية<input name="subject_name" value="نظرية الحق" required></label>
+<label>الجامعة / الجهة (اختياري عند اختيار مقرر)<input name="institution_key" placeholder="مثال: qatar-university أو lusail-university"></label>
+<label>الفصل الدراسي<select name="semester_scope" required><option value="unassigned">غير محدد حتى التحقق</option><option value="first">الفصل الأول / الخريف</option><option value="second">الفصل الثاني / الربيع</option><option value="both">الفصلان (مرجع عام)</option></select></label>
+<label>رقم المحاضرة (إن كان مؤكدًا)<input type="number" name="lecture_number" min="1" max="100" placeholder="مثال: 3"></label>
+<label>موضوع المحاضرة / الوحدة<input name="unit_title" maxlength="180" placeholder="مثال: مصادر القانون أو نظرية الحق"></label>
+<label>رابط المصدر الأصلي (اختياري)<input name="source_url" type="url" placeholder="https://..." maxlength="1500"></label>
+<label>نوع التوثيق<select name="authenticity"><option value="unverified">لم يُتحقق من أصالته</option><option value="official">جهة رسمية</option><option value="publisher">ناشر/جامعة ناشرة</option><option value="student_upload">رفع طلابي غير رسمي</option></select></label>
+<label>حق استخدام النص<select name="rights_status"><option value="link_only">رابط وفهرسة فقط — لا نسخ آلي</option><option value="approved_for_use">يوجد تصريح بالاستخدام</option><option value="public_domain">ملكية عامة</option><option value="open_license">ترخيص مفتوح</option><option value="unknown">غير معروف</option></select></label>
+<label>ملاحظة توثيقية<textarea name="source_note" maxlength="600" placeholder="تاريخ المصدر، هل هو مقرر إلزامي، وهل توجد نسخة كاملة مرخصة؟"></textarea></label>
 <label>العام الدراسي (اختياري)<input name="academic_year" placeholder="2026–2027"></label>
 <label>نوع المرجع<select name="reference_kind"><option value="textbook">كتاب مقرر</option><option value="legislation">قانون / تشريع</option><option value="exam">امتحانات سابقة</option><option value="lecture">محاضرات</option><option value="academic_study">دراسة علمية</option><option value="model_answer">نموذج إجابة معتمد</option></select></label>
 <label>المقرر المرتبط<select name="course_id" id="courseSelect"><option value="">بدون مقرر محدد (مرجع عام)</option></select></label><button>إنشاء مرجع مسودة</button></form></section>
-<section class="panel"><h2>الكتب المسجلة</h2><div id="books"></div></section></aside>
+<section class="panel"><h2>المراجع المسجلة حسب الجامعة والفصل</h2><div id="books"></div></section></aside>
 <section><div id="detail" class="panel">اختر كتابًا من القائمة.</div></section></div></main>
 <script src="assets/lex-references.js?v=20261024.2"></script></body></html>
