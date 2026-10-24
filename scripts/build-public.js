@@ -12,7 +12,7 @@ const pages=[
 ];
 const assets=[
   "student-identity.js","student-identity.css","student-profile.js","student-card-pdf.js","qrcode-generator.js","qrcode-generator-LICENSE.txt",
-  "session-moments.js","session-moments.css",
+  "session-moments.js","session-moments.css","grading-wait.js","grading-wait.css",
   "learner-theme.js","learner-experience.css","learner-brand.js","legal-emphasis.js",
   "lexlearn-logo.svg","lexlearn-x-transparent.svg","lexlearn-og.jpg","lexlearn-public-pitch-en.pdf","lexlearn-go-qr.svg","conference.css","conference.js","conference-experience.css","conference-experience.js","conference-theme.css","conference-theme.js","conference-citations.js","conference-media/lexlearn-logo-hq.webp","conference-media/investor-men-v3.webp","conference-media/law-lecture-v3.webp","conference-media/student-law.webp","conference-media/logo-intro-navy.mp4","conference-pdf.js","lexlearn-navigation.css","lexlearn-navigation.js","lexlearn-learning-lines.js","lexlearn-investor-quotes.js","conference-promo.css","brand-intro.js","training-carousel.js",
   "v9-law.css","v9-law-content.js","v9-law.js",
@@ -77,7 +77,7 @@ for(const page of pages){
 // Silent omissions caused valid GitHub source changes to be absent from the live site.
 for(const required of [
   "conference.html","go/index.html","assets/conference.js","assets/conference-pdf.js","assets/conference.css","assets/lexlearn-navigation.js","assets/lexlearn-navigation.css","assets/lexlearn-learning-lines.js","assets/lexlearn-investor-quotes.js","assets/lexlearn-go-qr.svg","assets/lexlearn-public-pitch-en.pdf",
-  "student-register.html","student-register-en.html","diagnostic.html","assets/diagnostic.css","student-practice.html","student-path.html","assets/student-practice.js","assets/student-path.js","assets/legal-case-guide.js","assets/legal-case-guide.css","assets/official-diagnostic.js","assets/server-diagnostic.js","assets/official-level-one.js","showcase-level1.html","showcase-level1-en.html",
+  "student-register.html","student-register-en.html","diagnostic.html","assets/diagnostic.css","student-practice.html","student-path.html","assets/student-practice.js","assets/student-path.js","assets/grading-wait.js","assets/grading-wait.css","assets/legal-case-guide.js","assets/legal-case-guide.css","assets/official-diagnostic.js","assets/server-diagnostic.js","assets/official-level-one.js","showcase-level1.html","showcase-level1-en.html",
   "privacy-en.html","terms-en.html",
   "references.html","assets/lex-references.js",
   "assets/student-register.js","assets/register.css","assets/auth-controls.js","assets/student-report.js",
@@ -104,6 +104,16 @@ for(const handler of ["renderDirectory","updateUniversities","updateFaculties","
 const adminPage=fs.readFileSync(path.join(out,"admin.html"),"utf8");
 const cloudAdmin=fs.readFileSync(path.join(out,"assets/admin-cloud.js"),"utf8");
 if(!cloudAdmin.includes('href="references.html"'))throw new Error("Supervisor has no link to reference library");
+
+// Prevent regressions where the interface references a waiting-screen asset excluded from the published bundle.
+const studentPath=fs.readFileSync(path.join(out,"student-path.html"),"utf8");
+for(const required of ["assets/grading-wait.js","assets/grading-wait.css"]){
+ if(!studentPath.includes(required))throw new Error("Student grading wait dependency not referenced: "+required);
+ if(!fs.existsSync(path.join(out,required)))throw new Error("Student grading wait asset not published: "+required);
+}
+const studentLogic=fs.readFileSync(path.join(out,"assets/student-path.js"),"utf8");
+if(!studentLogic.includes("startGradingWait")||!studentLogic.includes("wait.finish()"))
+ throw new Error("Student assessment wait lifecycle missing from production build");
 
 // Production artifact must not publish repository internals or abandoned prototypes.
 for(const forbidden of [
