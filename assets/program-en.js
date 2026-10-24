@@ -361,6 +361,11 @@ function render(){
  if(!DEMO&&STUDENT_SESSION&&STUDENT_SESSION.cloud&&state.diag)return train();if(state.view==="stagePreviewComplete")return stagePreviewComplete();if(state.view==="home")return home();if(state.view==="train")return train();if(state.view==="sessionResult")return sessionResult();if(state.view==="assessment")return assessment();if(state.view==="assessmentResult")return assessmentResult();if(state.view==="completion")return completion();}
 
 async function boot(){
+ // Authenticated students always use the single server-gated OpenAI training path.
+ // Keep public showcase-level1 previews unchanged.
+ if(!DEMO&&STUDENT_SESSION&&STUDENT_SESSION.cloud&&STUDENT_SESSION.studentId){
+  location.replace("student-path.html?lang=en");return;
+ }
  if(!DEMO){
   if(!STUDENT_SESSION||!STUDENT_SESSION.cloud||!STUDENT_SESSION.studentId||!window.LEX_CLOUD||!LEX_CLOUD.isConfigured()){
    APP.innerHTML='<main class="courseWrap"><h1>Student account only</h1><p>Sign in to begin the real diagnostic. The public demo is separate.</p><a class="primary" href="student-login-en.html">Student sign-in</a><a class="secondary" href="showcase-en.html">Public demo</a></main>';return;
