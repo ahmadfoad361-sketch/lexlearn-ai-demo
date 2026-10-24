@@ -24,7 +24,7 @@ function assess(answer,lang){
  parts.forEach(function(p,index){
   var t=norm(p),prev=norm(parts[index-1]||''),ctx=prev+' '+t;
   var hasPerson=personality.test(t)||(/^(?:and begins|and ends|لكن|ولكن|وتنتهي|وتبدا)\b/.test(t)&&personality.test(prev)),hasBirth=birth.test(t),hasPrenatal=prenatal.test(t);
-  var start=/(?:تبدا|يبدا|بدايه|يكتسب|تكتسب|تثبت|يثبت|تقوم|ثبوت|وجود|begins?|starts?|acquir|commenc)/.test(t);
+  var start=/(?:تبدا|يبدا|تنشا|ينشا|بدايه|يكتسب|تكتسب|تثبت|يثبت|تقوم|ثبوت|وجود|begins?|starts?|acquir|commenc)/.test(t);
   var death=/(?:موت|موته|وفا[ته]|توفي|مات|death|dies|dying)/.test(t);
   var ending=/(?:تنتهي|تنقضي|انتهاء|تنقطع|انتهت|تزول|خاتمه|نهايه|تمتد الي لحظه|ends?|terminat|ceases?)/.test(t);
   var negStart=/(?:لا|لم|ليس|لن)\s+(?:تبدا|يبدا|يكتسب|تثبت|يثبت|تقوم)|(?:does not|doesnt|never)\s+(?:begin|start)|not (?:begin|start)/.test(t);
@@ -89,7 +89,8 @@ function assessPractice(answer,lang){
  var grade=assess(answer,lang),ar=lang!=='en',d=grade.details;
  var review=grade.recall_score===null;
  var points=review?(d.reason==='ambiguous_assertion'?0:d.points):d.points;
- var score=review?Math.round(points/d.max_points*100):grade.recall_score;
+ var noRecall=/^(?:لا اتذكر|لا اذكر|نسيت|i (?:do not|dont) remember)$/i.test(norm(answer));
+ var score=review?(noRecall?0:null):grade.recall_score;
  var note=ar?'نسبة الحفظ هنا تقيس عناصر الإجابة التي تحقق منها المحرك الداخلي، وليست حكمًا نهائيًا على إتقانك.':'This recall percentage measures answer elements verified by the internal engine, not final mastery.';
  var feedback=review?(ar?'تحقق المحرك الداخلي من '+points+' من '+d.max_points+' نقاط. راجع العناصر الموضحة أدناه ثم أعد صياغة إجابتك؛ عدم التعرّف على صياغتك لا يثبت أنها خاطئة.':'The internal engine verified '+points+' of '+d.max_points+' points. Review the elements below and revise your answer; unrecognized wording is not proof that it is wrong.'):grade.feedback;
  return {grade_status:'practice_coverage',recall_score:score,feedback:feedback+' '+note,details:Object.assign({},d,{score_basis:'verified_element_coverage',needs_review:review,coverage_points:points,academic_score:grade.recall_score,criteria:d.reason==='ambiguous_assertion'?d.criteria.map(function(c){return Object.assign({},c,{points:0,status:'unrecognized'});}):d.criteria})};

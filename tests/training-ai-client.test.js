@@ -26,10 +26,11 @@ async function run({consent=true,fail=false,lang='ar'}={}){
   assert.ok(host.html.includes(lang==='ar'?'الأولوية الآن للفهم':'Understanding priority'));
  }
 }
-async function recover(lang){
+async function recover(lang,currentFailure=false){
  const nodes={},calls=[],saved=[{item_id:'rights-v1-s1-understanding',dimension:'understanding',answer_text:'Saved conditional legal reasoning',evaluation:{status:'preliminary_ai',rubric_version:'lexlearn-training-ai-v2',provisional_percent:0}}];
  const host={querySelector:s=>nodes[s.slice(1)]||null};
  Object.defineProperty(host,'innerHTML',{get(){return this.html;},set(v){this.html=v;for(const k of Object.keys(nodes))delete nodes[k];for(const m of v.matchAll(/id='([^']+)'/g))nodes[m[1]]={value:'',disabled:false,textContent:'',onclick:null};}});
+ if(currentFailure)saved[0].evaluation={status:'ai_review_required',rubric_version:'lexlearn-training-ai-v4',provisional_percent:null,reason:'provider_timeout'};
  let fail=true;
  const cloud={getConsent:async()=>true,trainingAiSummary:async()=>({priority:'foundation'}),
   gradeTrainingAi:async()=>{calls.push('grade');if(fail)throw Error('temporary outage');saved[0].evaluation={status:'preliminary_ai',rubric_version:'lexlearn-training-ai-v4',provisional_percent:14,verdict:'partially_correct',feedback_ar:'جزء صحيح وشرط ناقص.',feedback_en:'A correct component with a missing condition.',criteria:[{credit:.5,label_ar:'شرط الولادة',label_en:'Live birth condition',evidence:'<script>evidence</script>',explanation_ar:'ربطت الحق بالولادة؛ اشرح باقي الشروط.',explanation_en:'You connected the right to birth; explain the remaining conditions.'}]};return {status:'preliminary_ai'};},
@@ -46,7 +47,7 @@ async function recover(lang){
  assert.equal(nodes.retryGrade0,undefined,'confirmed assessment does not offer a needless paid retry');
  assert.ok(!calls.includes('trainingSubmit'),'reassessment never resubmits or changes the answer');
 }
-(async()=>{for(const lang of ['ar','en']){await run({lang});await run({lang,fail:true});await run({lang,consent:false});await recover(lang);}console.log('Bilingual training: save before AI, registration acceptance, priority changes, provider failure and escaped feedback: PASS');})().catch(e=>{console.error(e);process.exitCode=1;});
+(async()=>{for(const lang of ['ar','en']){await run({lang});await run({lang,fail:true});await run({lang,consent:false});await recover(lang);await recover(lang,true);}console.log('Bilingual training: save before AI, registration acceptance, priority changes, provider failure and escaped feedback: PASS');})().catch(e=>{console.error(e);process.exitCode=1;});
 
 
 

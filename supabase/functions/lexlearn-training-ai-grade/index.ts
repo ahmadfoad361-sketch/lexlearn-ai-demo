@@ -29,7 +29,7 @@ Deno.serve(async(req:Request)=>{
   if(saved.error||!saved.data)return json({error:"saved_answer_required"},409);
   const row=saved.data;
   if(row.evaluation?.status==="preliminary_ai"&&row.evaluation?.rubric_version===VERSION)return json({status:row.evaluation.status,cached:true});
-  if(row.evaluation?.status==="ai_pending"&&Date.now()-Date.parse(row.evaluation.started_at||"")<120000)return json({status:"ai_pending",cached:true});
+  if(row.evaluation?.status==="ai_pending"&&Date.now()-Date.parse(row.evaluation.started_at||"")<150000)return json({status:"ai_pending",cached:true});
   const attempts=await admin.from("ai_grading_runs").select("id",{count:"exact",head:true}).eq("user_id",user.id).eq("item_id",itemId).eq("prompt_version",VERSION);
   if(attempts.error||(attempts.count||0)>=3)return json({error:"answer_retry_limit",status:"ai_review_required"},429);
   if(!Deno.env.get("OPENAI_GRADING_API_KEY"))return json({error:"ai_provider_not_configured"},503);
@@ -58,7 +58,8 @@ Deno.serve(async(req:Request)=>{
      text:{format:{type:"json_schema",name:"lexlearn_training_grade",strict:true,schema:SCHEMA}}
     };
     async function requestGrade(body:any){
-     const response=await fetch("https://api.openai.com/v1/responses",{method:"POST",headers:{Authorization:"Bearer "+Deno.env.get("OPENAI_GRADING_API_KEY"),"Content-Type":"application/json"},signal:AbortSignal.timeout(45000),body:JSON.stringify(body)});
+     const remaining=135000-(Date.now()-start);if(remaining<1000)throw Error("provider_timeout");
+     const response=await fetch("https://api.openai.com/v1/responses",{method:"POST",headers:{Authorization:"Bearer "+Deno.env.get("OPENAI_GRADING_API_KEY"),"Content-Type":"application/json"},signal:AbortSignal.timeout(Math.min(90000,remaining)),body:JSON.stringify(body)});
      if(!response.ok)throw Error("provider_http_"+response.status);
      const data=await response.json();if(data.status!=="completed")throw Error("provider_incomplete");
      const parts=(data.output||[]).flatMap((m:any)=>m.content||[]);
@@ -78,8 +79,8 @@ Deno.serve(async(req:Request)=>{
     }
     grade={...interpret(verified,item.data.rubric_json,row.answer_text),verification:{status:"completed",draft_model:DRAFT_MODEL,verifier_model:verifierModel,source_basis:"full_approved_statutory_text"},needs_human_review:false,oversight_only:true};
    }catch(e){
-    const code=e instanceof Error?e.message:"unconfirmed";
-    const safe=/^(provider_http_\d{3}|provider_incomplete|provider_refusal|invalid_[a-z_]+|human_review_required)$/.test(code)?code:"provider_or_evidence_unconfirmed";
+    const code=e instanceof Error&&["TimeoutError","AbortError"].includes(e.name)?"provider_timeout":e instanceof Error?e.message:"unconfirmed";
+    const safe=/^(provider_http_\d{3}|provider_incomplete|provider_refusal|provider_timeout|invalid_[a-z_]+|human_review_required)$/.test(code)?code:"provider_or_evidence_unconfirmed";
     grade={status:"ai_review_required",provisional_percent:null,reason:safe,rubric_version:VERSION};
    }
    const logged=await admin.from("ai_grading_runs").update({result:{status:grade.status,grade,session},model_confidence:grade.confidence||null,latency_ms:Date.now()-start,needs_human_review:grade.status!=="preliminary_ai"}).eq("id",audit.data.id);

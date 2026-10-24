@@ -299,7 +299,7 @@ assert.ok(ar.includes('class="wsqEventName" lang="en" dir="ltr"'),"isolate the L
 assert.ok(ar.includes("خطة التعاون الجامعي")&&en.includes("proposed university pilot"),"keep conference project/pilot meaning in both languages");
 assert.ok(promoCss.includes(".wsqEventLogo{")&&promoCss.includes(".wsqHomeFeature{"),"official Web Summit logo still leads the homepage inside the card");
 for(const home of [ar,en]){
-  const anchor=home.indexOf('<a class="wsqEventCTA"');
+  const anchor=home.indexOf('<div class="wsqEventCTA"');
   const img=home.indexOf('<img class="wsqEventLogo"',anchor);
   const copy=home.indexOf('<span class="wsqEventCopy">',anchor);
   const close=home.indexOf('</a>',anchor);

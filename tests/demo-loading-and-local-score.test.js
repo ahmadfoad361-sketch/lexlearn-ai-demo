@@ -38,8 +38,8 @@ async function run(lang,answer,expected,serverNull=false){
   await run(lang,text,100);await run(lang,lang==='ar'?'لا أتذكر':'I do not remember',0);await run(lang,text,100,true);
  }
  await run('ar','الشخصية القانونية تثبت بولادة الجنين حيا',29);
- await run('ar','قبول حياة موت حقوق ولادة',0);
- await run('ar','ربما تبدأ الشخصية القانونية بالولادة حية.',0);
+ await run('ar','قبول حياة موت حقوق ولادة',null);
+ await run('ar','ربما تبدأ الشخصية القانونية بالولادة حية.',null);
  await run('ar','تبدأ الشخصية القانونية بالولادة حية، وتنتهي بالموت، وللجنين حقوق لا تحتاج قبولًا.',71);
  console.log('Demo loading, local provisional score, save failures and internal practice coverage: PASS');
 })().catch(e=>{console.error(e);process.exitCode=1;});

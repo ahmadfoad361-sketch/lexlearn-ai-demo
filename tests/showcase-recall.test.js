@@ -47,9 +47,9 @@ module.exports=cases;
 for(const [answer,expected] of [
  ['تبدأ الشخصية القانونية بالولادة حية.',29],
  ['تبدأ الشخصية القانونية بالولادة حية، وتنتهي بالموت.',43],
- ['لا أتذكر',0],['الولادة حيا',0],['كلام غير مفهوم',0],
- ['هل تبدأ الشخصية القانونية بالولادة حية؟',0],
- ['تبدأ الشخصية القانونية بالولادة حية، ولكن الشخصية القانونية لا تبدأ بالولادة حية.',0]
+ ['لا أتذكر',0],['الولادة حيا',null],['كلام غير مفهوم',null],
+ ['هل تبدأ الشخصية القانونية بالولادة حية؟',null],
+ ['تبدأ الشخصية القانونية بالولادة حية، ولكن الشخصية القانونية لا تبدأ بالولادة حية.',null]
 ]){
  const base=R.assess(answer,'ar'),practice=R.assessPractice(answer,'ar');
  assert.equal(practice.recall_score,expected);
@@ -58,3 +58,6 @@ for(const [answer,expected] of [
  assert.equal(practice.details.criteria.reduce((n,c)=>n+c.points,0),practice.details.coverage_points);
  if(base.recall_score===null)assert(practice.details.needs_review);
 }
+
+assert.equal(R.assessPractice('تنشأ الشخصية القانونية بالولادة حية.','ar').recall_score,29);
+assert.equal(R.assessPractice('تبدأ شخصية الإنسان بتمام ولادته حيا وتنتهي بموته','ar').recall_score,43);

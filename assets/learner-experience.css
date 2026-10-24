@@ -70,3 +70,47 @@ html[data-learner-theme=dark] .momentRing.meaning .ringValue{stroke:#85d6cc}
 html[data-learner-theme] .loginBrand h1{font-family:inherit}
 @media(max-width:900px){.loginBrand>.en-brand{display:none}}
 
+/* Color-only conference promotion changes: retain the established dimensions. */
+html[data-learner-theme] .wsqHomeFeature{background:var(--lx-bg)}
+html[data-learner-theme] .wsqEventCTA{background:var(--lx-surface);color:var(--lx-ink);border-color:var(--lx-border);border-top-color:#8a1f39}
+html[data-learner-theme] :is(.wsqEventCopy strong,.wsqParticipantName){color:var(--lx-ink)}
+html[data-learner-theme] :is(.wsqEventName,.wsqParticipantName>span){color:var(--lx-accent)}
+html[data-learner-theme] .wsqEventCopy small{color:var(--lx-muted)}
+.wsqParticipant,.wsqEventAction{text-decoration:none}
+html[data-learner-theme] #showcaseApp :is(.skillCard,.criterion,.deliveryState){background:var(--lx-surface);color:var(--lx-ink);border-color:var(--lx-border)}
+html[data-learner-theme] #showcaseApp :is(.skillCard h3,.skillCard .skillValue,.criterion>div span){color:var(--lx-ink)}
+html[data-learner-theme] #showcaseApp :is(.skillCard p,.criterion small){color:var(--lx-muted)!important}
+html[data-learner-theme] #showcaseApp .criterion blockquote{background:var(--lx-raised);color:var(--lx-ink)}
+html[data-learner-theme] #showcaseApp .resultExplanation :is(p,h3,small){color:#fff!important}
+html[data-learner-theme] #showcaseApp .skillTrack{background:var(--lx-raised)}
+html[data-learner-theme] :is(.criterion.supported,.criterionCorrect){border-inline-start:4px solid var(--lx-good)}
+html[data-learner-theme] :is(.criterion.supported,.criterionCorrect) :is(b,small,p,blockquote){color:var(--lx-good)!important}
+html[data-learner-theme]{--lx-wrong:#a71d36;--lx-partial:#79540c}
+html[data-learner-theme=dark]{--lx-wrong:#ff9da9;--lx-partial:#f3d598}
+html[data-learner-theme] :is(.criterion.contradicted,.criterion.conflicting,.criterionIncorrect){border-inline-start:4px solid var(--lx-wrong)}
+html[data-learner-theme] :is(.criterion.contradicted,.criterion.conflicting,.criterionIncorrect) :is(b,small,p,blockquote){color:var(--lx-wrong)!important}
+html[data-learner-theme] .criterionPartial :is(b,p,blockquote){color:var(--lx-partial)!important}
+.learnerBrandHome{display:inline-flex;align-items:center;gap:inherit;color:inherit;text-decoration:none;max-width:100%;min-width:0}
+.learnerLogoOrbit{display:inline-flex;position:relative;flex:none;align-items:center;justify-content:center;isolation:isolate;border-radius:50%;background:radial-gradient(ellipse,#ffffffed 0%,#ffffffc4 48%,#ffffff20 72%);box-shadow:0 0 16px #ffffff60}
+.learnerLogoOrbit>img{display:block;max-width:100%;object-fit:contain;filter:drop-shadow(0 0 4px #fff9)}
+.learnerLogoOrbit:before{content:'';position:absolute;inset:-3px;border:1px solid #ffffffdd;border-radius:50%;pointer-events:none;box-shadow:0 0 4px #fff8}
+.learnerLogoOrbit:after{content:'';position:absolute;inset:-3px;border-radius:50%;background:radial-gradient(circle at 50% 1%,#fff 0 3px,#efafc4 4px,transparent 5px);animation:learnerMoon 12s linear infinite;pointer-events:none}
+@keyframes learnerMoon{to{transform:rotate(360deg)}}
+/* Keep the original header flex placement after giving branding a home link. */
+.v9-topin>.learnerBrandHome,.en-topin>.learnerBrandHome{margin-left:auto;margin-right:0;max-width:calc(100% - 106px)}
+@media(prefers-reduced-motion:reduce){.learnerLogoOrbit:after{animation:none}}
+
+
+html[data-learner-theme] #showcaseApp .criterion.supported{border-inline-start:4px solid var(--lx-good)}
+html[data-learner-theme] #showcaseApp .criterion.supported :is(b,small,blockquote){color:var(--lx-good)!important}
+html[data-learner-theme] #showcaseApp :is(.criterion.contradicted,.criterion.conflicting){border-inline-start:4px solid var(--lx-wrong)}
+html[data-learner-theme] #showcaseApp :is(.criterion.contradicted,.criterion.conflicting) :is(b,small,blockquote){color:var(--lx-wrong)!important}
+html[data-learner-theme=dark] .demoWrap>p[role=status]{background:var(--lx-raised)!important;color:var(--lx-ink)!important;border-color:var(--lx-border)!important}
+
+html[data-learner-theme] #beginLegalQuestions{padding:14px 24px;border-radius:12px;font:700 16px/1.6 inherit;cursor:pointer}
+
+html[data-learner-theme] .progressSkill strong.assessmentMissing{grid-row:2;display:block;font-size:1rem;line-height:1.8;padding:22px 12px;margin:12px 0;border:1px dashed var(--lx-border);border-radius:12px;color:var(--lx-muted)}
+html[data-learner-theme] .assessmentRecovery{padding:20px;margin:16px 0;border:1px solid var(--lx-border);border-radius:14px;background:var(--lx-raised);color:var(--lx-ink)}
+html[data-learner-theme] .assessmentRecovery p{margin:0 0 12px}
+html[data-learner-theme] .learnerLogoOrbit>img{background:transparent!important;border-radius:50%}
+html[data-learner-theme] :is(.mark,.v9-mark,.demoLogo,.diagLogo):has(.learnerLogoOrbit){background:transparent!important;box-shadow:none;border-color:transparent}

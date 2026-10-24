@@ -19,7 +19,30 @@ function resultSvg(data,lang){
  cells.map(function(c,i){var x=360+i*480;return "<circle cx='"+x+"' cy='390' r='128' fill='white' stroke='#e7e1df' stroke-width='20'/><circle cx='"+x+"' cy='390' r='128' fill='none' stroke='"+c.color+"' stroke-width='20' stroke-dasharray='"+((c.value===null?0:c.value)/100*2*Math.PI*128)+" "+(2*Math.PI*128)+"' transform='rotate(-90 "+x+" 390)'/><text x='"+x+"' y='410' fill='#111d31' font-size='"+(c.value===null?28:64)+"'>"+esc(c.value===null?(en?'Under review':'قيد المراجعة'):c.value+'%')+"</text><text x='"+x+"' y='575' fill='"+c.color+"' font-size='36'>"+c.name+"</text>";}).join("")+
  "<text x='600' y='680' fill='#111d31' font-size='26'>"+(en?"Your answers are saved. Your next step starts here.":"إجاباتك محفوظة. وخطوتك التالية تبدأ من هنا.")+"</text><text x='600' y='735' fill='#526074' font-size='22'>"+(en?"Preliminary practice estimates · Not a university grade":"تقديرات تدريبية مبدئية · ليست درجة جامعية")+"</text></g></svg>";
 }
-function bindDownload(host,data,lang){var b=host&&host.querySelector("#downloadResultCard");if(!b)return;b.onclick=function(){var blob=new Blob([resultSvg(data,lang)],{type:'image/svg+xml;charset=utf-8'}),url=root.URL.createObjectURL(blob),a=root.document.createElement('a');a.href=url;a.download='lexlearn-'+(data.kind==='diagnostic'?'diagnostic':data.kind+'-'+(data.kind==='level'?data.level:data.session))+'.svg';root.document.body.appendChild(a);a.click();a.remove();root.setTimeout(function(){root.URL.revokeObjectURL(url);},1000);};}
+async function resultPng(data,lang){
+ var en=lang==="en",canvas=root.document.createElement('canvas');canvas.width=1200;canvas.height=900;
+ if(root.document.fonts&&root.document.fonts.ready)await root.document.fonts.ready;
+ var c=canvas.getContext('2d');if(!c)throw Error('canvas_unavailable');
+ c.fillStyle='#f9f4ef';c.fillRect(0,0,1200,900);c.fillStyle='#111d31';c.fillRect(0,0,1200,190);
+ c.textAlign='center';c.textBaseline='middle';c.direction=en?'ltr':'rtl';
+ function text(value,x,y,size,color){c.fillStyle=color;c.font='600 '+size+'px Tahoma, Arial, sans-serif';c.fillText(value,x,y);}
+ function lines(value,y,size,color,maxWidth){c.font='600 '+size+'px Tahoma, Arial, sans-serif';var line='',out=[];String(value).split(/\s+/).forEach(function(w){var next=line?line+' '+w:w;if(c.measureText(next).width>maxWidth&&line){out.push(line);line=w;}else line=next;});if(line)out.push(line);out.forEach(function(t,i){text(t,600,y+i*(size+14),size,color);});return out.length*(size+14);}
+ var title=data.kind==='diagnostic'?(en?'Your starting point':'نقطة انطلاقك'):data.kind==='level'?(en?'Level '+data.level+' completed':'أنجزت المستوى '+data.level):(en?'Session '+data.session+' completed':'أنجزت الجلسة '+data.session);
+ text('LexLearn',600,64,34,'#eedba9');text(title,600,132,40,'#ffffff');
+ text(en?'Qatar Civil Code · Law No. 22 of 2004':'القانون المدني القطري · القانون رقم (22) لسنة 2004',600,230,24,'#526074');
+ [{name:en?'Understanding':'الفهم',value:score(data.understanding),color:'#247b78'},{name:en?'Recall':'الحفظ',value:score(data.recall),color:'#8a1f39'}].forEach(function(v,i){var x=350+i*500;c.beginPath();c.arc(x,400,115,0,Math.PI*2);c.fillStyle='#ffffff';c.fill();c.lineWidth=18;c.strokeStyle='#e7e1df';c.stroke();if(v.value!==null&&v.value>0){c.beginPath();c.arc(x,400,115,-Math.PI/2,-Math.PI/2+Math.PI*2*v.value/100);c.strokeStyle=v.color;c.stroke();}text(v.value===null?(en?'Not assessed':'لم يكتمل التصحيح'):v.value+'%',x,400,v.value===null?24:60,'#111d31');text(v.name,x,560,32,v.color);});
+ text(en?'Your answers are saved. Keep building, one step at a time.':'إجاباتك محفوظة. واصل التعلم خطوة بخطوة.',600,630,27,'#111d31');
+ var phrase=root.LEX_SESSION_MOMENTS&&root.LEX_SESSION_MOMENTS.forSession(data.session);
+ if(phrase){var height=lines(en?phrase.en:phrase.ar,702,27,'#18253b',1030);lines(en?phrase.source.en:phrase.source.ar,710+height,20,'#795423',1050);}
+ text(en?'Preliminary practice indicators · Not a university grade':'مؤشرات تدريبية مبدئية · ليست درجة جامعية',600,862,21,'#526074');
+ return await new Promise(function(resolve,reject){canvas.toBlob(function(blob){if(blob)resolve(blob);else reject(Error('image_export_failed'));},'image/png');});
+}
+function bindDownload(host,data,lang){var b=host&&host.querySelector("#downloadResultCard");if(!b)return;b.onclick=async function(){
+ b.disabled=true;var label=b.textContent;b.textContent=lang==='en'?'Preparing your image…':'نجهز صورة إنجازك…';
+ try{var blob=await resultPng(data,lang),url=root.URL.createObjectURL(blob),a=root.document.createElement('a');a.href=url;a.download='lexlearn-'+(data.kind==='diagnostic'?'diagnostic':data.kind+'-'+(data.kind==='level'?data.level:data.session))+'.png';root.document.body.appendChild(a);a.click();a.remove();root.setTimeout(function(){root.URL.revokeObjectURL(url);},1000);b.textContent=label;}
+ catch(_){b.textContent=lang==='en'?'Image unavailable — retry':'تعذر تجهيز الصورة — حاول مجددًا';}finally{b.disabled=false;}
+ };}
+
 function reduced(){return !!(root.matchMedia&&root.matchMedia('(prefers-reduced-motion: reduce)').matches);}
 function celebrate(host,key){
  if(!host||celebrated.has(key)||reduced())return false;
@@ -30,7 +53,7 @@ function celebrate(host,key){
  host.appendChild(layer);root.setTimeout(function(){layer.remove();},3400);return true;
 }
 function saveProgress(step,lang){var en=lang==='en';return "<div class='answerSaving' role='status' aria-live='polite'><span class='answerSavingIcon' aria-hidden='true'></span><div><b>"+(step==='assessment'?(en?'Reviewing your answer…':'نراجع إجابتك الآن…'):(en?'Saving your answer…':'نحفظ إجابتك الآن…'))+"</b><small>"+(step==='assessment'?(en?'Saved securely · Preparing your feedback':'تم الحفظ · نجهّز ملاحظات تساعدك في الخطوة التالية'):(en?'One moment while we confirm your saved work':'لحظات حتى نتأكد من حفظ مجهودك'))+"</small></div></div>";}
-var api={score:score,ring:ring,hero:hero,completion:completion,downloadButton:downloadButton,resultSvg:resultSvg,bindDownload:bindDownload,celebrate:celebrate,saveProgress:saveProgress};root.LEX_MOMENTS=api;
+var api={score:score,ring:ring,hero:hero,completion:completion,downloadButton:downloadButton,resultSvg:resultSvg,resultPng:resultPng,bindDownload:bindDownload,celebrate:celebrate,saveProgress:saveProgress};root.LEX_MOMENTS=api;
 if(typeof module!=="undefined"&&module.exports)module.exports=api;
 })(typeof window!=="undefined"?window:globalThis);
 
