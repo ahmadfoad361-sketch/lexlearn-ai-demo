@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>LexLearn — المراجع العلمية ومعايير التصحيح</title>
+<title>LexLearn — تغذية الذكاء الاصطناعي بالمناهج</title>
 <link rel="icon" type="image/svg+xml" href="assets/lexlearn-logo.svg">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -18,16 +18,21 @@ button.secondary{background:#e8eef7;color:#164270}button:disabled{opacity:.5;cur
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="assets/lexlearn-config.js?v=1.3"></script>
 <script src="assets/cloud-data.js?v=20261023.ai2"></script></head>
-<body><header><div><b>LexLearn</b><div><small>المراجع العلمية ومعايير التصحيح</small></div></div><div class="stack"><a href="admin.html">← لوحة المشرف</a><a href="index.html">الموقع</a></div></header>
-<main><h1>المكتبة العلمية للتصحيح بالذكاء الاصطناعي</h1>
-<p>أضف الكتب وصور الصفحات أو نصوصها، وراجع التفريغ، ثم اعتمد الصفحات واربطها بأسئلة محددة ليستخدمها محرك OpenAI في التصحيح.</p>
-<div class="warn">صفحات الكتاب الجديدة لا تدخل في تصحيح الطلاب قبل اعتمادها وربطها بالسؤال. لا نستخدم كتاب قانون مصري لتغيير حكم مقرر قطري دون مراجعة قانونية.</div>
+<body><header><div><b>LexLearn</b><div><small>تغذية الذكاء الاصطناعي بالمناهج والمواد العلمية</small></div></div><div class="stack"><a href="admin.html">← لوحة المشرف</a><a href="index.html">الموقع</a></div></header>
+<main><h1>تغذية الذكاء الاصطناعي بالمراجع العلمية</h1>
+<p>رتّب المراجع حسب الدولة، والمرحلة، والمادة، والمنهج، ثم أضف ملفات PDF أو صور الكتب والقوانين والامتحانات. يستعين بها OpenAI عند تصحيح السؤال المرتبط بها، مع مراعاة قانون الدولة الصحيحة.</p>
+<div class="warn">لن تؤثر المواد الجديدة على درجات الطلاب قبل مراجعة نصها واعتمادها وربطها بالأسئلة. مرجع القانون المصري لا يُستخدم للتصحيح في مقرر قطري، والعكس.</div>
 <div id="msg" role="status"></div><div id="loading">جاري التحقق من صلاحيات المشرف وتحميل المكتبة…</div><div class="grid" id="workspace" hidden>
 <aside><section class="panel"><h2>إنشاء مرجع جديد</h2>
 <form id="bookForm"><label>عنوان الكتاب أو المرجع<input name="title" required minlength="3" maxlength="240" placeholder="نظرية الحق — المرجع الأكاديمي"></label>
 <label>المؤلف (اختياري)<input name="author" maxlength="240"></label>
 <label>النطاق القانوني<select name="jurisdiction"><option value="general">نظرية قانونية عامة</option><option value="eg">مصر</option><option value="qa">قطر</option></select></label>
-<label>معرّف المقرر (اختياري)<input name="course_id" placeholder="يُترك فارغًا للمرجع العام"></label><button>إنشاء مرجع مسودة</button></form></section>
+<label>المرحلة التعليمية<select name="education_stage"><option value="university">جامعي</option><option value="secondary">ثانوي</option><option value="preparatory">إعدادي</option><option value="primary">ابتدائي</option><option value="professional">مهني</option><option value="other">أخرى</option></select></label>
+<label>المنهج / البرنامج<input name="curriculum_name" placeholder="مثال: كلية الحقوق — السنة الأولى" required value="كلية الحقوق — السنة الأولى"></label>
+<label>المادة العلمية<input name="subject_name" value="نظرية الحق" required></label>
+<label>العام الدراسي (اختياري)<input name="academic_year" placeholder="2026–2027"></label>
+<label>نوع المرجع<select name="reference_kind"><option value="textbook">كتاب مقرر</option><option value="legislation">قانون / تشريع</option><option value="exam">امتحانات سابقة</option><option value="lecture">محاضرات</option><option value="academic_study">دراسة علمية</option><option value="model_answer">نموذج إجابة معتمد</option></select></label>
+<label>المقرر المرتبط<select name="course_id" id="courseSelect"><option value="">بدون مقرر محدد (مرجع عام)</option></select></label><button>إنشاء مرجع مسودة</button></form></section>
 <section class="panel"><h2>الكتب المسجلة</h2><div id="books"></div></section></aside>
 <section><div id="detail" class="panel">اختر كتابًا من القائمة.</div></section></div></main>
 <script src="assets/lex-references.js?v=20261024.1"></script></body></html>
