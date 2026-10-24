@@ -32,7 +32,7 @@ function updateCourses(preferred=""){
  if(!sel)return;
  const courses=state.courses.filter(c=>universityKey&&c.country_code===countryCode&&c.institution_key===universityKey);
  sel.innerHTML='<option value="">بدون مقرر محدد (مرجع عام للجامعة أو الكلية)</option>'+
- courses.map(c=>'<option value="'+escape(c.id)+'">'+escape(c.title_ar+" — "+c.course_code||c.id)+'</option>').join("");
+ courses.map(c=>'<option value="'+escape(c.id)+'">'+escape(c.title_ar+" — "+(c.course_code||c.id))+'</option>').join("");
  if(courses.some(c=>c.id===preferred))sel.value=preferred;
 }
 function updateFaculties(preferred=""){
@@ -66,7 +66,7 @@ function renderDirectory(preserve={}){
  updateUniversities(preserve.university||"",preserve.faculty||"",preserve.course||"");
  const enabled=new Set(codes.map(c=>c.code));
  const avail=regionOptions.filter(r=>!enabled.has(r.code));
- $("countryToAdd").innerHTML=avail.map(r=>'<option value="'+escape(r.code)+'">'+escape(r.name)+" ("+r.code.toUpperCase()+")"+'</option>').join("");
+ $("countryToAdd").innerHTML='<option value="" selected disabled>اختر الدولة من القائمة</option>'+avail.map(r=>'<option value="'+escape(r.code)+'">'+escape(r.name)+" ("+r.code.toUpperCase()+")"+'</option>').join("");
  $("countryToAdd").disabled=!avail.length;
  $("directoryAdmin").hidden=!state.can_approve;
 }
