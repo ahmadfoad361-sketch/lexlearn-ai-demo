@@ -1,5 +1,5 @@
--- v4: rule-element coverage distinguishes nonresponses from supplied answers with no correct legal elements.
--- The pre-existing three-element 2:1:2 weighted rubric and review-for-contradiction checks remain.
+-- Preserve original evidence. Empty/Not sure stays unmeasured; a submitted, intelligible answer
+-- with no legal elements has preliminary legal-criterion coverage 0/5.
 -- LexLearn preliminary diagnostic recall rubric revision.
 -- Existing saved student results are left untouched for audit and prompt-version fairness.
 -- New responses must cover three legal rule elements, not one keyword relationship.
@@ -79,30 +79,13 @@ begin
    if application and issue then pts:=pts+1;met:=array_append(met,'connect_facts_to_rule');else missed:=array_append(missed,'connect_facts_to_rule');end if;
    if outcome then pts:=pts+1;met:=array_append(met,'direct_legal_conclusion');else missed:=array_append(missed,'direct_legal_conclusion');end if;
  end if;
- -- An explicit refusal is an UNMEASURED observation, not a wrong legal answer.
- -- Never mistake "I don't know" for zero coverage, even though the learner typed text.
  if p_item='diagnostic-legal-personality'
-   and t ~ '^[[:space:]]*(لا[[:space:]]*(ادري|اعرف|اعلم)|مش[[:space:]]+عارف|ما[[:space:]]+اعرف|غير[[:space:]]+متاكد|idk|not[[:space:]]+sure|i[[:space:]]+don.t[[:space:]]+know)[[:space:].!؟]*
- pct:=round(100.0*pts/maximum)::integer;
- return jsonb_build_object('status','preliminary_internal','provisional_percent',pct,
-  'grade_type','provisional_rule_coverage_not_final_legal_grade',
-  'confidence',case when pts>=maximum-1 and b then 'medium' else 'low' end,
-  'criteria_met',to_jsonb(met),'criteria_missing',to_jsonb(missed),
-  'needs_human_review',true,'method','internal_qatar_rights_rules_v1',
-  'source_scope',jsonb_build_array('qa-civil-2004-art39','qa-civil-2004-art40'),
-  'warning_ar','النسبة تقييم آلي مبدئي لعناصر القاعدة والعلاقات القانونية، وليست درجة جامعية نهائية.',
-  'warning_en','The percentage is a provisional internal legal-element assessment, not a final university grade.');
-end $$;
-revoke all on function public.lex_internal_personality_grade(text,text) from public,anon,authenticated;
-
+   and t ~ '^[[:space:]]*(لا[[:space:]]*(ادري|اعرف|اعلم)|مش[[:space:]]+عارف|ما[[:space:]]+اعرف|غير[[:space:]]+متاكد|idk|not[[:space:]]+sure|i[[:space:]]+don.t[[:space:]]+know)[[:space:].!؟]*$'
  then
   return jsonb_build_object('status','needs_human_review','provisional_percent',null,
    'reason','explicit_not_sure','method','internal_qatar_rights_rules_v4');
  end if;
- -- A supplied, legible answer which covers NONE of the three stated legal
- -- elements earns ZERO preliminary rule-element coverage (not zero memory capacity).
- -- Do not classify a one-word typo as "provider pending" or invent positive marks.
- -- Truly empty, punctuation-only, or illegible answers remain unmeasured.
+ -- Do not grade punctuation-only, numeric-only or function-word fragments.
  if p_item='diagnostic-legal-personality'
   and length(regexp_replace(t,'[[:space:][:punct:][:digit:]]','','g'))<4
  then
