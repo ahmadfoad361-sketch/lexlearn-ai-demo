@@ -25,6 +25,9 @@ assert.ok(!student.includes("بتصحيح OpenAI."),"learner feedback must not b
 assert.ok(student.includes('replace(/Open[\\s-]*AI/gi'),"dynamic feedback must mask provider branding");
 const styles=fs.readFileSync("assets/learner-experience.css","utf8");
 assert.ok(styles.includes(".legalNumberRail")&&styles.includes("position:sticky"));
+assert.ok(styles.includes("--lx-tab-paper:#f3e2c7")&&styles.includes("--lx-tab-paper:#34445c"),"paper tabs have distinct light/dark colors");
+assert.ok(styles.includes("clip-path:polygon(")&&styles.includes(".legalNumberChip"),"article numbers are shown as notebook-style bookmark tabs");
+assert.ok(styles.includes("min-width:1540px")&&styles.includes("max-width:600px"),"bookmark rail has sidebar and mobile treatments");
 assert.ok(styles.includes("body:has(#officialDiagnostic)"),"diagnostic contrast must work in dark mode");
 assert.ok(styles.includes("prefers-reduced-motion"),"respect reduced motion");
 const published=fs.readFileSync("scripts/build-public.js","utf8");
