@@ -20,7 +20,7 @@ async function run({consent=true,fail=false,lang='ar'}={}){
  if(!consent){assert.ok(!calls.includes('grade'),'legacy missing permission is not silently invented');assert.ok(!calls.includes('consent'));return;}
  assert.ok(calls.indexOf('grade')>calls.indexOf('trainingSubmit'),'persist the answer before paid inference');
  assert.equal(saved[0].item_id,'recall','server evidence takes priority over the original balanced task order');
- if(fail){assert.ok(host.html.includes(lang==='ar'?'لم يتأكد':'not confirmed'));assert.ok(!host.html.includes('50%'));}
+ if(fail){assert.ok(host.html.includes(lang==='ar'?'التصحيح غير مكتمل':'assessment incomplete'));assert.ok(!host.html.includes('50%'));}
  else{
   assert.ok(host.html.includes('90%'));assert.ok(!host.html.includes('<script>'));assert.ok(host.html.includes('&lt;script&gt;'));
   assert.ok(host.html.includes(lang==='ar'?'الأولوية الآن للفهم':'Understanding priority'));
