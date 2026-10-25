@@ -6,6 +6,7 @@ alter table public.profiles add column if not exists contact_email text;
 alter table public.profiles add column if not exists account_status text;
 create table if not exists public.cohorts(id uuid primary key);
 create table if not exists public.curriculum_mappings(id uuid primary key);
+create table if not exists public.demo_submissions(id uuid primary key,reviewed_by uuid);
 create or replace function private.is_platform_admin() returns boolean language sql stable security definer
 set search_path='' as $$ select exists(select 1 from public.profiles where id=auth.uid() and active and role in ('owner','admin')); $$;
 insert into public.profiles(id,role,active,display_name) values
