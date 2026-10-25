@@ -3,7 +3,7 @@ const moments=require('../assets/session-moments.js');
 assert.equal(moments.phrases.length,9);
 for(let n=1;n<=30;n++)for(const lang of ['ar','en']){const p=moments.forSession(n),html=moments.render(n,lang);
  assert.ok(p.source.url.startsWith('https://'),'the research record stays available internally');
- assert.ok(html.includes(lang==='ar'?p.ar:p.en),'display the encouragement itself');
+ assert.ok(html.replace(/&#39;/g,"'").replace(/&amp;/g,"&").replace(/&quot;/g,'"').includes(lang==='ar'?p.ar:p.en),'display the encouragement itself');
  assert.ok(!html.includes(p.source.url)&&!html.includes(p.source.ar)&&!html.includes(p.source.en),'research byline must not appear on learner card');
  assert.ok(!/figcaption|sessionMomentNote|sessionMomentSource|الدراسة الأصلية|اقتباسًا حرفيًا|original study|verbatim quotation/.test(html),
   'no academic footnotes or UI-explanation labels on completion cards');
