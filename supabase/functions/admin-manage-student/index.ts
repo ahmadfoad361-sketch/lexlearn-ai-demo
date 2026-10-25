@@ -97,9 +97,34 @@ Deno.serve(async(req)=>{
       await admin.from("admin_audit").insert({actor_user_id:user.id,target_user_id:null,action:"DELETE_STUDENT_COMPLETED",details:{former_user_id:target,username:student.username}});
       return json({ok:true,deleted:true});
     }else if(action==="update_profile"){
-      const allowed:any={};
-      for(const k of ["display_name","university","year_label","cohort_id","locale"])if(k in b.patch)allowed[k]=b.patch[k];
-      const r=await admin.from("profiles").update(allowed).eq("id",target);if(r.error)throw r.error;
+      // Owner-admin corrections are needed to link pre-existing student profiles
+      // to an exact instructor university + faculty + academic year assignment.
+      // Never infer a university from a country or guess missing faculty values.
+      if(!["owner","admin"].includes(profile.role))return json({error:"profile_changes_require_admin"},403);
+      const patch=b.patch&&typeof b.patch==="object"&&!Array.isArray(b.patch)?b.patch:{};
+      const allowed:Record<string,string|null>={};
+      const limits:Record<string,number>={
+        display_name:160,university:160,faculty:160,academic_section:100,
+        year_label:80,student_registration_number:80,institutional_group_email:254
+      };
+      for(const [key,max] of Object.entries(limits)){
+        if(!(key in patch))continue;
+        const v=String(patch[key]??"").trim();
+        if(v.length>max||(["display_name","university","faculty","year_label"].includes(key)&&v.length<2))
+          return json({error:"invalid_academic_profile_field",field:key},400);
+        allowed[key]=v||null;
+      }
+      if("country_code" in patch){
+        if(!["qa","eg","sa","ae","other"].includes(patch.country_code))
+          return json({error:"invalid_country"},400);
+        allowed.country_code=patch.country_code;
+      }
+      if(allowed.institutional_group_email&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(allowed.institutional_group_email))
+        return json({error:"invalid_institutional_group_email"},400);
+      if(!Object.keys(allowed).length)return json({error:"no_allowed_fields"},400);
+      const save=await admin.from("profiles").update(allowed).eq("id",target).eq("role","student").select("id").single();
+      if(save.error||!save.data)throw Error("student_academic_profile_not_saved");
+      b.details={academic_profile_fields_updated:Object.keys(allowed),scope_matching_may_change:true};
     }else if(action==="save_snapshot"){
       if(!b.course_id||!b.snapshot_type)return json({error:"snapshot_fields_required"},400);
       const r=await admin.from("learner_snapshots").upsert({user_id:target,course_id:b.course_id,snapshot_type:b.snapshot_type,state:b.state||{},version:Number(b.version)||1,updated_at:new Date().toISOString()},{onConflict:"user_id,course_id,snapshot_type"});
