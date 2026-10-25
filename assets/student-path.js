@@ -7,7 +7,10 @@
 var COURSE="qa-qu-lawc101-rights",host=root.document.getElementById("studentTrainingApp");
 function lang(){return new URLSearchParams(root.location.search).get("lang")==="en"?"en":"ar";}
 function t(ar,en){return lang()==="en"?en:ar;}
-function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
+function esc(s){
+ var visible=String(s==null?"":s).replace(/Open[\\s-]*AI/gi,t("التصحيح الآلي","automated assessment"));
+ return visible.replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});
+}
 function url(n){return "student-path.html?lang="+lang()+(n?"&session="+n:"")+"&app=20261024-assessment-release";}
 function noHtmlScore(value){return typeof value==="number"&&isFinite(value)?Math.round(Math.max(0,Math.min(100,value)))+"%":t("غير قابل للتقدير","Not reliably measurable");}
 function weakName(s){return {recall:t("الحفظ","Recall"),understanding:t("الفهم","Understanding"),exam_execution:t("بناء الإجابة","Exam answer structure")}[s]||t("التأسيس","Foundations");}
