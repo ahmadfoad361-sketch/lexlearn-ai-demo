@@ -12,7 +12,7 @@ const shared=fs.readFileSync("supabase/functions/_shared/auth.ts","utf8");
 const pages=fs.readFileSync("scripts/build-public.js","utf8");
 assert.match(migration,/create table if not exists public.instructor_assignments/);
 assert.match(migration,/private\.instructor_can_view\(p_student,p_course\)/);
-assert.match(migration,/student\.country_code=a\.country_code/);
+assert.match(migration,/a\.country_code=student\.country_code/);
 for(const field of ["university","faculty","year_label","course_id"])
  assert.ok(migration.includes(field),"missing assignment gate "+field);
 assert.match(migration,/drop policy if exists "diagnostic instructor cohort read"/);
