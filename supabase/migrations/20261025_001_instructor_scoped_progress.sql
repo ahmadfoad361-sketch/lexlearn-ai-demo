@@ -130,7 +130,12 @@ begin
  select jsonb_build_object(
   'recall',coalesce(d.result#>>'{measurements,recall,ai_grade,provisional_percent}',
                     d.result#>>'{measurements,recall,corrected_internal_grade,provisional_percent}',
-                    d.result#>>'{measurements,recall,internal_grade,provisional_percent}'),
+                    case when d.result #>> '{measurements,recall,internal_grade,status}'='preliminary_internal'
+                         and (d.result #> '{measurements,recall,internal_grade,criteria_met}') is not null
+                         and (d.result #> '{measurements,recall,internal_grade,criteria_missing}') is not null
+                         and jsonb_array_length(d.result #> '{measurements,recall,internal_grade,criteria_met}')
+                             + jsonb_array_length(d.result #> '{measurements,recall,internal_grade,criteria_missing}')=3
+                         then d.result #>> '{measurements,recall,internal_grade,provisional_percent}' else null end),
   'understanding',d.result#>>'{metrics,understanding}',
   'date',d.completed_at,'kind','diagnostic_preliminary_different_instrument'
  ) into diag from public.student_diagnostic_runs d where d.user_id=p_student and d.course_id=p_course and d.status='completed';
