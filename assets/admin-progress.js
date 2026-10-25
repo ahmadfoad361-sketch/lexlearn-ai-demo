@@ -3,12 +3,14 @@
 const app=document.getElementById("adminProgressApp"),db=LEX_CLOUD.db();
 const esc=x=>String(x??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const score=x=>x===null||x===undefined||x===""||!Number.isFinite(Number(x))?"لم يُقَس":Math.round(Number(x))+"%";
-let students=[],selected=null,report=null;
+let students=[],selected=null,report=null,enrollments=[],selectedCourse="";
 function show(){
  app.innerHTML='<section class="panel"><span class="eyebrow">التقييم الدوري</span><h1>تدرج الحفظ والفهم لكل طالب</h1><p>تُعرض المؤشرات عند التشخيص، ثم بعد كل خمس جلسات مكتملة. أرقام التمارين من معايير مؤقتة ولا تُستخدم لإثبات تحسّن علمي دون مقاييس متكافئة.</p>'+
  '<label>الطالب<select id="selectedStudent">'+students.map(x=>'<option value="'+esc(x.id)+'" '+(selected===x.id?"selected":"")+'>'+esc(x.name||x.username)+' — '+esc(x.university||"")+' — '+esc(x.year||"")+'</option>').join("")+'</select></label>'+
+ '<label>المقرر<select id="selectedCourse">'+enrollments.filter(e=>e.user_id===selected).map(e=>'<option value="'+esc(e.course_id)+'" '+(selectedCourse===e.course_id?"selected":"")+'>'+esc(e.course_id)+'</option>').join("")+'</select></label>'+
  '<button class="primary" id="inspectProgress">عرض تقدم الطالب</button><button class="secondary" id="printProgress">طباعة التقرير</button></section><div id="progressReport">'+(report?renderReport(report):'')+'</div>';
- document.getElementById("inspectProgress").onclick=()=>load(document.getElementById("selectedStudent").value);
+ document.getElementById("inspectProgress").onclick=()=>load(document.getElementById("selectedStudent").value,document.getElementById("selectedCourse").value||null);
+ document.getElementById("selectedStudent").onchange=e=>{selected=e.target.value;selectedCourse=enrollments.find(x=>x.user_id===selected)?.course_id||"";report=null;show();};
  document.getElementById("printProgress").onclick=()=>window.print();
 }
 function renderReport(r){
@@ -33,12 +35,12 @@ function suggest(r){
  if(!notes.length)notes.push("الاستمرار في تدريبات متنوعة وقياس دوري ومراجعة بشرية للنتائج.");
  return notes.map(x=>'<p>• '+x+'</p>').join("");
 }
-async function load(uid){
- selected=uid;report=null;show();
+async function load(uid,courseId){
+ selected=uid;selectedCourse=courseId||enrollments.find(x=>x.user_id===uid)?.course_id||"";report=null;show();
  const box=document.getElementById("progressReport");box.innerHTML='<section class="panel">جارٍ تحميل سجل الطالب المصرّح به…</section>';
  try{
-  const row=students.find(x=>x.id===uid),c=row?.country==="eg"?"qa-qu-lawc101-rights":"qa-qu-lawc101-rights";
-  const res=await db.rpc("lex_staff_skill_progress",{p_student:uid,p_course:c});
+  if(!enrollments.some(x=>x.user_id===uid&&x.course_id===selectedCourse))throw Error("not_enrolled");
+  const res=await db.rpc("lex_staff_skill_progress",{p_student:uid,p_course:selectedCourse});
   if(res.error)throw res.error;
   report=res.data;box.innerHTML=renderReport(report);
  }catch(_){box.innerHTML='<section class="panel danger">تعذر تحميل قياسات الطالب. تأكد من تسجيله في المادة التجريبية.</section>';}
@@ -46,8 +48,12 @@ async function load(uid){
 async function boot(){
  const p=await LEX_CLOUD.profile();
  if(!p||!["owner","admin"].includes(p.role)||p.active!==true)throw Error("FORBIDDEN");
- students=await LEX_CLOUD.listStudents();
- selected=students[0]?.id||null;show();if(selected)await load(selected);
+ const [roster,linked]=await Promise.all([LEX_CLOUD.listStudents(),db.from("enrollments").select("user_id,course_id").eq("status","active")]);
+ if(linked.error)throw linked.error;
+ students=roster;enrollments=linked.data||[];
+ selected=students.find(s=>enrollments.some(e=>e.user_id===s.id))?.id||null;
+ selectedCourse=enrollments.find(e=>e.user_id===selected)?.course_id||"";
+ show();if(selected)await load(selected,selectedCourse);
 }
 boot().catch(()=>app.innerHTML='<section class="panel danger"><h2>الدخول غير مصرح به</h2><p>البيانات التفصيلية تظهر للمشرف المفوض فقط.</p><a href="admin-login.html">تسجيل دخول المشرف</a></section>');
 })();
