@@ -18,6 +18,19 @@ function previousAnswerTitle(item,task){
   return t("إجابتك السابقة — ","Your previous answer — ")+weakName(dimension)+(localizedTitle?" · "+String(localizedTitle):"");
 }
 function lawContext(ids){return root.LEX_LEGAL_STUDY?root.LEX_LEGAL_STUDY.context(ids||[],lang()):"";}
+// A small, always-readable reference index. Display numbers only; no answer text is disclosed.
+function lawNumberRail(tasks,language){
+ var study=root.LEX_LEGAL_STUDY;if(!study||typeof study.numbers!=="function")return "";
+ var ids=[];(tasks||[]).forEach(function(item){if(item&&Array.isArray(item.sources))ids=ids.concat(item.sources);});
+ var numbers=study.numbers(ids);
+ if(!numbers.length)return "";
+ var english=language==="en",heading=english?"Articles in this session":"مواد هذه الجلسة";
+ return "<aside class='legalNumberRail' aria-label='"+heading+"'><span class='legalNumberRailCaption'>"+heading+"</span>"+
+ "<div class='legalNumberRailNumbers'>"+numbers.map(function(n){
+ return "<span class='legalNumberChip' aria-label='"+(english?"Article ":"المادة ")+n+"'><small>"+(english?"Art.":"مادة")+"</small><strong>"+n+"</strong></span>";
+ }).join("")+"</div></aside>";
+}
+
 // Built-in fallback: render a visible logo wait even if the optional widget file is unavailable.
 function startGradingWait(settings){
  if(root.LEX_GRADING_WAIT&&typeof root.LEX_GRADING_WAIT.begin==="function"){
@@ -64,7 +77,7 @@ function feedback(item){
    var state=c.credit===1?t("✓ صحيح","✓ Correct"):c.credit>0?t("◐ صحيح جزئيًا","◐ Partly correct"):t("✗ ناقص أو يحتاج تصحيحًا","✗ Missing or needs correction");
    return "<li class='"+(c.credit===1?"criterionCorrect":c.credit>0?"criterionPartial":"criterionIncorrect")+"'><b>"+esc(state)+" — "+esc(lang()==="en"?c.label_en:c.label_ar)+"</b>"+(c.evidence?"<blockquote>«"+esc(c.evidence)+"»</blockquote>":"")+"<p>"+esc(lang()==="en"?c.explanation_en:c.explanation_ar)+"</p></li>";
   }).join("")+"</ul>":"";
-  return "<div class='feedback' role='status'><b>"+esc(verdict)+": "+esc(noHtmlScore(ev.provisional_percent))+"</b><p style='white-space:pre-wrap'>"+esc(lang()==="en"?ev.feedback_en:ev.feedback_ar)+"</p>"+details+"<small>"+t("نسبة استيفاء متطلبات هذا السؤال، بتصحيح OpenAI. ليست حكمًا على قدرتك الكاملة على الفهم، ووالمشرف يتابع تقدمك.","OpenAI assessment of this task’s requirements, not your entire understanding ability; instructor oversight only.")+"</small></div>";
+  return "<div class='feedback' role='status'><b>"+esc(verdict)+": "+esc(noHtmlScore(ev.provisional_percent))+"</b><p style='white-space:pre-wrap'>"+esc(lang()==="en"?ev.feedback_en:ev.feedback_ar)+"</p>"+details+"<small>"+t("تقدير آلي أولي لاستيفاء عناصر السؤال، وليس حكمًا على قدرتك الكاملة على الفهم. المشرف يتابع تقدمك.","Preliminary automated assessment of this task’s requirements, not your entire understanding ability; instructor oversight only.")+"</small></div>";
  }
  return "<div class='feedback' role='status'><b>"+t("حُفظت الإجابة — التصحيح غير مكتمل","Answer saved — assessment incomplete")+"</b>"+
  "<p>"+t("لم يتأكد التصحيح بالذكاء الاصطناعي بعد. أعد طلب التصحيح من الزر أدناه؛ لن تُعرض نسبة قبل تأكيده.","AI assessment has not been confirmed. Retry below; no percentage is shown before confirmation.")+"</p>"+
@@ -210,7 +223,7 @@ async function boot(){
     return "<details class='past'"+(v===saved[saved.length-1]?" open":"")+"><summary>"+esc(previousAnswerTitle(v,task))+"</summary>"+lawContext(task&&task.sources)+"<p style='white-space:pre-wrap'>"+esc(v.answer_text)+"</p>"+feedback(v)+(needsAssessment(v)&&acceptedAi&&cloud.gradeTrainingAi?"<button type='button' id='retryGrade"+index+"'>"+t("أعد تصحيح هذه الإجابة","Retry assessment of this answer")+"</button>":"")+"</details>";
    }).join("");
    var resume=next?"<section class='learnerWelcome'><div><h2>"+t("تدريبك التالي جاهز","Your next practice is ready")+"</h2><p>"+t("إجاباتك السابقة محفوظة؛ أكمل خطوة واحدة الآن.","Your previous answers are saved. Continue one step at a time.")+"</p></div><a href='#currentPractice'>"+t("أكمل تدريبك","Continue practice")+"</a></section>":"";
-   var main=resume+"<section class='stage'><h1>"+esc(name)+"</h1>"+why+
+   var main=resume+"<section class='stage'>"+lawNumberRail(data.tasks,lang())+"<h1>"+esc(name)+"</h1>"+why+
     "<p>"+t("أُرسلت ","Saved ")+saved.length+" / "+data.tasks.length+t(" إجابات محفوظة في حسابك."," answers to your account.")+"</p>"+
     completedFeedback;
    if(completed){
@@ -232,7 +245,9 @@ async function boot(){
      // answer goes to the existing server rubric with explicit section headings.
      main+="<div id='legalExamGuide'></div>";
     }else{
-     main+="<div class='prompt' style='white-space:pre-wrap'>"+esc(prompt)+"</div>"+
+     main+=(root.LEX_BEGINNER_PROMPTS&&root.LEX_BEGINNER_PROMPTS.render?
+       root.LEX_BEGINNER_PROMPTS.render(prompt,lang()):
+       "<div class='prompt' style='white-space:pre-wrap'>"+esc(prompt)+"</div>")+
       "<label for='adaptiveEssay'>"+t("اكتب إجابتك القانونية بأسلوبك","Write your legal explanation in your own words")+"</label>"+
       "<textarea id='adaptiveEssay' rows='7' maxlength='4000' placeholder='"+t("اكتب إجابتك بأسلوبك...","Write your answer in your own words...")+"'></textarea>"+
       "<button type='button' id='adaptiveSubmit'>"+t("احفظ الإجابة وحللها ثم انتقل","Save, analyse, and continue")+"</button>";
