@@ -199,3 +199,8 @@ html[data-learner-theme] .legalCaseGuide :is(.caseHelp,.caseFacts p,.caseMainQue
 html[data-learner-theme=dark] #officialDiagnostic :is(p,small,.diagProgressHeader,.diagProgressHeader span,fieldset legend){color:#e6ecf5}
 html[data-learner-theme=dark] #officialDiagnostic :is(h2,h3,label,.choice,.diagScoreLabel){color:#f7f4ef}
 html[data-learner-theme=dark] :is(.stageCard p,.stageCard small,.stageCard .next,.stageCard a,.stage .taskType,.progressReport>p){color:var(--lx-ink)}
+
+/* Showcase/diagnostic entry: fix pale-on-pale introductory labels in dark mode. */
+html[data-learner-theme=dark] :is(.demoIntro .demoEyebrow,.demoIntro .stageProgressText,.demoIntro .demoIntroLead,.demoStage .stageCard>p,.stageCard .demoEyebrow,.studentHeroSide h3,.studentHeroSide p){color:#f1f5fb!important}
+html[data-learner-theme=dark] :is(.demoStage .stageCard,.studentHeroSide){background:var(--lx-surface);border-color:var(--lx-border)}
+html[data-learner-theme=dark] :is(.demoStage .stageCard a,.demoStage .stageCard small){color:#f1f5fb}
