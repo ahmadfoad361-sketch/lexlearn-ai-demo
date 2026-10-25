@@ -111,7 +111,7 @@ function progressHtml(rows,session,historyAvailable){
  return "<section class='progressReport' aria-label='"+t("ملخص تقدمك","Your progress report")+"'><h2>"+
  (m.checkpoint?t("إتمام المستوى ","Level completion ")+m.level:t("ملخص الجلسة ","Session summary ")+session)+"</h2>"+
  (visual?visual.completion(card,lang()):"")+
- (root.LEX_SESSION_MOMENTS?root.LEX_SESSION_MOMENTS.render(session,lang()):"")+
+ (root.LEX_SESSION_MOMENTS?root.LEX_SESSION_MOMENTS.render(session,lang(),card):"")+
  "<p class='completionState'>✓ "+t("أكملت مهام هذه الجلسة وحُفظت إجاباتك.","You completed this session and your answers were saved.")+"</p>"+
  "<div class='progressSkills'>"+m.skills.map(function(x){
    var aiRows=(rows||[]).filter(function(r){return r.dimension===x.dimension&&r.session_number===session&&r.evaluation&&confirmedGrade(r.evaluation);});
@@ -319,7 +319,7 @@ async function boot(){
       await loadProgress();
      }
      busy=false;render();
-     if(data.completed&&root.LEX_SESSION_MOMENTS)root.LEX_SESSION_MOMENTS.show(selected,lang(),uid+":"+COURSE+":"+selected);
+     if(data.completed&&root.LEX_SESSION_MOMENTS)root.LEX_SESSION_MOMENTS.show(selected,lang(),uid+":"+COURSE+":"+selected,momentData(progressRows,selected));
      if(data.completed&&selected%5===0&&overview.completed_count>=selected&&root.LEX_MOMENTS)root.LEX_MOMENTS.celebrate((root.document.querySelector&&root.document.querySelector(".sessionMomentDialog[open]"))||host,uid+":"+COURSE+":"+selected);
     }catch(e){
      busy=false;button.disabled=false;
