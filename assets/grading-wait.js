@@ -1,6 +1,4 @@
-/* LexLearn assessment wait experience: only an interface, never a fake progress indicator.
- * Research messages reuse the already attributed research summaries in session-moments.js.
- */
+/* LexLearn assessment wait experience: concise learner messages, no fabricated progress. */
 (function(root){
 "use strict";
 var current=null;
@@ -12,11 +10,11 @@ function learnerName(value){
  return name.length>65?name.slice(0,65).trim():name;
 }
 function researchMessages(dimension){
- var lib=root.LEX_SESSION_MOMENTS,phrases=lib&&lib.phrases||[],sources=lib&&lib.sources||{};
+ var lib=root.LEX_SESSION_MOMENTS,phrases=lib&&lib.phrases||[];
  var topical=dimension==="recall"?"retrieval":dimension==="understanding"?"understanding":null;
  var matching=topical?phrases.filter(function(p){return p.source===topical;}):phrases.slice();
  if(matching.length<2)matching=phrases.slice();
- return matching.slice(0,5).map(function(p){return {ar:p.ar,en:p.en,source:sources[p.source]||null};});
+ return matching.slice(0,5).map(function(p){return {ar:p.ar,en:p.en};});
 }
 var fallback=[
  {ar:"محاولتك الحالية تساعدك على معرفة ما أتقنته وما يحتاج إلى مراجعة.",en:"This attempt can show what you know and what to revisit."},
@@ -40,30 +38,26 @@ function begin(options){
  "<p class='lexGradingWaitKicker'>"+tr(language,"رحلتك في التعلّم","YOUR LEARNING JOURNEY")+"</p>"+
  "<h2 class='lexGradingWaitTitle'></h2>"+
  "<p class='lexGradingWaitLead' role='status' aria-live='polite'></p>"+
- "<div class='lexGradingWaitQuote'><p class='lexGradingWaitMessage'></p><span class='lexGradingWaitSource'></span></div>"+
+ "<div class='lexGradingWaitQuote'><p class='lexGradingWaitMessage'></p></div>"+
  "<div class='lexGradingWaitFoot'><span class='lexGradingWaitDots' aria-hidden='true'><i></i><i></i><i></i></span>"+
- "<span class='lexGradingWaitFootText'>"+tr(language,"النتيجة لم تصدر بعد — هذه ليست نسبة إنجاز","Assessment still in progress — no score yet")+"</span></div>"+
+ "<span class='lexGradingWaitFootText'>"+tr(language,"جارٍ المراجعة…","Reviewing…")+"</span></div>"+
  "</div>";
  var heading=overlay.querySelector(".lexGradingWaitTitle"),lead=overlay.querySelector(".lexGradingWaitLead");
- var quote=overlay.querySelector(".lexGradingWaitMessage"),source=overlay.querySelector(".lexGradingWaitSource");
- var foot=overlay.querySelector(".lexGradingWaitFootText");
- var position=0,finished=false,interval=null,phase="saving",step="";
+ var quote=overlay.querySelector(".lexGradingWaitMessage");
+  var position=0,finished=false,interval=null,phase="saving",step="";
  var greeting=name?(en(language)?name+", ":"يا "+name+"، "):"";
  function renderPhase(){
    if(phase==="saving"){
      heading.textContent=tr(language,greeting+"بنحفظ إجابتك","Saving your answer"+(name?", "+name:""));
-     lead.textContent=tr(language,"نتأكد أولًا من حفظ إجابتك في حسابك قبل التصحيح.","We are confirming that your answer is saved before assessment.");
+     lead.textContent=tr(language,"لحظات ونكمل.","Just a moment.");
    }else{
      heading.textContent=tr(language,greeting+"بنراجع إجابتك بعناية","Reviewing your answer"+(name?", "+name:""));
-     lead.textContent=step||tr(language,"جارٍ تقييم إجابتك وفق عناصر السؤال والمراجع المعتمدة.","Your answer is being assessed using the question rubric and approved references.");
+     lead.textContent=step||tr(language,"نجهّز نتيجتك.","Preparing your result.");
    }
  }
  function renderMessage(){
    var p=messages[position%messages.length];position++;
    quote.textContent=en(language)?p.en:p.ar;
-   source.textContent=p.source?
-     tr(language,"رسالة تربوية مبسّطة مستندة إلى: ","A simplified research-inspired message: ")+(en(language)?p.source.en:p.source.ar):
-     tr(language,"رسالة تشجيعية أثناء الانتظار","Encouragement during assessment");
  }
  function finish(){
    if(finished)return;
@@ -78,7 +72,7 @@ function begin(options){
   setPhase:function(next){if(finished)return;if(next==="saving"||next==="grading"){phase=next;renderPhase();}},
   setStep:function(number,total){if(finished)return;
     if(Number.isInteger(number)&&Number.isInteger(total)&&total>0&&number>=1&&number<=total){
-     step=tr(language,"نراجع الإجابة "+number+" من "+total+"، مع الاحتفاظ بكل إجاباتك المحفوظة.","Reviewing answer "+number+" of "+total+"; your saved work is retained.");
+     step=tr(language,"الإجابة "+number+" من "+total,"Answer "+number+" of "+total);
      phase="grading";renderPhase();
     }
   },
