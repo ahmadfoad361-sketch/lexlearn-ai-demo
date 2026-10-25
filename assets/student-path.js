@@ -8,7 +8,7 @@ var COURSE="qa-qu-lawc101-rights",host=root.document.getElementById("studentTrai
 function lang(){return new URLSearchParams(root.location.search).get("lang")==="en"?"en":"ar";}
 function t(ar,en){return lang()==="en"?en:ar;}
 function esc(s){
- var visible=String(s==null?"":s).replace(/Open[\\s-]*AI/gi,t("التصحيح الآلي","automated assessment"));
+ var visible=String(s==null?"":s).replace(/Open[\s-]*AI/gi,t("التصحيح الآلي","automated assessment"));
  return visible.replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});
 }
 function url(n){return "student-path.html?lang="+lang()+(n?"&session="+n:"")+"&app=20261024-assessment-release";}
