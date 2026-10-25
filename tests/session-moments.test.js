@@ -13,6 +13,13 @@ for(let n=1;n<=30;n++)for(const lang of ['ar','en']){const p=moments.forSession(
  assert.ok(html.includes("data-moment-session='"+n+"'"));
  if(n>1)assert.notEqual(p.ar,moments.forSession(n-1).ar,'adjacent sessions show different lines');
 }
+// Different verified needs receive different encouraging messages, without exposing scores on the card.
+const weakerRecall=moments.forSession(2,{recall:10,understanding:70});
+const weakerUnderstanding=moments.forSession(2,{recall:70,understanding:10});
+assert.notEqual(weakerRecall.ar,weakerUnderstanding.ar);
+assert.ok(moments.render(2,'ar',{recall:10,understanding:70}).includes(weakerRecall.ar));
+assert.ok(moments.render(2,'ar',{recall:70,understanding:10}).includes(weakerUnderstanding.ar));
+assert.equal(moments.forSession(2,{recall:null,understanding:70}).ar,moments.forSession(2).ar,'missing score does not imply skill weakness');
 for(const n of [0,31,NaN,'1','<script>']){assert.equal(moments.forSession(n),null);assert.equal(moments.render(n,'ar'),'');}
 function environment({storageBlocked=false,supported=true}={}){
  const storage=new Map(),timers=[],dialogs=[];let focusRestored=false;
