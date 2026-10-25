@@ -130,6 +130,16 @@ async function groupAnalysis(){
 async function reload(){
  const c=await LEX_CLOUD.profile();
  if(!c||c.role!=="instructor"||c.active!==true)throw Error("FORBIDDEN");
+ if(c.must_change_password){
+  APP.innerHTML='<section class="panel"><h1>تعيين كلمة مرور دائمة للدكتور</h1><p>لأمان بيانات الطلاب، يجب تغيير كلمة المرور المؤقتة قبل عرض أي سجل تعليمي.</p>'+
+   '<form id="firstProfessorPassword"><label>كلمة المرور الجديدة (10 أحرف على الأقل)<input name="password" type="password" required minlength="10" autocomplete="new-password"></label>'+
+   '<button type="submit" class="primary">تفعيل حساب الدكتور</button><p id="activateMessage" role="status"></p></form></section>';
+  document.getElementById("firstProfessorPassword").onsubmit=async e=>{
+   e.preventDefault();try{await LEX_CLOUD.setOwnPassword(new FormData(e.currentTarget).get("password"));await reload();}
+   catch(_){document.getElementById("activateMessage").textContent="لم يتم تغيير كلمة المرور، حاول مجددًا.";}
+  };
+  return;
+ }
  const r=await C.rpc("lex_instructor_roster");
  if(r.error||!r.data||!r.data.profile)throw r.error||Error("no_profile");
  state.roster=r.data;
