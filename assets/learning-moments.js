@@ -33,7 +33,7 @@ async function resultPng(data,lang){
  [{name:en?'Understanding':'الفهم',value:score(data.understanding),color:'#247b78'},{name:en?'Recall':'الحفظ',value:score(data.recall),color:'#8a1f39'}].forEach(function(v,i){var x=350+i*500;c.beginPath();c.arc(x,400,115,0,Math.PI*2);c.fillStyle='#ffffff';c.fill();c.lineWidth=18;c.strokeStyle='#e7e1df';c.stroke();if(v.value!==null&&v.value>0){c.beginPath();c.arc(x,400,115,-Math.PI/2,-Math.PI/2+Math.PI*2*v.value/100);c.strokeStyle=v.color;c.stroke();}text(v.value===null?(en?'Not assessed':'لم يكتمل التصحيح'):v.value+'%',x,400,v.value===null?24:60,'#111d31');text(v.name,x,560,32,v.color);});
  text(en?'Your answers are saved. Keep building, one step at a time.':'إجاباتك محفوظة. واصل التعلم خطوة بخطوة.',600,630,27,'#111d31');
  var phrase=root.LEX_SESSION_MOMENTS&&root.LEX_SESSION_MOMENTS.forSession(data.session);
- if(phrase){var height=lines(en?phrase.en:phrase.ar,702,27,'#18253b',1030);lines(en?phrase.source.en:phrase.source.ar,710+height,20,'#795423',1050);}
+ if(phrase){lines(en?phrase.en:phrase.ar,710,29,'#18253b',1030);}
  text(en?'Preliminary practice indicators · Not a university grade':'مؤشرات تدريبية مبدئية · ليست درجة جامعية',600,862,21,'#526074');
  return await new Promise(function(resolve,reject){canvas.toBlob(function(blob){if(blob)resolve(blob);else reject(Error('image_export_failed'));},'image/png');});
 }
