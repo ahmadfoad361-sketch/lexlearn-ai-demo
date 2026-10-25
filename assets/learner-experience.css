@@ -190,3 +190,12 @@ html[data-learner-theme=dark] body:has(#officialDiagnostic) .diagCard :is(a,.act
 html[data-learner-theme=dark] body:has(#officialDiagnostic) .diagCard :is(button,#serverNext){color:white}
 html[data-learner-theme=dark] body:has(#studentTrainingApp) :is(.learnerWelcome p,.nextAdvice,.stage>p,.stage h1,.stage h2,.heading p){color:var(--lx-ink)}
 @media(prefers-reduced-motion:reduce){html[data-learner-theme] .legalNumberRail{scroll-behavior:auto}}
+
+/* Accessible question reading sizes in both diagnostic and guided legal practice. */
+html[data-learner-theme] #officialDiagnostic>h2{font-size:clamp(1.2rem,2.3vw,1.48rem);line-height:1.8}
+html[data-learner-theme] #officialDiagnostic :is(.choice,fieldset legend){font-size:clamp(1.05rem,1.35vw,1.13rem);line-height:1.8}
+html[data-learner-theme] #officialDiagnostic textarea{font-size:1.12rem;line-height:1.95}
+html[data-learner-theme] .legalCaseGuide :is(.caseHelp,.caseFacts p,.caseMainQuestion h3){font-size:clamp(1.06rem,1.35vw,1.15rem);line-height:1.95}
+html[data-learner-theme=dark] #officialDiagnostic :is(p,small,.diagProgressHeader,.diagProgressHeader span,fieldset legend){color:#e6ecf5}
+html[data-learner-theme=dark] #officialDiagnostic :is(h2,h3,label,.choice,.diagScoreLabel){color:#f7f4ef}
+html[data-learner-theme=dark] :is(.stageCard p,.stageCard small,.stageCard .next,.stageCard a,.stage .taskType,.progressReport>p){color:var(--lx-ink)}
