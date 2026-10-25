@@ -19,18 +19,31 @@ var phrases=[
 var seen=new Set();
 function esc(v){return String(v==null?"":v).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
 function valid(n){return Number.isInteger(n)&&n>=1&&n<=30;}
-function forSession(n){if(!valid(n))return null;var phrase=phrases[(n-1)%phrases.length];return {ar:phrase.ar,en:phrase.en,source:sources[phrase.source]};}
-function render(n,lang){var p=forSession(n);if(!p)return "";var en=lang==="en";
+function forSession(n,context){
+ if(!valid(n))return null;
+ var phrase=phrases[(n-1)%phrases.length];
+ // Personalize the encouraging theme from confirmed skill estimates only.
+ if(context){
+  var recall=context.recall,understanding=context.understanding;
+  if(typeof recall==="number"&&Number.isFinite(recall)&&recall>=0&&recall<=100&&
+    typeof understanding==="number"&&Number.isFinite(understanding)&&understanding>=0&&understanding<=100){
+    var target=recall+9<understanding?"retrieval":understanding+9<recall?"understanding":null;
+    if(target){var relevant=phrases.filter(function(item){return item.source===target;});if(relevant.length)phrase=relevant[(n-1)%relevant.length];}
+  }
+ }
+ return {ar:phrase.ar,en:phrase.en,source:sources[phrase.source]};
+}
+function render(n,lang,context){var p=forSession(n,context);if(!p)return "";var en=lang==="en";
  return "<section class='sessionMomentCard' data-moment-session='"+n+"' lang='"+(en?"en":"ar")+"' dir='"+(en?"ltr":"rtl")+"'><img class='sessionMomentMark' src='assets/lexlearn-x-transparent.svg' alt='' width='90' height='90'><span class='sessionMomentBrand' lang='en'>LexLearn</span><p class='sessionMomentKicker'>"+(en?"ONE MORE STEP IN YOUR JOURNEY":"خطوة جديدة في رحلتك")+"</p><h2>"+(en?"You completed session "+n:"أنهيت الجلسة "+n)+"</h2><figure><blockquote>"+esc(en?p.en:p.ar)+"</blockquote><figcaption class='sessionMomentAttribution'>"+esc(en?p.source.en:p.source.ar)+"</figcaption></figure></section>";
 }
-function show(n,lang,key){
+function show(n,lang,key,context){
  if(!valid(n)||!key||seen.has(key)||!root.document||!root.document.body)return false;
  var storageKey='lex_session_moment_v1_'+key;
  try{if(root.sessionStorage&&root.sessionStorage.getItem(storageKey))return false;}catch(_){}
  var dialog=root.document.createElement('dialog');if(typeof dialog.showModal!=="function")return false;
  var en=lang==="en",previous=root.document.activeElement,timer,finished=false;
  dialog.className='sessionMomentDialog';dialog.setAttribute('aria-label',en?'Session '+n+' completed':'اكتملت الجلسة '+n);
- dialog.innerHTML=render(n,lang)+"<button type='button' class='sessionMomentContinue'>"+(en?"View my session summary":"عرض ملخص الجلسة")+"</button>";
+ dialog.innerHTML=render(n,lang,context)+"<button type='button' class='sessionMomentContinue'>"+(en?"View my session summary":"عرض ملخص الجلسة")+"</button>";
  function finish(){if(finished)return;finished=true;if(timer)root.clearTimeout(timer);if(dialog.open)dialog.close();dialog.remove();if(previous&&previous.isConnected&&previous.focus)previous.focus({preventScroll:true});}
  dialog.addEventListener('close',finish);dialog.addEventListener('cancel',finish);
  dialog.querySelector('.sessionMomentContinue').onclick=finish;
