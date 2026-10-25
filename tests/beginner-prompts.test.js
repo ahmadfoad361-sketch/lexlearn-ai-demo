@@ -9,7 +9,7 @@ for(const item of bank){
  if(item.dimension==='understanding'){
   understanding++;const marker='عبارتان للمقارنة؛ إحداهما غير دقيقة:';
   assert.ok(ar.slice(ar.indexOf(marker)).startsWith(item.prompt_ar.slice(item.prompt_ar.indexOf(marker))),'preserve every comparison and its legal qualifiers while allowing the third explanatory step');
-  assert.match(ar,/اكتب تصحيحها/);assert.match(en,/Correct it/);
+  assert.match(ar,/صحّحها/);assert.match(en,/Correct it/);
  }
  if(item.dimension==='exam_execution'){
   cases++;assert.ok(beginner.cases[item.id]);assert.equal(beginner.cases[item.id].source,item.prompt_ar.split('\n')[0]);
