@@ -1,4 +1,4 @@
-/* Session encouragement: editorial paraphrases of linked research, never fabricated quotations. */
+/* Session encouragement: original research metadata is retained internally, not shown on learner cards. */
 (function(root){"use strict";
 var sources={
  retrieval:{ar:"هنري روديغر وجيفري كاربيك — جامعة واشنطن في سانت لويس · 2006",en:"Henry Roediger & Jeffrey Karpicke — Washington University in St. Louis · 2006",url:"https://pubmed.ncbi.nlm.nih.gov/16507066/"},
@@ -21,7 +21,7 @@ function esc(v){return String(v==null?"":v).replace(/[&<>"']/g,function(c){retur
 function valid(n){return Number.isInteger(n)&&n>=1&&n<=30;}
 function forSession(n){if(!valid(n))return null;var phrase=phrases[(n-1)%phrases.length];return {ar:phrase.ar,en:phrase.en,source:sources[phrase.source]};}
 function render(n,lang){var p=forSession(n);if(!p)return "";var en=lang==="en";
- return "<section class='sessionMomentCard' data-moment-session='"+n+"' lang='"+(en?"en":"ar")+"' dir='"+(en?"ltr":"rtl")+"'><img class='sessionMomentMark' src='assets/lexlearn-x-transparent.svg' alt='' width='90' height='90'><span class='sessionMomentBrand' lang='en'>LexLearn</span><p class='sessionMomentKicker'>"+(en?"ONE MORE STEP IN YOUR JOURNEY":"خطوة جديدة في رحلتك")+"</p><h2>"+(en?"You completed session "+n:"أنهيت الجلسة "+n)+"</h2><figure><blockquote>"+esc(en?p.en:p.ar)+"</blockquote><figcaption>"+esc(en?p.source.en:p.source.ar)+"</figcaption></figure><p class='sessionMomentNote'>"+(en?"A simplified research-based message, not a verbatim quotation.":"عبارة مبسّطة مستندة إلى الدراسة، وليست اقتباسًا حرفيًا.")+"</p><a class='sessionMomentSource' href='"+p.source.url+"' target='_blank' rel='noopener noreferrer'>"+(en?"Read the original study ↗":"الدراسة الأصلية ↗")+"</a></section>";
+ return "<section class='sessionMomentCard' data-moment-session='"+n+"' lang='"+(en?"en":"ar")+"' dir='"+(en?"ltr":"rtl")+"'><img class='sessionMomentMark' src='assets/lexlearn-x-transparent.svg' alt='' width='90' height='90'><span class='sessionMomentBrand' lang='en'>LexLearn</span><p class='sessionMomentKicker'>"+(en?"ONE MORE STEP IN YOUR JOURNEY":"خطوة جديدة في رحلتك")+"</p><h2>"+(en?"You completed session "+n:"أنهيت الجلسة "+n)+"</h2><figure><blockquote>"+esc(en?p.en:p.ar)+"</blockquote></figure></section>";
 }
 function show(n,lang,key){
  if(!valid(n)||!key||seen.has(key)||!root.document||!root.document.body)return false;
@@ -36,7 +36,7 @@ function show(n,lang,key){
  dialog.querySelector('.sessionMomentContinue').onclick=finish;
  root.document.body.appendChild(dialog);dialog.showModal();seen.add(key);
  try{if(root.sessionStorage)root.sessionStorage.setItem(storageKey,'1');}catch(_){}
- // No mandatory dismissal: the same attributed message remains in the session report.
+ // Learners can continue immediately; the concise encouragement remains in their session report.
  timer=root.setTimeout(finish,8000);return true;
 }
 var api={sources:sources,phrases:phrases,forSession:forSession,render:render,show:show};root.LEX_SESSION_MOMENTS=api;
