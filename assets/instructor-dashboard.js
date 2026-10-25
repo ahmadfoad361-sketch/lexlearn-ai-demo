@@ -114,15 +114,15 @@ async function groupAnalysis(){
     const g=by.get(key)||{period:c.period,dimension:c.dimension,rubric:c.rubric_version,students:0,values:[]};
     g.students++;g.values.push(Number(c.percent));by.set(key,g);
    });
-   (r.missing_criteria||[]).forEach(m=>missing.set(m.element,(missing.get(m.element)||0)+Number(m.count||0)));
+   new Set((r.missing_criteria||[]).map(m=>m.element)).forEach(element=>missing.set(element,(missing.get(element)||0)+1));
   });
   const rows=[...by.values()].filter(g=>g.students>=5).sort((a,b)=>a.period-b.period);
   node.innerHTML='<p>عدد الطلاب المشمولين بالتحليل: '+reports.length+' من '+students.length+' — التقديرات آلية وتجريبية.</p>'+
    (rows.length?'<div class="tableScroll"><table class="dataTable"><thead><tr><th>الفترة</th><th>المهارة</th><th>عدد الطلاب</th><th>متوسط تغطية العناصر</th><th>معيار التصحيح</th></tr></thead><tbody>'+
    rows.map(g=>'<tr><td>'+g.period+'</td><td>'+dimension(g.dimension)+'</td><td>'+g.students+'</td><td>'+Math.round(g.values.reduce((a,b)=>a+b,0)/g.values.length)+'%</td><td>'+esc(g.rubric||"غير محدد")+'</td></tr>').join("")+'</tbody></table></div>':
    '<p class="notice">لا تتوافر خمس نتائج طلابية قابلة للمقارنة في فترة واحدة ومعيار واحد. لا يمكن احتساب متوسط جماعي موثوق بعد.</p>')+
-   '<h3>الأجزاء التي تستحق مراجعة طريقة شرحها</h3>'+
-   ([...missing.entries()].sort((a,b)=>b[1]-a[1]).slice(0,7).map(([k,v])=>'<span class="tag">'+esc(k)+' — تكرار '+v+'</span>').join(" ")||
+   '<h3>الأجزاء التي تستحق مراجعة طريقة شرحها</h3><p class="hint">عدد الطلبة الذين ظهر لديهم هذا الاحتياج، لا عدد مرات الخطأ. يُقترح تعديل الشرح عند تكراره لدى نسبة معتبرة.</p>'+
+   ([...missing.entries()].sort((a,b)=>b[1]-a[1]).slice(0,7).map(([k,v])=>'<span class="tag">'+esc(k)+' — '+v+' طلاب ('+Math.round(100*v/reports.length)+'%)'+'</span>').join(" ")||
    '<p>لا توجد بيانات كافية عن العناصر الناقصة حاليًا.</p>')+
    '<p class="hint">يمكن الاستفادة من هذه القائمة عند تطوير المحاضرات، لكن لا تعتمد وحدها لتغيير الكتاب الجامعي دون مراجعة أكاديمية ومقارنة اختبارات متكافئة.</p>'+policy();
  }catch(_){node.innerHTML='<p class="danger">تعذر إتمام التحليل الجماعي.</p>';}
