@@ -165,12 +165,18 @@ begin
   'missing_criteria',coalesce((
    select jsonb_agg(jsonb_build_object('element',m.element,'count',m.n) order by m.n desc)
    from (
-    select k.value as element,count(*) as n from public.student_training_answers t
-     cross join lateral jsonb_array_elements_text(
-      case when jsonb_typeof(t.evaluation->'criteria_missing')='array' then t.evaluation->'criteria_missing' else '[]'::jsonb end
-     ) as k(value)
+    select coalesce(nullif(c.value->>'label_ar',''),c.value->>'id') as element,count(*) as n
+    from public.student_training_answers t
+    cross join lateral jsonb_array_elements(
+     case when jsonb_typeof(t.evaluation->'criteria')='array' then t.evaluation->'criteria'
+      else '[]'::jsonb end
+    ) c(value)
     where t.user_id=p_student and t.course_id=p_course
-      and t.dimension in ('recall','understanding') group by k.value order by n desc limit 5
+      and t.dimension in ('recall','understanding')
+      and (c.value->>'met'='false' or
+         ((c.value->>'credit') ~ '^[0-9]+(\.[0-9]+)?$' and (c.value->>'credit')::numeric<1))
+      and length(coalesce(c.value->>'label_ar',c.value->>'id',''))>1
+    group by 1 order by n desc limit 7
    ) m
   ),'[]'::jsonb)
  ) into output;
