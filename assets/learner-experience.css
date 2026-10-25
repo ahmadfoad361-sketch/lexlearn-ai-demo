@@ -155,31 +155,63 @@ html[data-learner-theme] .questionComparison>strong{display:block;color:var(--lx
 html[data-learner-theme] .questionComparison p{display:flex;align-items:flex-start;gap:10px;line-height:1.85;padding:9px 10px;margin:7px 0;background:var(--lx-raised);border-radius:10px;color:var(--lx-ink);white-space:normal}
 html[data-learner-theme] .comparisonNumber{display:inline-flex;flex:none;align-items:center;justify-content:center;width:27px;height:27px;border-radius:50%;background:#8a1f39;color:white;font-weight:800;font-size:.9rem}
 html[data-learner-theme] .questionFollowup{margin-top:16px;font-weight:650;color:var(--lx-ink)}
-/* Legal reference number rail: no hidden persuasion, just a calm, visible index of articles. */
-html[data-learner-theme] .legalNumberRail{position:sticky;top:8px;z-index:12;display:flex;gap:12px;align-items:center;
- margin:0 0 20px;padding:10px 14px;background:var(--lx-surface);color:var(--lx-ink);
- border:1px solid var(--lx-border);border-radius:14px;box-shadow:0 3px 15px #00000012;max-width:100%;overflow:hidden}
-html[data-learner-theme] .legalNumberRailCaption{font-size:.85rem;line-height:1.5;font-weight:700;color:var(--lx-muted);white-space:nowrap}
-html[data-learner-theme] .legalNumberRailNumbers{display:flex;gap:8px;align-items:center;overflow:auto;min-width:0;scrollbar-width:thin}
-html[data-learner-theme] .legalNumberChip{display:flex;gap:6px;align-items:baseline;white-space:nowrap;flex:none;
- border:1px solid var(--lx-border);border-radius:10px;padding:3px 9px;background:var(--lx-raised);color:var(--lx-ink)}
-html[data-learner-theme] .legalNumberChip small{font-size:.76rem;color:var(--lx-muted)}
-html[data-learner-theme] .legalNumberChip strong{font-size:1.22rem;line-height:1.55;color:var(--lx-ink);font-variant-numeric:tabular-nums}
+/* Notebook-style article bookmarks: soft paper tabs, readable in either learner theme. */
+html[data-learner-theme]{
+ --lx-tab-paper:#f3e2c7;--lx-tab-ink:#49361d;--lx-tab-edge:#bca17b;--lx-tab-spine:#826278;
+}
+html[data-learner-theme=dark]{
+ --lx-tab-paper:#34445c;--lx-tab-ink:#ffeac3;--lx-tab-edge:#9daec5;--lx-tab-spine:#e0b981;
+}
+html[data-learner-theme] .legalNumberRail{
+ position:sticky;top:8px;z-index:12;display:flex;gap:10px;align-items:center;
+ margin:0 0 20px;padding:8px 12px;
+ background:var(--lx-surface);color:var(--lx-ink);
+ border:1px solid var(--lx-border);border-inline-start:3px solid var(--lx-tab-spine);
+ border-radius:11px;box-shadow:0 2px 9px #0000000d;max-width:100%;overflow:hidden;
+}
+html[data-learner-theme] .legalNumberRailCaption{
+ font-size:.78rem;line-height:1.5;font-weight:650;color:var(--lx-muted);white-space:nowrap;
+}
+html[data-learner-theme] .legalNumberRailNumbers{
+ display:flex;align-items:center;gap:7px;overflow:auto;min-width:0;scrollbar-width:thin;
+}
+html[data-learner-theme] .legalNumberChip{
+ display:flex;flex-direction:column;justify-content:center;align-items:center;gap:0;
+ white-space:nowrap;flex:none;min-width:62px;min-height:59px;
+ padding:5px 11px 11px;
+ background:var(--lx-tab-paper);color:var(--lx-tab-ink);
+ border:1px solid var(--lx-tab-edge);border-top:3px solid var(--lx-tab-spine);
+ border-radius:7px 7px 2px 2px;
+ clip-path:polygon(0 0,100% 0,100% calc(100% - 6px),50% 100%,0 calc(100% - 6px));
+ filter:drop-shadow(0 2px 2px #00000012);
+}
+html[data-learner-theme] .legalNumberChip small{
+ font-size:.69rem;line-height:1.3;letter-spacing:.015em;color:var(--lx-tab-ink);opacity:.83;
+}
+html[data-learner-theme] .legalNumberChip strong{
+ font-size:1.35rem;line-height:1.45;font-weight:750;color:var(--lx-tab-ink);
+ font-variant-numeric:tabular-nums;
+}
 @media(min-width:1540px){
- html[data-learner-theme] .legalNumberRail{position:fixed;inset-inline-start:18px;top:clamp(115px,17vh,175px);width:130px;z-index:18;
- flex-direction:column;align-items:stretch;gap:8px;padding:12px 9px;max-height:calc(100dvh - 160px);overflow:auto}
- html[data-learner-theme] .legalNumberRailCaption{text-align:center;white-space:normal}
- html[data-learner-theme] .legalNumberRailNumbers{flex-direction:column;overflow:visible;align-items:stretch}
- html[data-learner-theme] .legalNumberChip{justify-content:space-between}
+ html[data-learner-theme] .legalNumberRail{
+  position:fixed;inset-inline-start:18px;top:clamp(115px,17vh,175px);width:112px;z-index:14;
+  flex-direction:column;align-items:stretch;gap:7px;padding:10px 8px;
+  max-height:calc(100dvh - 160px);overflow:auto;
+ }
+ html[data-learner-theme] .legalNumberRailCaption{text-align:center;white-space:normal;font-size:.72rem}
+ html[data-learner-theme] .legalNumberRailNumbers{flex-direction:column;align-items:center;gap:8px;overflow:visible}
+ html[data-learner-theme] .legalNumberChip{width:79px}
 }
 @media(max-width:600px){
- html[data-learner-theme] .legalNumberRail{top:4px;padding:7px 9px;gap:8px;border-radius:10px}
- html[data-learner-theme] .legalNumberRailCaption{font-size:.73rem}
- html[data-learner-theme] .legalNumberChip{padding:3px 7px}
- html[data-learner-theme] .legalNumberChip strong{font-size:1.11rem}
+ html[data-learner-theme] .legalNumberRail{top:4px;padding:5px 8px;gap:8px;border-radius:10px}
+ html[data-learner-theme] .legalNumberRailCaption{font-size:.72rem}
+ html[data-learner-theme] .legalNumberChip{min-width:51px;min-height:50px;padding:4px 8px 10px}
+ html[data-learner-theme] .legalNumberChip strong{font-size:1.2rem}
+ html[data-learner-theme] .legalNumberChip small{font-size:.64rem}
  html[data-learner-theme] .questionComparison{padding:10px}
  html[data-learner-theme] #studentTrainingApp .stage{font-size:1rem}
 }
+@media(prefers-reduced-motion:reduce){html[data-learner-theme] .legalNumberRail{scroll-behavior:auto}}
 /* Contrast repair on dark diagnostic introduction and next-step links. */
 html[data-learner-theme=dark] body:has(#officialDiagnostic) :is(.diagNotice,.diagFooter,.diagBrandCopy small,.diagCard p,.diagCard legend,.diagProgressHeader,.diagCard .choice,.diagHeader>p,.diagHeader small){color:var(--lx-ink)}
 html[data-learner-theme=dark] body:has(#officialDiagnostic) :is(.diagNotice,.diagCard,.diagHeader,.diagLinks a,.diagCard .choice){background:var(--lx-surface);border-color:var(--lx-border)}
