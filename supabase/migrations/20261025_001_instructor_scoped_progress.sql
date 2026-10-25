@@ -97,7 +97,7 @@ begin
  'assignments',coalesce((select jsonb_agg(jsonb_build_object('id',a.id,'subject',a.subject_name,'university',a.university,
   'faculty',a.faculty,'year',a.year_label,'course_id',a.course_id,'country',a.country_code) order by a.subject_name)
   from public.instructor_assignments a where a.instructor_id=uid and a.active), '[]'::jsonb),
- 'students',coalesce((select jsonb_agg(distinct jsonb_build_object('id',s.id,'name',s.display_name,'university',s.university,
+ 'students',coalesce((select jsonb_agg(distinct jsonb_build_object('assignment_id',a.id,'id',s.id,'name',s.display_name,'university',s.university,
    'faculty',s.faculty,'year',s.year_label,'course_id',a.course_id,'subject',a.subject_name))
   from public.instructor_assignments a
   join public.profiles s on s.role='student' and s.active
