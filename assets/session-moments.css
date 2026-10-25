@@ -7,3 +7,7 @@
 .sessionMomentCard figure{margin:10px auto 16px;max-width:42rem}
 .sessionMomentCard blockquote{margin:0 auto 8px;line-height:1.8}
 .sessionMomentCard h2{margin-bottom:12px!important}
+
+/* Researcher/university is a discreet credit, not an explanatory note or a link. */
+.sessionMomentCard .sessionMomentAttribution{display:block;margin:14px auto 0;max-width:42rem;color:#efcf92;font-size:clamp(.78rem,1.5vw,.89rem);line-height:1.7;font-style:normal;opacity:.96}
+@media(max-width:560px){.sessionMomentCard .sessionMomentAttribution{font-size:.76rem;line-height:1.65;margin-top:10px}}
