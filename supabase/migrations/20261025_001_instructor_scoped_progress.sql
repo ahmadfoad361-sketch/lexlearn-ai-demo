@@ -50,6 +50,28 @@ returns boolean language sql stable security definer set search_path='' as $$
 $$;
 revoke all on function private.can_access_student(uuid) from public,anon;
 
+-- Legacy "is_staff" historically included instructors and thereby granted cross-course
+-- content/library access. From now on it is administrator-only.
+create or replace function private.is_staff()
+returns boolean language sql stable security definer set search_path='' as $
+ select exists(select 1 from public.profiles p where p.id=auth.uid()
+  and p.active and p.role in ('owner','admin'));
+$;
+revoke all on function private.is_staff() from public,anon;
+
+-- Legacy subject-independent instructor reads must not expose another cohort's
+-- essay attempts or public demo submissions.
+drop policy if exists "level responses scoped instructor read" on public.student_level_responses;
+create policy "level responses platform admin read" on public.student_level_responses
+ for select to authenticated using(private.is_platform_admin());
+drop policy if exists "demo_submissions_supervisors_read" on public.demo_submissions;
+create policy "demo_submissions_platform_admin_read" on public.demo_submissions
+ for select to authenticated using(private.is_platform_admin());
+drop policy if exists "demo_submissions_supervisors_update" on public.demo_submissions;
+create policy "demo_submissions_platform_admin_update" on public.demo_submissions
+ for update to authenticated using(private.is_platform_admin())
+ with check(private.is_platform_admin() and reviewed_by=auth.uid());
+
 -- Existing staff write policies must not allow an instructor to edit all users, courses or curriculum.
 drop policy if exists "profiles staff update" on public.profiles;
 create policy "profiles platform admin update" on public.profiles for update to authenticated
