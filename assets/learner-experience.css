@@ -143,3 +143,50 @@ html[data-learner-theme] #status.ok{color:var(--lx-good)}
 
 html[data-learner-theme] .top>.brand{color:var(--lx-ink)}
 html[data-learner-theme] .top>.brand em,html[data-learner-theme] .top>.langs a{color:var(--lx-accent)}
+
+
+/* Oct 2026 learner readability: clearly spaced legal questions, no decorative tiny text. */
+html[data-learner-theme] #studentTrainingApp .stage{font-size:1.055rem;line-height:1.95}
+html[data-learner-theme] #studentTrainingApp :is(.prompt,.clearQuestionPrompt){font-size:clamp(1.1rem,1.45vw,1.19rem);line-height:2.05;font-weight:500;overflow-wrap:anywhere}
+html[data-learner-theme] #studentTrainingApp :is(#adaptiveEssay,#legalCasePart){font-size:1.125rem;line-height:1.95;min-height:170px}
+html[data-learner-theme] #studentTrainingApp :is(.stage h1,.stage h2){line-height:1.65}
+html[data-learner-theme] .questionComparison{background:var(--lx-surface);border:1px solid var(--lx-border);border-inline-start:4px solid #b58129;border-radius:14px;padding:14px 16px;margin:16px 0}
+html[data-learner-theme] .questionComparison>strong{display:block;color:var(--lx-ink);font-size:1.02rem;margin-bottom:8px}
+html[data-learner-theme] .questionComparison p{display:flex;align-items:flex-start;gap:10px;line-height:1.85;padding:9px 10px;margin:7px 0;background:var(--lx-raised);border-radius:10px;color:var(--lx-ink);white-space:normal}
+html[data-learner-theme] .comparisonNumber{display:inline-flex;flex:none;align-items:center;justify-content:center;width:27px;height:27px;border-radius:50%;background:#8a1f39;color:white;font-weight:800;font-size:.9rem}
+html[data-learner-theme] .questionFollowup{margin-top:16px;font-weight:650;color:var(--lx-ink)}
+/* Legal reference number rail: no hidden persuasion, just a calm, visible index of articles. */
+html[data-learner-theme] .legalNumberRail{position:sticky;top:8px;z-index:12;display:flex;gap:12px;align-items:center;
+ margin:0 0 20px;padding:10px 14px;background:var(--lx-surface);color:var(--lx-ink);
+ border:1px solid var(--lx-border);border-radius:14px;box-shadow:0 3px 15px #00000012;max-width:100%;overflow:hidden}
+html[data-learner-theme] .legalNumberRailCaption{font-size:.85rem;line-height:1.5;font-weight:700;color:var(--lx-muted);white-space:nowrap}
+html[data-learner-theme] .legalNumberRailNumbers{display:flex;gap:8px;align-items:center;overflow:auto;min-width:0;scrollbar-width:thin}
+html[data-learner-theme] .legalNumberChip{display:flex;gap:6px;align-items:baseline;white-space:nowrap;flex:none;
+ border:1px solid var(--lx-border);border-radius:10px;padding:3px 9px;background:var(--lx-raised);color:var(--lx-ink)}
+html[data-learner-theme] .legalNumberChip small{font-size:.76rem;color:var(--lx-muted)}
+html[data-learner-theme] .legalNumberChip strong{font-size:1.22rem;line-height:1.55;color:var(--lx-ink);font-variant-numeric:tabular-nums}
+@media(min-width:1540px){
+ html[data-learner-theme] .legalNumberRail{position:fixed;inset-inline-start:18px;top:clamp(115px,17vh,175px);width:130px;z-index:18;
+ flex-direction:column;align-items:stretch;gap:8px;padding:12px 9px;max-height:calc(100dvh - 160px);overflow:auto}
+ html[data-learner-theme] .legalNumberRailCaption{text-align:center;white-space:normal}
+ html[data-learner-theme] .legalNumberRailNumbers{flex-direction:column;overflow:visible;align-items:stretch}
+ html[data-learner-theme] .legalNumberChip{justify-content:space-between}
+}
+@media(max-width:600px){
+ html[data-learner-theme] .legalNumberRail{top:4px;padding:7px 9px;gap:8px;border-radius:10px}
+ html[data-learner-theme] .legalNumberRailCaption{font-size:.73rem}
+ html[data-learner-theme] .legalNumberChip{padding:3px 7px}
+ html[data-learner-theme] .legalNumberChip strong{font-size:1.11rem}
+ html[data-learner-theme] .questionComparison{padding:10px}
+ html[data-learner-theme] #studentTrainingApp .stage{font-size:1rem}
+}
+/* Contrast repair on dark diagnostic introduction and next-step links. */
+html[data-learner-theme=dark] body:has(#officialDiagnostic) :is(.diagNotice,.diagFooter,.diagBrandCopy small,.diagCard p,.diagCard legend,.diagProgressHeader,.diagCard .choice,.diagHeader>p,.diagHeader small){color:var(--lx-ink)}
+html[data-learner-theme=dark] body:has(#officialDiagnostic) :is(.diagNotice,.diagCard,.diagHeader,.diagLinks a,.diagCard .choice){background:var(--lx-surface);border-color:var(--lx-border)}
+html[data-learner-theme=dark] body:has(#officialDiagnostic) :is(.diagHeader .diagLinks a,.diagFooter,.diagCard h2,.diagCard label,.diagCard fieldset legend){color:#f7f4ef}
+html[data-learner-theme=dark] body:has(#officialDiagnostic) :is(.diagNotice,.diagCard p,.diagCard small,.diagCard .diagProgressHeader){color:#d9e4f2}
+html[data-learner-theme=dark] body:has(#officialDiagnostic) .diagCard .choice:has(input:checked){background:var(--lx-raised);border-color:var(--lx-accent);color:#fff}
+html[data-learner-theme=dark] body:has(#officialDiagnostic) .diagCard :is(a,.actionCard){color:#fff;background:#8a1f39}
+html[data-learner-theme=dark] body:has(#officialDiagnostic) .diagCard :is(button,#serverNext){color:white}
+html[data-learner-theme=dark] body:has(#studentTrainingApp) :is(.learnerWelcome p,.nextAdvice,.stage>p,.stage h1,.stage h2,.heading p){color:var(--lx-ink)}
+@media(prefers-reduced-motion:reduce){html[data-learner-theme] .legalNumberRail{scroll-behavior:auto}}
