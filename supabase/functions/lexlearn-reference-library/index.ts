@@ -15,7 +15,7 @@ Deno.serve(async(req:Request)=>{
  const u=await reader.auth.getUser();if(u.error||!u.data.user)return err("unauthorized",401);
  const db=createClient(url,secret,{auth:{persistSession:false}});
  const p=await db.from("profiles").select("role,active").eq("id",u.data.user.id).maybeSingle();
- if(p.error||!p.data||p.data.active===false||!["owner","admin","instructor"].includes(p.data.role))return err("staff_only",403);
+ if(p.error||!p.data||p.data.active===false||!["owner","admin"].includes(p.data.role))return err("staff_only",403);
  const canApprove=["owner","admin"].includes(p.data.role);
  const b=await req.json();const act=String(b.action||"");
  if(act==="list"){
