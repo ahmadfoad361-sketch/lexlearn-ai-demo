@@ -4,9 +4,12 @@ assert.equal(moments.phrases.length,9);
 for(let n=1;n<=30;n++)for(const lang of ['ar','en']){const p=moments.forSession(n),html=moments.render(n,lang);
  assert.ok(p.source.url.startsWith('https://'),'the research record stays available internally');
  assert.ok(html.replace(/&#39;/g,"'").replace(/&amp;/g,"&").replace(/&quot;/g,'"').includes(lang==='ar'?p.ar:p.en),'display the encouragement itself');
- assert.ok(!html.includes(p.source.url)&&!html.includes(p.source.ar)&&!html.includes(p.source.en),'research byline must not appear on learner card');
- assert.ok(!/figcaption|sessionMomentNote|sessionMomentSource|الدراسة الأصلية|اقتباسًا حرفيًا|original study|verbatim quotation/.test(html),
-  'no academic footnotes or UI-explanation labels on completion cards');
+ assert.ok(!html.includes(p.source.url),'no study link shown to learner');
+ assert.ok(html.replace(/&#39;/g,"'").replace(/&amp;/g,"&").includes(lang==='ar'?p.source.ar:p.source.en),
+  'show author and university as discreet scientific attribution');
+ assert.ok(html.includes("sessionMomentAttribution"),'byline has dedicated presentation');
+ assert.ok(!/sessionMomentNote|sessionMomentSource|الدراسة الأصلية|اقتباسًا حرفيًا|original study|verbatim quotation|عبارة مبسطة/.test(html),
+  'omit explanatory disclaimer and links on completion cards');
  assert.ok(html.includes("data-moment-session='"+n+"'"));
  if(n>1)assert.notEqual(p.ar,moments.forSession(n-1).ar,'adjacent sessions show different lines');
 }
@@ -21,5 +24,5 @@ const manual=environment();manual.api.show(1,'en','other');manual.dialogs[0].but
 const blocked=environment({storageBlocked:true});assert.equal(blocked.api.show(1,'ar','one'),true);assert.equal(blocked.api.show(1,'ar','one'),false);
 assert.equal(environment({supported:false}).api.show(1,'ar','one'),false,'unsupported dialogs retain the inline report without an overlay');
 const page=fs.readFileSync('student-path.html','utf8');assert.ok(page.includes('assets/session-moments.js')&&page.includes('assets/session-moments.css'));const css=fs.readFileSync('assets/session-moments.css','utf8');assert.ok(css.includes('prefers-reduced-motion:reduce'));assert.ok(css.includes('100dvh'));
-console.log('Session encouragement: concise bilingual learner cards, internal source tracking, stable rotation, automatic close and no replay PASS');
+console.log('Session encouragement: concise bilingual learner cards, researcher/university credit and internal source tracking, stable rotation, automatic close and no replay PASS');
 
