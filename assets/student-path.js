@@ -60,8 +60,8 @@ function startGradingWait(settings){
   var grade=phase==="grading";
   title.textContent=english?(grade?"Reviewing your answer":"Saving your answer")+(name?", "+name:""):
    (name?"يا "+name+"، ":"")+(grade?"بنراجع إجابتك بعناية":"بنحفظ إجابتك");
-  lead.textContent=english?(grade?"Reviewing against the approved rubric and legal sources.":"Confirming your saved work."):
-   (grade?"نراجع إجابتك وفق معايير السؤال والمراجع المعتمدة.":"نتأكد من حفظ إجابتك.");
+  lead.textContent=english?(grade?"Preparing your result.":"Confirming your saved work."):
+   (grade?"نجهّز نتيجتك.":"نتأكد من حفظ إجابتك.");
  }
  setPhase(settings.stage);
  return {setPhase:setPhase,setStep:function(i,total){setPhase("grading");lead.textContent=(english?"Reviewing answer ":"نراجع الإجابة ")+i+(english?" of ":" من ")+total;},finish:function(){if(!done){done=true;el.remove();}}};
@@ -80,11 +80,11 @@ function feedback(item){
    var state=c.credit===1?t("✓ صحيح","✓ Correct"):c.credit>0?t("◐ صحيح جزئيًا","◐ Partly correct"):t("✗ ناقص أو يحتاج تصحيحًا","✗ Missing or needs correction");
    return "<li class='"+(c.credit===1?"criterionCorrect":c.credit>0?"criterionPartial":"criterionIncorrect")+"'><b>"+esc(state)+" — "+esc(lang()==="en"?c.label_en:c.label_ar)+"</b>"+(c.evidence?"<blockquote>«"+esc(c.evidence)+"»</blockquote>":"")+"<p>"+esc(lang()==="en"?c.explanation_en:c.explanation_ar)+"</p></li>";
   }).join("")+"</ul>":"";
-  return "<div class='feedback' role='status'><b>"+esc(verdict)+": "+esc(noHtmlScore(ev.provisional_percent))+"</b><p style='white-space:pre-wrap'>"+esc(lang()==="en"?ev.feedback_en:ev.feedback_ar)+"</p>"+details+"<small>"+t("تقدير آلي أولي لاستيفاء عناصر السؤال، وليس حكمًا على قدرتك الكاملة على الفهم. المشرف يتابع تقدمك.","Preliminary automated assessment of this task’s requirements, not your entire understanding ability; instructor oversight only.")+"</small></div>";
+  return "<div class='feedback' role='status'><b>"+esc(verdict)+": "+esc(noHtmlScore(ev.provisional_percent))+"</b><p style='white-space:pre-wrap'>"+esc(lang()==="en"?ev.feedback_en:ev.feedback_ar)+"</p>"+details+"<small>"+t("تقييم تدريبي أولي.","Preliminary practice assessment.")+"</small></div>";
  }
  return "<div class='feedback' role='status'><b>"+t("حُفظت الإجابة — التصحيح غير مكتمل","Answer saved — assessment incomplete")+"</b>"+
- "<p>"+t("لم يتأكد التصحيح بالذكاء الاصطناعي بعد. أعد طلب التصحيح من الزر أدناه؛ لن تُعرض نسبة قبل تأكيده.","AI assessment has not been confirmed. Retry below; no percentage is shown before confirmation.")+"</p>"+
- "<small>"+t("مؤشرات تدريبية أولية وليست درجة جامعية أو قياسًا معتمدًا. ستظهر الملاحظات فور اكتمال التصحيح الآلي.","Preliminary practice indicators, not an accredited mark. Detailed feedback appears when automatic assessment completes.")+"</small></div>";
+ "<p>"+t("لم يكتمل تصحيح الإجابة. يمكنك إعادة المحاولة من الزر أدناه.","Assessment has not finished. You can retry below.")+"</p>"+
+ "<small>"+t("ستظهر الملاحظات بعد اكتمال التصحيح.","Feedback will appear when assessment finishes.")+"</small></div>";
 }
 
 function progressModel(rows,session){
@@ -213,14 +213,14 @@ async function boot(){
    if(adaptation&&adaptation.priority!=="foundation")remaining.sort(function(a,b){return (a.dimension===adaptation.priority?0:1)-(b.dimension===adaptation.priority?0:1);});
    var next=remaining[0],completed=data.completed;
    var name=t("الأسبوع ","Week ")+Math.ceil(selected/5)+" · "+programLabels[selected-1];
-   var why="<p>"+t("ترتيب تدريبي مبدئي وفق المعلومات المتاحة، وسيُراجع بعد جمع أدلة أكثر.","Preliminary practice sequence based on available evidence; this will be revisited as more evidence is collected.")+"</p>";
+   var why="";
    if(adaptation&&adaptation.skills){
     why+="<div class='progressSkills'>"+["understanding","recall"].map(function(dim){return "<article class='progressSkill'><h3>"+esc(weakName(dim))+"</h3><strong>"+esc(noHtmlScore(adaptation.skills[dim]))+"</strong></article>";}).join("")+"</div><p>"+
      (adaptation.priority==="recall"?t("الأولوية الآن للحفظ: استخدم مفاتيح قصيرة، ثم أغلق النص وأعد بناء القاعدة من ذاكرتك.","Recall priority: use brief cues, close the text, then reconstruct the rule."):
       adaptation.priority==="understanding"?t("الأولوية الآن للفهم: اشرح سبب القاعدة، ثم غيّر شرطًا واحدًا وفسّر أثره على النتيجة.","Understanding priority: explain why the rule works, then change one condition and explain the result."):
-      t("نحتاج إجابات أكثر لتحديد الأولوية؛ ابدأ بشرح القاعدة ثم استرجاعها.","More evidence is needed; start by explaining and retrieving the rule."))+"</p><small>"+t("تقديرات مبدئية تتحدث بعد تصحيح إجاباتك؛ ليست درجات جامعية.","Preliminary estimates update after answer assessment; these are not university marks.")+"</small>";
+      t("نحتاج إجابات أكثر لتحديد الأولوية؛ ابدأ بشرح القاعدة ثم استرجاعها.","More evidence is needed; start by explaining and retrieving the rule."))+"</p>";
    }
-   if(aiUnavailable)why+="<p role='status'>"+t("حُفظت إجابتك، لكن التصحيح بالذكاء الاصطناعي لم يتأكد. يمكنك المتابعة؛ لن نمنح نسبة بديلة أو نغيّر الأولوية بناءً عليها.","Your answer is saved, but AI assessment was not confirmed. Continue practice; no replacement score or priority change is inferred.")+"</p>";
+   if(aiUnavailable)why+="<p role='status'>"+t("تم حفظ الإجابة، لكن التصحيح لم يكتمل. يمكنك إعادة المحاولة.","Your answer was saved, but assessment is incomplete. You can retry.")+"</p>";
    var completedFeedback=saved.map(function(v,index){
     var task=(data.tasks||[]).find(function(q){return q.id===v.item_id;});
     return "<details class='past'"+(v===saved[saved.length-1]?" open":"")+"><summary>"+esc(previousAnswerTitle(v,task))+"</summary>"+lawContext(task&&task.sources)+"<p style='white-space:pre-wrap'>"+esc(v.answer_text)+"</p>"+feedback(v)+(needsAssessment(v)&&acceptedAi&&cloud.gradeTrainingAi?"<button type='button' id='retryGrade"+index+"'>"+t("أعد تصحيح هذه الإجابة","Retry assessment of this answer")+"</button>":"")+"</details>";
@@ -233,7 +233,7 @@ async function boot(){
     main+=progressHtml(progressRows,selected,historyAvailable);
     if(saved.some(needsAssessment)&&acceptedAi&&cloud.gradeTrainingAi)main+="<div class='assessmentRecovery' role='status'><p>"+gradingMessage()+"</p><button type='button' id='retrySessionGrades'>"+t("أعد تصحيح إجابات الجلسة","Retry session assessment")+"</button><p id='sessionGradeStatus' aria-live='polite'></p></div>";
     main+="<h2>"+t("اكتملت تدريبات الجلسة","Practice session completed")+"</h2>"+
-    "<p>"+t("أتممت تدريب هذه الجلسة وحُفظت إجاباتك. يمكنك متابعة الجلسة التالية ومراجعة ملاحظاتك في أي وقت.","Your practice and answers are saved. Continue to the next session and revisit your feedback at any time.")+"</p>"+
+    "<p>"+t("إجاباتك محفوظة. يمكنك متابعة الجلسة التالية.","Your answers are saved. You can continue to the next session.")+"</p>"+
     (selected<30?"<button type='button' id='nextSession'>"+(selected%5===0?t("انتقل إلى المستوى ","Continue to level ")+(Math.ceil(selected/5)+1):t("انتقل للجلسة التالية","Continue to next session"))+"</button>":
      "<p role='status'>"+t("اكتملت الجلسات التدريبية الثلاثون. احتفظ بنتائجك للمراجعة.","All 30 practice sessions completed; your results remain saved for review.")+"</p>");
    }else if(next){
