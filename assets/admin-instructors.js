@@ -1,0 +1,83 @@
+(function(){
+"use strict";
+const APP=document.getElementById("adminInstructorApp"),C=LEX_CLOUD.db();
+const esc=v=>String(v??"").replace(/[&<>"']/g,k=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[k]));
+let state={teachers:[],assignments:[],courses:[],credential:null};
+function scopeFields(prefix,showTeacher=false){
+ const options=state.courses.map(c=>'<option value="'+esc(c.id)+'">'+esc(c.title_ar||c.id)+' — '+esc(c.id)+'</option>').join("");
+ return '<div class="grid">'+
+ (showTeacher?'<label>الدكتور<select name="instructor_id" required>'+state.teachers.map(x=>'<option value="'+x.instructor_id+'">'+esc(x.profiles?.display_name||x.official_email)+'</option>').join("")+'</select></label>':'')+
+ '<label>المادة الموجودة في LexLearn<select name="course_id" required>'+options+'</select></label>'+
+ '<label>عنوان المادة<input name="subject_name" required maxlength="160" placeholder="نظرية الحق"></label>'+
+ '<label>الدولة<select name="country_code"><option value="qa">قطر</option><option value="eg">مصر</option><option value="sa">السعودية</option><option value="ae">الإمارات</option><option value="other">أخرى</option></select></label>'+
+ '<label>الجامعة<input name="university" required maxlength="160" placeholder="اكتب اسم الجامعة بنفس صيغة تسجيل طلابها"></label>'+
+ '<label>الكلية<input name="faculty" required maxlength="160" placeholder="كلية الحقوق"></label>'+
+ '<label>الفرقة<select name="year_label"><option>السنة الأولى</option><option>السنة الثانية</option><option>السنة الثالثة</option><option>السنة الرابعة</option></select></label></div>'+
+ '<p class="hint">التطابق يتم وفق الدولة والجامعة والكلية والفرقة والمقرر، وليس مجرد نفس اسم الجامعة. لن تظهر للدكتور حسابات الطلاب خارج هذا النطاق.</p>';
+}
+function form(){
+ return '<section class="panel"><h1>تسجيل بيانات الأساتذة الجامعيين</h1><p>إضافة حساب أكاديمي من داخل لوحة المشرف فقط، وتحديد المقرر والفرقة والكلية والجامعة.</p>'+
+ '<form id="createInstructor"><div class="grid"><label>اسم عضو هيئة التدريس<input name="name" required maxlength="160"></label>'+
+ '<label>البريد الجامعي الرسمي<input name="email" type="email" required maxlength="254" placeholder="professor@university.edu"></label>'+
+ '<label>اللقب العلمي<select name="academic_title"><option>دكتور</option><option>أستاذ مساعد</option><option>أستاذ مشارك</option><option>أستاذ</option></select></label>'+
+ '<label>التخصص<input name="specialization" maxlength="160" placeholder="القانون المدني"></label>'+
+ '<label>رقم واتساب دولي (اختياري)<input name="whatsapp" placeholder="+201000000000"></label></div>'+
+ '<h3>التكليف الأكاديمي الأول</h3>'+scopeFields("new")+
+ '<button class="primary" type="submit">إنشاء حساب الدكتور وتكليفه بالمادة</button><p id="createStatus" role="status"></p></form></section>'+
+ '<section class="panel"><h2>إسناد مادة أو فرقة إضافية لدكتور مسجل</h2><form id="assignInstructor">'+scopeFields("extra",true)+
+ '<button type="submit" class="secondary">إضافة تكليف أكاديمي</button><p id="assignmentStatus" role="status"></p></form></section>';
+}
+function list(){
+ return '<section class="panel"><h2>سجل الدكاترة والتكليفات</h2><p>'+state.teachers.length+' عضو هيئة تدريس مسجل</p>'+
+ (!state.teachers.length?'<p class="notice">لا توجد حسابات دكاترة بعد. أنشئ الحساب الأول من النموذج بالأعلى.</p>':state.teachers.map(t=>{
+ const a=state.assignments.filter(x=>x.instructor_id===t.instructor_id);
+ return '<div class="summary"><div class="toolbar"><div><h3>'+esc(t.academic_title||"دكتور")+' '+esc(t.profiles?.display_name||"")+'</h3><p>'+esc(t.official_email)+' • '+esc(t.specialization||"")+'</p><small>واتساب: '+esc(t.whatsapp_e164||"—")+'</small></div>'+
+ '<button data-teacher="'+t.instructor_id+'" data-active="'+(t.profiles?.active?"false":"true")+'" class="secondary">'+(t.profiles?.active?"تعطيل حساب الدكتور":"تفعيل الحساب")+'</button></div>'+
+ a.map(x=>'<div class="course"><b>'+esc(x.subject_name)+'</b><p>'+esc(x.university)+' — '+esc(x.faculty)+' — '+esc(x.year_label)+'</p>'+
+ '<button type="button" class="secondary" data-assignment="'+x.id+'" data-owner="'+t.instructor_id+'" data-active="'+(!x.active)+'">'+(x.active?"إيقاف تكليف":"تفعيل تكليف")+'</button></div>').join("")+'</div>';
+ }).join(""))+'</section>';
+}
+function page(){
+ APP.innerHTML='<section class="panel"><span class="eyebrow">إدارة أكاديمية مستقلة عن الطلاب</span><h1>حسابات أساتذة الجامعات</h1><p>يتم إصدار اسم الدخول وكلمة مرور مؤقتة من المشرف. لا يظهر للدكتور شيء من وظائف إدارة الطالب أو أدوات مراجعة المحتوى.</p><a href="instructor-login.html" target="_blank" rel="noopener">معاينة صفحة «تسجيل دخول الدكتور»</a></section>'+
+ (state.credential?'<section class="panel notice"><h2>بيانات الدخول الأولية — تظهر مرة واحدة</h2><p>البريد الرسمي: <b>'+esc(state.credential.email)+'</b></p><p>كلمة المرور المؤقتة: <b>'+esc(state.credential.temporary_password)+'</b></p><button id="copyTeacher" class="secondary">نسخ بيانات الدخول</button><p class="hint">سلّمها للدكتور بقناة آمنة واطلب منه تغيير كلمة المرور. لا نحتفظ بها داخل سجل الإدارة.</p></section>':'')+
+ form()+list();
+ document.getElementById("createInstructor").onsubmit=async e=>{
+  e.preventDefault();const b=Object.fromEntries(new FormData(e.currentTarget));
+  const status=document.getElementById("createStatus");status.textContent="جارٍ إنشاء حساب الدكتور…";
+  try{const x=await C.functions.invoke("admin-manage-instructors",{body:{action:"create",...b}});
+   if(x.error||!x.data?.ok)throw x.error||Error(x.data?.error);
+   state.credential=x.data;await reload();
+  }catch(_){status.textContent="تعذر إنشاء الحساب. راجع البريد الرسمي وتطابق بيانات المقرر وتأكد من عدم وجود الحساب من قبل.";}
+ };
+ document.getElementById("assignInstructor").onsubmit=async e=>{
+  e.preventDefault();const b=Object.fromEntries(new FormData(e.currentTarget)),status=document.getElementById("assignmentStatus");
+  status.textContent="جارٍ حفظ التكليف…";
+  try{const x=await C.functions.invoke("admin-manage-instructors",{body:{action:"assignment",...b}});
+   if(x.error||!x.data?.ok)throw x.error||Error(x.data?.error);
+   await reload();
+  }catch(_){status.textContent="تعذر حفظ التكليف. تحقق من صحة المادة والبيانات.";}
+ };
+ document.querySelectorAll("[data-teacher]").forEach(b=>b.onclick=async()=>{
+  if(!confirm("تأكيد تعديل حالة حساب الدكتور؟"))return;
+  b.disabled=true;await C.functions.invoke("admin-manage-instructors",{body:{action:"set-active",instructor_id:b.dataset.teacher,active:b.dataset.active==="true"}});await reload();
+ });
+ document.querySelectorAll("[data-assignment]").forEach(b=>b.onclick=async()=>{
+  b.disabled=true;await C.functions.invoke("admin-manage-instructors",{body:{action:"scope-active",
+   instructor_id:b.dataset.owner,assignment_id:b.dataset.assignment,active:b.dataset.active==="true"}});await reload();
+ });
+ const copy=document.getElementById("copyTeacher");
+ if(copy)copy.onclick=()=>navigator.clipboard.writeText("LexLearn\nالبريد: "+state.credential.email+"\nكلمة المرور المؤقتة: "+state.credential.temporary_password+"\nhttps://ahmadfoad361-sketch.github.io/lexlearn-ai-demo/instructor-login.html");
+}
+async function reload(){
+ const me=await LEX_CLOUD.profile();
+ if(!me||!["owner","admin"].includes(me.role)||me.active!==true)throw Error("FORBIDDEN");
+ const [x,c]=await Promise.all([
+  C.functions.invoke("admin-manage-instructors",{body:{action:"list"}}),
+  C.from("courses").select("id,title_ar,country_code,status").order("title_ar")
+ ]);
+ if(x.error||!x.data?.ok||c.error)throw Error("load_failed");
+ state.teachers=x.data.instructors||[];state.assignments=x.data.assignments||[];state.courses=c.data||[];
+ page();
+}
+reload().catch(()=>APP.innerHTML='<section class="panel danger"><h2>تعذر فتح سجل الأساتذة</h2><p>هذه الصفحة مخصصة لمالك LexLearn والمشرف المفوض فقط. راجع تسجيل الدخول وصلاحيات الحساب.</p><a href="admin-login.html">دخول المشرف</a></section>');
+})();
