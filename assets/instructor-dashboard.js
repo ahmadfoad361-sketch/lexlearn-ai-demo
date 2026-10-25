@@ -11,7 +11,7 @@ const datum=x=>x?new Date(x).toLocaleDateString("ar-EG"):"—";
 function policy(){return '<p class="notice">هذه مؤشرات أولية لتغطية عناصر الأسئلة في التدريبات، وليست درجات جامعية. لا يُستدل على تحسن ثابت بين فترتين إلا إذا كان القياس متكافئًا ومعايير التصحيح موحدة.</p>';}
 function scopeStudents(){
  const a=(state.roster?.students||[]);
- return a.filter(s=>s.course_id===state.assignment);
+ return a.filter(s=>s.assignment_id===state.assignment);
 }
 function profile(){
  const p=state.roster.profile||{};
@@ -33,7 +33,7 @@ function editForm(){
 }
 function assignments(){
  const a=state.roster.assignments||[];
- return '<section class="panel"><h2>المواد والفرق المكلف بتدريسها</h2><div class="grid">'+a.map(x=>'<div class="course"><b>'+esc(x.subject)+'</b><p>'+esc(x.university)+' — '+esc(x.faculty)+'</p><small>'+esc(x.year)+'</small></div>').join("")+'</div><label>المادة المعروضة<select id="scopeSelect">'+a.map(x=>'<option value="'+esc(x.course_id)+'" '+(state.assignment===x.course_id?"selected":"")+'>'+esc(x.subject)+' — '+esc(x.university)+' — '+esc(x.year)+'</option>').join("")+'</select></label></section>';
+ return '<section class="panel"><h2>المواد والفرق المكلف بتدريسها</h2><div class="grid">'+a.map(x=>'<div class="course"><b>'+esc(x.subject)+'</b><p>'+esc(x.university)+' — '+esc(x.faculty)+'</p><small>'+esc(x.year)+'</small></div>').join("")+'</div><label>المادة المعروضة<select id="scopeSelect">'+a.map(x=>'<option value="'+esc(x.id)+'" '+(state.assignment===x.id?"selected":"")+'>'+esc(x.subject)+' — '+esc(x.university)+' — '+esc(x.year)+'</option>').join("")+'</select></label></section>';
 }
 function studentProgress(r){
  if(!r)return '<p class="loading">اختر طالبًا لعرض تقدم المهارات.</p>';
@@ -91,7 +91,7 @@ async function loadStudent(studentId){
  const box=el("individualResult");
  box.innerHTML='<section class="panel loading">جارٍ تحميل سجل الطالب ضمن صلاحية المقرر…</section>';
  try{
-  const r=await C.rpc("lex_staff_skill_progress",{p_student:studentId,p_course:state.assignment});
+  const r=await C.rpc("lex_staff_skill_progress",{p_student:studentId,p_course:(state.roster.assignments||[]).find(a=>a.id===state.assignment)?.course_id});
   if(r.error)throw r.error;
   state.report=r.data;box.innerHTML=studentProgress(state.report);
   if(el("printReport"))el("printReport").onclick=()=>window.print();
@@ -104,7 +104,7 @@ async function groupAnalysis(){
  try{
   const reports=[];
   for(const s of students.slice(0,150)){
-   const r=await C.rpc("lex_staff_skill_progress",{p_student:s.id,p_course:state.assignment});
+   const r=await C.rpc("lex_staff_skill_progress",{p_student:s.id,p_course:(state.roster.assignments||[]).find(a=>a.id===state.assignment)?.course_id});
    if(!r.error&&r.data)reports.push(r.data);
   }
   const by=new Map(),missing=new Map();
@@ -133,7 +133,7 @@ async function reload(){
  const r=await C.rpc("lex_instructor_roster");
  if(r.error||!r.data||!r.data.profile)throw r.error||Error("no_profile");
  state.roster=r.data;
- state.assignment=state.assignment||(r.data.assignments||[])[0]?.course_id||"";
+ state.assignment=state.assignment||(r.data.assignments||[])[0]?.id||"";
  render();
 }
 el("instructorLogout").onclick=async()=>{await LEX_CLOUD.signOut();location.replace("instructor-login.html");};
