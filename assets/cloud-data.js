@@ -54,7 +54,7 @@ async function signInAdmin(email,password){
   var r=await c.auth.signInWithPassword({email:String(email||"").trim(),password:password});
   if(r.error)throw r.error;
   var p=await profile();
-  if(!p||["owner","admin","instructor"].indexOf(p.role)<0||p.active===false){await c.auth.signOut();throw new Error("admin_role_required");}
+  if(!p||["owner","admin"].indexOf(p.role)<0||p.active===false){await c.auth.signOut();throw new Error("admin_role_required");}
   return {user:r.data.user,profile:p};
 }
 async function signOut(){var c=db();if(c)await c.auth.signOut();}

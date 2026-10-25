@@ -57,6 +57,7 @@ jobs:
           deno check supabase/functions/lexlearn-diagnostic-ai-grade/index.ts
           deno check supabase/functions/lexlearn-grading-smoke/index.ts
           deno check supabase/functions/student-register-whatsapp/index.ts
+          deno check supabase/functions/admin-manage-instructors/index.ts
       - name: Adaptive engine tests
         run: |
           node tests/adaptive-engine.test.js
@@ -71,6 +72,7 @@ jobs:
           node tests/pilot-grade-service.test.js
           node tests/pilot-readiness.test.js
           node tests/pilot-supervisor-audit.test.js
+          node tests/instructor-platform.test.js
           node scripts/validate-pilot-grading.js
           node tests/program-flow.test.js
           node tests/official-diagnostic.test.js
@@ -279,3 +281,6 @@ jobs:
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261019_005_full_adaptive_internal_pilot.sql
            psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261023_003_balanced_training_until_verified.sql
           psql -v ON_ERROR_STOP=1 -f tests/sql/full-adaptive-acceptance.sql
+          psql -v ON_ERROR_STOP=1 -f tests/sql/instructor-ci-fixture.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261025_001_instructor_scoped_progress.sql
+          psql -v ON_ERROR_STOP=1 -f tests/sql/instructor-scoped-acceptance.sql

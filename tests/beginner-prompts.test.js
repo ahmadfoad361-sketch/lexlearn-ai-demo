@@ -5,11 +5,11 @@ let recall=0,understanding=0,cases=0;
 for(const item of bank){
  const task={...item,prompt_en:item.rubric_json.prompt_en};
  const ar=beginner.prepare(task,'ar'),en=beginner.prepare(task,'en');
- if(item.dimension==='recall'){recall++;for(const text of [ar,en]){assert.ok(text.includes('1.')&&text.includes('2.')&&text.includes('3.'));}assert.match(ar,/ثلاث كلمات/);assert.match(en,/three different/);}
+ if(item.dimension==='recall'){recall++;for(const text of [ar,en]){assert.ok(text.includes('1.')&&text.includes('2.')&&text.includes('3.'));}assert.match(ar,/ثلاث كلمات/);assert.match(en,/three short memory cues/);}
  if(item.dimension==='understanding'){
   understanding++;const marker='عبارتان للمقارنة؛ إحداهما غير دقيقة:';
-  assert.equal(ar.slice(ar.indexOf(marker)),item.prompt_ar.slice(item.prompt_ar.indexOf(marker)),'preserve every comparison and its legal qualifiers');
-  assert.match(ar,/اكتب تصحيحها/);assert.match(en,/Correct it/);
+  assert.ok(ar.slice(ar.indexOf(marker)).startsWith(item.prompt_ar.slice(item.prompt_ar.indexOf(marker))),'preserve every comparison and its legal qualifiers while allowing the third explanatory step');
+  assert.match(ar,/صحّحها/);assert.match(en,/Correct it/);
  }
  if(item.dimension==='exam_execution'){
   cases++;assert.ok(beginner.cases[item.id]);assert.equal(beginner.cases[item.id].source,item.prompt_ar.split('\n')[0]);

@@ -101,7 +101,7 @@ function adminAdvice(v){
 function shell(body){
  APP.innerHTML='<header class="top"><div class="topin"><div class="brand"><div class="mark"><img src="assets/lexlearn-logo.svg" alt="LexLearn"></div><div><b>LexLearn Admin</b><small>قاعدة بيانات مركزية</small></div></div>'+
  '<nav class="nav"><button data-tab="dashboard" class="'+(state.tab==="dashboard"?"active":"")+'">'+ico("chart")+'<span>الرئيسية</span></button><button data-tab="students" class="'+(state.tab==="students"?"active":"")+'">'+ico("users")+'<span>الطلاب</span></button><button data-tab="cohorts" class="'+(state.tab==="cohorts"?"active":"")+'">'+ico("group")+'<span>المجموعات</span></button><button data-tab="grading" class="'+(state.tab==="grading"?"active":"")+'">'+ico("audit")+'<span>تصحيح التدريب</span></button><button data-tab="content" class="'+(state.tab==="content"?"active":"")+'">'+ico("audit")+'<span>المحتوى</span></button><button data-tab="audit" class="'+(state.tab==="audit"?"active":"")+'">'+ico("audit")+'<span>السجل</span></button></nav>'+
- '<div class="topActions"><span class="topLink">● مركزي</span><a class="topLink" href="references.html">تغذية الذكاء الاصطناعي</a><a class="topLink" href="pilot-review.html">مراجعة التدريب</a><a class="topLink" href="demo-supervisor.html">نتائج الديمو</a><a class="topLink" href="index.html">الموقع</a><button class="topLink" id="logout">خروج</button></div></div></header><main class="wrap">'+body+'</main>'+modal();
+ '<div class="topActions"><span class="topLink">● مركزي</span><a class="topLink" href="admin-instructors.html">الأساتذة الجامعيون</a><a class="topLink" href="admin-progress.html">تدرّج الحفظ والفهم</a><a class="topLink" href="references.html">تغذية الذكاء الاصطناعي</a><a class="topLink" href="pilot-review.html">مراجعة التدريب</a><a class="topLink" href="demo-supervisor.html">نتائج الديمو</a><a class="topLink" href="index.html">الموقع</a><button class="topLink" id="logout">خروج</button></div></div></header><main class="wrap">'+body+'</main>'+modal();
  document.querySelectorAll("[data-tab]").forEach(function(b){b.onclick=function(){state.tab=b.dataset.tab;render();};});
  var lo=document.getElementById("logout");if(lo)lo.onclick=async function(){await LEX_CLOUD.signOut();localStorage.removeItem(SKEY);location.replace("admin-login.html");};
  bind();
@@ -196,7 +196,7 @@ async function load(){
  state.busy=true;renderLoading();
  try{
   var me=await LEX_CLOUD.profile();
-  if(!me||me.active!==true||["owner","admin","instructor"].indexOf(me.role)<0){localStorage.removeItem(SKEY);location.replace("admin-login.html");return;}
+  if(!me||me.active!==true||["owner","admin"].indexOf(me.role)<0){localStorage.removeItem(SKEY);location.replace("admin-login.html");return;}
   state.staffRole=me.role;
   var c=LEX_CLOUD.db(),results=await Promise.all([
     LEX_CLOUD.listStudents(),LEX_CLOUD.listCohorts(),LEX_CLOUD.listAudit(),Promise.all([LEX_CLOUD.listContentItems("qa-qu-lawc213"),LEX_CLOUD.listContentItems("qa-qu-lawc101-rights")]).then(function(groups){return groups[0].concat(groups[1].filter(function(x){return /^rights-v1-s(?:1|22)-(?:recall|understanding|exam)$/.test(x.id);}));}),
