@@ -53,10 +53,10 @@ revoke all on function private.can_access_student(uuid) from public,anon;
 -- Legacy "is_staff" historically included instructors and thereby granted cross-course
 -- content/library access. From now on it is administrator-only.
 create or replace function private.is_staff()
-returns boolean language sql stable security definer set search_path='' as $
+returns boolean language sql stable security definer set search_path='' as $$
  select exists(select 1 from public.profiles p where p.id=auth.uid()
   and p.active and p.role in ('owner','admin'));
-$;
+$$;
 revoke all on function private.is_staff() from public,anon;
 
 -- Legacy subject-independent instructor reads must not expose another cohort's
