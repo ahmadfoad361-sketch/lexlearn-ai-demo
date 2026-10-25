@@ -10,7 +10,7 @@ for(const x of ['university','faculty','year_label','country_code','academic_sec
  assert.ok(backend.includes(x),'edge not saving '+x);
 }
 assert.ok(backend.includes('if(!["owner","admin"].includes(profile.role))'));
-assert.match(backend,/\\.eq\\("role","student"\\)/);
+assert.ok(backend.includes('.eq("role","student")'));
 assert.match(backend,/invalid_institutional_group_email/);
 assert.match(backend,/scope_matching_may_change:true/);
 console.log('PASS: owner can correct existing student faculty/scope; no instructor data-edit permission or inferred college');
