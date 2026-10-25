@@ -108,18 +108,41 @@ function prepare(task,lang){
  var ref=(lines[0].match(/\(([^)]+)\)/)||[])[1];
  if(!topic||!ref)return raw;
  if(dim==="recall"&&/^(من ذاكرتك، اكتب قاعدة|From memory, write the rule on)/.test(raw))return en?
-  "Without reopening the text, write what you remember about “"+topic+"” ("+ref+").\n1. Write the parts and conditions you remember in short sentences.\n2. Choose three different short words or phrases to help you remember the rule.\n3. Beside each one, explain which part of the rule it reminds you of. No example or case answer is needed.":
-  "دون فتح النص، اكتب ما تتذكره عن «"+topic+"» ("+ref+").\n1. اكتب أجزاء القاعدة وشروطها في جمل قصيرة.\n2. اختر ثلاث كلمات أو عبارات قصيرة مختلفة تساعدك على تذكّر القاعدة.\n3. بجانب كل كلمة، اكتب الجزء الذي تذكّرك به. لا يُطلب مثال أو حل حالة.";
+  "From memory, answer about “"+topic+"” ("+ref+").\n1. Write the main rule and the conditions you remember, briefly.\n2. Write three short memory cues.\n3. Explain what each cue helps you remember. You do not need to solve a case.":
+  "من ذاكرتك، أجب عن «"+topic+"» ("+ref+").\n1. اكتب القاعدة وأهم شروطها في جمل قصيرة.\n2. اذكر ثلاث كلمات قصيرة تساعدك على تذكّرها.\n3. اكتب معنى كل كلمة. لا يُطلب منك حل واقعة.";
  if(dim==="understanding"&&/^(اشرح قاعدة|Explain the rule on)/.test(raw)){
   var marker=en?"Compare these statements; one is inaccurate:":"عبارتان للمقارنة؛ إحداهما غير دقيقة:";
-  var at=lines.indexOf(marker);if(at<0)return raw;
-  var intro=en?"In your own words, explain “"+topic+"” ("+ref+").\n1. What does the text mean? Explain its parts and conditions in short sentences.\n2. Read the two statements below. Which one is inaccurate? Correct it.\n3. Explain briefly how the changed word or condition affects the result. You do not need a long essay.":
-   "بكلماتك، اشرح معنى «"+topic+"» ("+ref+").\n1. ماذا يعني النص؟ اشرح أجزاءه وشروطه في جمل قصيرة.\n2. اقرأ العبارتين الآتيتين. أيهما غير دقيقة؟ اكتب تصحيحها.\n3. اشرح باختصار كيف تؤثر الكلمة أو الشرط المختلف في النتيجة. لا تحتاج إلى مقال طويل.";
-  return intro+"\n"+lines.slice(at).join("\n");
+  var at=lines.indexOf(marker);if(at<0||lines.length<at+3)return raw;
+  var header=en?"Explain “"+topic+"” ("+ref+") in your own words.":
+    "اشرح «"+topic+"» ("+ref+") بأسلوبك.";
+  var questions=en?[
+   "1. What is the rule? Explain its key conditions briefly.",
+   "2. Read the two statements here. Which is inaccurate? Correct it.",
+   "3. In one or two sentences, explain how the different condition changes the legal outcome."
+  ]:[
+   "1. ما معنى القاعدة؟ وضّح أهم شروطها باختصار.",
+   "2. أي العبارتين الآتيتين غير دقيقة؟ صحّحها.",
+   "3. في سطر أو سطرين، وضّح كيف يغيّر الشرط المختلف النتيجة القانونية."
+  ];
+  // The comparison belongs immediately after question 2, never after question 3.
+  return [header,questions[0],questions[1],marker].concat(lines.slice(at+1)).concat([questions[2]]).join("\n");
  }
  return raw;
 }
-root.LEX_BEGINNER_PROMPTS={prepare:prepare,cases:CASES};
+function esc(s){return String(s||"").replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
+function render(text,language){
+ var source=String(text||""),lines=source.split(/\r?\n/),en=language==="en";
+ var marker=en?"Compare these statements; one is inaccurate:":"عبارتان للمقارنة؛ إحداهما غير دقيقة:";
+ var at=lines.indexOf(marker);
+ if(at<0||lines.length<at+3)return "<div class='prompt' style='white-space:pre-wrap'>"+esc(source)+"</div>";
+ var before=lines.slice(0,at).join("\n"),pair=lines.slice(at+1,at+3),after=lines.slice(at+3).join("\n");
+ return "<section class='prompt clearQuestionPrompt'><div style='white-space:pre-wrap'>"+esc(before)+"</div>"+
+ "<div class='questionComparison' role='group' aria-label='"+(en?"Two statements to compare":"عبارتان للمقارنة")+"'>"+
+ "<strong>"+esc(marker)+"</strong>"+
+ pair.map(function(value,i){return "<p><span class='comparisonNumber'>"+(i+1)+"</span>"+esc(value)+"</p>";}).join("")+
+ "</div>"+(after?"<div class='questionFollowup' style='white-space:pre-wrap'>"+esc(after)+"</div>":"")+"</section>";
+}
+root.LEX_BEGINNER_PROMPTS={prepare:prepare,render:render,cases:CASES};
 if(typeof module!=="undefined"&&module.exports)module.exports=root.LEX_BEGINNER_PROMPTS;
 })(typeof window!=="undefined"?window:globalThis);
 
