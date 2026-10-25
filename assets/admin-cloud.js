@@ -114,6 +114,20 @@ function studentList(){
  var q=state.q.trim().toLowerCase();
  return state.students.filter(function(s){return !q||String(s.name+" "+s.username+" "+s.cohort).toLowerCase().indexOf(q)>=0;});
 }
+function academicEditor(s){
+ if(["owner","admin"].indexOf(state.staffRole)<0)return "";
+ function field(name,label,value,max,type){return '<label>'+label+'<input name="'+name+'" type="'+(type||"text")+'" maxlength="'+max+'" value="'+esc(value||"")+'"></label>';}
+ return '<section class="panel"><h3>استكمال بيانات الطالب الأكاديمية</h3><p class="managementHint">اكتب الجامعة والكلية والفرقة كما تظهر في تكليف الدكتور؛ عدم التطابق يمنع ظهور الطالب حفاظًا على خصوصيته. رقم القيد اختياري ولا يُعرض للدكتور.</p>'+
+ '<form class="formGrid" id="studentAcademicForm" data-student="'+esc(s.id)+'">'+
+ field("university","الجامعة",s.university,160)+
+ field("faculty","الكلية",s.faculty,160)+
+ field("year_label","الفرقة",s.year,80)+
+ '<label>الدولة<select name="country_code">'+[["qa","قطر"],["eg","مصر"],["sa","السعودية"],["ae","الإمارات"],["other","أخرى"]].map(function(x){return '<option value="'+x[0]+'"'+(s.country===x[0]?" selected":"")+'>'+x[1]+'</option>';}).join("")+'</select></label>'+
+ field("academic_section","القسم / الشعبة (اختياري)",s.section,100)+
+ field("student_registration_number","رقم القيد الجامعي (اختياري)",s.studentRegistrationNumber,80)+
+ field("institutional_group_email","البريد المؤسسي للمجموعة (اختياري)",s.groupEmail,254,"email")+
+ '<div><button class="btn primary" type="submit">حفظ البيانات</button><p id="academicSaveStatus" role="status"></p></div></form></section>';
+}
 function detail(v){
  var s=v.s,r=risk(v),axes=v.model.axes||{},advice=adminAdvice(v),lastUpdate=v.courseUpdated||v.profileUpdated;
  return '<div class="studentSectionBanner identitySection"><span>01</span><div><b>البيانات الأساسية للطالب</b><small>الهوية والجامعة والسنة الدراسية — لا يلزم وجود مجموعة أو أستاذ</small></div></div><section class="panel studentHero"><div><span class="overline">'+esc(s.cohort||"طالب مستقل · دون مجموعة")+'</span><h2>'+esc(s.name||s.username)+'</h2><p>@'+esc(s.username)+' • '+countryName(s.country)+' • '+esc(s.university||"—")+' • '+esc(s.year||"—")+'</p>'+
@@ -121,7 +135,7 @@ function detail(v){
  (s.studentRegistrationNumber?'<p>رقم القيد الجامعي: <b>'+esc(s.studentRegistrationNumber)+'</b></p>':'')+
  (s.groupEmail?'<p>بريد المجموعة: <b dir="ltr">'+esc(s.groupEmail)+'</b></p>':'')+
  (s.whatsapp?'<p class="studentPhone">واتساب: <b dir="ltr">'+esc(s.whatsapp)+'</b> • '+(s.whatsappVerified?'تم التحقق':'لم يتم التحقق بعد')+'</p>':'')+'</div><span class="risk big '+r+'">'+(v.official&&r==="none"?"التصحيح غير مكتمل":rlabel(r,v))+'</span></section>'+
- '<div class="studentSectionBanner trainingSection"><span>02</span><div><b>التدريب والتقييم</b><small>مؤشرات الأداء والمهارات — منفصلة عن بيانات الطالب الشخصية</small></div></div><section class="panel metricsPanel"><div class="panelHead"><div><h3>الملف التكيفي</h3><p>'+esc(modelText(v))+'</p></div><span class="realTag">Central DB</span></div><div class="metricGrid">'+
+ academicEditor(s)+'<div class="studentSectionBanner trainingSection"><span>02</span><div><b>التدريب والتقييم</b><small>مؤشرات الأداء والمهارات — منفصلة عن بيانات الطالب الشخصية</small></div></div><section class="panel metricsPanel"><div class="panelHead"><div><h3>الملف التكيفي</h3><p>'+esc(modelText(v))+'</p></div><span class="realTag">Central DB</span></div><div class="metricGrid">'+
  ["recall","understanding","application","legal_precision","retention","exam"].map(function(k){return metric(k,v.m[k],axes[k]);}).join("")+'</div>'+(lastUpdate?'<p style="margin:14px 0 0">آخر بيانات مستلمة: '+new Date(lastUpdate).toLocaleString("ar-EG")+'</p>':'')+'</section>'+
  '<section class="panel"><div class="panelHead"><div><h3>ملاحظات ونصائح للمشرف</h3><p>قراءة تلقائية مبنية على تجربة الطالب الفعلية، وليست درجة جامعية.</p></div><span class="realTag">Supervisor Note</span></div>'+
  '<div class="recommend"><b>ملحوظة على الأداء</b><span>'+esc(advice.summary)+'</span></div>'+
@@ -248,6 +262,19 @@ function bind(){
  };
  document.querySelectorAll(".pilotGradeForm").forEach(function(form){form.onsubmit=async function(e){e.preventDefault();var pass=form.elements.decision.value==="pass",rule=form.elements.rule.checked,application=form.elements.application.checked,cues=form.elements.cues?form.elements.cues.checked:null,status=form.querySelector(".gradeStatus"),feedback=form.elements.feedback.value.trim();if(feedback.length<12||pass&&(!rule||!application||cues===false)){status.textContent="لإقرار الإجابة الصحيحة يلزم تحقق جميع المعايير وكتابة ملاحظة محددة.";return;}var button=form.querySelector('[type="submit"]');button.disabled=true;try{var r=await LEX_CLOUD.db().from("pilot_human_grades").insert({attempt_id:form.dataset.grade,passed:pass,feedback:feedback,criteria:{action:"corrected",rule:rule,application:application,cues:cues}}).select("attempt_id").single();if(r.error)throw r.error;await load();state.tab="grading";render();}catch(err){status.textContent="تعذر حفظ التصحيح: "+(err.message||err);button.disabled=false;}};});
  document.querySelectorAll("[data-confirm]").forEach(function(button){button.onclick=async function(){var g=state.pilotAi.find(function(x){return x.attempt_id===button.dataset.confirm;}),form=button.closest(".pilotGradeForm"),status=form.querySelector(".gradeStatus");if(!g||g.status!=="scored")return;button.disabled=true;try{var r=await LEX_CLOUD.db().from("pilot_human_grades").insert({attempt_id:button.dataset.confirm,passed:g.passed,feedback:g.feedback,criteria:{action:"confirmed",ai_score:g.score}}).select("attempt_id").single();if(r.error)throw r.error;await load();state.tab="grading";render();}catch(e){button.disabled=false;status.textContent="تعذر توثيق المراجعة: "+(e.message||e);}};});
+ var academicForm=document.getElementById("studentAcademicForm");
+ if(academicForm)academicForm.onsubmit=async function(e){
+  e.preventDefault();var status=document.getElementById("academicSaveStatus"),button=academicForm.querySelector('[type="submit"]');
+  var patch=Object.fromEntries(new FormData(academicForm).entries());
+  if(!patch.university.trim()||!patch.faculty.trim()||!patch.year_label.trim()){
+   status.textContent="أكمل الجامعة والكلية والفرقة أولًا.";return;
+  }
+  button.disabled=true;status.textContent="جارٍ حفظ البيانات…";
+  try{
+   await LEX_CLOUD.manageStudent({action:"update_profile",user_id:academicForm.dataset.student,patch:patch});
+   await load();
+  }catch(_){button.disabled=false;status.textContent="تعذر حفظ البيانات. تأكد من المدخلات وحاول مجددًا.";}
+ };
  document.querySelectorAll("[data-student]").forEach(function(b){b.onclick=function(){state.selected=b.dataset.student;render();};});
  document.querySelectorAll("[data-open]").forEach(function(b){b.onclick=function(){state.selected=b.dataset.open;state.tab="dashboard";render();};});
  var q=document.getElementById("search")||document.getElementById("ssearch");if(q)q.oninput=function(){state.q=q.value;render();};
