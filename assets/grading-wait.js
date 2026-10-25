@@ -10,11 +10,11 @@ function learnerName(value){
  return name.length>65?name.slice(0,65).trim():name;
 }
 function researchMessages(dimension){
- var lib=root.LEX_SESSION_MOMENTS,phrases=lib&&lib.phrases||[];
+ var lib=root.LEX_SESSION_MOMENTS,phrases=lib&&lib.phrases||[],sources=lib&&lib.sources||{};
  var topical=dimension==="recall"?"retrieval":dimension==="understanding"?"understanding":null;
  var matching=topical?phrases.filter(function(p){return p.source===topical;}):phrases.slice();
  if(matching.length<2)matching=phrases.slice();
- return matching.slice(0,5).map(function(p){return {ar:p.ar,en:p.en};});
+ return matching.slice(0,5).map(function(p){return {ar:p.ar,en:p.en,source:sources[p.source]||null};});
 }
 var fallback=[
  {ar:"محاولتك الحالية تساعدك على معرفة ما أتقنته وما يحتاج إلى مراجعة.",en:"This attempt can show what you know and what to revisit."},
@@ -38,12 +38,12 @@ function begin(options){
  "<p class='lexGradingWaitKicker'>"+tr(language,"رحلتك في التعلّم","YOUR LEARNING JOURNEY")+"</p>"+
  "<h2 class='lexGradingWaitTitle'></h2>"+
  "<p class='lexGradingWaitLead' role='status' aria-live='polite'></p>"+
- "<div class='lexGradingWaitQuote'><p class='lexGradingWaitMessage'></p></div>"+
+ "<div class='lexGradingWaitQuote'><p class='lexGradingWaitMessage'></p><span class='lexGradingWaitAttribution'></span></div>"+
  "<div class='lexGradingWaitFoot'><span class='lexGradingWaitDots' aria-hidden='true'><i></i><i></i><i></i></span>"+
  "<span class='lexGradingWaitFootText'>"+tr(language,"جارٍ المراجعة…","Reviewing…")+"</span></div>"+
  "</div>";
  var heading=overlay.querySelector(".lexGradingWaitTitle"),lead=overlay.querySelector(".lexGradingWaitLead");
- var quote=overlay.querySelector(".lexGradingWaitMessage");
+ var quote=overlay.querySelector(".lexGradingWaitMessage"),attribution=overlay.querySelector(".lexGradingWaitAttribution");
   var position=0,finished=false,interval=null,phase="saving",step="";
  var greeting=name?(en(language)?name+", ":"يا "+name+"، "):"";
  function renderPhase(){
@@ -58,6 +58,7 @@ function begin(options){
  function renderMessage(){
    var p=messages[position%messages.length];position++;
    quote.textContent=en(language)?p.en:p.ar;
+    attribution.textContent=p.source?(en(language)?p.source.en:p.source.ar):"";
  }
  function finish(){
    if(finished)return;
