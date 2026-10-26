@@ -4,7 +4,7 @@ var APP=document.getElementById("adminApp");
 var SKEY="lexlearn_admin_session";
 var ss=null;try{ss=JSON.parse(localStorage.getItem(SKEY)||"null");}catch(e){}
 if(!ss||!ss.cloud||!window.LEX_CLOUD||!LEX_CLOUD.isConfigured()){location.replace("admin-login.html");return;}
-var state={tab:"dashboard",students:[],cohorts:[],audit:[],content:[],snapshots:[],attempts:[],pilotAttempts:[],pilotGrades:[],pilotAi:[],selected:null,q:"",busy:false,error:"",creds:null,staffRole:null,officialRecords:{},recordDetail:null,recordStudent:null,recordError:""};
+var state={tab:"dashboard",students:[],cohorts:[],audit:[],content:[],snapshots:[],attempts:[],pilotAttempts:[],pilotGrades:[],pilotAi:[],selected:null,q:"",busy:false,error:"",creds:null,staffRole:null,officialRecords:{},recordDetail:null,recordStudent:null,recordError:"",instructors:[],instructorAssignments:[],enrollments:[],treeOpen:{},instructorLoadWarning:false};
 
 function nextStudentUsername(){
  var used=new Set(state.students.map(function(s){return String(s.username||"").toLowerCase();}));
@@ -112,7 +112,92 @@ function kpis(){
 }
 function studentList(){
  var q=state.q.trim().toLowerCase();
- return state.students.filter(function(s){return !q||String(s.name+" "+s.username+" "+s.cohort).toLowerCase().indexOf(q)>=0;});
+ return state.students.filter(function(s){return !q||String([s.name,s.username,s.cohort,countryName(s.country),s.university,s.faculty,s.year].join(" ")).toLowerCase().indexOf(q)>=0;});
+}
+
+function studentTree(list){
+ // Group strictly by the recorded country AND university AND faculty AND year;
+ // an empty college/year stays in a visible "incomplete data" branch.
+ // A professor only precedes students enrolled in that professor's scoped subject.
+ var countries=new Map(),selected=state.selected,allEnrollments=new Set(
+  (state.enrollments||[]).map(function(e){return String(e.user_id)+"|"+String(e.course_id);})
+ );
+ function known(s){return String(s||"").trim()||"غير محدد — استكمل البيانات";}
+ function canonical(s){return String(s||"").trim().toLocaleLowerCase();}
+ list.forEach(function(s){
+  var c=String(s.country||"other"),uni=known(s.university),faculty=known(s.faculty),year=known(s.year);
+  if(!countries.has(c))countries.set(c,new Map());
+  var schools=countries.get(c),school=canonical(uni)+"|"+canonical(faculty);
+  if(!schools.has(school))schools.set(school,{university:uni,faculty:faculty,years:new Map()});
+  var y=schools.get(school).years;if(!y.has(year))y.set(year,[]);
+  y.get(year).push(s);
+ });
+ var sort=function(a,b){return String(a).localeCompare(String(b),"ar");};
+ function expanded(key,contains){
+  if(state.q.trim())return true;
+  return Object.prototype.hasOwnProperty.call(state.treeOpen,key)?state.treeOpen[key]:contains;
+ }
+ function node(key,label,count,level,body,contains){
+  return '<details class="studentTreeNode level-'+level+'" data-tree="'+esc(key)+'"'+(expanded(key,contains)?' open':'')+'>'+
+   '<summary><span class="treeTitle">'+esc(label)+'</span><span class="treeCount">'+count+'</span></summary>'+
+   '<div class="studentTreeChildren">'+body+'</div></details>';
+ }
+ function tile(s){
+  var v=view(s),rr=risk(v);
+  return '<button type="button" class="studentBtn '+(s.id===state.selected?"active":"")+'" data-student="'+esc(s.id)+'">'+
+    '<div><b>'+esc(s.name||s.username)+'</b><small>@'+esc(s.username)+' • '+v.completed+'/30</small></div>'+
+    '<span class="risk '+(s.active===false?"none":rr)+'">'+
+    (s.active===false?(s.accountStatus==="pending"?"بانتظار الاعتماد":s.accountStatus==="paused"?"موقوف مؤقتًا":"معطّل"):rlabel(rr,v))+
+    '</span></button>';
+ }
+ if(!list.length)return '<div class="empty">لا يوجد طلاب مطابقون للبحث.</div>';
+ var parts=[];
+ Array.from(countries.keys()).sort(sort).forEach(function(country){
+  var schools=countries.get(country),countryStudents=[];
+  schools.forEach(function(school){school.years.forEach(function(students){countryStudents.push.apply(countryStudents,students);});});
+  var collegeNodes=[];
+  Array.from(schools.keys()).sort(sort).forEach(function(schoolKey){
+   var school=schools.get(schoolKey),schoolStudents=[];
+   school.years.forEach(function(xs){schoolStudents.push.apply(schoolStudents,xs);});
+   var yearNodes=[];
+   Array.from(school.years.keys()).sort(sort).forEach(function(year){
+    var students=school.years.get(year),selectedHere=students.some(function(x){return x.id===selected;});
+    var assigned=state.instructorAssignments.filter(function(a){
+     return a.active!==false&&String(a.country_code)===country&&
+       canonical(a.university)===canonical(school.university)&&
+       canonical(a.faculty)===canonical(school.faculty)&&
+       canonical(a.year_label)===canonical(year)&&
+       state.instructors.some(function(t){return t.instructor_id===a.instructor_id&&t.profiles&&t.profiles.active!==false;});
+    });
+    var professorCards=[],covered=new Set();
+    assigned.forEach(function(a){
+      var prof=state.instructors.find(function(t){return t.instructor_id===a.instructor_id;});
+      if(!prof)return;
+      var subset=students.filter(function(s){return allEnrollments.has(String(s.id)+"|"+String(a.course_id));});
+      subset.forEach(function(st){covered.add(st.id);});
+      var label=(prof.academic_title||"دكتور")+" "+(prof.profiles&&prof.profiles.display_name||"");
+      professorCards.push('<div class="treeProfessor"><div class="treeProfessorHeader"><div><b>'+esc(label)+'</b>'+
+       '<small>'+esc(a.subject_name||"المادة المكلف بها")+' • '+subset.length+' طالب</small></div>'+
+       '<a class="treeEditTeacher" href="admin-instructors.html?edit='+encodeURIComponent(a.instructor_id)+'">ملف الدكتور وتعديله</a></div>'+
+       '<div class="treeStudentGroup">'+(subset.length?subset.map(tile).join(""):'<small class="treeEmpty">لا يوجد طلاب مسجلون في هذه المادة بعد.</small>')+'</div></div>');
+    });
+    var other=students.filter(function(st){return !covered.has(st.id);});
+    if(other.length||!professorCards.length){
+     professorCards.push('<div class="treeUnassigned"><span class="treeUnassignedLabel">'+
+      (assigned.length?"طلاب بدون تكليف مادة مطابق":"لم يُسجّل دكتور مختص لهذه الفرقة")+'</span>'+
+      '<div class="treeStudentGroup">'+other.map(tile).join("")+'</div></div>');
+    }
+    var yearKey="year|"+country+"|"+schoolKey+"|"+year;
+    yearNodes.push(node(yearKey,year,students.length,"year",professorCards.join(""),selectedHere));
+   });
+   var collegeKey="faculty|"+country+"|"+schoolKey;
+   collegeNodes.push(node(collegeKey,school.faculty+" — "+school.university,schoolStudents.length,
+     "faculty",yearNodes.join(""),schoolStudents.some(function(st){return st.id===selected;})));
+  });
+  parts.push(node("country|"+country,countryName(country),countryStudents.length,"country",
+     collegeNodes.join(""),countryStudents.some(function(st){return st.id===selected;})));
+ });
+ return parts.join("");
 }
 function academicEditor(s){
  if(["owner","admin"].indexOf(state.staffRole)<0)return "";
@@ -162,7 +247,7 @@ function essayAttempts(v){
 function dashboard(){
  var list=studentList(),selected=state.students.find(function(s){return s.id===state.selected;})||list[0],v=selected?view(selected):null;if(selected)state.selected=selected.id;
  return '<section class="hero"><div><span class="demoTag">لوحة المشرف</span><h1>متابعة الطالب خطوة بخطوة</h1><p>التشخيص والجلسات والإجابات والتصحيح في مكان واحد، مع تقارير قابلة للطباعة والحفظ PDF.</p></div><button class="btn light" id="refresh">تحديث البيانات</button></section>'+kpis()+
- '<section class="dashboardGrid"><aside class="panel studentAside"><div class="panelHead"><div><h3>الطلاب</h3><p>'+list.length+' حساب</p></div><button class="iconBtn" id="quickAdd">'+ico("plus")+'</button></div><input class="search" id="search" value="'+esc(state.q)+'" placeholder="اسم أو مستخدم..."><div class="studentList">'+list.map(function(s){var vv=view(s),rr=risk(vv);return '<button class="studentBtn '+(s.id===state.selected?"active":"")+'" data-student="'+s.id+'"><div><b>'+esc(s.name||s.username)+'</b><small>@'+esc(s.username)+' • '+vv.completed+'/30</small></div><span class="risk '+(s.active===false?"none":rr)+'">'+(s.active===false?(s.accountStatus==="pending"?"بانتظار الاعتماد":s.accountStatus==="paused"?"موقوف مؤقتًا":"معطّل"):rlabel(rr,vv))+'</span></button>';}).join("")+'</div></aside><div>'+(v?detail(v):'<div class="panel empty">لا يوجد طلاب بعد.</div>')+'</div></section>';
+ '<section class="dashboardGrid"><aside class="panel studentAside"><div class="panelHead"><div><h3>الطلاب</h3><p>'+list.length+' حساب</p></div><button class="iconBtn" id="quickAdd">'+ico("plus")+'</button></div><input class="search" id="search" value="'+esc(state.q)+'" placeholder="اسم أو مستخدم..."><div class="studentList studentHierarchy" aria-label="الطلاب حسب الدولة والكلية والفرقة">+studentTree(list)+</div></aside><div>'+(v?detail(v):'<div class="panel empty">لا يوجد طلاب بعد.</div>')+'</div></section>';
 }
 function studentsTab(){
  var a=studentList(),pending=state.students.filter(function(x){return x.accountStatus==="pending";}).length;
@@ -219,12 +304,18 @@ async function load(){
     c.from("attempts").select("id,user_id,answer_text,selected_option,created_at").eq("course_id","qa-qu-lawc101-rights").eq("grading_method","pilot_human_pending").order("created_at",{ascending:false}).limit(500),
     c.from("pilot_human_grades").select("attempt_id,passed,feedback,criteria,reviewed_at").order("reviewed_at",{ascending:false}).limit(500),
     c.from("pilot_ai_grades").select("attempt_id,status,passed,score,feedback,model_confidence,criteria,source_ids,created_at").order("created_at",{ascending:false}).limit(500),
-    c.functions.invoke("admin-export-student",{body:{action:"overview"}})
+    c.functions.invoke("admin-export-student",{body:{action:"overview"}}),
+     c.functions.invoke("admin-manage-instructors",{body:{action:"list"}}).catch(function(){return {error:true};}),
+     c.from("enrollments").select("user_id,course_id").limit(10000).then(function(x){return x;},function(){return {error:true};})
   ]);
-  if(results.slice(4).some(function(x){return x.error;}))throw results.slice(4).find(function(x){return x.error;}).error;
+  if(results.slice(4,10).some(function(x){return x.error;}))throw results.slice(4,10).find(function(x){return x.error;}).error;
   if(!results[9].data||results[9].data.ok!==true)throw Error("تعذر تحميل سجل التقدم الحالي");
   state.officialRecords=results[9].data.records||{};state.recordDetail=null;state.recordError="";
   state.students=results[0];state.cohorts=results[1];state.audit=results[2];state.content=results[3];state.snapshots=results[4].data||[];state.attempts=results[5].data||[];state.pilotAttempts=results[6].data||[];state.pilotGrades=results[7].data||[];state.pilotAi=results[8].data||[];
+   state.instructorLoadWarning=!!(results[10].error||!results[10].data||!results[10].data.ok||results[11].error);
+   state.instructors=results[10].data&&results[10].data.ok?results[10].data.instructors||[]:[];
+   state.instructorAssignments=results[10].data&&results[10].data.ok?results[10].data.assignments||[]:[];
+   state.enrollments=results[11].error?[]:results[11].data||[];
   if(!state.selected&&state.students[0])state.selected=state.students[0].id;
  }catch(e){state.error=e&&e.message||String(e);}
  state.busy=false;render();
@@ -275,9 +366,10 @@ function bind(){
    await load();
   }catch(_){button.disabled=false;status.textContent="تعذر حفظ البيانات. تأكد من المدخلات وحاول مجددًا.";}
  };
- document.querySelectorAll("[data-student]").forEach(function(b){b.onclick=function(){state.selected=b.dataset.student;render();};});
+ document.querySelectorAll("[data-tree]").forEach(function(d){d.ontoggle=function(){state.treeOpen[d.dataset.tree]=d.open;};});
+  document.querySelectorAll("[data-student]").forEach(function(b){b.onclick=function(){state.selected=b.dataset.student;render();};});
  document.querySelectorAll("[data-open]").forEach(function(b){b.onclick=function(){state.selected=b.dataset.open;state.tab="dashboard";render();};});
- var q=document.getElementById("search")||document.getElementById("ssearch");if(q)q.oninput=function(){state.q=q.value;render();};
+ var q=document.getElementById("search")||document.getElementById("ssearch");if(q)q.oninput=function(){var pos=q.selectionStart;state.q=q.value;render();var again=document.getElementById(q.id);if(again){again.focus();try{again.setSelectionRange(pos,pos);}catch(_){}}};
  var add=document.getElementById("add")||document.getElementById("quickAdd");if(add)add.onclick=function(){state.modal="add";render();};
  document.querySelectorAll("[data-close]").forEach(function(b){b.onclick=function(){state.modal=null;render();};});
  var ref=document.getElementById("refresh");if(ref)ref.onclick=load;
