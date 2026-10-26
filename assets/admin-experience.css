@@ -134,3 +134,9 @@ html[data-learner-theme=dark] .studentTreeNode.level-country.country-other{--cou
 .studentTreeNode.level-year[open]>summary{background:color-mix(in srgb,var(--ad-raised,#f1ece5) 64%,#a6c9d9 36%);border:1px solid color-mix(in srgb,var(--ad-line,#cec7c1) 72%,#6a9eae 28%);color:var(--ad-ink,#18253b)}
 .studentTreeNode.level-year[open]>.studentTreeChildren{padding-block-start:9px}
 .lexlearnBrandHome{text-decoration:none;color:inherit;border-radius:10px}.lexlearnBrandHome:focus-visible{outline:3px solid var(--ad-accent,#8a1f39);outline-offset:3px}
+
+/* Clear visible year header contrast when its student roster is expanded. */
+.studentHierarchy details.studentTreeNode.level-year > summary{background:var(--ad-raised,#f1ece5) !important;min-height:39px}
+.studentHierarchy details.studentTreeNode.level-year[open] > summary{background:#dbe9ee !important;color:#20334a !important;border:1px solid #a9c6d4 !important;box-shadow:inset 4px 0 0 #6d9dab}
+html[data-learner-theme="dark"] .studentHierarchy details.studentTreeNode.level-year[open] > summary{background:#354a61 !important;color:#f7f4ef !important;border-color:#779bb2 !important}
+.studentHierarchy .countryFlag img{width:24px;height:18px;display:inline-block;vertical-align:middle;object-fit:cover;border:1px solid #0002;border-radius:2px}
