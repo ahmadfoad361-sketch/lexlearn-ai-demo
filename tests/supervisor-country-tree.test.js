@@ -59,5 +59,8 @@ assert.match(edge,/if\(!\["owner","admin"\]\.includes\(profile\.role\)\)/);
 assert.match(edge,/admin\.auth\.admin\.updateUserById/);
 assert.doesNotMatch(edge,/\.update\(\{role:"instructor"/,'editing must not increase roles');
 const htmlAdmin=fs.readFileSync('admin.html','utf8');
-assert.match(htmlAdmin,/admin-experience\.css\?v=20261026\.tree1/);
+const adminStyles = [...htmlAdmin.matchAll(/<link\b[^>]*href=["']([^"']+)["'][^>]*>/g)]
+ .map(match=>match[1]).filter(href=>/^assets\/admin-experience\.css\?v=[A-Za-z0-9._-]+$/.test(href));
+assert.equal(adminStyles.length,1,'admin page must load one versioned experience stylesheet');
+assert.ok(fs.existsSync(adminStyles[0].split('?')[0]),'referenced admin stylesheet must exist');
 console.log('PASS country/faculty/year/lecturer tree, course enrollment filtering, orphans and secure professor edit');
