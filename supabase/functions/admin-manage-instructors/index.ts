@@ -57,6 +57,49 @@ Deno.serve(async(req:Request)=>{
    }catch(e){await admin.auth.admin.deleteUser(uid);throw e;}
    return json({ok:true,instructor_id:uid,email,temporary_password:temp});
   }
+  if(action==="update"){
+   const uid=clean(b.instructor_id,64),name=clean(b.name,160),
+    email=clean(b.email,254).toLowerCase(),title=clean(b.academic_title,90)||"دكتور",
+    specialization=clean(b.specialization,160)||null,
+    officeHours=clean(b.office_hours,160)||null,bio=clean(b.bio,600)||null,
+    whatsapp=clean(b.whatsapp,24)||null;
+   if(!/^[0-9a-f-]{36}$/i.test(uid)||name.length<3||
+     !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||
+     /@(gmail|yahoo|hotmail|outlook|icloud)\./i.test(email)||
+     (whatsapp&&!/^\+[1-9][0-9]{7,14}$/.test(whatsapp)))
+    return json({error:"invalid_instructor_information"},400);
+   const [registered,academic]=await Promise.all([
+    admin.from("profiles").select("id,role,display_name,contact_email").eq("id",uid).single(),
+    admin.from("instructor_profiles").select("instructor_id,official_email,academic_title,specialization,office_hours,bio,whatsapp_e164").eq("instructor_id",uid).single()
+   ]);
+   if(registered.error||academic.error||registered.data?.role!=="instructor"||!academic.data)
+    return json({error:"not_instructor"},404);
+   const old=academic.data,oldName=registered.data.display_name,oldContact=registered.data.contact_email;
+   const emailChanged=email!==old.official_email;
+   if(emailChanged){
+    const existing=await admin.from("instructor_profiles").select("instructor_id").eq("official_email",email).neq("instructor_id",uid).limit(1);
+    if(existing.error||existing.data?.length)return json({error:"official_email_already_registered"},409);
+    const changed=await admin.auth.admin.updateUserById(uid,{email,email_confirm:true});
+    if(changed.error)return json({error:"email_update_failed"},409);
+   }
+   try{
+    const a=await admin.from("profiles").update({display_name:name,contact_email:email}).eq("id",uid).eq("role","instructor").select("id").single();
+    if(a.error||!a.data)throw Error("instructor_identity_update_failed");
+    const info=await admin.from("instructor_profiles").update({
+     official_email:email,academic_title:title,specialization,
+     office_hours:officeHours,bio,whatsapp_e164:whatsapp,updated_at:new Date().toISOString()
+    }).eq("instructor_id",uid).select("instructor_id").single();
+    if(info.error||!info.data)throw Error("instructor_academic_update_failed");
+   }catch(_){
+    // Roll back a partially changed email/name where possible.
+    await admin.from("profiles").update({display_name:oldName,contact_email:oldContact}).eq("id",uid).eq("role","instructor");
+    if(emailChanged)await admin.auth.admin.updateUserById(uid,{email:old.official_email,email_confirm:true});
+    return json({error:"instructor_update_not_confirmed"},500);
+   }
+   await admin.from("admin_audit").insert({actor_user_id:user.id,target_user_id:uid,
+    action:"UPDATE_INSTRUCTOR",details:{profile_fields:["display_name","official_email","academic_title","specialization","office_hours","bio","whatsapp_e164"],email_changed:emailChanged}});
+   return json({ok:true,instructor_id:uid});
+  }
   if(action==="assignment"){
    const uid=clean(b.instructor_id,64);
    if(!/^[0-9a-f-]{36}$/i.test(uid))return json({error:"invalid_instructor"},400);
