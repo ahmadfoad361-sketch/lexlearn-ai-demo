@@ -105,6 +105,15 @@ const adminPage=fs.readFileSync(path.join(out,"admin.html"),"utf8");
 const cloudAdmin=fs.readFileSync(path.join(out,"assets/admin-cloud.js"),"utf8");
 if(!cloudAdmin.includes('href="references.html"'))throw new Error("Supervisor has no link to reference library");
 
+
+// Supervisor release checks: guard the country flags, academic-year wording and expanded state styles.
+const supervisorTree=fs.readFileSync(path.join(out,"assets/admin-cloud.js"),"utf8");
+const supervisorCss=fs.readFileSync(path.join(out,"assets/admin-experience.css"),"utf8");
+if(!supervisorTree.includes("countryFlag")||!supervisorTree.includes("displayYear")||!supervisorTree.includes("الفرقة"))
+ throw new Error("Supervisor country/year navigation missing from published artifact");
+if(!supervisorCss.includes(".level-year[open]")||!supervisorCss.includes(".level-country.country-qa"))
+ throw new Error("Supervisor expanded-year or country card styling missing");
+
 // Prevent regressions where the interface references a waiting-screen asset excluded from the published bundle.
 const studentPath=fs.readFileSync(path.join(out,"student-path.html"),"utf8");
 for(const required of ["assets/grading-wait.js","assets/grading-wait.css"]){
