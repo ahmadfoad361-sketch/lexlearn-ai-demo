@@ -140,3 +140,8 @@ html[data-learner-theme=dark] .studentTreeNode.level-country.country-other{--cou
 .studentHierarchy details.studentTreeNode.level-year[open] > summary{background:#dbe9ee !important;color:#20334a !important;border:1px solid #a9c6d4 !important;box-shadow:inset 4px 0 0 #6d9dab}
 html[data-learner-theme="dark"] .studentHierarchy details.studentTreeNode.level-year[open] > summary{background:#354a61 !important;color:#f7f4ef !important;border-color:#779bb2 !important}
 .studentHierarchy .countryFlag img{width:24px;height:18px;display:inline-block;vertical-align:middle;object-fit:cover;border:1px solid #0002;border-radius:2px}
+
+/* Locally rendered flags and high-contrast opened academic year in admin. */
+.countryFlagSvg{display:block;width:26px;height:19px;border-radius:2px;box-shadow:0 0 0 1px #ffffff55;flex:none}
+.studentHierarchy .studentTreeNode.level-year[open]>summary{background:#c2dbe5!important;color:#10253d!important;border:2px solid #75a8bc!important;box-shadow:inset 4px 0 0 #467e95!important}
+html[data-learner-theme="dark"] .studentHierarchy .studentTreeNode.level-year[open]>summary{background:#4b7086!important;color:#fff!important;border-color:#8ab8ce!important}
