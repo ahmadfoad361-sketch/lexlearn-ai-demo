@@ -2,7 +2,7 @@
 "use strict";
 const APP=document.getElementById("adminInstructorApp"),C=LEX_CLOUD.db();
 const esc=v=>String(v??"").replace(/[&<>"']/g,k=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[k]));
-let state={teachers:[],assignments:[],courses:[],credential:null};
+let state={teachers:[],assignments:[],courses:[],credential:null,editing:new URLSearchParams(location.search).get("edit")||""};
 function scopeFields(prefix,showTeacher=false){
  const options=state.courses.map(c=>'<option value="'+esc(c.id)+'">'+esc(c.title_ar||c.id)+' — '+esc(c.id)+'</option>').join("");
  return '<div class="grid">'+
@@ -27,13 +27,34 @@ function form(){
  '<section class="panel"><h2>إسناد مادة أو فرقة إضافية لدكتور مسجل</h2><form id="assignInstructor">'+scopeFields("extra",true)+
  '<button type="submit" class="secondary">إضافة تكليف أكاديمي</button><p id="assignmentStatus" role="status"></p></form></section>';
 }
+function editTeacher(t){
+ if(state.editing!==t.instructor_id)return "";
+ function field(label,name,val,max,type){
+  return '<label>'+label+'<input name="'+name+'" maxlength="'+max+'" type="'+(type||"text")+'" value="'+esc(val||"")+'" '+(name==="name"||name==="email"?'required':'')+'></label>';
+ }
+ return '<form class="facultyEditForm" data-update-teacher="'+esc(t.instructor_id)+'">'+
+  '<h3>تعديل بطاقة الدكتور</h3><p class="hint">تحديث البريد الرسمي يغيّر بريد تسجيل دخول الدكتور. الجامعة والفرقة والمادة تُدار من التكليفات أدناه.</p>'+
+  '<div class="grid">'+
+  field("اسم الدكتور","name",t.profiles?.display_name,160)+
+  field("البريد الجامعي الرسمي","email",t.official_email,254,"email")+
+  field("اللقب العلمي","academic_title",t.academic_title,90)+
+  field("التخصص","specialization",t.specialization,160)+
+  field("الواتساب الدولي (اختياري)","whatsapp",t.whatsapp_e164,24)+
+  field("الساعات المكتبية","office_hours",t.office_hours,160)+
+  '</div><label>نبذة عن الدكتور<textarea name="bio" maxlength="600">'+esc(t.bio||"")+'</textarea></label>'+
+  '<button class="primary" type="submit">حفظ تعديلات الدكتور</button> '+
+  '<button class="secondary" type="button" data-cancel-edit>إلغاء</button>'+
+  '<p role="status" class="editTeacherStatus"></p></form>';
+}
 function list(){
  return '<section class="panel"><h2>سجل الدكاترة والتكليفات</h2><p>'+state.teachers.length+' عضو هيئة تدريس مسجل</p>'+
  (!state.teachers.length?'<p class="notice">لا توجد حسابات دكاترة بعد. أنشئ الحساب الأول من النموذج بالأعلى.</p>':state.teachers.map(t=>{
  const a=state.assignments.filter(x=>x.instructor_id===t.instructor_id);
  return '<div class="summary"><div class="toolbar"><div><h3>'+esc(t.academic_title||"دكتور")+' '+esc(t.profiles?.display_name||"")+'</h3><p>'+esc(t.official_email)+' • '+esc(t.specialization||"")+'</p><small>واتساب: '+esc(t.whatsapp_e164||"—")+'</small></div>'+
- '<button data-teacher="'+t.instructor_id+'" data-active="'+(t.profiles?.active?"false":"true")+'" class="secondary">'+(t.profiles?.active?"تعطيل حساب الدكتور":"تفعيل الحساب")+'</button></div>'+
- a.map(x=>'<div class="course"><b>'+esc(x.subject_name)+'</b><p>'+esc(x.university)+' — '+esc(x.faculty)+' — '+esc(x.year_label)+'</p>'+
+ '<div class="actions"><button data-edit-teacher="'+t.instructor_id+'" class="secondary">فتح وتعديل البيانات</button> '+
+ '<button data-teacher="'+t.instructor_id+'" data-active="'+(t.profiles?.active?"false":"true")+'" class="secondary">'+(t.profiles?.active?"تعطيل حساب الدكتور":"تفعيل الحساب")+'</button></div></div>'+
+ editTeacher(t)+
+  a.map(x=>'<div class="course"><b>'+esc(x.subject_name)+'</b><p>'+esc(x.university)+' — '+esc(x.faculty)+' — '+esc(x.year_label)+'</p>'+
  '<button type="button" class="secondary" data-assignment="'+x.id+'" data-owner="'+t.instructor_id+'" data-active="'+(!x.active)+'">'+(x.active?"إيقاف تكليف":"تفعيل تكليف")+'</button></div>').join("")+'</div>';
  }).join(""))+'</section>';
 }
@@ -41,6 +62,7 @@ function page(){
  APP.innerHTML='<section class="panel"><span class="eyebrow">إدارة أكاديمية مستقلة عن الطلاب</span><h1>حسابات أساتذة الجامعات</h1><p>يتم إصدار اسم الدخول وكلمة مرور مؤقتة من المشرف. لا يظهر للدكتور شيء من وظائف إدارة الطالب أو أدوات مراجعة المحتوى.</p><a href="instructor-login.html" target="_blank" rel="noopener">معاينة صفحة «تسجيل دخول الدكتور»</a></section>'+
  (state.credential?'<section class="panel notice"><h2>بيانات الدخول الأولية — تظهر مرة واحدة</h2><p>البريد الرسمي: <b>'+esc(state.credential.email)+'</b></p><p>كلمة المرور المؤقتة: <b>'+esc(state.credential.temporary_password)+'</b></p><button id="copyTeacher" class="secondary">نسخ بيانات الدخول</button><p class="hint">سلّمها للدكتور بقناة آمنة واطلب منه تغيير كلمة المرور. لا نحتفظ بها داخل سجل الإدارة.</p></section>':'')+
  form()+list();
+ if(state.editing){const current=document.querySelector('.facultyEditForm');if(current)current.scrollIntoView({block:"nearest"});}
  document.getElementById("createInstructor").onsubmit=async e=>{
   e.preventDefault();const b=Object.fromEntries(new FormData(e.currentTarget));
   const status=document.getElementById("createStatus");status.textContent="جارٍ إنشاء حساب الدكتور…";
@@ -57,6 +79,26 @@ function page(){
    await reload();
   }catch(_){status.textContent="تعذر حفظ التكليف. تحقق من صحة المادة والبيانات.";}
  };
+ document.querySelectorAll("[data-edit-teacher]").forEach(b=>b.onclick=()=>{
+  state.editing=state.editing===b.dataset.editTeacher?"":b.dataset.editTeacher;
+  history.replaceState(null,"",state.editing?"?edit="+encodeURIComponent(state.editing):location.pathname);
+  page();
+ });
+ document.querySelectorAll("[data-cancel-edit]").forEach(b=>b.onclick=()=>{
+  state.editing="";history.replaceState(null,"",location.pathname);page();
+ });
+ document.querySelectorAll("[data-update-teacher]").forEach(form=>form.onsubmit=async e=>{
+  e.preventDefault();const status=form.querySelector(".editTeacherStatus");
+  const submit=form.querySelector('[type="submit"]');submit.disabled=true;status.textContent="جارٍ حفظ بيانات الدكتور…";
+  try{
+   const b=Object.fromEntries(new FormData(form).entries());
+   const reply=await C.functions.invoke("admin-manage-instructors",{body:{action:"update",instructor_id:form.dataset.updateTeacher,...b}});
+   if(reply.error||!reply.data?.ok)throw reply.error||Error(reply.data?.error||"not_saved");
+   await reload();
+   const updated=document.querySelector(".facultyEditForm .editTeacherStatus");
+   if(updated)updated.textContent="تم تحديث بيانات الدكتور.";
+  }catch(_){submit.disabled=false;status.textContent="تعذر حفظ التعديلات؛ راجع البريد الرسمي والبيانات المدخلة.";}
+ });
  document.querySelectorAll("[data-teacher]").forEach(b=>b.onclick=async()=>{
   if(!confirm("تأكيد تعديل حالة حساب الدكتور؟"))return;
   b.disabled=true;await C.functions.invoke("admin-manage-instructors",{body:{action:"set-active",instructor_id:b.dataset.teacher,active:b.dataset.active==="true"}});await reload();

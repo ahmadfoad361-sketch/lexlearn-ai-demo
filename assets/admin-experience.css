@@ -67,3 +67,39 @@ html[data-learner-theme] .panel .recordPartial,html[data-learner-theme] .panel .
 html[data-learner-theme=dark] .panel .recordIncorrect{color:#e4aab2}
 html[data-learner-theme=dark] .panel .recordIncorrect b{color:#e4aab2}
 html[data-learner-theme=dark] .panel .recordIncorrect :is(p,blockquote){color:#dce4ed}
+
+
+/* Scalable country → faculty/university → year → assigned professor → student navigation */
+.studentHierarchy{display:block;max-height:min(78vh,1050px);overflow:auto;padding:3px 2px;scrollbar-gutter:stable}
+.studentTreeNode{margin:8px 0;border-radius:13px;border:1px solid var(--ad-line,#ded5cb);background:var(--ad-surface,#fff);overflow:clip}
+.studentTreeNode>summary{list-style:none;cursor:pointer;display:flex;gap:7px;align-items:center;justify-content:space-between;
+ padding:11px 9px;color:var(--ad-ink,var(--navy));font-weight:750;line-height:1.6}
+.studentTreeNode>summary::-webkit-details-marker{display:none}
+.studentTreeNode>summary::before{content:"‹";transform:rotate(0);font-size:22px;color:var(--ad-accent,var(--maroon));line-height:1}
+.studentTreeNode[open]>summary::before{transform:rotate(-90deg)}
+.studentTreeNode>summary:focus-visible,.treeEditTeacher:focus-visible{outline:3px solid var(--ad-accent,#8a1f39);outline-offset:1px}
+.studentTreeNode .treeTitle{min-width:0;flex:1;text-align:right;overflow-wrap:anywhere;font-size:.87rem}
+.studentTreeNode .treeCount{flex-shrink:0;font-size:.76rem;color:var(--ad-muted,#536176);
+ border-radius:9px;background:var(--ad-raised,#f1ece5);padding:3px 8px;font-variant-numeric:tabular-nums}
+.studentTreeNode.level-country{border-inline-start:3px solid var(--ad-accent,#8a1f39)}
+.studentTreeNode.level-faculty{border-color:var(--ad-line,#ded5cb)}
+.studentTreeNode.level-year{border:0;border-top:1px solid var(--ad-line,#ded5cb);border-radius:8px}
+.studentTreeNode.level-year>summary{font-weight:700}
+.studentTreeNode .studentTreeChildren{padding:3px 7px 9px;display:grid;gap:5px}
+.treeProfessor{background:var(--ad-raised,#f6f1ec);padding:9px;border-radius:12px;border:1px solid var(--ad-line,#ded5cb)}
+.treeProfessorHeader{display:flex;gap:6px;flex-direction:column;align-items:stretch}
+.treeProfessorHeader b{font-size:.83rem;color:var(--ad-ink,#111d31);display:block;overflow-wrap:anywhere}
+.treeProfessorHeader small{font-size:.73rem;color:var(--ad-muted,#536176);display:block}
+.treeEditTeacher{align-self:flex-start;padding:4px 7px;border:1px solid var(--ad-line,#ded5cb);
+ border-radius:7px;text-decoration:none;font-weight:700;font-size:.74rem;color:var(--ad-accent,#8a1f39)}
+.treeUnassigned{padding:6px 1px}
+.treeUnassignedLabel{display:block;color:var(--ad-muted,#536176);font-size:.75rem;padding:4px 3px}
+.treeStudentGroup{display:grid;gap:6px;margin-top:6px}
+.treeStudentGroup .studentBtn{width:100%;min-width:0;grid-template-columns:minmax(0,1fr) auto}
+.treeEmpty{display:block;color:var(--ad-muted,#536176);font-size:.73rem;padding:7px}
+.studentHierarchy .studentBtn{background:var(--ad-surface,#fff);color:var(--ad-ink,#111d31);border-color:var(--ad-line,#e3d9d3)}
+.studentHierarchy .studentBtn.active{border-color:var(--ad-accent,#8a1f39);background:var(--ad-raised,#faf0f2)}
+.studentHierarchy .studentBtn b{color:var(--ad-ink,#111d31)}
+.studentHierarchy .studentBtn small{color:var(--ad-muted,#536176)}
+@media(min-width:1101px){.dashboardGrid:has(.studentHierarchy){grid-template-columns:minmax(330px,365px) minmax(0,1fr)}}
+@media(max-width:1100px){.studentHierarchy{max-height:55vh}}
