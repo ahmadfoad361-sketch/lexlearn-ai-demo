@@ -30,7 +30,7 @@ async function adminReadableError(error){
 function esc(v){return String(v==null?"":v).replace(/[&<>"']/g,function(c){return({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"})[c];});}
 function ico(n){var p={chart:'<path d="M12 50h40M17 43V29M28 43V19M39 43V34M50 43V13"/>',users:'<circle cx="23" cy="22" r="8"/><circle cx="44" cy="25" r="6"/><path d="M9 50c2-10 8-15 14-15s12 5 14 15M38 39c7 0 12 4 14 11"/>',group:'<circle cx="22" cy="23" r="7"/><circle cx="42" cy="23" r="7"/><path d="M8 49c2-10 7-15 14-15s12 5 14 15M28 49c2-10 7-15 14-15s12 5 14 15"/>',audit:'<path d="M17 10h30v44H17z"/><path d="M24 21h16M24 29h16M24 37h11"/>',plus:'<path d="M32 13v38M13 32h38"/>',key:'<path d="M10 35a12 12 0 1 0 18-10l22-11 5 5-4 7-7-1-2 7-7-1-6 4"/>'};return '<svg class="uiIcon" viewBox="0 0 64 64">'+(p[n]||p.chart)+'</svg>';}
 function label(k){return({recall:"الحفظ",understanding:"الفهم",application:"التطبيق على الوقائع",legal_precision:"الدقة القانونية",retention:"ثبات المعلومة",exam:"الأداء الامتحاني"})[k]||k;}
-function countryName(c){return c==="eg"?"مصر":"قطر";}
+function countryName(c){return ({qa:"قطر",eg:"مصر",sa:"السعودية",ae:"الإمارات"})[c]||"دولة أخرى";}
 function courseKey(s){var country=s.country||"qa";return country+"-"+(country==="qa"?"rights":"sources");}
 function profileSnap(id,country){country=country||"qa";var key=country+"-"+(country==="qa"?"rights":"sources");return state.snapshots.find(function(x){return x.user_id===id&&x.course_id===key&&x.snapshot_type==="profile";});}
 function courseSnap(id,country){country=country||"qa";var key=country+"-"+(country==="qa"?"rights":"sources");return state.snapshots.find(function(x){return x.user_id===id&&x.course_id===key&&x.snapshot_type==="course";});}
@@ -119,16 +119,22 @@ function studentTree(list){
  // Group strictly by the recorded country AND university AND faculty AND year;
  // an empty college/year stays in a visible "incomplete data" branch.
  // A professor only precedes students enrolled in that professor's scoped subject.
- var countries=new Map(),selected=state.selected,allEnrollments=new Set(
+ var countries=new Map([["qa",new Map()],["eg",new Map()],["sa",new Map()],["ae",new Map()]]),selected=state.selected,allEnrollments=new Set(
   (state.enrollments||[]).map(function(e){return String(e.user_id)+"|"+String(e.course_id);})
  );
  function known(s){return String(s||"").trim()||"غير محدد — استكمل البيانات";}
- function canonical(s){return String(s||"").trim().toLocaleLowerCase();}
+ function canonical(s){
+  var v=String(s||"").normalize("NFKC").trim().toLocaleLowerCase("ar").replace(/[\u064B-\u065F\u0670]/g,"").replace(/[أإآ]/g,"ا").replace(/ى/g,"ي").replace(/[\s\u00a0]+/g," ");
+  // Display aliases for Lusail University without changing stored academic records.
+  if(/(?:جامعة\s*)?لوسيل|lusail\s*(?:university)?/i.test(v))return "lusail university";
+  return v;
+ }
+ function universityLabel(s){return canonical(s)==="lusail university"?"جامعة لوسيل":s;}
  list.forEach(function(s){
   var c=String(s.country||"other"),uni=known(s.university),faculty=known(s.faculty),year=known(s.year);
   if(!countries.has(c))countries.set(c,new Map());
   var schools=countries.get(c),school=canonical(uni)+"|"+canonical(faculty);
-  if(!schools.has(school))schools.set(school,{university:uni,faculty:faculty,years:new Map()});
+  if(!schools.has(school))schools.set(school,{university:universityLabel(uni),faculty:faculty,years:new Map()});
   var y=schools.get(school).years;if(!y.has(year))y.set(year,[]);
   y.get(year).push(s);
  });
@@ -150,7 +156,7 @@ function studentTree(list){
     (s.active===false?(s.accountStatus==="pending"?"بانتظار الاعتماد":s.accountStatus==="paused"?"موقوف مؤقتًا":"معطّل"):rlabel(rr,v))+
     '</span></button>';
  }
- if(!list.length)return '<div class="empty">لا يوجد طلاب مطابقون للبحث.</div>';
+
  var parts=[];
  Array.from(countries.keys()).sort(sort).forEach(function(country){
   var schools=countries.get(country),countryStudents=[];
@@ -194,8 +200,9 @@ function studentTree(list){
    collegeNodes.push(node(collegeKey,school.faculty+" — "+school.university,schoolStudents.length,
      "faculty",yearNodes.join(""),schoolStudents.some(function(st){return st.id===selected;})));
   });
-  parts.push(node("country|"+country,countryName(country),countryStudents.length,"country",
-     collegeNodes.join(""),countryStudents.some(function(st){return st.id===selected;})));
+  var flags={qa:"🇶🇦",eg:"🇪🇬",sa:"🇸🇦",ae:"🇦🇪"};
+  parts.push(node("country|"+country,(flags[country]||"🌐")+" "+countryName(country),countryStudents.length,"country",
+     collegeNodes.join("")||'<small class="treeEmpty">لا توجد كليات أو طلاب مسجلون حاليًا.</small>',countryStudents.some(function(st){return st.id===selected;})));
  });
  return parts.join("");
 }
