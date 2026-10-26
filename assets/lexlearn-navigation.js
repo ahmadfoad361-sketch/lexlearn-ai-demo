@@ -2,6 +2,15 @@
 (function () {
   "use strict";
   var doc = document, loc = window.location;
+  // Make visible LexLearn brandmarks navigate home without changing other controls.
+  function linkBrands(){
+    doc.querySelectorAll(".brand, .site-brand, .logo-wrap, .brand-lockup, .brand-mark").forEach(function(el){
+      if(el.closest("a,button")||el.querySelector("input,button,a"))return;
+      if(!/lexlearn/i.test(el.textContent+" "+(el.querySelector("img")?.getAttribute("alt")||"")+" "+(el.querySelector("img")?.getAttribute("src")||"")))return;
+      var a=doc.createElement("a");a.href=(loc.pathname.includes("/go/")?"../":"")+"index.html";a.className="lexlearn-home-brand";a.style.cssText="display:inline-flex;align-items:center;color:inherit;text-decoration:none";a.setAttribute("aria-label","LexLearn — الصفحة الرئيسية");el.parentNode.insertBefore(a,el);a.appendChild(el);
+    });
+  }
+  if(doc.readyState==="loading")doc.addEventListener("DOMContentLoaded",linkBrands,{once:true});else linkBrands();
   var isConference = /(?:^|\/)conference\.html$/.test(loc.pathname);
   var isStudentPath = /(?:^|\/)student-path\.html$/.test(loc.pathname);
   // Public demo renders its own responsive Back control inside its header.
