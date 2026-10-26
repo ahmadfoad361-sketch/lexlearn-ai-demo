@@ -128,3 +128,9 @@ html[data-learner-theme=dark] .studentTreeNode.level-country.country-eg{--countr
 html[data-learner-theme=dark] .studentTreeNode.level-country.country-sa{--country-accent:#7ad7ab}
 html[data-learner-theme=dark] .studentTreeNode.level-country.country-ae{--country-accent:#84d6b5}
 html[data-learner-theme=dark] .studentTreeNode.level-country.country-other{--country-accent:#aac7ef}
+
+/* Open academic year stands apart from student entries. */
+.studentTreeNode.level-year>summary{border-radius:9px;background:color-mix(in srgb,var(--ad-raised,#f1ece5) 84%,#a6c9d9 16%);padding:10px 9px;transition:background .15s ease}
+.studentTreeNode.level-year[open]>summary{background:color-mix(in srgb,var(--ad-raised,#f1ece5) 64%,#a6c9d9 36%);border:1px solid color-mix(in srgb,var(--ad-line,#cec7c1) 72%,#6a9eae 28%);color:var(--ad-ink,#18253b)}
+.studentTreeNode.level-year[open]>.studentTreeChildren{padding-block-start:9px}
+.lexlearnBrandHome{text-decoration:none;color:inherit;border-radius:10px}.lexlearnBrandHome:focus-visible{outline:3px solid var(--ad-accent,#8a1f39);outline-offset:3px}
