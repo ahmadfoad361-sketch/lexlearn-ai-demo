@@ -200,9 +200,16 @@ function studentTree(list){
    collegeNodes.push(node(collegeKey,school.faculty+" — "+school.university,schoolStudents.length,
      "faculty",yearNodes.join(""),schoolStudents.some(function(st){return st.id===selected;})));
   });
-  var flags={qa:"🇶🇦",eg:"🇪🇬",sa:"🇸🇦",ae:"🇦🇪"};
-  parts.push(node("country|"+country,(flags[country]||"🌐")+" "+countryName(country),countryStudents.length,"country",
-     collegeNodes.join("")||'<small class="treeEmpty">لا توجد كليات أو طلاب مسجلون حاليًا.</small>',countryStudents.some(function(st){return st.id===selected;})));
+  var flags={qa:"🇶🇦",eg:"🇪🇬",sa:"🇸🇦",ae:"🇦🇪"},safeCountry=/^(qa|eg|sa|ae)$/.test(country)?country:"other";
+  var countryKey="country|"+country;
+  parts.push('<details class="studentTreeNode level-country country-'+safeCountry+'" data-tree="'+esc(countryKey)+'"'+
+    (expanded(countryKey,countryStudents.some(function(st){return st.id===selected;}))?' open':'')+'>'+
+    '<summary><span class="treeTitle countryTitle"><span class="countryFlag" aria-hidden="true">'+
+    (flags[country]||"🌐")+'</span><span>'+esc(countryName(country))+'</span></span>'+
+    '<span class="treeCount">'+countryStudents.length+'</span></summary>'+
+    '<div class="studentTreeChildren">'+
+    (collegeNodes.join("")||'<small class="treeEmpty">لا توجد كليات أو طلاب مسجلون حاليًا.</small>')+
+    '</div></details>');
  });
  return parts.join("");
 }
