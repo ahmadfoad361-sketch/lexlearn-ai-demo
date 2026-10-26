@@ -130,8 +130,9 @@ function studentTree(list){
   return v;
  }
  function universityLabel(s){return canonical(s)==="lusail university"?"جامعة لوسيل":s;}
+ function displayYear(s){return String(s||"").trim().replace(/^السنة\s+(الأولى|الاولى|الثانية|الثالثة|الرابعة)$/,"الفرقة $1").replace(/^سنة\s+(أولى|اولى|ثانية|ثالثة|رابعة)$/,"الفرقة $1");}
  list.forEach(function(s){
-  var c=String(s.country||"other"),uni=known(s.university),faculty=known(s.faculty),year=known(s.year);
+  var c=String(s.country||"other"),uni=known(s.university),faculty=known(s.faculty),year=displayYear(known(s.year));
   if(!countries.has(c))countries.set(c,new Map());
   var schools=countries.get(c),school=canonical(uni)+"|"+canonical(faculty);
   if(!schools.has(school))schools.set(school,{university:universityLabel(uni),faculty:faculty,years:new Map()});
@@ -172,7 +173,7 @@ function studentTree(list){
      return a.active!==false&&String(a.country_code)===country&&
        canonical(a.university)===canonical(school.university)&&
        canonical(a.faculty)===canonical(school.faculty)&&
-       canonical(a.year_label)===canonical(year)&&
+       canonical(displayYear(a.year_label))===canonical(year)&&
        state.instructors.some(function(t){return t.instructor_id===a.instructor_id&&t.profiles&&t.profiles.active!==false;});
     });
     var professorCards=[],covered=new Set();
@@ -205,7 +206,7 @@ function studentTree(list){
   parts.push('<details class="studentTreeNode level-country country-'+safeCountry+'" data-tree="'+esc(countryKey)+'"'+
     (expanded(countryKey,countryStudents.some(function(st){return st.id===selected;}))?' open':'')+'>'+
     '<summary><span class="treeTitle countryTitle"><span class="countryFlag" aria-hidden="true">'+
-    (flags[country]||"🌐")+'</span><span>'+esc(countryName(country))+'</span></span>'+
+    (safeCountry==="other"?(flags[country]||"🌐"):'<img src="https://flagcdn.com/24x18/'+safeCountry+'.png" alt="" width="24" height="18" loading="lazy" decoding="async">')+'</span><span>'+esc(countryName(country))+'</span></span>'+
     '<span class="treeCount">'+countryStudents.length+'</span></summary>'+
     '<div class="studentTreeChildren">'+
     (collegeNodes.join("")||'<small class="treeEmpty">لا توجد كليات أو طلاب مسجلون حاليًا.</small>')+
