@@ -103,3 +103,11 @@ html[data-learner-theme=dark] .panel .recordIncorrect :is(p,blockquote){color:#d
 .studentHierarchy .studentBtn small{color:var(--ad-muted,#536176)}
 @media(min-width:1101px){.dashboardGrid:has(.studentHierarchy){grid-template-columns:minmax(330px,365px) minmax(0,1fr)}}
 @media(max-width:1100px){.studentHierarchy{max-height:55vh}}
+
+/* Country navigation: visually separate faculties, in both themes. */
+.studentTreeNode.level-faculty{border:1px solid var(--ad-line,#cec7c1);border-inline-start:5px solid var(--ad-accent,#8a1f39);background:var(--ad-surface,#fffdfa);margin-block:12px;box-shadow:0 3px 12px #18253b12}
+.studentTreeNode.level-faculty>summary{background:var(--ad-raised,#f1ece5);padding:12px 10px;font-weight:700;border-bottom:1px solid var(--ad-line,#cec7c1)}
+.studentTreeNode.level-faculty:nth-child(even){border-inline-start-color:#337d83}
+.studentTreeNode.level-faculty:nth-child(even)>summary{background:color-mix(in srgb,var(--ad-raised,#f1ece5) 80%,#9fd3d7 20%)}
+.studentTreeNode.level-country>.studentTreeChildren{gap:8px}
+.studentTreeNode.level-country>.studentTreeChildren>.treeEmpty{padding:12px 8px}
