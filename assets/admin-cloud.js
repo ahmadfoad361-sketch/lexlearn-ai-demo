@@ -247,7 +247,7 @@ function essayAttempts(v){
 function dashboard(){
  var list=studentList(),selected=state.students.find(function(s){return s.id===state.selected;})||list[0],v=selected?view(selected):null;if(selected)state.selected=selected.id;
  return '<section class="hero"><div><span class="demoTag">لوحة المشرف</span><h1>متابعة الطالب خطوة بخطوة</h1><p>التشخيص والجلسات والإجابات والتصحيح في مكان واحد، مع تقارير قابلة للطباعة والحفظ PDF.</p></div><button class="btn light" id="refresh">تحديث البيانات</button></section>'+kpis()+
- '<section class="dashboardGrid"><aside class="panel studentAside"><div class="panelHead"><div><h3>الطلاب</h3><p>'+list.length+' حساب</p></div><button class="iconBtn" id="quickAdd">'+ico("plus")+'</button></div><input class="search" id="search" value="'+esc(state.q)+'" placeholder="اسم أو مستخدم..."><div class="studentList studentHierarchy" aria-label="الطلاب حسب الدولة والكلية والفرقة">+studentTree(list)+</div></aside><div>'+(v?detail(v):'<div class="panel empty">لا يوجد طلاب بعد.</div>')+'</div></section>';
+ '<section class="dashboardGrid"><aside class="panel studentAside"><div class="panelHead"><div><h3>الطلاب</h3><p>'+list.length+' حساب</p></div><button class="iconBtn" id="quickAdd">'+ico("plus")+'</button></div><input class="search" id="search" value="'+esc(state.q)+'" placeholder="اسم أو مستخدم..."><div class="studentList studentHierarchy" aria-label="الطلاب حسب الدولة والكلية والفرقة">'+studentTree(list)+'</div></aside><div>'+(v?detail(v):'<div class="panel empty">لا يوجد طلاب بعد.</div>')+'</div></section>';
 }
 function studentsTab(){
  var a=studentList(),pending=state.students.filter(function(x){return x.accountStatus==="pending";}).length;
