@@ -31,6 +31,17 @@ function esc(v){return String(v==null?"":v).replace(/[&<>"']/g,function(c){retur
 function ico(n){var p={chart:'<path d="M12 50h40M17 43V29M28 43V19M39 43V34M50 43V13"/>',users:'<circle cx="23" cy="22" r="8"/><circle cx="44" cy="25" r="6"/><path d="M9 50c2-10 8-15 14-15s12 5 14 15M38 39c7 0 12 4 14 11"/>',group:'<circle cx="22" cy="23" r="7"/><circle cx="42" cy="23" r="7"/><path d="M8 49c2-10 7-15 14-15s12 5 14 15M28 49c2-10 7-15 14-15s12 5 14 15"/>',audit:'<path d="M17 10h30v44H17z"/><path d="M24 21h16M24 29h16M24 37h11"/>',plus:'<path d="M32 13v38M13 32h38"/>',key:'<path d="M10 35a12 12 0 1 0 18-10l22-11 5 5-4 7-7-1-2 7-7-1-6 4"/>'};return '<svg class="uiIcon" viewBox="0 0 64 64">'+(p[n]||p.chart)+'</svg>';}
 function label(k){return({recall:"الحفظ",understanding:"الفهم",application:"التطبيق على الوقائع",legal_precision:"الدقة القانونية",retention:"ثبات المعلومة",exam:"الأداء الامتحاني"})[k]||k;}
 function countryName(c){return ({qa:"قطر",eg:"مصر",sa:"السعودية",ae:"الإمارات"})[c]||"دولة أخرى";}
+function countryFlagSvg(c){
+ var start='<svg class="countryFlagSvg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 22" width="26" height="19" aria-hidden="true" focusable="false">';
+ var out={
+ qa:'<rect width="32" height="22" fill="#8a1538"/><path fill="#fff" d="M0 0 H10 L13 1.22 10 2.44 13 3.66 10 4.88 13 6.1 10 7.32 13 8.54 10 9.76 13 10.98 10 12.2 13 13.42 10 14.64 13 15.86 10 17.08 13 18.3 10 19.52 13 20.74 10 22 H0Z"/>',
+ eg:'<rect width="32" height="7.34" fill="#ce1126"/><rect y="7.34" width="32" height="7.33" fill="#fff"/><rect y="14.67" width="32" height="7.33" fill="#111"/><path d="M16 8 l2.2 2 -1 2.4 h-2.4 l-1-2.4 Z" fill="#caa44e"/><path d="M15 9 h2 v4 h-2z" fill="#caa44e"/>',
+ sa:'<rect width="32" height="22" fill="#006c35"/><path d="M6 8 h20 M9 10 h14 M7 16 q9 3 18 -1" stroke="#fff" stroke-width="1.4" fill="none" stroke-linecap="round"/>',
+ ae:'<rect width="32" height="22" fill="#fff"/><rect width="8" height="22" fill="#f00"/><rect x="8" width="24" height="7.33" fill="#009739"/><rect x="8" y="14.67" width="24" height="7.33" fill="#000"/>'
+ };
+ return start+(out[c]||'<circle cx="16" cy="11" r="8" fill="#7393b9"/>')+'</svg>';
+}
+
 function courseKey(s){var country=s.country||"qa";return country+"-"+(country==="qa"?"rights":"sources");}
 function profileSnap(id,country){country=country||"qa";var key=country+"-"+(country==="qa"?"rights":"sources");return state.snapshots.find(function(x){return x.user_id===id&&x.course_id===key&&x.snapshot_type==="profile";});}
 function courseSnap(id,country){country=country||"qa";var key=country+"-"+(country==="qa"?"rights":"sources");return state.snapshots.find(function(x){return x.user_id===id&&x.course_id===key&&x.snapshot_type==="course";});}
@@ -130,7 +141,7 @@ function studentTree(list){
   return v;
  }
  function universityLabel(s){return canonical(s)==="lusail university"?"جامعة لوسيل":s;}
- function displayYear(s){return String(s||"").trim().replace(/^السنة\s+(الأولى|الاولى|الثانية|الثالثة|الرابعة)$/,"الفرقة $1").replace(/^سنة\s+(أولى|اولى|ثانية|ثالثة|رابعة)$/,"الفرقة $1");}
+ function displayYear(s){return String(s||"").trim().replace(/^(?:السنة|سنة|الفرقة)\s*(الأولى|الاولى|الثانية|الثالثة|الرابعة|أولى|اولى|ثانية|ثالثة|رابعة)$/,"الفرقة $1").replace("الفرقة أولى","الفرقة الأولى").replace("الفرقة اولى","الفرقة الأولى").replace("الفرقة اولى","الفرقة الأولى").replace("الفرقة ثانية","الفرقة الثانية").replace("الفرقة ثالثة","الفرقة الثالثة").replace("الفرقة رابعة","الفرقة الرابعة");}
  list.forEach(function(s){
   var c=String(s.country||"other"),uni=known(s.university),faculty=known(s.faculty),year=displayYear(known(s.year));
   if(!countries.has(c))countries.set(c,new Map());
@@ -206,7 +217,7 @@ function studentTree(list){
   parts.push('<details class="studentTreeNode level-country country-'+safeCountry+'" data-tree="'+esc(countryKey)+'"'+
     (expanded(countryKey,countryStudents.some(function(st){return st.id===selected;}))?' open':'')+'>'+
     '<summary><span class="treeTitle countryTitle"><span class="countryFlag" aria-hidden="true">'+
-    (safeCountry==="other"?(flags[country]||"🌐"):'<img src="https://flagcdn.com/24x18/'+safeCountry+'.png" alt="" width="24" height="18" loading="lazy" decoding="async">')+'</span><span>'+esc(countryName(country))+'</span></span>'+
+    (safeCountry==="other"?(flags[country]||"🌐"):countryFlagSvg(safeCountry))+'</span><span>'+esc(countryName(country))+'</span></span>'+
     '<span class="treeCount">'+countryStudents.length+'</span></summary>'+
     '<div class="studentTreeChildren">'+
     (collegeNodes.join("")||'<small class="treeEmpty">لا توجد كليات أو طلاب مسجلون حاليًا.</small>')+
@@ -230,7 +241,7 @@ function academicEditor(s){
 }
 function detail(v){
  var s=v.s,r=risk(v),axes=v.model.axes||{},advice=adminAdvice(v),lastUpdate=v.courseUpdated||v.profileUpdated;
- return '<div class="studentSectionBanner identitySection"><span>01</span><div><b>البيانات الأساسية للطالب</b><small>الهوية والجامعة والسنة الدراسية — لا يلزم وجود مجموعة أو أستاذ</small></div></div><section class="panel studentHero"><div><span class="overline">'+esc(s.cohort||"طالب مستقل · دون مجموعة")+'</span><h2>'+esc(s.name||s.username)+'</h2><p>@'+esc(s.username)+' • '+countryName(s.country)+' • '+esc(s.university||"—")+' • '+esc(s.year||"—")+'</p>'+
+ return '<div class="studentSectionBanner identitySection"><span>01</span><div><b>البيانات الأساسية للطالب</b><small>الهوية والجامعة والسنة الدراسية — لا يلزم وجود مجموعة أو أستاذ</small></div></div><section class="panel studentHero"><div><span class="overline">'+esc(s.cohort||"طالب مستقل · دون مجموعة")+'</span><h2>'+esc(s.name||s.username)+'</h2><p>@'+esc(s.username)+' • '+countryName(s.country)+' • '+esc(s.university||"—")+' • '+esc(displayYear(s.year||"—"))+'</p>'+
  '<p>الكلية: '+esc(s.faculty||"—")+' • الشعبة/القسم: '+esc(s.section||"—")+'</p>'+
  (s.studentRegistrationNumber?'<p>رقم القيد الجامعي: <b>'+esc(s.studentRegistrationNumber)+'</b></p>':'')+
  (s.groupEmail?'<p>بريد المجموعة: <b dir="ltr">'+esc(s.groupEmail)+'</b></p>':'')+
