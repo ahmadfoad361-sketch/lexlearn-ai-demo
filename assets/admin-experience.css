@@ -111,3 +111,20 @@ html[data-learner-theme=dark] .panel .recordIncorrect :is(p,blockquote){color:#d
 .studentTreeNode.level-faculty:nth-child(even)>summary{background:color-mix(in srgb,var(--ad-raised,#f1ece5) 80%,#9fd3d7 20%)}
 .studentTreeNode.level-country>.studentTreeChildren{gap:8px}
 .studentTreeNode.level-country>.studentTreeChildren>.treeEmpty{padding:12px 8px}
+
+/* Country cards use distinct national accents; preserve readable dark surfaces. */
+.studentTreeNode.level-country{--country-accent:var(--ad-accent,#8a1f39);--country-tint:#f2e6ea;border:2px solid var(--country-accent);border-radius:16px;margin-block:13px;box-shadow:0 5px 16px #18253b12;background:var(--ad-surface,#fffdfa)}
+.studentTreeNode.level-country>summary{padding:12px 13px;background:color-mix(in srgb,var(--ad-raised,#f1ece5) 72%,var(--country-tint) 28%);font-weight:700}
+.studentTreeNode.level-country>.studentTreeChildren{padding:8px 10px 12px}
+.studentTreeNode.level-country.country-qa{--country-accent:#8a1538;--country-tint:#f4d9e3}
+.studentTreeNode.level-country.country-eg{--country-accent:#ce1126;--country-tint:#f9dce0}
+.studentTreeNode.level-country.country-sa{--country-accent:#087343;--country-tint:#d8f1e3}
+.studentTreeNode.level-country.country-ae{--country-accent:#138654;--country-tint:#d8eee0}
+.studentTreeNode.level-country.country-other{--country-accent:#54759a;--country-tint:#deebf7}
+.countryTitle{display:flex;align-items:center;gap:9px;font-weight:700}
+.countryFlag{font-size:1.24rem;line-height:1.25;flex-shrink:0;font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif}
+html[data-learner-theme=dark] .studentTreeNode.level-country{--country-accent:#dba0b3}
+html[data-learner-theme=dark] .studentTreeNode.level-country.country-eg{--country-accent:#ff9ea9}
+html[data-learner-theme=dark] .studentTreeNode.level-country.country-sa{--country-accent:#7ad7ab}
+html[data-learner-theme=dark] .studentTreeNode.level-country.country-ae{--country-accent:#84d6b5}
+html[data-learner-theme=dark] .studentTreeNode.level-country.country-other{--country-accent:#aac7ef}
