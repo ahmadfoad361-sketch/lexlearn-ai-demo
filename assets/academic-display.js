@@ -23,7 +23,7 @@ function year(value){
 function preserveStored(patch,student){
  var copy=Object.assign({},patch);
  if(Object.prototype.hasOwnProperty.call(copy,"university")&&student.university!=null&&universityKey(copy.university)===universityKey(student.university))copy.university=student.university;
- if(Object.prototype.hasOwnProperty.call(copy,"faculty")&&student.faculty!=null&&facultyKey(copy.faculty,student.university)===facultyKey(student.faculty,student.university))copy.faculty=student.faculty;
+ if(universityKey(copy.university)===universityKey(student.university)&&Object.prototype.hasOwnProperty.call(copy,"faculty")&&student.faculty!=null&&facultyKey(copy.faculty,student.university)===facultyKey(student.faculty,student.university))copy.faculty=student.faculty;
  if(Object.prototype.hasOwnProperty.call(copy,"year_label")&&student.year!=null&&year(copy.year_label)===year(student.year))copy.year_label=student.year;
  return copy;
 }

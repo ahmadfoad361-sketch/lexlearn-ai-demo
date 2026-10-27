@@ -5,10 +5,11 @@ function label(k){return {recall:"الحفظ",understanding:"الفهم",applica
 function fmtDate(s){if(!s)return "—";var d=new Date(s);return Number.isNaN(d.getTime())?String(s):d.toLocaleString("ar-EG",{dateStyle:"medium",timeStyle:"short"});}
 function str(v){return v==null||v===""?"—":typeof v==="object"?JSON.stringify(v,null,2):String(v);}
 function score(v){if(v==null)return "غير محدد";var n=Number(v);return Number.isFinite(n)?(n<=1?Math.round(n*100):Math.round(n))+"%":str(v);}
+function visibleProfile(p){return Object.assign({},p,{university:root.LEX_ACADEMIC.university(p.university),year_label:root.LEX_ACADEMIC.year(p.year_label)});}
 function buildText(d){
- var p=d.student,r=d.records||{},A=Array.isArray(r.attempts)?r.attempts:[],human=new Map((r.pilot_human_grades||[]).map(function(x){return[x.attempt_id,x];})),ai=new Map((r.pilot_ai_grades||[]).map(function(x){return[x.attempt_id,x];})),questions=new Map((r.questions||[]).map(function(x){return[x.id,x];}));
+ var p=visibleProfile(d.student),r=d.records||{},A=Array.isArray(r.attempts)?r.attempts:[],human=new Map((r.pilot_human_grades||[]).map(function(x){return[x.attempt_id,x];})),ai=new Map((r.pilot_ai_grades||[]).map(function(x){return[x.attempt_id,x];})),questions=new Map((r.questions||[]).map(function(x){return[x.id,x];}));
  var lines=["LexLearn | ملف الطالب التعليمي","تاريخ إصدار التقرير: "+fmtDate(d.generated_at),"التقرير للاستخدام الإداري والتوثيق؛ النتائج الآلية لا تمثل اعتمادًا جامعيًا.","","=== البيانات الأساسية ===",
- "الاسم: "+str(p.display_name),"اسم المستخدم: "+str(p.username),"رقم الحساب: "+str(p.id),"الدولة: "+str(p.country_code),"الجامعة: "+str(p.university),"السنة الدراسية: "+str(p.year_label),"حالة الحساب: "+str(p.account_status),"تاريخ التسجيل: "+fmtDate(p.created_at),
+ "الاسم: "+str(p.display_name),"اسم المستخدم: "+str(p.username),"رقم الحساب: "+str(p.id),"الدولة: "+str(p.country_code),"الجامعة: "+str(p.university),"الفرقة الدراسية: "+str(p.year_label),"حالة الحساب: "+str(p.account_status),"تاريخ التسجيل: "+fmtDate(p.created_at),
  "","=== المقررات ==="];
  (r.enrollments||[]).forEach(function(x){lines.push(str(x.course_id)+" | "+str(x.status)+" | "+fmtDate(x.assigned_at));});
  if(!(r.enrollments||[]).length)lines.push("لا توجد مقررات مسجلة");
@@ -33,8 +34,8 @@ function buildText(d){
 }
 function section(title,body,klass){return '<section class="section '+(klass||"")+'"><h2>'+escapeHTML(title)+'</h2>'+body+'</section>';}
 function render(d,raw){
- var p=d.student,records=d.records||{},arr=records.attempts||[],human=new Map((records.pilot_human_grades||[]).map(function(x){return[x.attempt_id,x];})),ai=new Map((records.pilot_ai_grades||[]).map(function(x){return[x.attempt_id,x];})),questions=new Map((records.questions||[]).map(function(x){return[x.id,x];}));
- var fields=[["الاسم",p.display_name],["اسم المستخدم",p.username],["الجامعة",p.university],["السنة الدراسية",p.year_label],["الدولة",p.country_code],["الحالة",p.account_status],["تاريخ التسجيل",fmtDate(p.created_at)],["معرف الطالب",p.id]];
+ var p=visibleProfile(d.student),records=d.records||{},arr=records.attempts||[],human=new Map((records.pilot_human_grades||[]).map(function(x){return[x.attempt_id,x];})),ai=new Map((records.pilot_ai_grades||[]).map(function(x){return[x.attempt_id,x];})),questions=new Map((records.questions||[]).map(function(x){return[x.id,x];}));
+ var fields=[["الاسم",p.display_name],["اسم المستخدم",p.username],["الجامعة",p.university],["الفرقة الدراسية",p.year_label],["الدولة",p.country_code],["الحالة",p.account_status],["تاريخ التسجيل",fmtDate(p.created_at)],["معرف الطالب",p.id]];
  var html='<div class="fieldgrid">'+fields.map(function(a){return '<div><small>'+escapeHTML(a[0])+'</small><b>'+escapeHTML(str(a[1]))+'</b></div>';}).join("")+'</div>';
  var enroll=(records.enrollments||[]).map(function(x){return '<div class="entry"><b>'+escapeHTML(str(x.course_id))+'</b><p>الحالة: '+escapeHTML(str(x.status))+' • '+escapeHTML(fmtDate(x.assigned_at))+'</p></div>';}).join("")||'<p>لا توجد مقررات مسجلة.</p>';
  var tests=arr.slice().sort(function(a,b){return new Date(a.created_at)-new Date(b.created_at);}).map(function(a,i){
