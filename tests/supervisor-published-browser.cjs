@@ -70,6 +70,7 @@ async function installFixture(ctx,data){
    assert.equal(await p.locator('.studentHero').getByText(/الفرقة الأولى/).count(),1);
    assert.equal(await p.locator('[name="year_label"]').inputValue(),'الفرقة الأولى');
    await p.locator('#studentAcademicForm button[type="submit"]').click();
+   await p.waitForFunction(()=>window.__academicSaves.length===1);
    await p.locator('.studentHierarchy').waitFor();
    const saves=await p.evaluate(()=>window.__academicSaves);
    assert.equal(saves[0].patch.year_label,'السنة الأولى');assert.equal(saves[0].patch.university,'Lusail University');

@@ -391,7 +391,7 @@ function bind(){
   }catch(_){button.disabled=false;status.textContent="تعذر حفظ البيانات. تأكد من المدخلات وحاول مجددًا.";}
  };
  document.querySelectorAll("[data-tree]").forEach(function(d){d.ontoggle=function(){state.treeOpen[d.dataset.tree]=d.open;};});
-  document.querySelectorAll("[data-student]").forEach(function(b){b.onclick=function(){state.selected=b.dataset.student;render();};});
+  document.querySelectorAll("button[data-student]").forEach(function(b){b.onclick=function(){state.selected=b.dataset.student;render();};});
  document.querySelectorAll("[data-open]").forEach(function(b){b.onclick=function(){state.selected=b.dataset.open;state.tab="dashboard";render();};});
  var q=document.getElementById("search")||document.getElementById("ssearch");if(q)q.oninput=function(){var pos=q.selectionStart;state.q=q.value;render();var again=document.getElementById(q.id);if(again){again.focus();try{again.setSelectionRange(pos,pos);}catch(_){}}};
  var add=document.getElementById("add")||document.getElementById("quickAdd");if(add)add.onclick=function(){state.modal="add";render();};
