@@ -2,7 +2,7 @@
 "use strict";
 const AR={
  businessLabel:"النموذج التجاري المقترح",buyerTitle:"لمن نقدّم الحل؟",buyerText:"الجامعات وكليات القانون التي تبحث عن تدريب إضافي ومتابعة أوضح لتقدّم الطلاب.",revenueTitle:"كيف يتحول إلى إيراد؟",revenueText:"تراخيص مؤسسية للمقررات أو مجموعات الطلاب. تُحدَّد الأسعار ونطاق الخدمة بعد التجربة وبالاتفاق مع الجهة.",validationTitle:"ما الذي نريد إثباته؟",validationText:"دقة التقييم، والتزام الطلاب بالتدريب، ومؤشرات التحسن على أسئلة جديدة؛ ثم بحث اتفاق مدفوع إذا ناسبت النتائج احتياج الجهة.",businessNote:"هذا تصور تجاري مقترح، وليس إعلانًا عن مبيعات أو اتفاقات قائمة.",
- skip:"انتقل إلى المحتوى",home:"الموقع الرئيسي",
+ adminLogin:"دخول المشرف",skip:"انتقل إلى المحتوى",home:"الموقع الرئيسي",
  promo:"\u2066LexLearn\u2069 في مؤتمر \u2066Web Summit Qatar 2027\u2069 — اكتشف الرؤية وجرّب المنصة وتعرّف على التجربة الجامعية.",promoShort:"\u2066LexLearn\u2069 · \u2066Web Summit Qatar 2027\u2069 · نسخة \u2066ALPHA\u2069",
  eyebrow:"ليكس ليرن · منصة تعليمية لطلاب القانون",
  heroTitle:"قيّم مهاراتك القانونية، وطوّرها انطلاقًا من نقاط قوتك.",
@@ -61,7 +61,7 @@ const AR={
 };
 const EN={
  businessLabel:"PROPOSED BUSINESS MODEL",buyerTitle:"Who is it for?",buyerText:"Universities and law faculties seeking additional student practice and clearer progress monitoring.",revenueTitle:"How could it earn revenue?",revenueText:"Institutional licences for courses or student cohorts. Pricing and scope would be agreed after the pilot.",validationTitle:"What must the pilot establish?",validationText:"Assessment reliability, student engagement and progress on new questions; then explore a paid agreement if the results meet the institution's needs.",businessNote:"A proposed commercial approach, not a claim of existing sales or signed agreements.",
- skip:"Skip to content",home:"Main site",
+ adminLogin:"Supervisor login",skip:"Skip to content",home:"Main site",
  promo:"LexLearn at Web Summit Qatar 2027 — Discover our vision. Try the demo. Explore a university pilot.",promoShort:"LexLearn · Web Summit Qatar 2027 · ALPHA",
  eyebrow:"LEXLEARN · LEGAL LEARNING FOR STUDENTS",
  heroTitle:"Assess your legal learning skills. Build on your strengths.",

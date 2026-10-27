@@ -60,6 +60,12 @@ const chrome=[process.env.CHROME_BIN,"/usr/bin/google-chrome","/usr/bin/google-c
      });
      assert.deepEqual(failures,[],'dark flat-surface text contrast: '+JSON.stringify({width,lang,failures}));
    }
+   const entry=p.locator('header .homeStaffLink');
+   assert.ok(await entry.isVisible(),'staff entry remains visible at every width/theme');
+   assert.equal(await entry.textContent(),lang==='ar'?'دخول المشرف':'Supervisor login');
+   assert.equal(await entry.getAttribute('href'),'admin-login.html');
+   const entryBox=await entry.boundingBox();assert.ok(entryBox.x>=0&&entryBox.x+entryBox.width<=width&&entryBox.height>=44);
+   if(width===320||width===1440){await entry.click();await p.waitForURL('**/admin-login.html');}
    console.log('CONFERENCE_THEME_OK '+JSON.stringify({width,lang,theme}));
    await c.close();
  }

@@ -14,6 +14,16 @@ const CHROME=[process.env.CHROME_BIN,"/usr/bin/google-chrome","/usr/bin/google-c
     const p=await ctx.newPage(),errors=[];
     p.on("pageerror",e=>errors.push(e.message));
     const program="program"+(en?"-en":"")+".html",showcase="showcase"+(en?"-en":"")+".html",level="showcase-level1"+(en?"-en":"")+".html";
+    await p.goto(BASE+(en?'index-en.html':'index.html'),{waitUntil:'domcontentloaded'});
+    const entry=p.locator('header .homeStaffLink');await entry.waitFor();
+    assert.equal(await entry.textContent(),en?'Supervisor login':'دخول المشرف');
+    for(const theme of ['light','dark']){
+      if((await p.locator('html').getAttribute('data-learner-theme'))!==theme)await p.locator('#learnerThemeToggle').click();
+      await entry.scrollIntoViewIfNeeded();
+      const rect=await entry.boundingBox();assert.ok(rect&&rect.width>80&&rect.height>=44&&rect.x>=0&&rect.x+rect.width<=(mobile?390:1440),'staff entry fits visible header');
+    }
+    await entry.click();await p.waitForURL('**/admin-login.html');
+    assert.ok(await p.locator('input[type="password"]').isVisible(),'homepage link reaches staff login');
     await p.goto(BASE+program+"?demo=1&start=1&preview=stage1",{waitUntil:"domcontentloaded"});
     await p.locator(".courseWrap").waitFor();
     assert.match(await p.locator("body").innerText(),en?/Student account only/:/هذا مسار الطالب المسجل/,"public program may not masquerade as student");
