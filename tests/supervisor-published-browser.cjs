@@ -53,7 +53,8 @@ async function installFixture(ctx,data){
    await p.goto(BASE+'admin.html',{waitUntil:'networkidle'});
    await p.locator('.studentHierarchy').waitFor();
    // Theme is a visual setting; fixture data never touches production services.
-   await p.evaluate(theme=>{localStorage.setItem('lexlearn_learner_theme',theme);document.documentElement.setAttribute('data-learner-theme',theme);},theme);
+   if((await p.locator('html').getAttribute('data-learner-theme'))!==theme)await p.locator('#learnerThemeToggle').click();
+   assert.ok(await p.locator('.topActions a[href="admin-instructors.html"]').isVisible(),'teacher administration stays available on phones');
    assert.equal(await p.locator('.level-country').count(),4);
    for(const country of ['qa','eg','sa','ae']){
     const node=p.locator('.country-'+country);

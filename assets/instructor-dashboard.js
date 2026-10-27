@@ -21,7 +21,7 @@ function profile(){
 }
 function editForm(){
  const p=state.roster.profile||{};
- return '<section class="panel"><h2>تعديل بيانات الدكتور الشخصية</h2><p class="hint">يمكن تعديل البيانات الشخصية فقط. البريد الرسمي والجامعة والمواد والفرق يحددها المشرف.</p><form id="profileEdit"><div class="grid">'+
+ return '<section class="panel"><h2>تعديل بيانات الدكتور الشخصية</h2><p class="hint">يمكن تعديل البيانات الشخصية فقط. بريد تسجيل الدخول والجامعة والمواد والفرق يحددها المشرف.</p><form id="profileEdit"><div class="grid">'+
  '<label>الاسم الأكاديمي<input name="name" maxlength="160" value="'+esc(p.name)+'" required></label>'+
  '<label>اللقب العلمي<input name="academic_title" maxlength="90" value="'+esc(p.academic_title||"دكتور")+'"></label>'+
  '<label>التخصص<input name="specialization" maxlength="160" value="'+esc(p.specialization)+'"></label>'+

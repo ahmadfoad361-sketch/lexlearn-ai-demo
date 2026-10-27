@@ -13,6 +13,6 @@ f.onsubmit=async function(e){
    await LEX_CLOUD.signOut();throw Error("role_not_allowed");
   }
   location.replace("instructor.html");
- }catch(_){error.textContent="تعذر تسجيل الدخول؛ تحقق من البريد الجامعي وكلمة المرور أو تواصل مع مشرف LexLearn.";}
+ }catch(_){error.textContent="تعذر تسجيل الدخول؛ تحقق من البريد الإلكتروني وكلمة المرور أو تواصل مع مشرف LexLearn.";}
 };
 })();
