@@ -60,6 +60,7 @@ async function installFixture(ctx,data){
    assert.equal(await year.locator('[data-student="s1"]').count(),2);
    const summary=year.locator(':scope > summary');
    const color=()=>summary.evaluate(el=>getComputedStyle(el).backgroundColor);
+   await summary.evaluate(el=>Promise.all(el.getAnimations().map(a=>a.finished)));
    assert.equal(await color(),theme==='light'?'rgb(219, 233, 238)':'rgb(53, 74, 97)');
    const tileColor=await year.locator('.studentBtn').first().evaluate(el=>getComputedStyle(el).backgroundColor);
    assert.notEqual(tileColor,await color(),'student cards retain their own background');
