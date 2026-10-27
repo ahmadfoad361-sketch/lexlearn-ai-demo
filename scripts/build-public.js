@@ -22,7 +22,7 @@ const assets=[
   "portal.css","register.css","auth-controls.js","student-register.js","student-login.js","student-login-en.js","admin-login-v2.js",
   "student.css","student.js","student-en.js",
   "english.css",
-  "admin.css","admin-experience.css","admin-entry.js","admin-cloud.js","instructor.css","instructor-login.js","instructor-dashboard.js","admin-instructors.js","admin-progress.js","lex-references.js","student-records.js","student-report.js","admin.js",
+  "academic-display.js","flags/qa.svg","flags/eg.svg","flags/sa.svg","flags/ae.svg","flags/LICENSE","admin.css","admin-experience.css","admin-entry.js","admin-cloud.js","instructor.css","instructor-login.js","instructor-dashboard.js","admin-instructors.js","admin-progress.js","lex-references.js","student-records.js","student-report.js","admin.js",
   "lexlearn-config.js","cloud-data.js","lexlearn-grading-console.js","reset-password.js",
   "legal-pages.css"
 ];
@@ -67,16 +67,34 @@ for(const page of pages){
     html=html.replace("</body>",'<script src="assets/lexlearn-navigation.js?v=20261015.3" defer></script></body>');
   }
   // Refresh versions for older local page templates as well as conference.html.
-  html=html.replace(/(assets\/lexlearn-navigation\.(?:css|js))\?v=[^"']+/g,"$1?v=20261015.3");
+
   html=html.replace(/(assets\/lexlearn-x-transparent\.svg)(?:\?v=[^"']+)?/g,"$1?v=20261019-hq");
   fs.writeFileSync(full,html);
 }
 
 
+// Version all local JS/CSS references after every HTML transformation.
+const crypto=require("crypto");
+for(const page of pages){
+ if(!page.endsWith(".html"))continue;
+ const full=path.join(out,page);
+ let html=fs.readFileSync(full,"utf8");
+ html=html.replace(/(assets\/[a-z0-9-]+\.(?:js|css))(?:\?v=[^"']*)?/g,"$1?v="+buildId);
+ fs.writeFileSync(full,html);
+}
+// Copy integrity is checked against source, not timestamps. A stale dist-site cannot pass.
+const manifest={commit:sha,build:buildId,assets:{}};
+for(const asset of assets){
+ const source=fs.readFileSync(path.join("assets",asset)),built=fs.readFileSync(path.join(out,"assets",asset));
+ if(!source.equals(built))throw new Error("Stale public asset: "+asset);
+ manifest.assets["assets/"+asset]=crypto.createHash("sha256").update(built).digest("hex");
+}
+fs.writeFileSync(path.join(out,"build-manifest.json"),JSON.stringify(manifest,null,2)+"\n");
+
 // Release-gate: the student self-registration route and both languages must be present.
 // Silent omissions caused valid GitHub source changes to be absent from the live site.
 for(const required of [
-  "conference.html","go/index.html","assets/conference.js","assets/conference-pdf.js","assets/conference.css","assets/lexlearn-navigation.js","assets/lexlearn-navigation.css","assets/lexlearn-learning-lines.js","assets/lexlearn-investor-quotes.js","assets/lexlearn-go-qr.svg","assets/lexlearn-public-pitch-en.pdf",
+  "conference.html","go/index.html","assets/conference.js","assets/conference-pdf.js","assets/conference.css","assets/academic-display.js","assets/admin-entry.js","assets/admin-cloud.js","assets/admin-experience.css","assets/lexlearn-navigation.js","assets/lexlearn-navigation.css","assets/lexlearn-learning-lines.js","assets/lexlearn-investor-quotes.js","assets/lexlearn-go-qr.svg","assets/lexlearn-public-pitch-en.pdf",
   "student-register.html","student-register-en.html","diagnostic.html","assets/diagnostic.css","student-practice.html","student-path.html","assets/student-practice.js","assets/student-path.js","assets/grading-wait.js","assets/grading-wait.css","assets/legal-case-guide.js","assets/legal-case-guide.css","assets/official-diagnostic.js","assets/server-diagnostic.js","assets/official-level-one.js","showcase-level1.html","showcase-level1-en.html",
   "privacy-en.html","terms-en.html",
   "references.html","assets/lex-references.js",
@@ -109,7 +127,7 @@ if(!cloudAdmin.includes('href="references.html"'))throw new Error("Supervisor ha
 // Supervisor release checks: guard the country flags, academic-year wording and expanded state styles.
 const supervisorTree=fs.readFileSync(path.join(out,"assets/admin-cloud.js"),"utf8");
 const supervisorCss=fs.readFileSync(path.join(out,"assets/admin-experience.css"),"utf8");
-if(!supervisorTree.includes("countryFlag")||!supervisorTree.includes("displayYear")||!supervisorTree.includes("الفرقة"))
+if(!supervisorTree.includes("countryFlag")||!supervisorTree.includes("displayYear")||!fs.readFileSync(path.join(out,"assets/academic-display.js"),"utf8").includes("الفرقة"))
  throw new Error("Supervisor country/year navigation missing from published artifact");
 if(!supervisorCss.includes(".level-year[open]")||!supervisorCss.includes(".level-country.country-qa"))
  throw new Error("Supervisor expanded-year or country card styling missing");

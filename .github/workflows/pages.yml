@@ -71,6 +71,10 @@ jobs:
           node tests/showcase-recall.test.js
           node tests/showcase-delivery.test.js
           node tests/showcase-semantic.test.mjs
+      - name: Supervisor tree and academic identity checks
+        run: |
+          node tests/supervisor-country-tree.test.js
+          node tests/student-academic-profile-update.test.js
       - name: Conference registration smoke tests
         run: node tests/conference-signup.test.js
       - name: Conference landing release checks
@@ -127,7 +131,7 @@ jobs:
           mkdir -p published-browser-evidence
           for i in 1 2 3 4 5 6; do
             echo "Checking deployed page URL, round $i"
-            if node tests/student-path-browser.cjs; then exit 0; fi
+            if node tests/student-path-browser.cjs && node tests/supervisor-published-browser.cjs; then exit 0; fi
             sleep 15
           done
           exit 1

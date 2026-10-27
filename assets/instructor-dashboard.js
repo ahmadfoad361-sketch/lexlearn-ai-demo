@@ -33,13 +33,13 @@ function editForm(){
 }
 function assignments(){
  const a=state.roster.assignments||[];
- return '<section class="panel"><h2>المواد والفرق المكلف بتدريسها</h2><div class="grid">'+a.map(x=>'<div class="course"><b>'+esc(x.subject)+'</b><p>'+esc(x.university)+' — '+esc(x.faculty)+'</p><small>'+esc(x.year)+'</small></div>').join("")+'</div><label>المادة المعروضة<select id="scopeSelect">'+a.map(x=>'<option value="'+esc(x.id)+'" '+(state.assignment===x.id?"selected":"")+'>'+esc(x.subject)+' — '+esc(x.university)+' — '+esc(x.year)+'</option>').join("")+'</select></label></section>';
+ return '<section class="panel"><h2>المواد والفرق المكلف بتدريسها</h2><div class="grid">'+a.map(x=>'<div class="course"><b>'+esc(x.subject)+'</b><p>'+esc(window.LEX_ACADEMIC.university(x.university))+' — '+esc(x.faculty)+'</p><small>'+esc(window.LEX_ACADEMIC.year(x.year))+'</small></div>').join("")+'</div><label>المادة المعروضة<select id="scopeSelect">'+a.map(x=>'<option value="'+esc(x.id)+'" '+(state.assignment===x.id?"selected":"")+'>'+esc(x.subject)+' — '+esc(window.LEX_ACADEMIC.university(x.university))+' — '+esc(window.LEX_ACADEMIC.year(x.year))+'</option>').join("")+'</select></label></section>';
 }
 function studentProgress(r){
  if(!r)return '<p class="loading">اختر طالبًا لعرض تقدم المهارات.</p>';
  const d=r.diagnostic||{},points=Array.isArray(r.checkpoints)?r.checkpoints:[],missing=Array.isArray(r.missing_criteria)?r.missing_criteria:[];
  const periods=[...new Set(points.map(x=>x.period))].sort((a,b)=>a-b);
- return '<div class="panel"><div class="toolbar"><div><span class="eyebrow">تطور المهارات</span><h2>'+esc(r.student?.name)+'</h2><p>'+esc(r.student?.university)+' — '+esc(r.student?.faculty)+' — '+esc(r.student?.year)+'</p></div><button class="print" id="printReport">طباعة التقرير</button></div>'+
+ return '<div class="panel"><div class="toolbar"><div><span class="eyebrow">تطور المهارات</span><h2>'+esc(r.student?.name)+'</h2><p>'+esc(window.LEX_ACADEMIC.university(r.student?.university))+' — '+esc(r.student?.faculty)+' — '+esc(window.LEX_ACADEMIC.year(r.student?.year))+'</p></div><button class="print" id="printReport">طباعة التقرير</button></div>'+
  '<div class="grid three"><div class="metric">تقدير الحفظ عند التشخيص<strong>'+pct(d.recall)+'</strong><small>قياس أولي مستقل</small></div><div class="metric">تقدير الفهم عند التشخيص<strong>'+pct(d.understanding)+'</strong><small>قياس أولي مستقل</small></div><div class="metric">جلسات مكتملة<strong>'+Number(r.completed_sessions||0)+'</strong><small>كل خمس جلسات = فترة متابعة</small></div></div>'+
  '<h3>متابعة كل خمس جلسات مكتملة</h3>'+
  (points.length?'<div class="tableScroll"><table class="dataTable"><thead><tr><th>الفترة</th><th>المهارة</th><th>التقدير</th><th>إجابات مقيمة</th><th>نسخة التصحيح</th></tr></thead><tbody>'+
@@ -60,7 +60,7 @@ function recommend(r){
 }
 function roster(){
  const students=scopeStudents();
- return '<section class="studentSummary"><aside class="panel"><h2>طلاب الفرقة والمقرر</h2><p class="meta">'+students.length+' طالب مسجّل في النطاق المحدد</p><div class="list">'+students.map(s=>'<button data-student="'+esc(s.id)+'" class="'+(state.selected===s.id?"active":"")+'"><b>'+esc(s.name)+'</b><small> — '+esc(s.year)+'</small></button>').join("")+'</div></aside><div id="individualResult">'+studentProgress(state.report)+'</div></section>';
+ return '<section class="studentSummary"><aside class="panel"><h2>طلاب الفرقة والمقرر</h2><p class="meta">'+students.length+' طالب مسجّل في النطاق المحدد</p><div class="list">'+students.map(s=>'<button data-student="'+esc(s.id)+'" class="'+(state.selected===s.id?"active":"")+'"><b>'+esc(s.name)+'</b><small> — '+esc(window.LEX_ACADEMIC.year(s.year))+'</small></button>').join("")+'</div></aside><div id="individualResult">'+studentProgress(state.report)+'</div></section>';
 }
 function groupIntro(){return '<section class="panel"><div class="toolbar"><div><h2>تحليل جماعي للطلاب</h2><p>لمساعدة الأستاذ في معرفة الموضوعات التي تحتاج إعادة شرح أو تطوير محتواها لاحقًا.</p></div><button id="runGroup" class="primary">تحليل طلاب المادة</button></div><div id="groupResults"></div></section>';}
 function render(showEdit=false){

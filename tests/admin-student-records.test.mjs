@@ -3,6 +3,7 @@ import vm from 'node:vm';
 import assert from 'node:assert/strict';
 import {stripTypeScriptTypes} from 'node:module';
 import records from '../assets/student-records.js';
+import academic from '../assets/academic-display.js';
 import {legalSources} from '../supabase/functions/_shared/qatar-civil-provisions.mjs';
 const uid='10000000-0000-4000-8000-000000000001',other='20000000-0000-4000-8000-000000000002',staff='30000000-0000-4000-8000-000000000003',course='qa-qu-lawc101-rights';
 const grade={status:'preliminary_ai',rubric_version:'lexlearn-training-ai-v4',provisional_percent:0,feedback_ar:'أضف الشرط.',criteria:[{credit:0,label_ar:'الشرط',evidence:'',explanation_ar:'الشرط غير مذكور.'}]};
@@ -28,7 +29,7 @@ console.log('Supervisor current records: scoped export/overview, pagination, 30 
 const app={innerHTML:''},legacy={completed:Array.from({length:13},(_,i)=>i+1),session:14};
 function emptyQuery(table){const q={select(){return q;},eq(){return q;},order(){return q;},limit(){return q;},then(resolve){return Promise.resolve({data:table==='learner_snapshots'?[{user_id:uid,course_id:'qa-rights',snapshot_type:'course',state:legacy}]:[]}).then(resolve);}};return q;}
 const cloud={isConfigured:()=>true,profile:async()=>({role:'owner',active:true}),listStudents:async()=>[{id:uid,name:'طالب تجريبي',username:'sample',country:'qa',active:true}],listCohorts:async()=>[],listAudit:async()=>[],listContentItems:async()=>[],db:()=>({from:emptyQuery,functions:{invoke:async()=>({data:{ok:true,records:exported.data.records}})}})};
-const win={LEX_STUDENT_RECORDS:records,LEX_STUDENT_REPORT:root.LEX_STUDENT_REPORT,LEX_CLOUD:cloud};
+const win={LEX_ACADEMIC:academic,LEX_STUDENT_RECORDS:records,LEX_STUDENT_REPORT:root.LEX_STUDENT_REPORT,LEX_CLOUD:cloud};
 const doc={getElementById:id=>id==='adminApp'?app:null,querySelectorAll:()=>[]};
 vm.runInNewContext(fs.readFileSync('assets/admin-cloud.js','utf8').replace(/load\(\);\s*\}\)\(\);/, 'window.__ready=load();})();'),{window:win,LEX_CLOUD:cloud,document:doc,localStorage:{getItem:()=>'{"cloud":true}'},location:{replace:()=>{throw Error('unexpected login');}},console});
 await win.__ready;assert(app.innerHTML.includes('3/30'));assert(!app.innerHTML.includes('13/30'));assert(app.innerHTML.includes('عرض جميع خطوات الطالب وإجاباته'));assert(app.innerHTML.includes('طباعة / حفظ PDF'));

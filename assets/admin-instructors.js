@@ -12,7 +12,7 @@ function scopeFields(prefix,showTeacher=false){
  '<label>الدولة<select name="country_code"><option value="qa">قطر</option><option value="eg">مصر</option><option value="sa">السعودية</option><option value="ae">الإمارات</option><option value="other">أخرى</option></select></label>'+
  '<label>الجامعة<input name="university" required maxlength="160" placeholder="اكتب اسم الجامعة بنفس صيغة تسجيل طلابها"></label>'+
  '<label>الكلية<input name="faculty" required maxlength="160" placeholder="كلية الحقوق"></label>'+
- '<label>الفرقة<select name="year_label"><option>السنة الأولى</option><option>السنة الثانية</option><option>السنة الثالثة</option><option>السنة الرابعة</option></select></label></div>'+
+ '<label>الفرقة<select name="year_label"><option value="السنة الأولى">الفرقة الأولى</option><option value="السنة الثانية">الفرقة الثانية</option><option value="السنة الثالثة">الفرقة الثالثة</option><option value="السنة الرابعة">الفرقة الرابعة</option></select></label></div>'+
  '<p class="hint">التطابق يتم وفق الدولة والجامعة والكلية والفرقة والمقرر، وليس مجرد نفس اسم الجامعة. لن تظهر للدكتور حسابات الطلاب خارج هذا النطاق.</p>';
 }
 function form(){
@@ -54,7 +54,7 @@ function list(){
  '<div class="actions"><button data-edit-teacher="'+t.instructor_id+'" class="secondary">فتح وتعديل البيانات</button> '+
  '<button data-teacher="'+t.instructor_id+'" data-active="'+(t.profiles?.active?"false":"true")+'" class="secondary">'+(t.profiles?.active?"تعطيل حساب الدكتور":"تفعيل الحساب")+'</button></div></div>'+
  editTeacher(t)+
-  a.map(x=>'<div class="course"><b>'+esc(x.subject_name)+'</b><p>'+esc(x.university)+' — '+esc(x.faculty)+' — '+esc(x.year_label)+'</p>'+
+  a.map(x=>'<div class="course"><b>'+esc(x.subject_name)+'</b><p>'+esc(window.LEX_ACADEMIC.university(x.university))+' — '+esc(x.faculty)+' — '+esc(window.LEX_ACADEMIC.year(x.year_label))+'</p>'+
  '<button type="button" class="secondary" data-assignment="'+x.id+'" data-owner="'+t.instructor_id+'" data-active="'+(!x.active)+'">'+(x.active?"إيقاف تكليف":"تفعيل تكليف")+'</button></div>').join("")+'</div>';
  }).join(""))+'</section>';
 }

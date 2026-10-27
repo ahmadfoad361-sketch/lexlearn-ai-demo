@@ -32,15 +32,11 @@ function ico(n){var p={chart:'<path d="M12 50h40M17 43V29M28 43V19M39 43V34M50 4
 function label(k){return({recall:"الحفظ",understanding:"الفهم",application:"التطبيق على الوقائع",legal_precision:"الدقة القانونية",retention:"ثبات المعلومة",exam:"الأداء الامتحاني"})[k]||k;}
 function countryName(c){return ({qa:"قطر",eg:"مصر",sa:"السعودية",ae:"الإمارات"})[c]||"دولة أخرى";}
 function countryFlagSvg(c){
- var start='<svg class="countryFlagSvg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 22" width="26" height="19" aria-hidden="true" focusable="false">';
- var out={
- qa:'<rect width="32" height="22" fill="#8a1538"/><path fill="#fff" d="M0 0 H10 L13 1.22 10 2.44 13 3.66 10 4.88 13 6.1 10 7.32 13 8.54 10 9.76 13 10.98 10 12.2 13 13.42 10 14.64 13 15.86 10 17.08 13 18.3 10 19.52 13 20.74 10 22 H0Z"/>',
- eg:'<rect width="32" height="7.34" fill="#ce1126"/><rect y="7.34" width="32" height="7.33" fill="#fff"/><rect y="14.67" width="32" height="7.33" fill="#111"/><path d="M16 8 l2.2 2 -1 2.4 h-2.4 l-1-2.4 Z" fill="#caa44e"/><path d="M15 9 h2 v4 h-2z" fill="#caa44e"/>',
- sa:'<rect width="32" height="22" fill="#006c35"/><path d="M6 8 h20 M9 10 h14 M7 16 q9 3 18 -1" stroke="#fff" stroke-width="1.4" fill="none" stroke-linecap="round"/>',
- ae:'<rect width="32" height="22" fill="#fff"/><rect width="8" height="22" fill="#f00"/><rect x="8" width="24" height="7.33" fill="#009739"/><rect x="8" y="14.67" width="24" height="7.33" fill="#000"/>'
- };
- return start+(out[c]||'<circle cx="16" cy="11" r="8" fill="#7393b9"/>')+'</svg>';
+ return '<img class="countryFlagSvg" src="assets/flags/'+c+'.svg" width="26" height="19" alt="" aria-hidden="true">';
 }
+var academic=window.LEX_ACADEMIC;
+function displayYear(s){return academic.year(s);}
+function universityLabel(s){return academic.university(s);}
 
 function courseKey(s){var country=s.country||"qa";return country+"-"+(country==="qa"?"rights":"sources");}
 function profileSnap(id,country){country=country||"qa";var key=country+"-"+(country==="qa"?"rights":"sources");return state.snapshots.find(function(x){return x.user_id===id&&x.course_id===key&&x.snapshot_type==="profile";});}
@@ -112,7 +108,7 @@ function adminAdvice(v){
 function shell(body){
  APP.innerHTML='<header class="top"><div class="topin"><a class="brand lexlearnBrandHome" href="index.html" title="الصفحة الرئيسية لـ LexLearn"><div class="mark"><img src="assets/lexlearn-logo.svg" alt="LexLearn"></div><div><b>LexLearn Admin</b><small>قاعدة بيانات مركزية</small></div></a>'+
  '<nav class="nav"><button data-tab="dashboard" class="'+(state.tab==="dashboard"?"active":"")+'">'+ico("chart")+'<span>الرئيسية</span></button><button data-tab="students" class="'+(state.tab==="students"?"active":"")+'">'+ico("users")+'<span>الطلاب</span></button><button data-tab="cohorts" class="'+(state.tab==="cohorts"?"active":"")+'">'+ico("group")+'<span>المجموعات</span></button><button data-tab="grading" class="'+(state.tab==="grading"?"active":"")+'">'+ico("audit")+'<span>تصحيح التدريب</span></button><button data-tab="content" class="'+(state.tab==="content"?"active":"")+'">'+ico("audit")+'<span>المحتوى</span></button><button data-tab="audit" class="'+(state.tab==="audit"?"active":"")+'">'+ico("audit")+'<span>السجل</span></button></nav>'+
- '<div class="topActions"><span class="topLink">● مركزي</span><span class="topLink" title="إصدار تنظيم الدول والكليات">تنظيم الدول 26-10 v2</span><a class="topLink" href="admin-instructors.html">الأساتذة الجامعيون</a><a class="topLink" href="admin-progress.html">تدرّج الحفظ والفهم</a><a class="topLink" href="references.html">تغذية الذكاء الاصطناعي</a><a class="topLink" href="pilot-review.html">مراجعة التدريب</a><a class="topLink" href="demo-supervisor.html">نتائج الديمو</a><a class="topLink" href="index.html">الموقع</a><button class="topLink" id="logout">خروج</button></div></div></header><main class="wrap">'+body+'</main>'+modal();
+ '<div class="topActions"><span class="topLink">● مركزي</span><a class="topLink" href="admin-instructors.html">الأساتذة الجامعيون</a><a class="topLink" href="admin-progress.html">تدرّج الحفظ والفهم</a><a class="topLink" href="references.html">تغذية الذكاء الاصطناعي</a><a class="topLink" href="pilot-review.html">مراجعة التدريب</a><a class="topLink" href="demo-supervisor.html">نتائج الديمو</a><a class="topLink" href="index.html">الموقع</a><button class="topLink" id="logout">خروج</button></div></div></header><main class="wrap">'+body+'</main>'+modal();
  document.querySelectorAll("[data-tab]").forEach(function(b){b.onclick=function(){state.tab=b.dataset.tab;render();};});
  var lo=document.getElementById("logout");if(lo)lo.onclick=async function(){await LEX_CLOUD.signOut();localStorage.removeItem(SKEY);location.replace("admin-login.html");};
  bind();
@@ -123,7 +119,7 @@ function kpis(){
 }
 function studentList(){
  var q=state.q.trim().toLowerCase();
- return state.students.filter(function(s){return !q||String([s.name,s.username,s.cohort,countryName(s.country),s.university,s.faculty,s.year].join(" ")).toLowerCase().indexOf(q)>=0;});
+ return state.students.filter(function(s){return !q||String([s.name,s.username,s.cohort,countryName(s.country),s.university,universityLabel(s.university),s.faculty,s.year,displayYear(s.year)].join(" ")).toLowerCase().indexOf(q)>=0;});
 }
 
 function studentTree(list){
@@ -134,18 +130,13 @@ function studentTree(list){
   (state.enrollments||[]).map(function(e){return String(e.user_id)+"|"+String(e.course_id);})
  );
  function known(s){return String(s||"").trim()||"غير محدد — استكمل البيانات";}
- function canonical(s){
-  var v=String(s||"").normalize("NFKC").trim().toLocaleLowerCase("ar").replace(/[\u064B-\u065F\u0670]/g,"").replace(/[أإآ]/g,"ا").replace(/ى/g,"ي").replace(/[\s\u00a0]+/g," ");
-  // Display aliases for Lusail University without changing stored academic records.
-  if(/(?:جامعة\s*)?لوسيل|lusail\s*(?:university)?/i.test(v))return "lusail university";
-  return v;
- }
- function universityLabel(s){return canonical(s)==="lusail university"?"جامعة لوسيل":s;}
- function displayYear(s){return String(s||"").trim().replace(/^(?:السنة|سنة|الفرقة)\s*(الأولى|الاولى|الثانية|الثالثة|الرابعة|أولى|اولى|ثانية|ثالثة|رابعة)$/,"الفرقة $1").replace("الفرقة أولى","الفرقة الأولى").replace("الفرقة اولى","الفرقة الأولى").replace("الفرقة اولى","الفرقة الأولى").replace("الفرقة ثانية","الفرقة الثانية").replace("الفرقة ثالثة","الفرقة الثالثة").replace("الفرقة رابعة","الفرقة الرابعة");}
+ var canonical=academic.text;
+ var seenStudents=new Set();
  list.forEach(function(s){
-  var c=String(s.country||"other"),uni=known(s.university),faculty=known(s.faculty),year=displayYear(known(s.year));
+  if(seenStudents.has(s.id))return;seenStudents.add(s.id);
+  var c=String(s.country||"other").toLowerCase(),uni=known(s.university),faculty=academic.faculty(known(s.faculty),uni),year=displayYear(known(s.year));
   if(!countries.has(c))countries.set(c,new Map());
-  var schools=countries.get(c),school=canonical(uni)+"|"+canonical(faculty);
+  var schools=countries.get(c),school=academic.universityKey(uni)+"|"+academic.facultyKey(faculty,uni);
   if(!schools.has(school))schools.set(school,{university:universityLabel(uni),faculty:faculty,years:new Map()});
   var y=schools.get(school).years;if(!y.has(year))y.set(year,[]);
   y.get(year).push(s);
@@ -170,7 +161,7 @@ function studentTree(list){
  }
 
  var parts=[];
- Array.from(countries.keys()).sort(sort).forEach(function(country){
+ Array.from(countries.keys()).forEach(function(country){
   var schools=countries.get(country),countryStudents=[];
   schools.forEach(function(school){school.years.forEach(function(students){countryStudents.push.apply(countryStudents,students);});});
   var collegeNodes=[];
@@ -182,13 +173,16 @@ function studentTree(list){
     var students=school.years.get(year),selectedHere=students.some(function(x){return x.id===selected;});
     var assigned=state.instructorAssignments.filter(function(a){
      return a.active!==false&&String(a.country_code)===country&&
-       canonical(a.university)===canonical(school.university)&&
-       canonical(a.faculty)===canonical(school.faculty)&&
+       academic.universityKey(a.university)===academic.universityKey(school.university)&&
+       academic.facultyKey(a.faculty,a.university)===academic.facultyKey(school.faculty,school.university)&&
        canonical(displayYear(a.year_label))===canonical(year)&&
        state.instructors.some(function(t){return t.instructor_id===a.instructor_id&&t.profiles&&t.profiles.active!==false;});
     });
-    var professorCards=[],covered=new Set();
+    var professorCards=[],covered=new Set(),seenAssignments=new Set();
     assigned.forEach(function(a){
+      var assignmentKey=String(a.instructor_id)+"|"+String(a.course_id);
+      if(seenAssignments.has(assignmentKey))return;
+      seenAssignments.add(assignmentKey);
       var prof=state.instructors.find(function(t){return t.instructor_id===a.instructor_id;});
       if(!prof)return;
       var subset=students.filter(function(s){return allEnrollments.has(String(s.id)+"|"+String(a.course_id));});
@@ -230,9 +224,9 @@ function academicEditor(s){
  function field(name,label,value,max,type){return '<label>'+label+'<input name="'+name+'" type="'+(type||"text")+'" maxlength="'+max+'" value="'+esc(value||"")+'"></label>';}
  return '<section class="panel"><h3>استكمال بيانات الطالب الأكاديمية</h3><p class="managementHint">اكتب الجامعة والكلية والفرقة كما تظهر في تكليف الدكتور؛ عدم التطابق يمنع ظهور الطالب حفاظًا على خصوصيته. رقم القيد اختياري ولا يُعرض للدكتور.</p>'+
  '<form class="formGrid" id="studentAcademicForm" data-student="'+esc(s.id)+'">'+
- field("university","الجامعة",s.university,160)+
- field("faculty","الكلية",s.faculty,160)+
- field("year_label","الفرقة",s.year,80)+
+ field("university","الجامعة",universityLabel(s.university),160)+
+ field("faculty","الكلية",academic.faculty(s.faculty,s.university),160)+
+ field("year_label","الفرقة",displayYear(s.year),80)+
  '<label>الدولة<select name="country_code">'+[["qa","قطر"],["eg","مصر"],["sa","السعودية"],["ae","الإمارات"],["other","أخرى"]].map(function(x){return '<option value="'+x[0]+'"'+(s.country===x[0]?" selected":"")+'>'+x[1]+'</option>';}).join("")+'</select></label>'+
  field("academic_section","القسم / الشعبة (اختياري)",s.section,100)+
  field("student_registration_number","رقم القيد الجامعي (اختياري)",s.studentRegistrationNumber,80)+
@@ -241,8 +235,8 @@ function academicEditor(s){
 }
 function detail(v){
  var s=v.s,r=risk(v),axes=v.model.axes||{},advice=adminAdvice(v),lastUpdate=v.courseUpdated||v.profileUpdated;
- return '<div class="studentSectionBanner identitySection"><span>01</span><div><b>البيانات الأساسية للطالب</b><small>الهوية والجامعة والسنة الدراسية — لا يلزم وجود مجموعة أو أستاذ</small></div></div><section class="panel studentHero"><div><span class="overline">'+esc(s.cohort||"طالب مستقل · دون مجموعة")+'</span><h2>'+esc(s.name||s.username)+'</h2><p>@'+esc(s.username)+' • '+countryName(s.country)+' • '+esc(s.university||"—")+' • '+esc(displayYear(s.year||"—"))+'</p>'+
- '<p>الكلية: '+esc(s.faculty||"—")+' • الشعبة/القسم: '+esc(s.section||"—")+'</p>'+
+ return '<div class="studentSectionBanner identitySection"><span>01</span><div><b>البيانات الأساسية للطالب</b><small>الهوية والجامعة والفرقة الدراسية — لا يلزم وجود مجموعة أو أستاذ</small></div></div><section class="panel studentHero"><div><span class="overline">'+esc(s.cohort||"طالب مستقل · دون مجموعة")+'</span><h2>'+esc(s.name||s.username)+'</h2><p>@'+esc(s.username)+' • '+countryName(s.country)+' • '+esc(universityLabel(s.university||"—"))+' • '+esc(displayYear(s.year||"—"))+'</p>'+
+ '<p>الكلية: '+esc(academic.faculty(s.faculty||"—",s.university))+' • الشعبة/القسم: '+esc(s.section||"—")+'</p>'+
  (s.studentRegistrationNumber?'<p>رقم القيد الجامعي: <b>'+esc(s.studentRegistrationNumber)+'</b></p>':'')+
  (s.groupEmail?'<p>بريد المجموعة: <b dir="ltr">'+esc(s.groupEmail)+'</b></p>':'')+
  (s.whatsapp?'<p class="studentPhone">واتساب: <b dir="ltr">'+esc(s.whatsapp)+'</b> • '+(s.whatsappVerified?'تم التحقق':'لم يتم التحقق بعد')+'</p>':'')+'</div><span class="risk big '+r+'">'+(v.official&&r==="none"?"التصحيح غير مكتمل":rlabel(r,v))+'</span></section>'+
@@ -315,7 +309,7 @@ function gradingTab(){
 }
 function modal(){
  if(!state.modal)return "";
- if(state.modal==="add")return '<div class="modalBack"><div class="modal"><button class="close" data-close>×</button><span class="overline">حساب مركزي</span><h2>تسجيل طالب بمساعدة المشرف</h2><p class="registrationHint">يمكن تسجيل الطالب حتى لو لم يكن تابعًا لمجموعة أو أستاذ. سيُطلب منه تغيير كلمة المرور المؤقتة عند أول دخول. التجربة الحالية لمقرر نظرية الحق القطري؛ يؤكد المشرف قبول الطالب لشروط التسجيل الكاملة مرة واحدة.</p><form id="addForm" class="formGrid"><label>الاسم<input id="n" required></label><label>اسم المستخدم (بالإنجليزية فقط)<input id="usr" pattern="[A-Za-z0-9._-]{3,32}" value="'+nextStudentUsername()+'" title="استخدم حروفًا إنجليزية وأرقامًا فقط؛ مثال: student02" placeholder="student02" required></label><label>الجامعة<input id="uni" maxlength="160" value="Qatar University" required></label><label>الكلية<input id="faculty" maxlength="160" value="كلية الحقوق" required></label><label>الشعبة / القسم (اختياري)<input id="academicSection" maxlength="100"></label><label>رقم القيد الجامعي (اختياري)<input id="studentNumber" maxlength="80"></label><label>بريد المجموعة المؤسسي (اختياري)<input id="groupEmail" type="email" maxlength="254"></label><label>السنة<select id="yr"><option>السنة الأولى</option><option>السنة الثانية</option></select></label><label>الدولة<select id="country"><option value="qa">قطر</option><option value="eg">مصر</option></select></label><label>المجموعة (اختيارية)<select id="coh"><option value="">بدون مجموعة</option>'+state.cohorts.map(function(c){return '<option value="'+c.id+'">'+esc(c.name)+'</option>';}).join("")+'</select></label><label class="registrationHint"><input type="checkbox" id="registrationTerms" required>أؤكد موافقة الطالب عند التسجيل على سياسة الخصوصية وشروط الاستخدام، بما يشمل حفظ بيانات التعلم وإرسال إجاباته إلى OpenAI للتصحيح والتدريب المتكيف دون اسمه أو بيانات اتصاله. <a href="privacy.html" target="_blank" rel="noopener">سياسة الخصوصية</a> · <a href="terms.html" target="_blank" rel="noopener">شروط الاستخدام</a></label><div class="modalActions"><button class="btn primary" type="submit">إنشاء الحساب</button></div></form></div></div>';
+ if(state.modal==="add")return '<div class="modalBack"><div class="modal"><button class="close" data-close>×</button><span class="overline">حساب مركزي</span><h2>تسجيل طالب بمساعدة المشرف</h2><p class="registrationHint">يمكن تسجيل الطالب حتى لو لم يكن تابعًا لمجموعة أو أستاذ. سيُطلب منه تغيير كلمة المرور المؤقتة عند أول دخول. التجربة الحالية لمقرر نظرية الحق القطري؛ يؤكد المشرف قبول الطالب لشروط التسجيل الكاملة مرة واحدة.</p><form id="addForm" class="formGrid"><label>الاسم<input id="n" required></label><label>اسم المستخدم (بالإنجليزية فقط)<input id="usr" pattern="[A-Za-z0-9._-]{3,32}" value="'+nextStudentUsername()+'" title="استخدم حروفًا إنجليزية وأرقامًا فقط؛ مثال: student02" placeholder="student02" required></label><label>الجامعة<input id="uni" maxlength="160" value="Qatar University" required></label><label>الكلية<input id="faculty" maxlength="160" value="كلية الحقوق" required></label><label>الشعبة / القسم (اختياري)<input id="academicSection" maxlength="100"></label><label>رقم القيد الجامعي (اختياري)<input id="studentNumber" maxlength="80"></label><label>بريد المجموعة المؤسسي (اختياري)<input id="groupEmail" type="email" maxlength="254"></label><label>الفرقة<select id="yr"><option value="السنة الأولى">الفرقة الأولى</option><option value="السنة الثانية">الفرقة الثانية</option><option value="السنة الثالثة">الفرقة الثالثة</option><option value="السنة الرابعة">الفرقة الرابعة</option></select></label><label>الدولة<select id="country"><option value="qa">قطر</option><option value="eg">مصر</option></select></label><label>المجموعة (اختيارية)<select id="coh"><option value="">بدون مجموعة</option>'+state.cohorts.map(function(c){return '<option value="'+c.id+'">'+esc(c.name)+'</option>';}).join("")+'</select></label><label class="registrationHint"><input type="checkbox" id="registrationTerms" required>أؤكد موافقة الطالب عند التسجيل على سياسة الخصوصية وشروط الاستخدام، بما يشمل حفظ بيانات التعلم وإرسال إجاباته إلى OpenAI للتصحيح والتدريب المتكيف دون اسمه أو بيانات اتصاله. <a href="privacy.html" target="_blank" rel="noopener">سياسة الخصوصية</a> · <a href="terms.html" target="_blank" rel="noopener">شروط الاستخدام</a></label><div class="modalActions"><button class="btn primary" type="submit">إنشاء الحساب</button></div></form></div></div>';
  if(state.modal==="creds")return '<div class="modalBack"><div class="modal"><button class="close" data-close>×</button><span class="overline">بيانات مؤقتة</span><h2>سلمها للطالب مرة واحدة</h2><div class="credentials"><span>اسم المستخدم</span><b>'+esc(state.creds.username)+'</b><span>كلمة المرور المؤقتة</span><b>'+esc(state.creds.password)+'</b></div><button class="btn primary" id="copyCreds">نسخ البيانات</button><div class="warn">سيُطلب من الطالب تغيير كلمة المرور. لا نخزن كلمة المرور في لوحة الإدارة.</div></div></div>';
  return "";
 }
@@ -334,7 +328,7 @@ async function load(){
     c.from("pilot_ai_grades").select("attempt_id,status,passed,score,feedback,model_confidence,criteria,source_ids,created_at").order("created_at",{ascending:false}).limit(500),
     c.functions.invoke("admin-export-student",{body:{action:"overview"}}),
      c.functions.invoke("admin-manage-instructors",{body:{action:"list"}}).catch(function(){return {error:true};}),
-     c.from("enrollments").select("user_id,course_id").limit(10000).then(function(x){return x;},function(){return {error:true};})
+     c.from("enrollments").select("user_id,course_id").eq("status","active").limit(10000).then(function(x){return x;},function(){return {error:true};})
   ]);
   if(results.slice(4,10).some(function(x){return x.error;}))throw results.slice(4,10).find(function(x){return x.error;}).error;
   if(!results[9].data||results[9].data.ok!==true)throw Error("تعذر تحميل سجل التقدم الحالي");
@@ -385,6 +379,8 @@ function bind(){
  if(academicForm)academicForm.onsubmit=async function(e){
   e.preventDefault();var status=document.getElementById("academicSaveStatus"),button=academicForm.querySelector('[type="submit"]');
   var patch=Object.fromEntries(new FormData(academicForm).entries());
+  var currentStudent=state.students.find(function(s){return s.id===academicForm.dataset.student;});
+  if(currentStudent)patch=academic.preserveStored(patch,currentStudent);
   if(!patch.university.trim()||!patch.faculty.trim()||!patch.year_label.trim()){
    status.textContent="أكمل الجامعة والكلية والفرقة أولًا.";return;
   }

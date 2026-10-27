@@ -2,7 +2,9 @@
 "use strict";
 var cloud=window.LEX_CLOUD&&LEX_CLOUD.isConfigured&&LEX_CLOUD.isConfigured();
 var s=document.createElement("script");
-s.src=cloud?"assets/admin-cloud.js?v=20261026.localflags7":"assets/admin.js?v=20261010.5";
+var entry=document.currentScript;
+var version=entry?new URL(entry.src,location.href).searchParams.get("v"):"20261026.8";
+s.src=(cloud?"assets/admin-cloud.js":"assets/admin.js")+"?v="+encodeURIComponent(version||"20261026.8");
 s.defer=false;
 document.body.appendChild(s);
 })();

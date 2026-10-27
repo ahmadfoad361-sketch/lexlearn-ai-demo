@@ -156,6 +156,7 @@ jobs:
           node tests/legal-case-guide-browser.cjs
           node tests/student-adaptive-browser.cjs
           node tests/conference-viewport-browser.cjs
+          node tests/supervisor-published-browser.cjs
 
   sql-lifecycle:
     runs-on: ubuntu-latest
@@ -288,4 +289,6 @@ jobs:
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261025_001_instructor_scoped_progress.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261026_001_restore_rls_helper_execute.sql
           psql -v ON_ERROR_STOP=1 -f tests/sql/rls-helper-grant-acceptance.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261027040010_academic_display_aliases.sql
           psql -v ON_ERROR_STOP=1 -f tests/sql/instructor-scoped-acceptance.sql
+          psql -v ON_ERROR_STOP=1 -f tests/sql/academic-alias-acceptance.sql

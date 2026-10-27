@@ -119,29 +119,20 @@ html[data-learner-theme=dark] .panel .recordIncorrect :is(p,blockquote){color:#d
 .studentTreeNode.level-country.country-qa{--country-accent:#8a1538;--country-tint:#f4d9e3}
 .studentTreeNode.level-country.country-eg{--country-accent:#ce1126;--country-tint:#f9dce0}
 .studentTreeNode.level-country.country-sa{--country-accent:#087343;--country-tint:#d8f1e3}
-.studentTreeNode.level-country.country-ae{--country-accent:#138654;--country-tint:#d8eee0}
+.studentTreeNode.level-country.country-ae{--country-accent:#315c9a;--country-tint:#dce8f8}
 .studentTreeNode.level-country.country-other{--country-accent:#54759a;--country-tint:#deebf7}
 .countryTitle{display:flex;align-items:center;gap:9px;font-weight:700}
 .countryFlag{font-size:1.24rem;line-height:1.25;flex-shrink:0;font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif}
 html[data-learner-theme=dark] .studentTreeNode.level-country{--country-accent:#dba0b3}
 html[data-learner-theme=dark] .studentTreeNode.level-country.country-eg{--country-accent:#ff9ea9}
 html[data-learner-theme=dark] .studentTreeNode.level-country.country-sa{--country-accent:#7ad7ab}
-html[data-learner-theme=dark] .studentTreeNode.level-country.country-ae{--country-accent:#84d6b5}
+html[data-learner-theme=dark] .studentTreeNode.level-country.country-ae{--country-accent:#95bced}
 html[data-learner-theme=dark] .studentTreeNode.level-country.country-other{--country-accent:#aac7ef}
 
-/* Open academic year stands apart from student entries. */
-.studentTreeNode.level-year>summary{border-radius:9px;background:color-mix(in srgb,var(--ad-raised,#f1ece5) 84%,#a6c9d9 16%);padding:10px 9px;transition:background .15s ease}
-.studentTreeNode.level-year[open]>summary{background:color-mix(in srgb,var(--ad-raised,#f1ece5) 64%,#a6c9d9 36%);border:1px solid color-mix(in srgb,var(--ad-line,#cec7c1) 72%,#6a9eae 28%);color:var(--ad-ink,#18253b)}
+/* Only the direct summary changes when its own details is open. */
+.studentHierarchy details.level-year>summary{border:1px solid transparent;border-radius:9px;background:var(--ad-raised,#f1ece5);padding:10px 9px;min-height:39px;transition:background .15s ease}
+.studentHierarchy details.level-year[open]>summary{background:#dbe9ee;color:#20334a;border-color:#a9c6d4}
+html[data-learner-theme="dark"] .studentHierarchy details.level-year[open]>summary{background:#354a61;color:#f7f4ef;border-color:#779bb2}
 .studentTreeNode.level-year[open]>.studentTreeChildren{padding-block-start:9px}
 .lexlearnBrandHome{text-decoration:none;color:inherit;border-radius:10px}.lexlearnBrandHome:focus-visible{outline:3px solid var(--ad-accent,#8a1f39);outline-offset:3px}
-
-/* Clear visible year header contrast when its student roster is expanded. */
-.studentHierarchy details.studentTreeNode.level-year > summary{background:var(--ad-raised,#f1ece5) !important;min-height:39px}
-.studentHierarchy details.studentTreeNode.level-year[open] > summary{background:#dbe9ee !important;color:#20334a !important;border:1px solid #a9c6d4 !important;box-shadow:inset 4px 0 0 #6d9dab}
-html[data-learner-theme="dark"] .studentHierarchy details.studentTreeNode.level-year[open] > summary{background:#354a61 !important;color:#f7f4ef !important;border-color:#779bb2 !important}
-.studentHierarchy .countryFlag img{width:24px;height:18px;display:inline-block;vertical-align:middle;object-fit:cover;border:1px solid #0002;border-radius:2px}
-
-/* Locally rendered flags and high-contrast opened academic year in admin. */
-.countryFlagSvg{display:block;width:26px;height:19px;border-radius:2px;box-shadow:0 0 0 1px #ffffff55;flex:none}
-.studentHierarchy .studentTreeNode.level-year[open]>summary{background:#c2dbe5!important;color:#10253d!important;border:2px solid #75a8bc!important;box-shadow:inset 4px 0 0 #467e95!important}
-html[data-learner-theme="dark"] .studentHierarchy .studentTreeNode.level-year[open]>summary{background:#4b7086!important;color:#fff!important;border-color:#8ab8ce!important}
+.countryFlagSvg{display:block;width:26px;height:19px;object-fit:cover;border-radius:2px;box-shadow:0 0 0 1px #ffffff55;flex:none}

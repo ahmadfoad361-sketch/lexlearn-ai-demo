@@ -6,7 +6,7 @@ const score=x=>x===null||x===undefined||x===""||!Number.isFinite(Number(x))?"ل�
 let students=[],selected=null,report=null,enrollments=[],selectedCourse="";
 function show(){
  app.innerHTML='<section class="panel"><span class="eyebrow">التقييم الدوري</span><h1>تدرج الحفظ والفهم لكل طالب</h1><p>تُعرض المؤشرات عند التشخيص، ثم بعد كل خمس جلسات مكتملة. أرقام التمارين من معايير مؤقتة ولا تُستخدم لإثبات تحسّن علمي دون مقاييس متكافئة.</p>'+
- '<label>الطالب<select id="selectedStudent">'+students.map(x=>'<option value="'+esc(x.id)+'" '+(selected===x.id?"selected":"")+'>'+esc(x.name||x.username)+' — '+esc(x.university||"")+' — '+esc(x.year||"")+'</option>').join("")+'</select></label>'+
+ '<label>الطالب<select id="selectedStudent">'+students.map(x=>'<option value="'+esc(x.id)+'" '+(selected===x.id?"selected":"")+'>'+esc(x.name||x.username)+' — '+esc(window.LEX_ACADEMIC.university(x.university||""))+' — '+esc(window.LEX_ACADEMIC.year(x.year||""))+'</option>').join("")+'</select></label>'+
  '<label>المقرر<select id="selectedCourse">'+enrollments.filter(e=>e.user_id===selected).map(e=>'<option value="'+esc(e.course_id)+'" '+(selectedCourse===e.course_id?"selected":"")+'>'+esc(e.course_id)+'</option>').join("")+'</select></label>'+
  '<button class="primary" id="inspectProgress">عرض تقدم الطالب</button><button class="secondary" id="printProgress">طباعة التقرير</button></section><div id="progressReport">'+(report?renderReport(report):'')+'</div>';
  document.getElementById("inspectProgress").onclick=()=>load(document.getElementById("selectedStudent").value,document.getElementById("selectedCourse").value||null);
@@ -17,7 +17,7 @@ function renderReport(r){
  const d=r.diagnostic||{},points=r.checkpoints||[];
  const names={recall:"الحفظ / استرجاع القاعدة",understanding:"الفهم"};
  const by=[...new Set(points.map(p=>p.period))].sort((a,b)=>a-b);
- return '<section class="panel"><h2>'+esc(r.student?.name||"")+'</h2><p>'+esc(r.student?.university)+' — '+esc(r.student?.faculty)+' — '+esc(r.student?.year)+'</p>'+
+ return '<section class="panel"><h2>'+esc(r.student?.name||"")+'</h2><p>'+esc(window.LEX_ACADEMIC.university(r.student?.university))+' — '+esc(r.student?.faculty)+' — '+esc(window.LEX_ACADEMIC.year(r.student?.year))+'</p>'+
  '<div class="grid three"><div class="metric">الحفظ عند التشخيص<strong>'+score(d.recall)+'</strong><small>خط أساس أولي</small></div><div class="metric">الفهم عند التشخيص<strong>'+score(d.understanding)+'</strong><small>خط أساس أولي</small></div><div class="metric">الجلسات المكتملة<strong>'+Number(r.completed_sessions||0)+'</strong><small>فترة المتابعة = 5 جلسات</small></div></div>'+
  '<h3>سجل الفترات المكتملة</h3>'+
  (points.length?'<div class="tableScroll"><table class="dataTable"><thead><tr><th>الفترة</th><th>المهارة</th><th>المؤشر</th><th>العدد</th><th>نسخة المعيار</th></tr></thead><tbody>'+

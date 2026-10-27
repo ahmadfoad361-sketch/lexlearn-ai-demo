@@ -227,6 +227,7 @@ function navFakeElement(){
 }
 const homeButton=navFakeElement(), toolbarMock={insertBefore(node){assert.equal(node,homeButton);}};
 const navDoc={
+ querySelectorAll(){return [];},
  documentElement:{lang:"ar"},
  referrer:"https://ahmadfoad361-sketch.github.io/lexlearn-ai-demo/go/",
  createElement(){return homeButton;},
