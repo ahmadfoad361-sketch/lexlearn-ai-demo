@@ -1,12 +1,12 @@
 /* Supervisor presentation; printable reports have their own paper stylesheet. */
-html[data-learner-theme]{--ad-bg:#f7f3ed;--ad-surface:#fffdfa;--ad-raised:#f1ece5;--ad-ink:#18253b;--ad-muted:#536176;--ad-line:#cec7c1;--ad-accent:#8a1f39;--ad-good:#20604c;--ad-good-bg:#e4f2e9;--ad-warn:#735010;--ad-warn-bg:#fff0d1;--ad-bad:#a71d36;--ad-bad-bg:#fae7eb;--paper:var(--ad-surface);--ink:var(--ad-ink);--muted:var(--ad-muted);--line:var(--ad-line);--shadow:0 12px 34px #18253b0b}
-html[data-learner-theme=dark]{--ad-bg:#101b2c;--ad-surface:#1b2a40;--ad-raised:#263750;--ad-ink:#f7f4ef;--ad-muted:#c1ccdd;--ad-line:#718099;--ad-accent:#ffb1c4;--ad-good:#a0e4c1;--ad-good-bg:#183e34;--ad-warn:#ffe0a3;--ad-warn-bg:#49381d;--ad-bad:#ff9da9;--ad-bad-bg:#452737;--shadow:0 12px 34px #0002}
-html[data-learner-theme] body{background:var(--ad-bg);color:var(--ad-ink);font-size:16px;line-height:1.8;padding-bottom:70px}
+html[data-learner-theme]{--ad-font:18px;--ad-small:16px;--ad-control:17px;--ad-heading:22px;--ad-bg:#f7f3ed;--ad-surface:#fffdfa;--ad-raised:#f1ece5;--ad-ink:#18253b;--ad-muted:#536176;--ad-line:#cec7c1;--ad-accent:#8a1f39;--ad-good:#20604c;--ad-good-bg:#e4f2e9;--ad-warn:#735010;--ad-warn-bg:#fff0d1;--ad-bad:#a71d36;--ad-bad-bg:#fae7eb;--paper:var(--ad-surface);--ink:var(--ad-ink);--muted:var(--ad-muted);--line:var(--ad-line);--shadow:0 12px 34px #18253b0b}
+html[data-learner-theme=dark]{--ad-bg:#111d31;--ad-surface:#1b2a40;--ad-raised:#25364d;--ad-ink:#f9f4ef;--ad-muted:#c5cfdd;--ad-line:#50627b;--ad-accent:#e6c4d0;--ad-good:#a0e4c1;--ad-good-bg:#183e34;--ad-warn:#ffe0a3;--ad-warn-bg:#49381d;--ad-bad:#ff9da9;--ad-bad-bg:#452737;--shadow:0 12px 34px #0002}
+html[data-learner-theme] body{background:var(--ad-bg);color:var(--ad-ink);font-size:var(--ad-font);line-height:1.8;padding-bottom:70px}
 html[data-learner-theme] .top{background:var(--ad-surface);border-color:var(--ad-line)}
 html[data-learner-theme] :is(.panel,.modal,.kpis>div){background:var(--ad-surface);border-color:var(--ad-line);color:var(--ad-ink)}
 html[data-learner-theme] :is(.brand b,.panel h2,.panel h3,.panel h4,.kpis b,.pageTitle h1,.metric>b,.evidenceGrid b,.studentBtn b,.tr b,.auditRow b,.modal h2,.credentials b){color:var(--ad-ink)}
-html[data-learner-theme] :is(.panel p,.panel small,.panelHead p,.studentBtn small,.metric>span,.metric>small,.evidenceGrid span,.tr small,.auditRow small,.auditRow time,.registrationHint,.managementHint,.formGrid label,.credentials span,.brand small,.kpis span){color:var(--ad-muted);font-size:14px;line-height:1.85}
-html[data-learner-theme] :is(.nav button,.topLink,.studentBtn,.search,.filterRow button,.btn.secondary,.adminActions button,.toolbar select,.formGrid input,.formGrid select,.modal textarea,.modal input[type=file],.close){background:var(--ad-surface);color:var(--ad-ink);border-color:var(--ad-line);font-size:14px}
+html[data-learner-theme] :is(.panel p,.panel small,.panelHead p,.studentBtn small,.metric>span,.metric>small,.evidenceGrid span,.tr small,.auditRow small,.auditRow time,.registrationHint,.managementHint,.formGrid label,.credentials span,.brand small,.kpis span){color:var(--ad-muted);font-size:var(--ad-small);line-height:1.85}
+html[data-learner-theme] :is(.nav button,.topLink,.studentBtn,.search,.filterRow button,.btn.secondary,.adminActions button,.toolbar select,.formGrid input,.formGrid select,.modal textarea,.modal input[type=file],.close){background:var(--ad-surface);color:var(--ad-ink);border-color:var(--ad-line);font-size:var(--ad-small)}
 html[data-learner-theme] :is(input,textarea,select){color:var(--ad-ink);caret-color:var(--ad-accent)}
 html[data-learner-theme] :is(input,textarea)::placeholder{color:var(--ad-muted);opacity:1}
 html[data-learner-theme] :is(.nav button.active,.studentBtn.active){background:var(--ad-raised);color:var(--ad-accent);border-color:var(--ad-accent)}
@@ -14,35 +14,35 @@ html[data-learner-theme] :is(.metric,.evidenceGrid>div,.tr.head,.empty,.weekMini
 html[data-learner-theme] :is(.bar,.progressLine){background:var(--ad-line)}
 html[data-learner-theme] :is(.iconBtn,.cohortIcon,.auditIcon,.realTag){background:var(--ad-raised);color:var(--ad-accent)}
 html[data-learner-theme] :is(.recommend,.warn){background:var(--ad-warn-bg);border-color:var(--ad-line);color:var(--ad-warn)}
-html[data-learner-theme] .recommend :is(b,span,p,small){color:var(--ad-warn);font-size:14px;line-height:1.9}
+html[data-learner-theme] .recommend :is(b,span,p,small){color:var(--ad-warn);font-size:var(--ad-small);line-height:1.9}
 html[data-learner-theme] :is(.risk.high,.accountState.disabled,.deleteStudentButton){background:var(--ad-bad-bg)!important;color:var(--ad-bad)!important;border-color:var(--ad-bad)!important}
 html[data-learner-theme] :is(.risk.mid,.accountState.paused){background:var(--ad-warn-bg);color:var(--ad-warn)}
 html[data-learner-theme] :is(.risk.low,.accountState.active,.importResult.ok){background:var(--ad-good-bg);color:var(--ad-good)}
 html[data-learner-theme] :is(.risk.none,.accountState.pending){background:var(--ad-raised);color:var(--ad-muted)}
-html[data-learner-theme] :is(.risk,.realTag,.topLink){font-size:13px}
+html[data-learner-theme] :is(.risk,.realTag,.topLink){font-size:var(--ad-small)}
 html[data-learner-theme] .metric.axis-recall :is(span,b){color:var(--ad-accent)}
 html[data-learner-theme] .metric.axis-understanding :is(span,b){color:var(--ad-good)}
 html[data-learner-theme] .panel :is(pre,blockquote){color:var(--ad-ink);white-space:pre-wrap;overflow-wrap:anywhere;font:inherit;line-height:2}
-html[data-learner-theme] .panel h3{font-size:21px}.panel h4{font-size:17px}
+html[data-learner-theme] .panel h3{font-size:var(--ad-heading)}.panel h4{font-size:var(--ad-control)}
 html[data-learner-theme] .panelHead{gap:16px;align-items:center;flex-wrap:wrap}
 html[data-learner-theme] .panel{padding:24px;border-radius:22px}
 html[data-learner-theme] .panel .panel{box-shadow:none;margin-top:24px;border-top:3px solid var(--ad-accent)}
 html[data-learner-theme] .entry{padding:20px;margin:18px 0;border:1px solid var(--ad-line);border-radius:16px}
 html[data-learner-theme] .answer{padding:18px;margin:14px 0;border:1px solid var(--ad-line);border-inline-start:3px solid var(--ad-accent);border-radius:12px}
 html[data-learner-theme] .entry h3{margin-bottom:12px}
-html[data-learner-theme] .reportBtn{background:#8a1f39;color:#fff;border:0;border-radius:12px;padding:12px 18px;cursor:pointer;font-weight:750;font-size:15px}
+html[data-learner-theme] .reportBtn{background:#8a1f39;color:#fff;border:0;border-radius:12px;padding:12px 18px;cursor:pointer;font-weight:750;font-size:var(--ad-control)}
 html[data-learner-theme] :is(.studentManagement .adminActions .reportBtn,.btn.primary){background:#8a1f39;color:#fff;border-color:#8a1f39}
 html[data-learner-theme] .topin{max-width:1550px;gap:20px}.topActions{flex-wrap:wrap;justify-content:flex-end}
 html[data-learner-theme] .wrap{max-width:1550px;padding-top:28px}
-html[data-learner-theme] .hero{background:linear-gradient(120deg,#142b5f,#202e4c);padding:32px;border:1px solid var(--ad-line)}
+html[data-learner-theme] .hero{background:#1b2a40;padding:32px;border:1px solid var(--ad-line)}
 html[data-learner-theme] .hero h1{font-size:clamp(27px,3vw,38px)}
 html[data-learner-theme] .kpis>div{padding:22px;border-top:3px solid #8a1f39}.kpis>div:nth-child(2){border-top-color:#247b78}.kpis>div:nth-child(3){border-top-color:#b58129}.kpis>div:nth-child(4){border-top-color:#5878a7}
-html[data-learner-theme] .kpis b{font-size:32px}.kpis span{font-size:14px}
+html[data-learner-theme] .kpis b{font-size:32px}.kpis span{font-size:var(--ad-small)}
 html[data-learner-theme] .metricGrid,html[data-learner-theme] .evidenceGrid{grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
 html[data-learner-theme] .metric{padding:18px}.metric>b{font-size:28px}
-html[data-learner-theme] .studentBtn{padding:16px}.studentBtn b{font-size:16px}
+html[data-learner-theme] .studentBtn{padding:16px}.studentBtn b{font-size:var(--ad-font)}
 html[data-learner-theme] :is(a,button,input,textarea,select):focus-visible{outline:3px solid var(--ad-accent);outline-offset:4px}
-.learnerThemeToggle{position:fixed;bottom:18px;inset-inline-end:18px;z-index:90;padding:12px 18px;min-height:46px;border:1px solid var(--ad-line);border-radius:99px;background:var(--ad-surface);color:var(--ad-ink);font:700 14px/1.5 system-ui,Tahoma,sans-serif;box-shadow:var(--shadow);cursor:pointer}
+.learnerThemeToggle{position:fixed;bottom:18px;inset-inline-end:18px;z-index:90;padding:12px 18px;min-height:46px;border:1px solid var(--ad-line);border-radius:99px;background:var(--ad-surface);color:var(--ad-ink);font:700 var(--ad-small)/1.5 system-ui,Tahoma,sans-serif;box-shadow:var(--shadow);cursor:pointer}
 .learnerBrandHome{display:inline-flex;align-items:center;text-decoration:none;color:inherit;max-width:100%;min-width:0}
 .learnerLogoOrbit{display:inline-flex;position:relative;flex:none;border-radius:50%;background:radial-gradient(ellipse,#ffffffed 0%,#ffffffb0 48%,#ffffff10 72%);box-shadow:0 0 14px #ffffff50}
 .learnerLogoOrbit>img{display:block;max-width:100%;object-fit:contain;filter:drop-shadow(0 0 4px #fff9)}
@@ -50,9 +50,9 @@ html[data-learner-theme] :is(a,button,input,textarea,select):focus-visible{outli
 .learnerLogoOrbit:after{content:'';position:absolute;inset:-3px;border-radius:50%;background:radial-gradient(circle at 50% 1%,#fff 0 3px,#efafc4 4px,transparent 5px);animation:adminMoon 12s linear infinite;pointer-events:none}
 html[data-learner-theme] .legalArticleNumber{font-weight:850;color:var(--ad-warn)!important;background:var(--ad-warn-bg);border:1px solid var(--ad-line);border-radius:.4em;padding:.03em .3em;box-decoration-break:clone;-webkit-box-decoration-break:clone}
 @keyframes adminMoon{to{transform:rotate(360deg)}}
-@media(min-width:1101px){.studentAside{position:sticky;top:116px;align-self:start;max-height:calc(100vh - 140px);overflow:auto}}
+@media(min-width:1101px){.studentAside{position:sticky;top:calc(var(--admin-header-height,220px) + 16px);align-self:start;max-height:calc(100vh - var(--admin-header-height,220px) - 32px);overflow:auto}}
 @media(max-width:1100px){html[data-learner-theme] .topin{grid-template-columns:auto 1fr}.topActions{display:flex}.nav button{flex-shrink:0}.nav{padding-bottom:4px}}
-@media(max-width:720px){html[data-learner-theme] .panel{padding:18px}.topActions{display:none}.brand small{display:none}.nav button span{display:inline}.nav{gap:4px}.nav button{font-size:13px}.metricGrid,.evidenceGrid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.panelHead>.reportBtn{width:100%}.hero{grid-template-columns:1fr}.kpis>div{padding:16px!important}.learnerThemeToggle{bottom:12px;inset-inline-end:12px}.twoCols{grid-template-columns:1fr}}
+@media(max-width:720px){html[data-learner-theme] .panel{padding:18px}.topActions{display:none}.brand small{display:none}.nav button span{display:inline}.nav{gap:4px}.nav button{font-size:var(--ad-small)}.metricGrid,.evidenceGrid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.panelHead>.reportBtn{width:100%}.hero{grid-template-columns:1fr}.kpis>div{padding:16px!important}.learnerThemeToggle{bottom:12px;inset-inline-end:12px}.twoCols{grid-template-columns:1fr}}
 @media(prefers-reduced-motion:reduce){.learnerLogoOrbit:after{animation:none}}
 @media print{.learnerThemeToggle,[data-record],[data-report]{display:none!important}html[data-learner-theme] body,html[data-learner-theme] .panel{background:#fff;color:#18253b}.studentAside{position:static;max-height:none}}
 
@@ -70,7 +70,7 @@ html[data-learner-theme=dark] .panel .recordIncorrect :is(p,blockquote){color:#d
 
 
 /* Scalable country → faculty/university → year → assigned professor → student navigation */
-.studentHierarchy{display:block;max-height:min(78vh,1050px);overflow:auto;padding:3px 2px;scrollbar-gutter:stable}
+.studentHierarchy{display:block;max-height:none;overflow:visible;padding:3px 2px;scrollbar-gutter:stable}
 .studentTreeNode{margin:8px 0;border-radius:13px;border:1px solid var(--ad-line,#ded5cb);background:var(--ad-surface,#fff);overflow:clip}
 .studentTreeNode>summary{list-style:none;cursor:pointer;display:flex;gap:7px;align-items:center;justify-content:space-between;
  padding:11px 9px;color:var(--ad-ink,var(--navy));font-weight:750;line-height:1.6}
@@ -78,8 +78,8 @@ html[data-learner-theme=dark] .panel .recordIncorrect :is(p,blockquote){color:#d
 .studentTreeNode>summary::before{content:"‹";transform:rotate(0);font-size:22px;color:var(--ad-accent,var(--maroon));line-height:1}
 .studentTreeNode[open]>summary::before{transform:rotate(-90deg)}
 .studentTreeNode>summary:focus-visible,.treeEditTeacher:focus-visible{outline:3px solid var(--ad-accent,#8a1f39);outline-offset:1px}
-.studentTreeNode .treeTitle{min-width:0;flex:1;text-align:right;overflow-wrap:anywhere;font-size:.87rem}
-.studentTreeNode .treeCount{flex-shrink:0;font-size:.76rem;color:var(--ad-muted,#536176);
+.studentTreeNode .treeTitle{min-width:0;flex:1;text-align:right;overflow-wrap:anywhere;font-size:var(--ad-font)}
+.studentTreeNode .treeCount{flex-shrink:0;font-size:var(--ad-small);color:var(--ad-muted,#536176);
  border-radius:9px;background:var(--ad-raised,#f1ece5);padding:3px 8px;font-variant-numeric:tabular-nums}
 .studentTreeNode.level-country{border-inline-start:3px solid var(--ad-accent,#8a1f39)}
 .studentTreeNode.level-faculty{border-color:var(--ad-line,#ded5cb)}
@@ -88,33 +88,33 @@ html[data-learner-theme=dark] .panel .recordIncorrect :is(p,blockquote){color:#d
 .studentTreeNode .studentTreeChildren{padding:3px 7px 9px;display:grid;gap:5px}
 .treeProfessor{background:var(--ad-raised,#f6f1ec);padding:9px;border-radius:12px;border:1px solid var(--ad-line,#ded5cb)}
 .treeProfessorHeader{display:flex;gap:6px;flex-direction:column;align-items:stretch}
-.treeProfessorHeader b{font-size:.83rem;color:var(--ad-ink,#111d31);display:block;overflow-wrap:anywhere}
-.treeProfessorHeader small{font-size:.73rem;color:var(--ad-muted,#536176);display:block}
+.treeProfessorHeader b{font-size:var(--ad-font);color:var(--ad-ink,#111d31);display:block;overflow-wrap:anywhere}
+.treeProfessorHeader small{font-size:var(--ad-small);color:var(--ad-muted,#536176);display:block}
 .treeEditTeacher{align-self:flex-start;padding:4px 7px;border:1px solid var(--ad-line,#ded5cb);
- border-radius:7px;text-decoration:none;font-weight:700;font-size:.74rem;color:var(--ad-accent,#8a1f39)}
+ border-radius:7px;text-decoration:none;font-weight:700;font-size:var(--ad-small);color:var(--ad-accent,#8a1f39)}
 .treeUnassigned{padding:6px 1px}
-.treeUnassignedLabel{display:block;color:var(--ad-muted,#536176);font-size:.75rem;padding:4px 3px}
+.treeUnassignedLabel{display:block;color:var(--ad-muted,#536176);font-size:var(--ad-small);padding:4px 3px}
 .treeStudentGroup{display:grid;gap:6px;margin-top:6px}
-.treeStudentGroup .studentBtn{width:100%;min-width:0;grid-template-columns:minmax(0,1fr) auto}
-.treeEmpty{display:block;color:var(--ad-muted,#536176);font-size:.73rem;padding:7px}
+.treeStudentGroup .studentBtn{width:100%;min-width:0;grid-template-columns:minmax(0,1fr)}
+.treeEmpty{display:block;color:var(--ad-muted,#536176);font-size:var(--ad-small);padding:7px}
 .studentHierarchy .studentBtn{background:var(--ad-surface,#fff);color:var(--ad-ink,#111d31);border-color:var(--ad-line,#e3d9d3)}
 .studentHierarchy .studentBtn.active{border-color:var(--ad-accent,#8a1f39);background:var(--ad-raised,#faf0f2)}
 .studentHierarchy .studentBtn b{color:var(--ad-ink,#111d31)}
 .studentHierarchy .studentBtn small{color:var(--ad-muted,#536176)}
-@media(min-width:1101px){.dashboardGrid:has(.studentHierarchy){grid-template-columns:minmax(330px,365px) minmax(0,1fr)}}
-@media(max-width:1100px){.studentHierarchy{max-height:55vh}}
+@media(min-width:1101px){.dashboardGrid:has(.studentHierarchy){grid-template-columns:minmax(360px,410px) minmax(0,1fr)}}
+@media(max-width:1100px){.studentHierarchy{max-height:60vh;overflow:auto}}
 
 /* Country navigation: visually separate faculties, in both themes. */
 .studentTreeNode.level-faculty{border:1px solid var(--ad-line,#cec7c1);border-inline-start:5px solid var(--ad-accent,#8a1f39);background:var(--ad-surface,#fffdfa);margin-block:12px;box-shadow:0 3px 12px #18253b12}
 .studentTreeNode.level-faculty>summary{background:var(--ad-raised,#f1ece5);padding:12px 10px;font-weight:700;border-bottom:1px solid var(--ad-line,#cec7c1)}
 .studentTreeNode.level-faculty:nth-child(even){border-inline-start-color:#337d83}
-.studentTreeNode.level-faculty:nth-child(even)>summary{background:color-mix(in srgb,var(--ad-raised,#f1ece5) 80%,#9fd3d7 20%)}
+.studentTreeNode.level-faculty:nth-child(even)>summary{background:var(--ad-raised,#f1ece5)}
 .studentTreeNode.level-country>.studentTreeChildren{gap:8px}
 .studentTreeNode.level-country>.studentTreeChildren>.treeEmpty{padding:12px 8px}
 
 /* Country cards use distinct national accents; preserve readable dark surfaces. */
 .studentTreeNode.level-country{--country-accent:var(--ad-accent,#8a1f39);--country-tint:#f2e6ea;border:2px solid var(--country-accent);border-radius:16px;margin-block:13px;box-shadow:0 5px 16px #18253b12;background:var(--ad-surface,#fffdfa)}
-.studentTreeNode.level-country>summary{padding:12px 13px;background:color-mix(in srgb,var(--ad-raised,#f1ece5) 72%,var(--country-tint) 28%);font-weight:700}
+.studentTreeNode.level-country>summary{padding:12px 13px;background:var(--ad-raised,#f1ece5);font-weight:700}
 .studentTreeNode.level-country>.studentTreeChildren{padding:8px 10px 12px}
 .studentTreeNode.level-country.country-qa{--country-accent:#8a1538;--country-tint:#f4d9e3}
 .studentTreeNode.level-country.country-eg{--country-accent:#ce1126;--country-tint:#f9dce0}
@@ -123,16 +123,70 @@ html[data-learner-theme=dark] .panel .recordIncorrect :is(p,blockquote){color:#d
 .studentTreeNode.level-country.country-other{--country-accent:#54759a;--country-tint:#deebf7}
 .countryTitle{display:flex;align-items:center;gap:9px;font-weight:700}
 .countryFlag{font-size:1.24rem;line-height:1.25;flex-shrink:0;font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif}
-html[data-learner-theme=dark] .studentTreeNode.level-country{--country-accent:#dba0b3}
-html[data-learner-theme=dark] .studentTreeNode.level-country.country-eg{--country-accent:#ff9ea9}
-html[data-learner-theme=dark] .studentTreeNode.level-country.country-sa{--country-accent:#7ad7ab}
-html[data-learner-theme=dark] .studentTreeNode.level-country.country-ae{--country-accent:#95bced}
+html[data-learner-theme=dark] .studentTreeNode.level-country{--country-accent:#c38ba0}
+html[data-learner-theme=dark] .studentTreeNode.level-country.country-eg{--country-accent:#cc9095}
+html[data-learner-theme=dark] .studentTreeNode.level-country.country-sa{--country-accent:#81b39d}
+html[data-learner-theme=dark] .studentTreeNode.level-country.country-ae{--country-accent:#8caac7}
 html[data-learner-theme=dark] .studentTreeNode.level-country.country-other{--country-accent:#aac7ef}
 
 /* Only the direct summary changes when its own details is open. */
 .studentHierarchy details.level-year>summary{border:1px solid transparent;border-radius:9px;background:var(--ad-raised,#f1ece5);padding:10px 9px;min-height:39px;transition:background .15s ease}
 .studentHierarchy details.level-year[open]>summary{background:#dbe9ee;color:#20334a;border-color:#a9c6d4}
-html[data-learner-theme="dark"] .studentHierarchy details.level-year[open]>summary{background:#354a61;color:#f7f4ef;border-color:#779bb2}
+html[data-learner-theme="dark"] .studentHierarchy details.level-year[open]>summary{background:#344b60;color:#f9f4ef;border-color:#8fa9be}
 .studentTreeNode.level-year[open]>.studentTreeChildren{padding-block-start:9px}
 .lexlearnBrandHome{text-decoration:none;color:inherit;border-radius:10px}.lexlearnBrandHome:focus-visible{outline:3px solid var(--ad-accent,#8a1f39);outline-offset:3px}
 .countryFlagSvg{display:block;width:26px;height:19px;object-fit:cover;border-radius:2px;box-shadow:0 0 0 1px #ffffff55;flex:none}
+
+/* Brand-aligned reading sizes and surfaces, shared by the academic admin pages. */
+html[data-admin-font=large]{--ad-font:20px;--ad-small:18px;--ad-control:19px;--ad-heading:24px}
+html[data-learner-theme] :is(.nav button,.topLink,.btn,.adminActions button,.filterRow button){font-size:var(--ad-control);min-height:44px}
+html[data-learner-theme] :is(.overline,.demoTag,.accountState,.risk.big,.empty,.warn,.importResult,.cohortMeta span,.weekMini span,.weekMini b,.tr.head){font-size:var(--ad-small)}
+html[data-learner-theme] :is(.evidenceGrid b,.tr b,.auditRow b,.errorRow b,.studentBtn b){font-size:var(--ad-font)}
+html[data-learner-theme] :is(.errorRow span,.pageTitle p){font-size:var(--ad-small);color:var(--ad-muted)}
+html[data-learner-theme] :is(.formGrid input,.formGrid select,.modal textarea,.search){font-size:var(--ad-font);min-width:0}
+html[data-learner-theme] a{color:var(--ad-accent)}
+html[data-learner-theme] .nav button.active{background:#8a1f39;color:#f9f4ef;border:1px solid #bb7187}
+html[data-learner-theme] :is(.reportBtn,.btn.primary){color:#f9f4ef;border:1px solid #bb7187}
+html[data-learner-theme] .studentHero{gap:16px;flex-wrap:wrap}
+html[data-learner-theme] .studentHero h2{font-size:28px}
+html[data-learner-theme] .recommend{background:var(--ad-raised);border:1px solid var(--ad-line);border-inline-start:3px solid var(--ad-accent);padding:18px;color:var(--ad-ink)}
+html[data-learner-theme] .recommend :is(b,span,p,small){color:var(--ad-ink);font-size:var(--ad-small)}
+html[data-learner-theme] .recommend b{font-size:var(--ad-font)}
+html[data-learner-theme] .treeProfessor{background:transparent;padding:12px 8px;border-inline-start:3px solid var(--ad-line)}
+html[data-learner-theme] .treeEditTeacher{min-height:44px;display:flex;align-items:center}
+html[data-learner-theme] .treeProfessorHeader small{font-size:var(--ad-small)}
+html[data-learner-theme] .treeStudentGroup .risk{justify-self:start}
+html[data-learner-theme=dark] .studentHierarchy .studentBtn.active{background:#342e45;border-color:#b999a8;border-inline-start:3px solid #c38ba0}
+html[data-learner-theme] .studentSectionBanner{background:var(--ad-raised);color:var(--ad-ink);margin:0;padding:20px;list-style:none;border-radius:16px;cursor:pointer;gap:14px}
+.studentSectionBanner::-webkit-details-marker{display:none}
+.studentSectionBanner::after{content:'+';margin-inline-start:auto;font-size:26px;color:var(--ad-accent)}
+.studentRecordSection[open]>.studentSectionBanner::after{content:'−'}
+html[data-learner-theme] .studentSectionBanner span{background:var(--ad-surface);border:1px solid var(--ad-line);color:var(--ad-accent);font-size:var(--ad-font);flex:none}
+html[data-learner-theme] .studentSectionBanner b{font-size:var(--ad-heading)}
+html[data-learner-theme] .studentSectionBanner small{color:var(--ad-muted);font-size:var(--ad-small);line-height:1.8}
+.studentRecordSection{border:1px solid var(--ad-line);border-radius:17px;background:var(--ad-surface);margin:16px 0;overflow:clip}
+.studentRecordSection[open]>.studentSectionBanner{border-bottom:1px solid var(--ad-line);border-radius:16px 16px 0 0}
+html[data-learner-theme] .studentSectionContent>.panel{margin:0;border:0;box-shadow:none;border-radius:0}
+html[data-learner-theme] .studentSectionBanner:focus-visible{outline:3px solid var(--ad-accent);outline-offset:-4px}
+html[data-learner-theme] .topin{grid-template-columns:auto 1fr;gap:12px 20px}
+html[data-learner-theme] .nav{grid-column:1/-1;grid-row:2;justify-content:flex-start;flex-wrap:wrap;min-width:0;order:initial}
+html[data-learner-theme] .topActions{grid-column:1/-1;grid-row:3;justify-content:flex-start}
+html[data-learner-theme] .adminReadingControl{display:flex;align-items:center;gap:10px;grid-column:2;grid-row:1;justify-self:end;margin:0;padding:8px 10px;min-height:44px;font-size:var(--ad-small);color:var(--ad-ink);cursor:pointer;border:1px solid var(--ad-line);border-radius:12px;background:var(--ad-raised)}
+.adminReadingControl input{width:20px;height:20px;margin:0;accent-color:#8a1f39;flex:none}
+html[data-learner-theme] .mark{background:#f9f4ef!important;border-radius:12px!important;padding:5px!important}
+html[data-learner-theme] :is(.learnerLogoOrbit,.learnerLogoOrbit>img){background:none;box-shadow:none;filter:none}
+html[data-learner-theme] .learnerLogoOrbit:before,html[data-learner-theme] .learnerLogoOrbit:after{display:none}
+html[data-learner-theme] .dashboardGrid>*,html[data-learner-theme] :is(.metricGrid,.evidenceGrid,.formGrid)>*{min-width:0;overflow-wrap:anywhere}
+html[data-learner-theme] .adminAcademicPage :is(input,select,textarea,.secondary,.print){background:var(--ad-raised);border-color:var(--ad-line);color:var(--ad-ink);font-size:var(--ad-font)}
+html[data-learner-theme] .adminAcademicPage :is(label,.hint,small,.meta,.dataTable th){color:var(--ad-muted);font-size:var(--ad-small)}
+html[data-learner-theme] .adminAcademicPage :is(.summary,.course,.notice,.tag,.list button){background:var(--ad-raised);color:var(--ad-ink);border-color:var(--ad-line)}
+html[data-learner-theme] .adminAcademicPage :is(.course,.notice){border-inline-start:3px solid var(--ad-accent)}
+html[data-learner-theme] .adminAcademicPage .primary{background:#8a1f39;color:#f9f4ef;border:1px solid #bb7187}
+html[data-learner-theme] .adminAcademicPage :is(.eyebrow,.metric strong){color:var(--ad-accent)}
+html[data-learner-theme] .adminAcademicPage :is(.dataTable td,.dataTable th){border-color:var(--ad-line)}
+html[data-learner-theme] .adminAcademicPage .top{flex-wrap:wrap}
+html[data-learner-theme] .adminAcademicPage .brand img{background:#f9f4ef;border-radius:10px;padding:4px}
+html[data-learner-theme] .adminAcademicPage .adminReadingControl input{width:20px;height:20px}
+@media(max-width:1100px){html[data-learner-theme] .top{position:static}html[data-learner-theme] .dashboardGrid{grid-template-columns:1fr}.studentAside{position:static}}
+@media(max-width:720px){html[data-learner-theme] .nav{flex-wrap:nowrap;overflow-x:auto}html[data-learner-theme] .brand{gap:6px}html[data-learner-theme] .brand small{display:none}html[data-learner-theme] .topin{padding:10px;gap:10px}.studentSectionBanner small{display:none}html[data-learner-theme] .studentSectionBanner{padding:15px;gap:10px}html[data-learner-theme] .adminReadingControl{padding:8px;font-size:var(--ad-small)}html[data-learner-theme] .treeProfessor{padding:10px 6px}html[data-learner-theme] .studentAside{padding:14px}.studentTreeNode.level-country>.studentTreeChildren{padding:6px}.studentTreeNode .studentTreeChildren{padding-inline:4px}html[data-learner-theme] .metric{padding:12px}}
+@media print{.adminReadingControl{display:none!important}.studentRecordSection{border-color:#ccc}.studentSectionBanner{background:#eee!important;color:#111!important}}

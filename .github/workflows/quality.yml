@@ -94,6 +94,11 @@ jobs:
         run: node tests/production-boundaries.test.js
       - name: Build public artifact
         run: node scripts/build-public.js
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - name: Instructor email regression coverage
+        run: node tests/instructor-email.test.mjs
 
   lifecycle-postgres:
     name: Server diagnostic PostgreSQL + RLS tests
@@ -156,7 +161,13 @@ jobs:
           node tests/legal-case-guide-browser.cjs
           node tests/student-adaptive-browser.cjs
           node tests/conference-viewport-browser.cjs
-          node tests/supervisor-published-browser.cjs
+          LEX_VIDEO_DIR=supervisor-browser-evidence node tests/supervisor-published-browser.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: supervisor-browser-evidence
+          path: supervisor-browser-evidence/
+          if-no-files-found: ignore
 
   sql-lifecycle:
     runs-on: ubuntu-latest

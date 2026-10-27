@@ -22,13 +22,12 @@ Deno.serve(async(req:Request)=>{
    return json({ok:true,instructors:staff.data||[],assignments:scopes.data||[]});
   }
   if(action==="create"){
-   const name=clean(b.name),email=clean(b.email,254).toLowerCase(),
+   const name=clean(b.name),email=String(b.email??"").trim().toLowerCase(),
     academicTitle=clean(b.academic_title,90)||"دكتور",specialization=clean(b.specialization),
     whatsapp=clean(b.whatsapp,24)||null;
-   if(name.length<5||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||
-     /@(gmail|yahoo|hotmail|outlook|icloud)\./i.test(email)||
-     (whatsapp&&!/^\+[1-9][0-9]{7,14}$/.test(whatsapp)))
-    return json({error:"invalid_instructor_information"},400);
+   if(name.length<5)return json({error:"invalid_instructor_name"},400);
+   if(email.length>254||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))return json({error:"invalid_email"},400);
+   if(whatsapp&&!/^\+[1-9][0-9]{7,14}$/.test(whatsapp))return json({error:"invalid_whatsapp"},400);
    const scope={
     course_id:clean(b.course_id),subject_name:clean(b.subject_name),
     country_code:clean(b.country_code,8),university:clean(b.university),
@@ -41,7 +40,7 @@ Deno.serve(async(req:Request)=>{
    // Start with the safe default. The admin-only server then assigns instructor role.
    const created=await admin.auth.admin.createUser({email,password:temp,email_confirm:true,
     user_metadata:{display_name:name,must_change_password:true}});
-   if(created.error)return json({error:"account_creation_failed",detail:created.error.message},409);
+   if(created.error)return json({error:["email_exists","user_already_exists"].includes(created.error.code||"")?"email_already_registered":"account_creation_failed"},409);
    const uid=created.data.user.id;
    try{
     const a=await admin.from("profiles").update({display_name:name,role:"instructor",active:true,
@@ -59,15 +58,14 @@ Deno.serve(async(req:Request)=>{
   }
   if(action==="update"){
    const uid=clean(b.instructor_id,64),name=clean(b.name,160),
-    email=clean(b.email,254).toLowerCase(),title=clean(b.academic_title,90)||"دكتور",
+    email=String(b.email??"").trim().toLowerCase(),title=clean(b.academic_title,90)||"دكتور",
     specialization=clean(b.specialization,160)||null,
     officeHours=clean(b.office_hours,160)||null,bio=clean(b.bio,600)||null,
     whatsapp=clean(b.whatsapp,24)||null;
-   if(!/^[0-9a-f-]{36}$/i.test(uid)||name.length<3||
-     !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||
-     /@(gmail|yahoo|hotmail|outlook|icloud)\./i.test(email)||
-     (whatsapp&&!/^\+[1-9][0-9]{7,14}$/.test(whatsapp)))
-    return json({error:"invalid_instructor_information"},400);
+   if(!/^[0-9a-f-]{36}$/i.test(uid))return json({error:"invalid_instructor"},400);
+   if(name.length<3)return json({error:"invalid_instructor_name"},400);
+   if(email.length>254||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))return json({error:"invalid_email"},400);
+   if(whatsapp&&!/^\+[1-9][0-9]{7,14}$/.test(whatsapp))return json({error:"invalid_whatsapp"},400);
    const [registered,academic]=await Promise.all([
     admin.from("profiles").select("id,role,display_name,contact_email").eq("id",uid).single(),
     admin.from("instructor_profiles").select("instructor_id,official_email,academic_title,specialization,office_hours,bio,whatsapp_e164").eq("instructor_id",uid).single()
@@ -78,9 +76,10 @@ Deno.serve(async(req:Request)=>{
    const emailChanged=email!==old.official_email;
    if(emailChanged){
     const existing=await admin.from("instructor_profiles").select("instructor_id").eq("official_email",email).neq("instructor_id",uid).limit(1);
-    if(existing.error||existing.data?.length)return json({error:"official_email_already_registered"},409);
+    if(existing.error)return json({error:"email_lookup_failed"},500);
+    if(existing.data?.length)return json({error:"email_already_registered"},409);
     const changed=await admin.auth.admin.updateUserById(uid,{email,email_confirm:true});
-    if(changed.error)return json({error:"email_update_failed"},409);
+    if(changed.error)return json({error:["email_exists","user_already_exists"].includes(changed.error.code||"")?"email_already_registered":"email_update_failed"},409);
    }
    try{
     const a=await admin.from("profiles").update({display_name:name,contact_email:email}).eq("id",uid).eq("role","instructor").select("id").single();

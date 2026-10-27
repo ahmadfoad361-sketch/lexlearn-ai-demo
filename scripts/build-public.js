@@ -22,7 +22,7 @@ const assets=[
   "portal.css","register.css","auth-controls.js","student-register.js","student-login.js","student-login-en.js","admin-login-v2.js",
   "student.css","student.js","student-en.js",
   "english.css",
-  "academic-display.js","flags/qa.svg","flags/eg.svg","flags/sa.svg","flags/ae.svg","flags/LICENSE","admin.css","admin-experience.css","admin-entry.js","admin-cloud.js","instructor.css","instructor-login.js","instructor-dashboard.js","admin-instructors.js","admin-progress.js","lex-references.js","student-records.js","student-report.js","admin.js",
+  "academic-display.js","flags/qa.svg","flags/eg.svg","flags/sa.svg","flags/ae.svg","flags/LICENSE","admin.css","admin-experience.css","admin-appearance.js","admin-entry.js","admin-cloud.js","instructor.css","instructor-login.js","instructor-dashboard.js","admin-instructors.js","admin-progress.js","lex-references.js","student-records.js","student-report.js","admin.js",
   "lexlearn-config.js","cloud-data.js","lexlearn-grading-console.js","reset-password.js",
   "legal-pages.css"
 ];

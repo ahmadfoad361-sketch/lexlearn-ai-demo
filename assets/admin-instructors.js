@@ -3,6 +3,26 @@
 const APP=document.getElementById("adminInstructorApp"),C=LEX_CLOUD.db();
 const esc=v=>String(v??"").replace(/[&<>"']/g,k=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[k]));
 let state={teachers:[],assignments:[],courses:[],credential:null,editing:new URLSearchParams(location.search).get("edit")||""};
+async function readableError(error){
+ let code=error?.message||"";
+ try{if(error?.context?.json){const body=await error.context.json();code=body.error||code;}}catch(_){}
+ const messages={
+  invalid_email:"صيغة البريد غير صحيحة. مثال: professor@gmail.com. يُقبل البريد الشخصي والجامعي.",
+  invalid_instructor_name:"أدخل اسم الدكتور كاملًا (خمسة أحرف على الأقل عند إنشاء الحساب).",
+  invalid_whatsapp:"رقم واتساب غير صحيح. اكتبه بالصيغة الدولية، مثل +201000000000، أو اتركه فارغًا.",
+  email_already_registered:"هذا البريد مسجل لحساب آخر. افتح الحساب الموجود لتعديله أو استخدم بريدًا آخر.",
+  official_email_already_registered:"هذا البريد مسجل لحساب دكتور آخر. افتح حسابه من السجل أدناه.",
+  missing_course_scope:"أكمل المادة والدولة والجامعة والكلية والفرقة في التكليف الأكاديمي.",
+  invalid_scope:"راجع المادة والدولة والجامعة والكلية والفرقة في التكليف الأكاديمي.",
+  instructor_assignment_failed:"تعذر حفظ تكليف المادة، وأُلغي إنشاء الحساب. راجع المقرر وبيانات التكليف.",
+  account_creation_failed:"تعذر إنشاء الحساب في خدمة الدخول. حاول مرة أخرى؛ لا يشترط بريد جامعي.",
+  email_update_failed:"تعذر تغيير بريد تسجيل الدخول. لم يُحفظ البريد الجديد.",
+  instructor_update_not_confirmed:"لم يتأكد حفظ التعديلات. حدّث الصفحة لمراجعة البيانات قبل المحاولة مجددًا.",
+  UNAUTHORIZED:"انتهت جلسة الدخول. سجّل دخول المشرف مجددًا.",
+  FORBIDDEN:"هذه العملية متاحة للمشرف المفوض ومالك المنصة فقط."
+ };
+ return messages[code]||"تعذر إتمام العملية. تحقق من الاتصال وحاول مجددًا؛ لا يعني هذا بالضرورة وجود خطأ في البريد.";
+}
 function scopeFields(prefix,showTeacher=false){
  const options=state.courses.map(c=>'<option value="'+esc(c.id)+'">'+esc(c.title_ar||c.id)+' — '+esc(c.id)+'</option>').join("");
  return '<div class="grid">'+
@@ -18,11 +38,11 @@ function scopeFields(prefix,showTeacher=false){
 function form(){
  return '<section class="panel"><h1>تسجيل بيانات الأساتذة الجامعيين</h1><p>إضافة حساب أكاديمي من داخل لوحة المشرف فقط، وتحديد المقرر والفرقة والكلية والجامعة.</p>'+
  '<form id="createInstructor"><div class="grid"><label>اسم عضو هيئة التدريس<input name="name" required maxlength="160"></label>'+
- '<label>البريد الجامعي الرسمي<input name="email" type="email" required maxlength="254" placeholder="professor@university.edu"></label>'+
+ '<label>البريد الإلكتروني للدكتور<input name="email" type="email" required maxlength="254" placeholder="professor@gmail.com" autocomplete="email" dir="ltr"></label>'+
  '<label>اللقب العلمي<select name="academic_title"><option>دكتور</option><option>أستاذ مساعد</option><option>أستاذ مشارك</option><option>أستاذ</option></select></label>'+
  '<label>التخصص<input name="specialization" maxlength="160" placeholder="القانون المدني"></label>'+
  '<label>رقم واتساب دولي (اختياري)<input name="whatsapp" placeholder="+201000000000"></label></div>'+
- '<h3>التكليف الأكاديمي الأول</h3>'+scopeFields("new")+
+ '<p class="hint">يُقبل Gmail والبريد الشخصي أو الجامعي. يُستخدم هذا البريد لتسجيل دخول الدكتور.</p><h3>التكليف الأكاديمي الأول</h3>'+scopeFields("new")+
  '<button class="primary" type="submit">إنشاء حساب الدكتور وتكليفه بالمادة</button><p id="createStatus" role="status"></p></form></section>'+
  '<section class="panel"><h2>إسناد مادة أو فرقة إضافية لدكتور مسجل</h2><form id="assignInstructor">'+scopeFields("extra",true)+
  '<button type="submit" class="secondary">إضافة تكليف أكاديمي</button><p id="assignmentStatus" role="status"></p></form></section>';
@@ -33,10 +53,10 @@ function editTeacher(t){
   return '<label>'+label+'<input name="'+name+'" maxlength="'+max+'" type="'+(type||"text")+'" value="'+esc(val||"")+'" '+(name==="name"||name==="email"?'required':'')+'></label>';
  }
  return '<form class="facultyEditForm" data-update-teacher="'+esc(t.instructor_id)+'">'+
-  '<h3>تعديل بطاقة الدكتور</h3><p class="hint">تحديث البريد الرسمي يغيّر بريد تسجيل دخول الدكتور. الجامعة والفرقة والمادة تُدار من التكليفات أدناه.</p>'+
+  '<h3>تعديل بطاقة الدكتور</h3><p class="hint">تحديث البريد الإلكتروني يغيّر بريد تسجيل دخول الدكتور. الجامعة والفرقة والمادة تُدار من التكليفات أدناه.</p>'+
   '<div class="grid">'+
   field("اسم الدكتور","name",t.profiles?.display_name,160)+
-  field("البريد الجامعي الرسمي","email",t.official_email,254,"email")+
+  field("البريد الإلكتروني للدكتور","email",t.official_email,254,"email")+
   field("اللقب العلمي","academic_title",t.academic_title,90)+
   field("التخصص","specialization",t.specialization,160)+
   field("الواتساب الدولي (اختياري)","whatsapp",t.whatsapp_e164,24)+
@@ -60,16 +80,16 @@ function list(){
 }
 function page(){
  APP.innerHTML='<section class="panel"><span class="eyebrow">إدارة أكاديمية مستقلة عن الطلاب</span><h1>حسابات أساتذة الجامعات</h1><p>يتم إصدار اسم الدخول وكلمة مرور مؤقتة من المشرف. لا يظهر للدكتور شيء من وظائف إدارة الطالب أو أدوات مراجعة المحتوى.</p><a href="instructor-login.html" target="_blank" rel="noopener">معاينة صفحة «تسجيل دخول الدكتور»</a></section>'+
- (state.credential?'<section class="panel notice"><h2>بيانات الدخول الأولية — تظهر مرة واحدة</h2><p>البريد الرسمي: <b>'+esc(state.credential.email)+'</b></p><p>كلمة المرور المؤقتة: <b>'+esc(state.credential.temporary_password)+'</b></p><button id="copyTeacher" class="secondary">نسخ بيانات الدخول</button><p class="hint">سلّمها للدكتور بقناة آمنة واطلب منه تغيير كلمة المرور. لا نحتفظ بها داخل سجل الإدارة.</p></section>':'')+
+ (state.credential?'<section class="panel notice"><h2>بيانات الدخول الأولية — تظهر مرة واحدة</h2><p>البريد الإلكتروني: <b>'+esc(state.credential.email)+'</b></p><p>كلمة المرور المؤقتة: <b>'+esc(state.credential.temporary_password)+'</b></p><button id="copyTeacher" class="secondary">نسخ بيانات الدخول</button><p class="hint">سلّمها للدكتور بقناة آمنة واطلب منه تغيير كلمة المرور. لا نحتفظ بها داخل سجل الإدارة.</p></section>':'')+
  form()+list();
  if(state.editing){const current=document.querySelector('.facultyEditForm');if(current)current.scrollIntoView({block:"nearest"});}
  document.getElementById("createInstructor").onsubmit=async e=>{
   e.preventDefault();const b=Object.fromEntries(new FormData(e.currentTarget));
-  const status=document.getElementById("createStatus");status.textContent="جارٍ إنشاء حساب الدكتور…";
+  const status=document.getElementById("createStatus"),submit=e.currentTarget.querySelector('[type="submit"]');submit.disabled=true;status.textContent="جارٍ إنشاء حساب الدكتور…";
   try{const x=await C.functions.invoke("admin-manage-instructors",{body:{action:"create",...b}});
    if(x.error||!x.data?.ok)throw x.error||Error(x.data?.error);
    state.credential=x.data;await reload();
-  }catch(_){status.textContent="تعذر إنشاء الحساب. راجع البريد الرسمي وتطابق بيانات المقرر وتأكد من عدم وجود الحساب من قبل.";}
+  }catch(error){status.textContent=await readableError(error);}finally{submit.disabled=false;}
  };
  document.getElementById("assignInstructor").onsubmit=async e=>{
   e.preventDefault();const b=Object.fromEntries(new FormData(e.currentTarget)),status=document.getElementById("assignmentStatus");
@@ -77,7 +97,7 @@ function page(){
   try{const x=await C.functions.invoke("admin-manage-instructors",{body:{action:"assignment",...b}});
    if(x.error||!x.data?.ok)throw x.error||Error(x.data?.error);
    await reload();
-  }catch(_){status.textContent="تعذر حفظ التكليف. تحقق من صحة المادة والبيانات.";}
+  }catch(error){status.textContent=await readableError(error);}
  };
  document.querySelectorAll("[data-edit-teacher]").forEach(b=>b.onclick=()=>{
   state.editing=state.editing===b.dataset.editTeacher?"":b.dataset.editTeacher;
@@ -97,7 +117,7 @@ function page(){
    await reload();
    const updated=document.querySelector(".facultyEditForm .editTeacherStatus");
    if(updated)updated.textContent="تم تحديث بيانات الدكتور.";
-  }catch(_){submit.disabled=false;status.textContent="تعذر حفظ التعديلات؛ راجع البريد الرسمي والبيانات المدخلة.";}
+  }catch(error){submit.disabled=false;status.textContent=await readableError(error);}
  });
  document.querySelectorAll("[data-teacher]").forEach(b=>b.onclick=async()=>{
   if(!confirm("تأكيد تعديل حالة حساب الدكتور؟"))return;
