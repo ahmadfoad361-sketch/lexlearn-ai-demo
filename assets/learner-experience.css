@@ -236,3 +236,60 @@ html[data-learner-theme=dark] :is(.stageCard p,.stageCard small,.stageCard .next
 html[data-learner-theme=dark] :is(.demoIntro .demoEyebrow,.demoIntro .stageProgressText,.demoIntro .demoIntroLead,.demoStage .stageCard>p,.stageCard .demoEyebrow,.studentHeroSide h3,.studentHeroSide p){color:#f1f5fb!important}
 html[data-learner-theme=dark] :is(.demoStage .stageCard,.studentHeroSide){background:var(--lx-surface);border-color:var(--lx-border)}
 html[data-learner-theme=dark] :is(.demoStage .stageCard a,.demoStage .stageCard small){color:#f1f5fb}
+
+/* LexLearn learner visual system · 2026-10-28
+   Consistent brand, accessible type and quiet surfaces. Scores, stages and
+   educational logic are untouched. */
+html[data-learner-theme] {
+  --lx-bg:#F9F4EF;
+  --lx-surface:#fffdfb;
+  --lx-raised:#f2ebe5;
+  --lx-ink:#18243a;
+  --lx-muted:#526075;
+  --lx-border:#d1c6c0;
+  --lx-accent:#8A1F39;
+  --lx-focus:#8A1F39;
+}
+html[data-learner-theme=dark] {
+  --lx-bg:#111D31;
+  --lx-surface:#1b2a40;
+  --lx-raised:#283a54;
+  --lx-ink:#F9F4EF;
+  --lx-muted:#ccd6e5;
+  --lx-border:#70839d;
+  --lx-accent:#f0b6c7;
+  --lx-focus:#f0b6c7;
+}
+html[data-learner-theme] body {font-size:max(16px,1rem);line-height:1.8}
+html[data-learner-theme] :is(.diagHeader,.diagCard,.diagScoreCard,.resultCard,.stageCard,.progressReport,.caseAnswerStep,.taskCard,.reviewCard,.qualityExample,.formCard) {
+  border-radius:18px;
+  box-shadow:0 10px 28px #111d310b;
+}
+html[data-learner-theme=dark] :is(.diagHeader,.diagCard,.diagScoreCard,.resultCard,.stageCard,.progressReport,.caseAnswerStep,.taskCard,.reviewCard,.qualityExample,.formCard) {
+  box-shadow:0 10px 28px #0003;
+}
+html[data-learner-theme] :is(.stageCard,.resultCard,.progressReport,.diagCard,.caseAnswerStep,.taskCard,.reviewCard) {
+  min-width:0;
+  overflow-wrap:anywhere;
+}
+html[data-learner-theme] :is(.diagCard,.stageCard,.caseAnswerStep,.taskCard) :is(h2,h3) {line-height:1.5}
+html[data-learner-theme] :is(.diagCard,.caseFacts,.caseMainQuestion,.reviewCard) :is(p,label,legend) {
+  line-height:1.9;
+}
+html[data-learner-theme] :is(button,.btn,.actionCard,.caseNext,.caseBack,#serverNext,#beginLegalQuestions) {
+  min-height:44px;
+}
+html[data-learner-theme] :is(input:not([type=checkbox]):not([type=radio]),select,textarea) {font-size:max(16px,1em)}
+html[data-learner-theme] :is(progress,input[type=range]) {accent-color:#8A1F39}
+html[data-learner-theme=dark] :is(progress,input[type=range]) {accent-color:#f0b6c7}
+html[data-learner-theme] :is(.diagProgressTrack,.progressLine,.skillMeter) {border-radius:999px;overflow:hidden}
+html[data-learner-theme] :is(.diagCard,.stageCard,.resultCard,.caseAnswerStep) :is(a,button,input,textarea,select):focus-visible {
+  outline:3px solid var(--lx-focus);
+  outline-offset:3px;
+}
+@media(max-width:600px){
+  html[data-learner-theme] :is(.diagCard,.stageCard,.resultCard,.caseAnswerStep,.taskCard) {border-radius:15px}
+}
+@media print{
+  html[data-learner-theme] :is(.diagCard,.stageCard,.resultCard,.caseAnswerStep,.taskCard) {box-shadow:none}
+}
