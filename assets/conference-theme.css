@@ -152,7 +152,8 @@ html[data-theme=dark] #paths .paths .path:is(:hover,:focus-visible) {box-shadow:
 html[data-theme=dark] #paths .paths .path:is(:active,.is-selected) {box-shadow:inset 0 2px 7px #0004,0 4px 0 #0003,0 12px 22px #0007}
 @media(max-width:599px){
   #paths .paths{gap:20px;padding-bottom:17px}
-  #paths .paths .path{min-height:305px;transform:none}
+  #paths .paths .path{min-height:210px;transform:none}
+  #paths .path .pathNo{display:none}
   #paths .paths .path:hover{transform:none}
   #paths .paths .path:active{transform:translateY(2px)}
   #paths .path h2{font-size:23px}
@@ -167,3 +168,7 @@ html[data-theme=dark] #paths .paths .path:is(:active,.is-selected) {box-shadow:i
   #paths .paths .path:hover::before,#paths .paths .path:focus-visible::before{opacity:0}
 }
 @media print{#paths .paths .path{box-shadow:none!important;transform:none!important}}
+
+/* The conference uses the same approved Arabic typeface as the main site. */
+html[lang=ar] body{font-family:"IBM Plex Sans Arabic",Tahoma,Arial,sans-serif}
+html[lang=en] body{font-family:Inter,"Segoe UI",Arial,sans-serif}
