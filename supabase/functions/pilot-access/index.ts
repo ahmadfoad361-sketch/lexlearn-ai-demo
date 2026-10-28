@@ -1,10 +1,11 @@
-import {corsHeaders,json,requireUser} from "../_shared/auth.ts";
+import {corsHeaders,json,requireUser,requireTrainingAccess} from "../_shared/auth.ts";
 
 // Authenticated student-only access probe: never disclose tester IDs or unreleased content.
 Deno.serve(async(req)=>{
  if(req.method==="OPTIONS")return new Response("ok",{headers:corsHeaders});
  try{
   const {user,profile,admin}=await requireUser(req);
+  await requireTrainingAccess(admin,user.id,"qa-qu-lawc101-rights");
   if(profile.role!=="student")return json({error:"student_only"},403);
   const released=new Set((Deno.env.get("PILOT_RELEASE_TOPICS")||"").split(",").map(s=>s.trim()).filter(Boolean));
   const testers=new Set((Deno.env.get("PILOT_QA_STUDENT_IDS")||"").split(",").map(s=>s.trim()).filter(Boolean));

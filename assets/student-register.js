@@ -8,7 +8,11 @@ var ar=document.documentElement.lang==="ar",
  usernameLabel=document.getElementById("createdUsername"),
  studentNameLabel=document.getElementById("createdStudentName"),
  copyButton=document.getElementById("copyUsername"),
- startButton=document.getElementById("startTraining");
+ startButton=document.getElementById("startTraining"),initialCard=null;
+var invite=new URLSearchParams(location.hash.slice(1)).get("invite")||"";
+if(invite)history.replaceState(null,"",location.pathname+location.search);
+window.addEventListener("pagehide",function(){initialCard=null;});
+document.getElementById("downloadInitialCard").onclick=async function(){if(initialCard)try{await LEX_ACCESS_CARD.download(initialCard.profile,initialCard.password);}catch(_){show(say("تعذر تنزيل الصورة. حاول مجددًا.","Image download failed. Try again."),true);}};
 function say(a,b){return ar?a:b;}
 function show(message,error){status.textContent=message;status.className=error?"error":"ok";}
 function normalizePhone(value){
@@ -67,7 +71,7 @@ form.addEventListener("submit",async function(ev){
  try{
   var db=LEX_CLOUD.db();
   var response=await db.functions.invoke("student-register-whatsapp",{body:{
-   name:name,email:email||null,whatsapp_e164:whatsapp||null,
+   invitation_token:invite||undefined,name:name,email:email||null,whatsapp_e164:whatsapp||null,
    password:password,university:university,faculty:faculty,academic_section:academicSection||null,student_registration_number:studentNumber||null,institutional_group_email:groupEmail||null,year_label:year,
    country_code:country,accepted_privacy:true,accepted_external_ai:true,accepted_terms_version:"2026-10-23-v6",website:""
   }});
@@ -87,22 +91,10 @@ form.addEventListener("submit",async function(ev){
   form.hidden=true;
   if(typeof receipt.scrollIntoView==="function")receipt.scrollIntoView({block:"center",behavior:"smooth"});
   copyButton.textContent=say("نسخ اسم المستخدم","Copy username");
-  // Supabase Auth is based on the generated username, not unverified contact data.
-  try{
-   var signed=await LEX_CLOUD.signInStudent(username,password);
-   var profile=signed.profile;
-   localStorage.setItem("lexlearn_student_session",JSON.stringify({
-    studentId:profile.id,name:profile.display_name,username:profile.username,
-    country:profile.country_code||country,cloud:true,at:Date.now()
-   }));
-   if(country==="qa")localStorage.setItem("lexlearn_country_setup_v2_rights_"+profile.id,"true");
-   startButton.href=ar?"student.html":"student-en.html";
-   show(say("حسابك جاهز! احتفظ باسم المستخدم، ثم اضغط «ابدأ التدريب».","Your account is ready! Save your username and select Start training."),false);
-  }catch(_){
-   startButton.href=ar?"student-login.html":"student-login-en.html";
-   startButton.textContent=say("اذهب لصفحة الدخول","Go to sign-in");
-   show(say("تم إنشاء حسابك بنجاح. احفظ اسم المستخدم، ثم سجّل الدخول بنفس كلمة المرور.","Account created. Save your username and sign in using the same password."),false);
-  }
+  initialCard={profile:{name:name,username:username,university:university,faculty:faculty,lexlearn_number:response.data.lexlearn_number,number:response.data.lexlearn_number?'LL-'+String(response.data.lexlearn_number).padStart(6,'0'):username},password:password};
+  startButton.href=ar?"student-login.html":"student-login-en.html";
+  startButton.textContent=say("الدخول بعد التفعيل","Sign in after approval");
+  show(say("تم إنشاء حسابك — بانتظار تفعيل المشرف. نزّل بطاقتك؛ لن يبدأ التشخيص أو التدريب الكامل قبل اعتمادك.","Account created — awaiting supervisor approval. Download your card; diagnosis and full training unlock only after approval."),false);
   form.reset();
  }catch(e){
   show(e.message==="rate_limit"?

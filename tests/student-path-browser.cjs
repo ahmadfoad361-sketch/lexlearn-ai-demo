@@ -37,10 +37,9 @@ const CHROME=[process.env.CHROME_BIN,"/usr/bin/google-chrome","/usr/bin/google-c
     assert.match(await p.locator("body").innerText(),en?/Public demo.*student accounts/:/تجربة عرض.*حساب الطالب/);
     assert.equal(await p.locator("#lexBuild").count(),1,"all screens must contain exact build");
     await p.goto(BASE+level,{waitUntil:"domcontentloaded"});
-    await p.locator(".taskCard").first().waitFor({timeout:20000});
-    assert.match(await p.locator("body").innerText(),en?/First-session preview only/:/معاينة الجلسة الأولى فقط/);
-    assert.ok((await p.locator(".taskCard").first().innerText()).trim().length>25,"public first-level sample must render");
-    assert.equal(await p.locator("#programLogout").count(),0,"showcase must never inherit a signed-in student");
+    await p.waitForURL('**/'+showcase);
+    assert.equal(await p.locator('.taskCard').count(),0,'legacy level preview cannot expose further training');
+    assert.match(await p.locator('body').innerText(),en?/Four public tasks only/:/٤ مهام فقط/);
     assert.ok(!errors.some(x=>/ReferenceError|TypeError|SyntaxError|is not a function/.test(x)),errors.join("|"));
     results.push({language:en?"en":"ar",viewport:mobile?"mobile":"desktop",publicProgram:"login_required",showcase:"OK",levelOneDemo:"OK",jsErrors:errors.length});
     await ctx.close();

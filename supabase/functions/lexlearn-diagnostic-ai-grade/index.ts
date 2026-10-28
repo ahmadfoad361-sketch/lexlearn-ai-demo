@@ -1,3 +1,4 @@
+import {requireTrainingAccess} from "../_shared/auth.ts";
 // LexLearn official diagnostic: consented, authenticated, one-use preliminary AI recall assessment.
 // This is not the public showcase, and never certifies mastery or a university grade.
 import {createClient} from "npm:@supabase/supabase-js@2";
@@ -47,6 +48,7 @@ Deno.serve(async(req:Request)=>{
  if(identity.error||!user)return json({error:"unauthorized"},401);
  const db=admin();
  try{
+  await requireTrainingAccess(db,user.id,COURSE);
   const [{data:profile},{data:enrollment},{data:consent},{data:run}]=await Promise.all([
    db.from("profiles").select("role,active").eq("id",user.id).maybeSingle(),
    db.from("enrollments").select("status").eq("user_id",user.id).eq("course_id",COURSE).maybeSingle(),
@@ -98,6 +100,7 @@ Deno.serve(async(req:Request)=>{
    };
    const usedModels:string[]=[];
    async function requestGrade(body:any){
+     await requireTrainingAccess(db,user.id,COURSE);
     const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),45000);
     try{
      const send=(payload:any)=>fetch("https://api.openai.com/v1/responses",{method:"POST",headers:{Authorization:"Bearer "+Deno.env.get("OPENAI_GRADING_API_KEY"),"Content-Type":"application/json"},body:JSON.stringify(payload),signal:controller.signal});
@@ -138,7 +141,7 @@ Deno.serve(async(req:Request)=>{
   if(audited.error)return json({status:"review_required",score:null,reason:"audit_write_unconfirmed"},503);
   if(result.status!=="completed")return json({status:"review_required",score:null,reason:result.reason});
   return json({status:"completed",grade:result.grade,score_type:"provisional_recall_criterion_coverage_not_mastery"});
- }catch{return json({status:"review_required",score:null,reason:"grading_unavailable"},503)}
+ }catch(e){if(e instanceof Error&&e.message==="FORBIDDEN")return json({error:"student_approval_required"},403);return json({status:"review_required",score:null,reason:"grading_unavailable"},503)}
 });
 
 

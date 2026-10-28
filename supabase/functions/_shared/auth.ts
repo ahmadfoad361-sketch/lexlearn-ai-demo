@@ -7,7 +7,7 @@ export const corsHeaders={
 };
 
 export function json(body:unknown,status=200){
-  return new Response(JSON.stringify(body),{status,headers:{...corsHeaders,"Content-Type":"application/json; charset=utf-8"}});
+  return new Response(JSON.stringify(body),{status,headers:{...corsHeaders,"Content-Type":"application/json; charset=utf-8","Cache-Control":"no-store"}});
 }
 export function adminClient(){
   return createClient(Deno.env.get("SUPABASE_URL")!,Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,{auth:{persistSession:false}});
@@ -42,4 +42,10 @@ export async function requireContentReviewer(req:Request){
   const {data:profile,error:pe}=await admin.from("profiles").select("id,role,active,display_name").eq("id",user.id).single();
   if(pe||!profile||profile.active===false||!["owner","admin","content_reviewer"].includes(profile.role))throw new Error("FORBIDDEN");
   return {user,profile,admin};
+}
+
+// Recheck database approval on every paid training request, never JWT user metadata.
+export async function requireTrainingAccess(admin:any,userId:string,courseId:string){
+ const r=await admin.rpc("lex_student_access_for",{p_user:userId,p_course:courseId});
+ if(r.error||r.data!==true)throw new Error("FORBIDDEN");
 }

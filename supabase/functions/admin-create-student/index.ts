@@ -56,20 +56,23 @@ Deno.serve(async(req)=>{
     // The same reviewed Qatar pilot is used by self-registration, irrespective of residence.
     const courseId="qa-qu-lawc101-rights";
     try{
-      const upd=await admin.from("profiles").update({...pilotFields,active:true,account_status:"active",cohort_id:cohortId,university:body.university||null,year_label:body.year||body.year_label||"السنة الأولى",country_code:body.country_code||"qa"}).eq("id",uid).eq("role","student").select("id").single();
+      const upd=await admin.from("profiles").update({...pilotFields,active:false,account_status:"pending",cohort_id:cohortId,university:body.university||null,year_label:body.year||body.year_label||"السنة الأولى",country_code:body.country_code||"qa"}).eq("id",uid).eq("role","student").select("id").single();
       if(upd.error||!upd.data)throw Error("profile_save_failed");
-      const enrollment=await admin.from("enrollments").upsert({user_id:uid,course_id:courseId,status:"active"},{onConflict:"user_id,course_id"});
-      if(enrollment.error)throw enrollment.error;
       const consent=await admin.from("consent_records").insert([
         {user_id:uid,notice_version:"2026-10-06-v1",consent_type:"learning_data",accepted:true},
         {user_id:uid,notice_version:"lexlearn-ai-grading-v1",consent_type:"external_ai_grading",accepted:true}
       ]);
       if(consent.error)throw consent.error;
+      if(body.trial_id){
+        const linked=await admin.rpc("lex_admin_trials",{p_actor:user.id,p_action:"assign",p_data:{trial_id:body.trial_id,user_ids:[uid]}});
+        if(linked.error)throw linked.error;
+      }
       const audit=await admin.from("admin_audit").insert({actor_user_id:user.id,target_user_id:uid,action:"CREATE_STUDENT",details:{username,course_id:courseId,cohort_id:cohortId}});
       if(audit.error)throw audit.error;
     }catch(e){await admin.auth.admin.deleteUser(uid);throw e;}
     // Staff explicitly attests that the student accepted the complete registration terms.
-    return json({ok:true,user_id:uid,username,temporary_password:password,course_id:courseId});
+  const cardProfile=await admin.from("profiles").select("lexlearn_number").eq("id",uid).single();
+    return json({ok:true,lexlearn_number:cardProfile.data?.lexlearn_number,user_id:uid,username,temporary_password:password,course_id:courseId,account_status:"pending"});
   }catch(e){
     const m=e instanceof Error?e.message:String(e);
     return json({error:m},m==="UNAUTHORIZED"?401:m==="FORBIDDEN"?403:500);

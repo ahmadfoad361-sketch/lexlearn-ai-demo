@@ -1,9 +1,12 @@
 (function(){
 "use strict";
+var cardUsername=new URLSearchParams(location.hash.slice(1)).get("username");
+if(cardUsername){var field=document.getElementById("studentUser");if(field)field.value=cardUsername;history.replaceState(null,"",location.pathname+location.search);}
+
 var KEY="lexlearn_students_v2",SESSION="lexlearn_student_session";
 var params=new URLSearchParams(location.search),ENTRY_COUNTRY=(params.get("country")||"").toLowerCase();
 var err=document.getElementById("studentError");
-try{var lastUsername=localStorage.getItem("lexlearn_last_student_username");if(lastUsername)document.getElementById("studentUser").value=lastUsername;}catch(_){}
+try{var lastUsername=localStorage.getItem("lexlearn_last_student_username");if(lastUsername&&!cardUsername)document.getElementById("studentUser").value=lastUsername;}catch(_){}
 async function login(u,p){
   err.style.display="none";
   if(window.LEX_CLOUD&&LEX_CLOUD.isConfigured&&LEX_CLOUD.isConfigured()){
@@ -17,7 +20,7 @@ async function login(u,p){
       if(ENTRY_COUNTRY==="qa")localStorage.setItem("lexlearn_country_setup_v2_rights_"+pr.id,"true");
       location.href="student-en.html";return;
     }catch(e){
-      err.textContent=e&&e.message==="student_pending_approval"?"Registration received; your account is awaiting supervisor approval.":e&&e.message==="student_account_not_active"?"This account is paused or disabled; contact LexLearn support.":"Sign-in failed. Check your email or username and password.";
+      err.textContent=e&&/^student_access_/.test(e.message)?"Training is available after approval and during your trial dates. Contact your supervisor about account access.":e&&(/student_pending_approval|student_access_pending/.test(e.message))?"Registration received; your account is awaiting supervisor approval.":e&&e.message==="student_account_not_active"?"This account is paused or disabled; contact LexLearn support.":"Sign-in failed. Check your email or username and password.";
       err.style.display="block";return;
     }
   }

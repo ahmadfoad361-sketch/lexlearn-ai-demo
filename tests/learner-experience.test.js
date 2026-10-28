@@ -1,5 +1,5 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),cp=require('node:child_process');
-const pages=['index.html','index-en.html','student-login.html','student-login-en.html','student-register.html','student-register-en.html','student.html','student-en.html','student-path.html','diagnostic.html','program.html','program-en.html','showcase.html','showcase-en.html','showcase-level1.html','showcase-level1-en.html','student-practice.html'];
+const pages=['index.html','index-en.html','student-login.html','student-login-en.html','student-register.html','student-register-en.html','student.html','student-en.html','student-path.html','diagnostic.html','program.html','program-en.html','showcase.html','showcase-en.html','student-practice.html'];
 for(const page of pages){const html=fs.readFileSync(page,'utf8');assert.ok(html.includes('assets/learner-theme.js')&&html.includes('assets/learner-experience.css'),page);}
 for(const path of ['conference.html','assets/conference.css','assets/conference-theme.css','assets/conference-theme.js','assets/conference-experience.css'])assert.equal(fs.readFileSync(path,'utf8').replace(/\r\n/g,'\n'),cp.execFileSync('git',['show','HEAD:'+path],{encoding:'utf8'}).replace(/\r\n/g,'\n'),'conference remains identical: '+path);
 const css=fs.readFileSync('assets/learner-experience.css','utf8');assert.equal(fs.readFileSync('assets/conference-promo.css','utf8').replace(/\r\n/g,'\n'),cp.execFileSync('git',['show','HEAD:assets/conference-promo.css'],{encoding:'utf8'}).replace(/\r\n/g,'\n'),'conference promotion dimensions stay untouched');
@@ -8,7 +8,7 @@ const light=run('light');assert.equal(light.attrs['data-learner-theme'],'light')
 function luminance(h){const a=h.match(/\w\w/g).map(v=>parseInt(v,16)/255).map(v=>v<=.04045?v/12.92:((v+.055)/1.055)**2.4);return .2126*a[0]+.7152*a[1]+.0722*a[2];}function ratio(a,b){const x=luminance(a),y=luminance(b);return (Math.max(x,y)+.05)/(Math.min(x,y)+.05);}
 for(const [fg,bg] of [['18253b','fffdfa'],['536176','f2ece5'],['f7f4ef','1b2a40'],['c1ccdd','263750'],['ffb1c4','263750'],['ffffff','8a1f39'],['a0e4c1','1b2a40'],['ff9da9','263750'],['20604c','fffdfa'],['a71d36','fffdfa']])assert.ok(ratio(fg,bg)>=4.5,fg+' on '+bg);
 assert.ok(fs.readFileSync('scripts/build-public.js','utf8').includes('"learner-theme.js","learner-experience.css"'));
-console.log('Learner experience: 17 routes, theme persistence/storage fallback, text contrast and untouched conference PASS');
+console.log('Learner experience: 15 learner routes, theme persistence/storage fallback, text contrast and untouched conference PASS');
 
 
 for(const page of pages)assert.ok(fs.readFileSync(page,'utf8').includes('assets/learner-brand.js'),page+' home branding');

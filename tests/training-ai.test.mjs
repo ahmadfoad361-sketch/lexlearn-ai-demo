@@ -60,7 +60,7 @@ function environment({consent=true,providerFailure=false}={}){
   }return q;
  }};
  const context={Deno:{env:{get:()=>"fake-secret"},serve:f=>{handler=f;}},corsHeaders:{},json:(body,status=200)=>new Response(JSON.stringify(body),{status}),
-  requireUser:async()=>({user:{id:"student"},profile:{role:"student"},admin}),VERSION,SCHEMA,interpret,summarize,Response,AbortSignal,console,legalSources,
+  requireTrainingAccess:async()=>{},requireUser:async()=>({user:{id:"student"},profile:{role:"student"},admin}),VERSION,SCHEMA,interpret,summarize,Response,AbortSignal,console,legalSources,
   fetch:async(_url,request)=>{providerCalls++;localCalls++;const body=JSON.parse(request.body);assert.ok(body.input[1].content.includes("full_text_ar"));assert.ok(!body.input[1].content.includes("human_review_required_before_activation"),"activation metadata cannot override the released practice assessment");if(localCalls===2){assert.equal(body.model,"gpt-5.4");assert.equal(body.reasoning.effort,"medium");}return providerFailure||(options.verifierFailure&&localCalls===2)||(options.modelDenied&&localCalls===2)?new Response("unavailable",{status:options.modelDenied?403:503}):new Response(JSON.stringify({status:"completed",output_text:JSON.stringify(localCalls===2&&options.verifierResult?options.verifierResult:valid)}));}};
  vm.runInNewContext(source,context);
  return {call:()=>handler(new Request("https://test.invalid",{method:"POST",body:JSON.stringify({session:1,item_id:"rights-v1-s1-recall",answer:"caller cannot override saved answer"})})),grade:()=>evaluation,audits:()=>auditCount};

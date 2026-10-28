@@ -1,4 +1,4 @@
-import {corsHeaders,json,requireUser} from "../_shared/auth.ts";
+import {corsHeaders,json,requireUser,requireTrainingAccess} from "../_shared/auth.ts";
 
 const COURSE="qa-qu-lawc101-rights";
 const VERSION="20261009.3";
@@ -50,7 +50,9 @@ function publicGrade(g:any){return {status:g.status,score:g.score,passed:g.passe
 Deno.serve(async(req)=>{
  if(req.method==="OPTIONS")return new Response("ok",{headers:corsHeaders});
  try{
-  const {user,profile,admin}=await requireUser(req),b=await req.json();
+  const {user,profile,admin}=await requireUser(req);
+  await requireTrainingAccess(admin,user.id,COURSE);
+  const b=await req.json();
   const preview=b.preview===true,attemptId=String(b.attempt_id||"");
   if(preview&&!(["owner","admin","instructor"].includes(profile.role)))return json({error:"staff_only"},403);
   if(!preview&&!/^[0-9a-f-]{36}$/i.test(attemptId))return json({error:"invalid_attempt"},400);

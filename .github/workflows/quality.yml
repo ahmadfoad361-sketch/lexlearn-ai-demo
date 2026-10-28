@@ -61,6 +61,9 @@ jobs:
           deno check supabase/functions/site-activity/index.ts
           deno check supabase/functions/admin-site-stats/index.ts
           deno check supabase/functions/admin-manage-student/index.ts
+          deno check supabase/functions/admin-university-trials/index.ts
+          deno check supabase/functions/admin-create-student/index.ts
+          deno check supabase/functions/lexlearn-training-ai-grade/index.ts
       - name: Adaptive engine tests
         run: |
           node tests/adaptive-engine.test.js
@@ -104,6 +107,7 @@ jobs:
         run: |
           node tests/instructor-email.test.mjs
           node tests/site-activity-edge.test.mjs
+          node tests/trial-access-edge.test.mjs
 
   lifecycle-postgres:
     name: Server diagnostic PostgreSQL + RLS tests
@@ -169,6 +173,7 @@ jobs:
           LEX_VIDEO_DIR=supervisor-browser-evidence node tests/supervisor-published-browser.cjs
           node tests/site-stats-browser.cjs
           node tests/brand-wordmark-browser.cjs
+          node tests/trial-access-browser.cjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -313,3 +318,6 @@ jobs:
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261028041128_supervisor_activity.sql
           psql -v ON_ERROR_STOP=1 -f tests/sql/academic-alias-acceptance.sql
           psql -v ON_ERROR_STOP=1 -f tests/sql/site-activity-acceptance.sql
+          psql -v ON_ERROR_STOP=1 -f tests/sql/trial-access-fixture.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261028175401_university_trial_access.sql
+          psql -v ON_ERROR_STOP=1 -f tests/sql/trial-access-acceptance.sql

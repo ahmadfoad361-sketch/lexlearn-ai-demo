@@ -60,21 +60,12 @@ Deno.serve(async(req)=>{
    const p=await admin.from("profiles").select("id,role,active,account_status,username").eq("id",uid).single();
    if(p.error||p.data?.role!=="student"||p.data?.active!==false||p.data?.account_status!=="pending"||
        p.data?.username!==username)throw new Error("profile_creation_inconsistent");
-   // All registrants enter the same clearly labeled Qatar-law internal pilot
-   // until separate country curricula are reviewed. Country is NEVER an auth role.
-   const enrolled=await admin.from("enrollments").upsert({
-    user_id:uid,course_id:"qa-qu-lawc101-rights",status:"active"
-   },{onConflict:"user_id,course_id"});
-   if(enrolled.error)throw enrolled.error;
    const extra=await admin.from("profiles").update({
     faculty,academic_section:academicSection||null,
     student_registration_number:studentNumber||null,
     institutional_group_email:groupEmail||null
    }).eq("id",uid).eq("role","student").select("id").single();
    if(extra.error||!extra.data)throw new Error("pilot_student_metadata_not_saved");
-   const activated=await admin.from("profiles").update({active:true,account_status:"active"})
-     .eq("id",uid).eq("role","student").eq("account_status","pending").select("id").single();
-   if(activated.error||!activated.data)throw new Error("student_activation_failed");
    // The registration form already required affirmative acceptance of privacy/terms.
    // Persist that learning-data choice at creation to avoid a second consent prompt
    // immediately after signing in. The same disclosed registration acceptance covers AI.
@@ -91,11 +82,19 @@ Deno.serve(async(req)=>{
     });
     if(aiConsent.error)throw new Error("registration_ai_consent_failed");
    }
+   if(body.invitation_token){
+    const token=String(body.invitation_token);
+    if(!/^[a-f0-9]{64}$/.test(token))throw Error("invitation_invalid");
+    const hash=Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256",new TextEncoder().encode(token)))).map(x=>x.toString(16).padStart(2,"0")).join("");
+    const claimed=await admin.rpc("lex_claim_trial_invitation",{p_hash:hash,p_user:uid});
+    if(claimed.error)throw Error("invitation_invalid");
+   }
   }catch(_){
    await admin.auth.admin.deleteUser(uid);
    return json({error:"registration_not_completed"},503);
   }
-  return json({ok:true,username,can_sign_in:true,confirmation_required:false});
+  const cardProfile=await admin.from("profiles").select("lexlearn_number").eq("id",uid).single();
+  return json({ok:true,lexlearn_number:cardProfile.data?.lexlearn_number,username,can_sign_in:false,confirmation_required:false,account_status:"pending"});
  }catch(_){return json({error:"registration_not_completed"},503);}
 });
 

@@ -44,27 +44,15 @@ async function check(lang){
   recall_score:null,choice_indicators:{understanding:25},details:{reason:"incomplete_proposition",criteria:[]},
   feedback:"Not assessed"};
  context.window.__test.show(prior,"الولادة حيا");
- assert(elements.get("previewDemo"),"before training, result offers guided practice");
- assert(!elements.get("firstStageFromResults"),"no stage-one completion link before finishing four activities");
- store.set("lexlearn-showcase-first-session-v1",JSON.stringify({completed:true,at:Date.now(),lang}));
- context.window.__test.show(prior,"الولادة حيا");
- assert(elements.get("firstStageFromResults"),"completing all four activities must reveal level-one CTA after returning");
- assert(app.innerHTML.includes((lang==="ar"?"program.html":"program-en.html")+"?demo=1&start=1&preview=stage1&country=qa&subject=rights"),
-  "first-level preview link must be correct after pressing back to results");
- assert(app.innerHTML.includes(lang==="ar"?"أنهيت الأربع مهام":"You completed the four"),
-  "results must explain why the next level is available");
- assert(elements.get("previewDemo"),"repeat practice still available");
- store.set("lexlearn-showcase-first-session-v1",JSON.stringify({completed:true,at:Date.now(),lang:lang==="ar"?"en":"ar"}));
- context.window.__test.show(prior,"الولادة حيا");
- assert(!elements.get("firstStageFromResults"),"other language tab completion must not impersonate same-language completion");
- store.delete("lexlearn-showcase-first-session-v1");
- context.window.__test.show(prior,"الولادة حيا");
+ assert(!elements.get("previewDemo"),"public results cannot open extra training");
+ assert(!elements.get("firstStageFromResults"),"no public full-course preview");
+ assert(app.innerHTML.includes('student-register'),"results explain the registration path");
  assert(elements.get("editFreeAnswer"),"revision CTA shown on results");
  elements.get("editFreeAnswer").onclick();
  const field=elements.get("revisedFreeAnswer");
  assert.equal(field.value,"الولادة حيا","old text retained for editing");
  elements.get("submitRevisedFree").onclick();
- const sameTextPending=JSON.parse(store.get("lexlearn-demo-v3-"+lang));
+ const sameTextPending=JSON.parse(store.get("lexlearn-demo-v4-"+lang));
  assert.equal(sameTextPending.receipt,null,"old saved result must not be reused when rechecking identical text");
  assert.notEqual(sameTextPending.requestId,"00000000-0000-4000-8000-000000000099");
  await new Promise(ok=>setTimeout(ok,1500));
@@ -77,7 +65,7 @@ async function check(lang){
  const improved="تبدأ الشخصية القانونية بالولادة حية، وتنتهي بالموت، ويثبت للحمل المستكن حق لا يحتاج إلى قبول بشرط أن يولد حيا.";
  newField.value=improved;
  elements.get("submitRevisedFree").onclick();
- const pending=JSON.parse(store.get("lexlearn-demo-v3-"+lang));
+ const pending=JSON.parse(store.get("lexlearn-demo-v4-"+lang));
  assert.equal(pending.receipt,null,"old receipt must not be reused with revised request id");
  assert.equal(pending.free,improved);
  assert.notEqual(pending.requestId,"00000000-0000-4000-8000-000000000099");

@@ -1,4 +1,4 @@
-import { corsHeaders,json,requireUser } from "../_shared/auth.ts";
+import { corsHeaders,json,requireUser,requireTrainingAccess } from "../_shared/auth.ts";
 
 function outputText(data:any){
   if(typeof data?.output_text==="string")return data.output_text;
@@ -33,6 +33,7 @@ Deno.serve(async(req)=>{
   const started=Date.now();
   try{
     const {user,profile,admin}=await requireUser(req);
+  await requireTrainingAccess(admin,user.id,"qa-qu-lawc101-rights");
     const b=await req.json();
     let itemId=String(b.item_id||"");const taskKey=String(b.task_key||"");const answer=String(b.answer||"").trim(),courseId=String(b.course_id||"");
     if((!itemId&&!taskKey)||!answer||!courseId)return json({error:"missing_fields"},400);

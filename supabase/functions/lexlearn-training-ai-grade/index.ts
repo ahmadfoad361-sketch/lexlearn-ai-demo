@@ -1,4 +1,4 @@
-import {corsHeaders,json,requireUser} from "../_shared/auth.ts";
+import {corsHeaders,json,requireUser,requireTrainingAccess} from "../_shared/auth.ts";
 import {VERSION,SCHEMA,interpret,summarize} from "./assessment.mjs";
 import {legalSources} from "../_shared/qatar-civil-provisions.mjs";
 const COURSE="qa-qu-lawc101-rights",MODEL="gpt-5.4",DRAFT_MODEL="gpt-5.4-mini";
@@ -14,6 +14,7 @@ Deno.serve(async(req:Request)=>{
  if(req.method!=="POST")return json({error:"method_not_allowed"},405);
  try{
   const {user,profile,admin}=await requireUser(req);
+  await requireTrainingAccess(admin,user.id,"qa-qu-lawc101-rights");
   if(profile.role!=="student")return json({error:"student_required"},403);
   const enrolled=await admin.from("enrollments").select("status").eq("user_id",user.id).eq("course_id",COURSE).maybeSingle();
   if(enrolled.error||enrolled.data?.status!=="active")return json({error:"student_not_enrolled"},403);
@@ -66,6 +67,7 @@ Deno.serve(async(req:Request)=>{
      text:{format:{type:"json_schema",name:"lexlearn_training_grade",strict:true,schema:SCHEMA}}
     };
     async function requestGrade(body:any){
+     await requireTrainingAccess(admin,user.id,COURSE);
      const remaining=135000-(Date.now()-start);if(remaining<1000)throw Error("provider_timeout");
      const response=await fetch("https://api.openai.com/v1/responses",{method:"POST",headers:{Authorization:"Bearer "+Deno.env.get("OPENAI_GRADING_API_KEY"),"Content-Type":"application/json"},signal:AbortSignal.timeout(Math.min(90000,remaining)),body:JSON.stringify(body)});
      if(!response.ok)throw Error("provider_http_"+response.status);

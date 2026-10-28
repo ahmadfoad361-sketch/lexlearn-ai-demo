@@ -28,8 +28,8 @@ return async req=>{
   if(authErr||!session.user)return json({error:"authentication_required"},401);
   let b;try{b=await req.json();}catch{return json({error:"invalid_demo_payload"},400);}
   const answer=typeof b.answer==='string'?b.answer.trim():"",lang=b.language;
-  const kinds=["recall","recall","understanding","understanding","understanding","understanding"];
-  if(!answer||answer.length>1800||b.topic!==1||!["ar","en"].includes(lang)||!Array.isArray(b.choices)||b.choices.length!==6||
+  const kinds=b.choices?.length===3?["recall","understanding","understanding"]:["recall","recall","understanding","understanding","understanding","understanding"];
+  if(!answer||answer.length>1800||b.topic!==1||!["ar","en"].includes(lang)||!Array.isArray(b.choices)||![3,6].includes(b.choices.length)||
    b.choices.some((x,i)=>!x||x.type!==kinds[i]||!Number.isInteger(x.selected)||x.selected<0||x.selected>2))return json({error:"invalid_demo_payload"},400);
   // Legacy cached clients get a deterministic content key; current clients send a UUID.
   const canonical=JSON.stringify({language:lang,topic:1,answer,choices:b.choices.map((x)=>({type:x.type,selected:x.selected}))});

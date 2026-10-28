@@ -41,42 +41,8 @@ Deno.serve(async(req)=>{
       const status=action==="toggle_active"?(b.active?"active":"disabled"):String(b.status||"");
       if(!["active","paused","disabled"].includes(status))return json({error:"invalid_account_status"},400);
       if(status==="active"){
-        if(student.account_status==="pending"){
-          const authUser=await admin.auth.admin.getUserById(target);
-          if(authUser.error||!authUser.data.user)return json({error:"student_auth_account_unavailable"},409);
-          const account=authUser.data.user;
-          // WhatsApp is the primary identity confirmation for every new account.
-          // The optional contact email never gates activation.
-          if(student.whatsapp_e164){
-            if(!student.whatsapp_verified_at){
-              if(b.whatsapp_verified_manually!==true)return json({error:"manual_whatsapp_verification_required"},409);
-              const updated=await admin.auth.admin.updateUserById(target,{
-                phone:student.whatsapp_e164,phone_confirm:true
-              });
-              if(updated.error)throw updated.error;
-              const verified=await admin.from("profiles").update({whatsapp_verified_at:new Date().toISOString()}).eq("id",target);
-              if(verified.error)throw verified.error;
-            }
-          }else if(account.email){
-            // Older accounts that did not record WhatsApp retain legacy email checks.
-            if(!account.email_confirmed_at)return json({error:"verify_student_email_first"},409);
-          }else return json({error:"student_contact_not_configured"},409);
-          // Assign the Qatar pilot without requiring an instructor or cohort.
-          if(account.email&&b.whatsapp_verified_manually===true&&student.whatsapp_e164){
-            const stamp=await admin.from("profiles").update({whatsapp_verified_at:new Date().toISOString()}).eq("id",target);
-            if(stamp.error)throw stamp.error;
-          }
-          if(student.country_code==="qa"){
-            const enroll=await admin.from("enrollments").upsert(
-              {user_id:target,course_id:"qa-qu-lawc101-rights",status:"active"},
-              {onConflict:"user_id,course_id"});
-            if(enroll.error)throw enroll.error;
-          }
-        }
-        const authChange=await admin.auth.admin.updateUserById(target,{ban_duration:"none"});
-        if(authChange.error)throw authChange.error;
-        const upd=await admin.from("profiles").update({active:true,account_status:"active"}).eq("id",target);
-        if(upd.error){await admin.auth.admin.updateUserById(target,{ban_duration:"876000h"});throw upd.error;}
+        // Approval is now transactional and capacity-checked in university trial management.
+        return json({error:"use_university_trials",url:"admin-trials.html"},409);
       }else{
         const authChange=await admin.auth.admin.updateUserById(target,{ban_duration:"876000h"});
         if(authChange.error)throw authChange.error;
