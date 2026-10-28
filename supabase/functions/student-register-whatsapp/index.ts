@@ -89,8 +89,9 @@ Deno.serve(async(req)=>{
     const claimed=await admin.rpc("lex_claim_trial_invitation",{p_hash:hash,p_user:uid});
     if(claimed.error)throw Error("invitation_invalid");
    }
-  }catch(_){
+  }catch(e){
    await admin.auth.admin.deleteUser(uid);
+   if(e instanceof Error&&e.message==="invitation_invalid")return json({error:"invitation_invalid"},409);
    return json({error:"registration_not_completed"},503);
   }
   const cardProfile=await admin.from("profiles").select("lexlearn_number").eq("id",uid).single();

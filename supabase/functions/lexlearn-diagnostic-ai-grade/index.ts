@@ -1,7 +1,7 @@
 import {requireTrainingAccess} from "../_shared/auth.ts";
 // LexLearn official diagnostic: consented, authenticated, one-use preliminary AI recall assessment.
 // This is not the public showcase, and never certifies mastery or a university grade.
-import {createClient} from "npm:@supabase/supabase-js@2";
+import {createClient} from "npm:@supabase/supabase-js@2.118.0";
 import {CRITERIA,RUBRIC_VERSION,interpret} from "./assessment.mjs";
 
 import {legalSources} from "../_shared/qatar-civil-provisions.mjs";
@@ -46,9 +46,9 @@ Deno.serve(async(req:Request)=>{
  const identity=await client.auth.getUser();
  const user=identity.data?.user;
  if(identity.error||!user)return json({error:"unauthorized"},401);
- const db=admin();
+ const db=admin(),verifiedUserId=user.id;
  try{
-  await requireTrainingAccess(db,user.id,COURSE);
+  await requireTrainingAccess(db,verifiedUserId,COURSE);
   const [{data:profile},{data:enrollment},{data:consent},{data:run}]=await Promise.all([
    db.from("profiles").select("role,active").eq("id",user.id).maybeSingle(),
    db.from("enrollments").select("status").eq("user_id",user.id).eq("course_id",COURSE).maybeSingle(),
@@ -100,7 +100,7 @@ Deno.serve(async(req:Request)=>{
    };
    const usedModels:string[]=[];
    async function requestGrade(body:any){
-     await requireTrainingAccess(db,user.id,COURSE);
+     await requireTrainingAccess(db,verifiedUserId,COURSE);
     const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),45000);
     try{
      const send=(payload:any)=>fetch("https://api.openai.com/v1/responses",{method:"POST",headers:{Authorization:"Bearer "+Deno.env.get("OPENAI_GRADING_API_KEY"),"Content-Type":"application/json"},body:JSON.stringify(payload),signal:controller.signal});

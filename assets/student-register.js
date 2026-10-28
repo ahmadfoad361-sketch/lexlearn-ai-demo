@@ -10,7 +10,7 @@ var ar=document.documentElement.lang==="ar",
  copyButton=document.getElementById("copyUsername"),
  startButton=document.getElementById("startTraining"),initialCard=null;
 var invite=new URLSearchParams(location.hash.slice(1)).get("invite")||"";
-if(invite)history.replaceState(null,"",location.pathname+location.search);
+if(invite)document.querySelectorAll('a[href^="student-register"]').forEach(function(a){a.href+='#invite='+encodeURIComponent(invite);});
 window.addEventListener("pagehide",function(){initialCard=null;});
 document.getElementById("downloadInitialCard").onclick=async function(){if(initialCard)try{await LEX_ACCESS_CARD.download(initialCard.profile,initialCard.password);}catch(_){show(say("تعذر تنزيل الصورة. حاول مجددًا.","Image download failed. Try again."),true);}};
 function say(a,b){return ar?a:b;}
@@ -80,6 +80,7 @@ form.addEventListener("submit",async function(ev){
    try{code=(await response.error.context.json()).error;}catch(_){}
   }
   if(response.error||!response.data||response.data.ok!==true||!response.data.username){
+   if(code==="invitation_invalid")throw new Error("invitation_invalid");
    if(code==="too_many_registrations")throw new Error("rate_limit");
    throw new Error("registration_failed");
   }
@@ -95,9 +96,10 @@ form.addEventListener("submit",async function(ev){
   startButton.href=ar?"student-login.html":"student-login-en.html";
   startButton.textContent=say("الدخول بعد التفعيل","Sign in after approval");
   show(say("تم إنشاء حسابك — بانتظار تفعيل المشرف. نزّل بطاقتك؛ لن يبدأ التشخيص أو التدريب الكامل قبل اعتمادك.","Account created — awaiting supervisor approval. Download your card; diagnosis and full training unlock only after approval."),false);
+  if(invite)history.replaceState(null,"",location.pathname+location.search);
   form.reset();
  }catch(e){
-  show(e.message==="rate_limit"?
+  show(e.message==="invitation_invalid"?say("الدعوة منتهية أو مستخدمة. اطلب رابطًا جديدًا من المشرف.","This invitation expired or was used. Ask your supervisor for a new link."):e.message==="rate_limit"?
    say("طلبات التسجيل من هذه الشبكة كثيرة الآن. حاول لاحقًا أو استخدم شبكة أخرى.","Too many registrations on this network. Try later or use another connection."):
    say("تعذر إنشاء الحساب الآن. حاول مجددًا أو اطلب مساعدة المشرف.","Unable to create an account right now. Please try again or ask a supervisor for help."),true);
  }finally{button.disabled=false;}
