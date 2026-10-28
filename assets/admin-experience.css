@@ -194,3 +194,57 @@ html[data-learner-theme] .adminAcademicPage .adminReadingControl input{width:20p
 /* Keep global back navigation clear of the larger admin header. */
 html[data-learner-theme] .ll-back:not(.ll-back-inline){top:auto;bottom:18px;background:var(--ad-surface);color:var(--ad-ink);border-color:var(--ad-line);font-size:var(--ad-control);min-height:46px}
 @media(max-width:720px){html[data-learner-theme] .topActions{display:flex;flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px;min-width:0}html[data-learner-theme] .topActions .topLink{white-space:nowrap;flex:none}html[data-learner-theme] .ll-back:not(.ll-back-inline){bottom:12px}}
+
+/* LexLearn supervisor visual system · 2026-10-28
+   Match approved brand, preserve readable 18px body and academic hierarchy. */
+html[data-learner-theme] {
+  --ad-bg:#F9F4EF;
+  --ad-surface:#fffdfb;
+  --ad-raised:#f2ebe5;
+  --ad-ink:#18243a;
+  --ad-muted:#536176;
+  --ad-line:#d0c6c2;
+  --ad-accent:#8A1F39;
+}
+html[data-learner-theme=dark] {
+  --ad-bg:#111D31;
+  --ad-surface:#1b2a40;
+  --ad-raised:#283a54;
+  --ad-ink:#F9F4EF;
+  --ad-muted:#d0d9e6;
+  --ad-line:#71829a;
+  --ad-accent:#f0b6c7;
+}
+html[data-learner-theme] :is(.panel,.studentTreeNode,.studentRecordSection,.kpis>div) {
+  border-radius:18px;
+  box-shadow:0 9px 28px #111d310b;
+}
+html[data-learner-theme=dark] :is(.panel,.studentTreeNode,.studentRecordSection,.kpis>div) {
+  box-shadow:0 9px 28px #0003;
+}
+html[data-learner-theme] :is(.studentTreeNode>summary,.studentSectionBanner,.treeProfessorHeader,.studentBtn) {
+  min-height:44px;
+}
+html[data-learner-theme] :is(.dataTable,.tr,.evidenceGrid,.formGrid) {
+  font-variant-numeric:tabular-nums;
+}
+html[data-learner-theme] :is(input:not([type=radio]):not([type=checkbox]),select,textarea) {
+  font-size:max(16px,1em);
+}
+html[data-learner-theme] :is(.adminAcademicPage,.studentHierarchy,.studentRecordSection) :is(a,button,input,select,textarea,summary):focus-visible {
+  outline:3px solid var(--ad-accent);
+  outline-offset:3px;
+}
+html[data-learner-theme=dark] .studentHierarchy details.level-year[open]>summary {
+  background:#344b60;
+  border-color:#9ab4ca;
+  color:#F9F4EF;
+}
+html[data-learner-theme] .studentTreeNode.level-faculty {border-inline-start:5px solid var(--ad-accent)}
+@media(max-width:720px){
+  html[data-learner-theme] :is(.panel,.studentTreeNode,.studentRecordSection) {border-radius:14px}
+  html[data-learner-theme] :is(.topActions,.nav) {scrollbar-width:thin}
+}
+@media print{
+  html[data-learner-theme] :is(.panel,.studentTreeNode,.studentRecordSection,.kpis>div){box-shadow:none}
+}
