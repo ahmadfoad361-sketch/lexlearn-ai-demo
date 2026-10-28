@@ -2,7 +2,7 @@
 begin;
 update public.profiles set university='Lusail University',faculty='law',year_label='السنة الأولى'
  where id='10000000-0000-4000-8000-000000000001';
-update public.instructor_assignments set university='جامعة لوسيل',faculty='كلية القانون',year_label='الفرقة الأولى'
+update public.instructor_assignments set university='جامعة لوسيل',faculty='كلية الحقوق',year_label='الفرقة الأولى'
  where instructor_id='30000000-0000-4000-8000-000000000001';
 select set_config('request.jwt.claim.sub','30000000-0000-4000-8000-000000000001',true);
 do $$

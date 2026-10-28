@@ -9,7 +9,7 @@ function universityKey(value){
 function university(value){return universityKey(value)==="lusail university"?"جامعة لوسيل":String(value==null?"":value).trim();}
 function facultyKey(value,institution){
  var key=text(value);
- return universityKey(institution)==="lusail university"&&["law","faculty of law","college of law","كلية القانون","القانون"].indexOf(key)>=0?"كلية القانون":key;
+ return universityKey(institution)==="lusail university"&&["law","faculty of law","college of law","كلية القانون","القانون","كلية الحقوق","الحقوق"].indexOf(key)>=0?"كلية القانون":key;
 }
 function faculty(value,institution){return facultyKey(value,institution)==="كلية القانون"?"كلية القانون":String(value==null?"":value).trim();}
 function year(value){

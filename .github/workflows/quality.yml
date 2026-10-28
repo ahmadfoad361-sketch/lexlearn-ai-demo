@@ -58,6 +58,8 @@ jobs:
           deno check supabase/functions/lexlearn-grading-smoke/index.ts
           deno check supabase/functions/student-register-whatsapp/index.ts
           deno check supabase/functions/admin-manage-instructors/index.ts
+          deno check supabase/functions/site-activity/index.ts
+          deno check supabase/functions/admin-site-stats/index.ts
           deno check supabase/functions/admin-manage-student/index.ts
       - name: Adaptive engine tests
         run: |
@@ -75,6 +77,7 @@ jobs:
           node tests/pilot-supervisor-audit.test.js
           node tests/instructor-platform.test.js
           node tests/supervisor-country-tree.test.js
+          node tests/site-analytics.test.js
           node tests/student-academic-profile-update.test.js
           node scripts/validate-pilot-grading.js
           node tests/program-flow.test.js
@@ -98,7 +101,9 @@ jobs:
         with:
           node-version: "24"
       - name: Instructor email regression coverage
-        run: node tests/instructor-email.test.mjs
+        run: |
+          node tests/instructor-email.test.mjs
+          node tests/site-activity-edge.test.mjs
 
   lifecycle-postgres:
     name: Server diagnostic PostgreSQL + RLS tests
@@ -162,6 +167,7 @@ jobs:
           node tests/student-adaptive-browser.cjs
           node tests/conference-viewport-browser.cjs
           LEX_VIDEO_DIR=supervisor-browser-evidence node tests/supervisor-published-browser.cjs
+          node tests/site-stats-browser.cjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -302,4 +308,7 @@ jobs:
           psql -v ON_ERROR_STOP=1 -f tests/sql/rls-helper-grant-acceptance.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261027040010_academic_display_aliases.sql
           psql -v ON_ERROR_STOP=1 -f tests/sql/instructor-scoped-acceptance.sql
+          psql -v ON_ERROR_STOP=1 -f tests/sql/site-activity-fixture.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261028041128_supervisor_activity.sql
           psql -v ON_ERROR_STOP=1 -f tests/sql/academic-alias-acceptance.sql
+          psql -v ON_ERROR_STOP=1 -f tests/sql/site-activity-acceptance.sql

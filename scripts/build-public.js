@@ -7,7 +7,7 @@ const pages=[
   "index.html","conference.html","go/index.html","showcase.html","showcase-level1.html","program.html","diagnostic.html","student-practice.html","student-path.html","student-profile.html",
   "index-en.html","showcase-en.html","showcase-level1-en.html","program-en.html",
   "student-login.html","student-register.html","student.html","student-login-en.html","student-register-en.html","student-en.html",
-  "admin-login.html","admin.html","admin-instructors.html","admin-progress.html","instructor-login.html","instructor.html","references.html","lexlearn-grading-console.html","demo-supervisor.html","pilot-review.html","pilot-qa.html",
+  "admin-login.html","admin.html","admin-instructors.html","admin-analytics.html","admin-progress.html","instructor-login.html","instructor.html","references.html","lexlearn-grading-console.html","demo-supervisor.html","pilot-review.html","pilot-qa.html",
   "privacy.html","privacy-en.html","terms.html","terms-en.html","reset-password.html",".nojekyll"
 ];
 const assets=[
@@ -22,7 +22,7 @@ const assets=[
   "portal.css","register.css","auth-controls.js","student-register.js","student-login.js","student-login-en.js","admin-login-v2.js",
   "student.css","student.js","student-en.js",
   "english.css",
-  "academic-display.js","flags/qa.svg","flags/eg.svg","flags/sa.svg","flags/ae.svg","flags/LICENSE","admin.css","admin-experience.css","admin-appearance.js","admin-entry.js","admin-cloud.js","instructor.css","instructor-login.js","instructor-dashboard.js","admin-instructors.js","admin-progress.js","lex-references.js","student-records.js","student-report.js","admin.js",
+  "site-analytics.js","admin-analytics.js","admin-analytics.css","academic-display.js","flags/qa.svg","flags/eg.svg","flags/sa.svg","flags/ae.svg","flags/LICENSE","admin.css","admin-experience.css","admin-appearance.js","admin-entry.js","admin-cloud.js","instructor.css","instructor-login.js","instructor-dashboard.js","admin-instructors.js","admin-progress.js","lex-references.js","student-records.js","student-report.js","admin.js",
   "lexlearn-config.js","cloud-data.js","lexlearn-grading-console.js","reset-password.js",
   "legal-pages.css"
 ];
@@ -72,6 +72,14 @@ for(const page of pages){
   fs.writeFileSync(full,html);
 }
 
+
+// First-party measurement on public and student pages only; staff work is excluded.
+const measuredPages=pages.filter(p=>p.endsWith('.html')&&!/^(admin|instructor|reset-password|references|lexlearn-grading|demo-supervisor|pilot-|go\/)/.test(p));
+for(const page of measuredPages){
+ const full=path.join(out,page);let html=fs.readFileSync(full,'utf8');
+ if(!html.includes('assets/lexlearn-config.js'))html=html.replace('</body>','<script src="assets/lexlearn-config.js"></script></body>');
+ html=html.replace('</body>','<script src="assets/site-analytics.js" defer></script></body>');fs.writeFileSync(full,html);
+}
 
 // Version all local JS/CSS references after every HTML transformation.
 const crypto=require("crypto");

@@ -17,7 +17,7 @@ async function run(body,options={}){
   update(value){mutation=true;writes.push({table,op:'update',value});return q;},
   insert(value){mutation=true;writes.push({table,op:'insert',value});return q;},
   limit:async()=>({data:[]}),
-  single:async()=>({data:mutation?{id:uid,instructor_id:uid}:table==='profiles'?{id:uid,role:'instructor',display_name:'Old',contact_email:'old@university.edu'}:{instructor_id:uid,official_email:'old@university.edu'}}),
+  single:async()=>({data:mutation?{id:uid,instructor_id:uid}:table==='courses'?{id:'law',status:options.draft?'draft':'approved',metadata:options.reference?{reference_track_only:true}:{}}:table==='profiles'?{id:uid,role:'instructor',display_name:'Old',contact_email:'old@university.edu'}:{instructor_id:uid,official_email:'old@university.edu'}}),
   then(resolve){resolve(options.assignmentFailure&&table==='instructor_assignments'?{error:Error('failed')}:{data:{}});}
  };return q;}};
  vm.runInNewContext(source,{Error,Deno:{serve:f=>handler=f},crypto:webcrypto,corsHeaders:{},json:(b,s=200)=>new Response(JSON.stringify(b),{status:s}),requireUser:async()=>{if(options.unauthorized)throw Error('UNAUTHORIZED');return{user:{id:'owner'},profile:{role:options.role||'owner'},admin};}});
@@ -46,3 +46,12 @@ assert.match(duplicateMessage,/مسجل لحساب آخر/);
 assert.match(await context.readableError({message:'invalid_whatsapp'}),/واتساب/);
 assert.doesNotMatch(await context.readableError({message:'network failed'}),/راجع البريد/);
 console.log('PASS instructor Gmail/personal/university email create + update, precise errors, duplicate protection, roles and rollback');
+
+for(const options of [{draft:true},{reference:true}]){const r=await run(input,options);assert.equal(r.body.error,'course_not_available');assert.equal(r.authCalls.length,0);}
+for(const action of ['assignment','update-assignment']){
+ for(const options of [{draft:true},{reference:true}])assert.equal((await run({...input,action},options)).body.error,'course_not_available');
+ for(const role of ['student','instructor'])assert.equal((await run({...input,action},{role})).status,403);
+}
+const updatedScope=await run({...input,action:'update-assignment',assignment_id:uid});
+assert.equal(updatedScope.status,200);assert.ok(updatedScope.writes.some(x=>x.table==='admin_audit'&&x.value.action==='UPDATE_INSTRUCTOR_ASSIGNMENT'));
+console.log('PASS draft/reference courses rejected before provisioning and assignment edits audited');

@@ -13,6 +13,9 @@ async function readableError(error){
   email_already_registered:"هذا البريد مسجل لحساب آخر. افتح الحساب الموجود لتعديله أو استخدم بريدًا آخر.",
   official_email_already_registered:"هذا البريد مسجل لحساب دكتور آخر. افتح حسابه من السجل أدناه.",
   missing_course_scope:"أكمل المادة والدولة والجامعة والكلية والفرقة في التكليف الأكاديمي.",
+  course_not_available:"اختر مقررًا منشورًا يتدرب عليه الطلاب؛ المقررات المرجعية غير متاحة للتكليف.",
+  assignment_not_found:"التكليف غير موجود. حدّث الصفحة.",
+  assignment_conflict:"يوجد تكليف مماثل للدكتور بالفعل. راجع التكليفات الحالية.",
   invalid_scope:"راجع المادة والدولة والجامعة والكلية والفرقة في التكليف الأكاديمي.",
   instructor_assignment_failed:"تعذر حفظ تكليف المادة، وأُلغي إنشاء الحساب. راجع المقرر وبيانات التكليف.",
   account_creation_failed:"تعذر إنشاء الحساب في خدمة الدخول. حاول مرة أخرى؛ لا يشترط بريد جامعي.",
@@ -24,7 +27,7 @@ async function readableError(error){
  return messages[code]||"تعذر إتمام العملية. تحقق من الاتصال وحاول مجددًا؛ لا يعني هذا بالضرورة وجود خطأ في البريد.";
 }
 function scopeFields(prefix,showTeacher=false){
- const options=state.courses.map(c=>'<option value="'+esc(c.id)+'">'+esc(c.title_ar||c.id)+' — '+esc(c.id)+'</option>').join("");
+ const options=state.courses.filter(c=>c.status==="approved"&&!c.metadata?.reference_track_only).map(c=>'<option value="'+esc(c.id)+'">'+esc(c.title_ar||c.id)+' — '+esc(c.id)+'</option>').join("");
  return '<div class="grid">'+
  (showTeacher?'<label>الدكتور<select name="instructor_id" required>'+state.teachers.map(x=>'<option value="'+x.instructor_id+'">'+esc(x.profiles?.display_name||x.official_email)+'</option>').join("")+'</select></label>':'')+
  '<label>المادة الموجودة في LexLearn<select name="course_id" required>'+options+'</select></label>'+
@@ -75,6 +78,8 @@ function list(){
  '<button data-teacher="'+t.instructor_id+'" data-active="'+(t.profiles?.active?"false":"true")+'" class="secondary">'+(t.profiles?.active?"تعطيل حساب الدكتور":"تفعيل الحساب")+'</button></div></div>'+
  editTeacher(t)+
   a.map(x=>'<div class="course"><b>'+esc(x.subject_name)+'</b><p>'+esc(window.LEX_ACADEMIC.university(x.university))+' — '+esc(x.faculty)+' — '+esc(window.LEX_ACADEMIC.year(x.year_label))+'</p>'+
+ '<p class="hint">المقرر: '+esc(state.courses.find(c=>c.id===x.course_id)?.title_ar||x.course_id)+'</p>'+
+ '<details class="assignmentEditor"><summary>تعديل التكليف والمقرر</summary><form data-edit-assignment="'+esc(x.id)+'" data-instructor="'+esc(t.instructor_id)+'">'+scopeFields('edit')+'<button type="submit" class="primary">حفظ التكليف</button><p role="status"></p></form></details>'+
  '<button type="button" class="secondary" data-assignment="'+x.id+'" data-owner="'+t.instructor_id+'" data-active="'+(!x.active)+'">'+(x.active?"إيقاف تكليف":"تفعيل تكليف")+'</button></div>').join("")+'</div>';
  }).join(""))+'</section>';
 }
@@ -99,6 +104,24 @@ function page(){
    await reload();
   }catch(error){status.textContent=await readableError(error);}
  };
+ document.querySelectorAll("[data-edit-assignment]").forEach(form=>{
+  const scope=state.assignments.find(x=>x.id===form.dataset.editAssignment);
+  for(const name of ["course_id","subject_name","country_code","university","faculty","year_label"]){
+   const el=form.elements.namedItem(name);let value=scope[name];
+   if(name==="year_label")value=["السنة الأولى","السنة الثانية","السنة الثالثة","السنة الرابعة"].find(x=>LEX_ACADEMIC.year(x)===LEX_ACADEMIC.year(value))||value;
+   if(el.tagName==="SELECT"&&![...el.options].some(x=>x.value===value)){
+    const option=new Option(name==="course_id"?"المقرر الحالي غير منشور — اختر مقررًا منشورًا":value,value,true,true);option.disabled=true;el.add(option);
+   }
+   el.value=value;
+  }
+  form.onsubmit=async e=>{
+   e.preventDefault();const status=form.querySelector('[role="status"]'),submit=form.querySelector('[type="submit"]');
+   submit.disabled=true;status.textContent="جارٍ حفظ التكليف…";
+   try{const reply=await C.functions.invoke("admin-manage-instructors",{body:{action:"update-assignment",assignment_id:form.dataset.editAssignment,instructor_id:form.dataset.instructor,...Object.fromEntries(new FormData(form))}});
+    if(reply.error||!reply.data?.ok)throw reply.error||Error(reply.data?.error);await reload();
+   }catch(error){status.textContent=await readableError(error);submit.disabled=false;}
+  };
+ });
  document.querySelectorAll("[data-edit-teacher]").forEach(b=>b.onclick=()=>{
   state.editing=state.editing===b.dataset.editTeacher?"":b.dataset.editTeacher;
   history.replaceState(null,"",state.editing?"?edit="+encodeURIComponent(state.editing):location.pathname);
@@ -135,7 +158,7 @@ async function reload(){
  if(!me||!["owner","admin"].includes(me.role)||me.active!==true)throw Error("FORBIDDEN");
  const [x,c]=await Promise.all([
   C.functions.invoke("admin-manage-instructors",{body:{action:"list"}}),
-  C.from("courses").select("id,title_ar,country_code,status").order("title_ar")
+  C.from("courses").select("id,title_ar,country_code,status,metadata").order("title_ar")
  ]);
  if(x.error||!x.data?.ok||c.error)throw Error("load_failed");
  state.teachers=x.data.instructors||[];state.assignments=x.data.assignments||[];state.courses=c.data||[];

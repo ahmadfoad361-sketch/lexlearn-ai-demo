@@ -11,11 +11,11 @@ const students=[
 ];
 const teachers=[{instructor_id:'p1',academic_title:'دكتور',profiles:{display_name:'أستاذ اختبار أول',active:true}},
  {instructor_id:'p2',academic_title:'دكتور',profiles:{display_name:'أستاذ اختبار ثان',active:true}}];
-const assignments=teachers.map((t,i)=>({instructor_id:t.instructor_id,course_id:'course'+i,subject_name:i?'القانون الدستوري':'القانون المدني',country_code:'qa',university:i?'لوسيل':'Lusail University',faculty:i?'law':'كلية القانون',year_label:i?'الفرقة الأولى':'السنة الأولى',active:true}));
+const assignments=teachers.map((t,i)=>({id:'assignment'+i,instructor_id:t.instructor_id,course_id:'course'+i,subject_name:i?'القانون الدستوري':'القانون المدني',country_code:'qa',university:i?'لوسيل':'Lusail University',faculty:i?'law':'كلية الحقوق',year_label:i?'الفرقة الأولى':'السنة الأولى',active:true}));
 const enrollments=[{user_id:'s1',course_id:'course0'},{user_id:'s1',course_id:'course1'},{user_id:'s2',course_id:'course0'}];
 function fakeCloud({students,teachers,assignments,enrollments,role='owner',active=true}){
  localStorage.setItem('lexlearn_admin_session',JSON.stringify({cloud:true}));
- const query=table=>{const q={select(){return q},eq(){return q},order(){return q},limit(){return q},then(resolve,reject){return Promise.resolve({data:table==='enrollments'?enrollments:table==='courses'?[{id:'course0',title_ar:'القانون المدني'}]:[]}).then(resolve,reject)}};return q;};
+ const query=table=>{const q={select(){return q},eq(){return q},order(){return q},limit(){return q},then(resolve,reject){return Promise.resolve({data:table==='enrollments'?enrollments:table==='courses'?[{id:'course0',title_ar:'القانون المدني',status:'approved',metadata:{}}]:[]}).then(resolve,reject)}};return q;};
  window.__instructorCreates=[];
  const db={from:query,auth:{getUser:async()=>({data:{user:{id:'fixture'}}})},functions:{invoke:async(name,options)=>{
   if(name==='admin-manage-instructors'&&options?.body?.action==='create'){

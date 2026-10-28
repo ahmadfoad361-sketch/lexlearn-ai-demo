@@ -75,7 +75,7 @@ const aliases=[
  student('l3','qa','لوسيل','كلية القانون','اولى','سلمى')
 ];
 ctx.state.q='';ctx.state.instructorAssignments=[
- {instructor_id:'prof-one',active:true,country_code:'qa',university:'Lusail University',faculty:'كلية القانون',year_label:'السنة الأولى',subject_name:'مدني',course_id:'civil'},
+ {instructor_id:'prof-one',active:true,country_code:'qa',university:'Lusail University',faculty:'كلية الحقوق',year_label:'السنة الأولى',subject_name:'مدني',course_id:'civil'},
  {instructor_id:'prof-one',active:true,country_code:'qa',university:'لوسيل',faculty:'كلية القانون',year_label:'الفرقة الأولى',subject_name:'دستوري',course_id:'constitutional'}
 ];
 ctx.state.enrollments=[{user_id:'l1',course_id:'civil'},{user_id:'l1',course_id:'constitutional'},{user_id:'l2',course_id:'civil'}];
@@ -87,6 +87,10 @@ assert.equal((merged.match(/class="treeCount">3</g)||[]).length,3,'unique countr
 assert.equal((merged.match(/class="treeProfessor"/g)||[]).length,2);
 assert.equal((merged.match(/data-student="l1"/g)||[]).length,2,'one student can appear beneath both subjects');
 assert.match(merged,/طلاب بدون تكليف مادة مطابق/);assert.match(merged,/data-student="l3"/);
+const assignedEmpty=func([]);
+assert.match(assignedEmpty,/treeProfessor/,'assigned professor remains visible without students');
+assert.match(assignedEmpty,/التكليف مسجل/);
+ctx.state.instructorAssignments=[];
 const empty=func([]);
 for(const code of ['qa','eg','sa','ae'])assert.ok(empty.includes('country-'+code)&&empty.includes('assets/flags/'+code+'.svg'));
 assert.equal((empty.match(/class="treeCount">0</g)||[]).length,4);
@@ -96,3 +100,6 @@ assert.deepEqual(academic.preserveStored({university:'جامعة لوسيل',yea
 console.log('PASS four empty countries, Lusail aliases, unique counts and unchanged stored academic keys');
 
 assert.equal(academic.preserveStored({faculty:''},{faculty:null}).faculty,'','incomplete profile remains editable');
+
+assert.equal(academic.facultyKey("كلية الحقوق","Lusail University"),academic.facultyKey("القانون","لوسيل"));
+assert.notEqual(academic.facultyKey("كلية الحقوق","Other"),academic.facultyKey("كلية القانون","Other"));

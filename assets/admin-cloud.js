@@ -107,9 +107,10 @@ function adminAdvice(v){
 }
 function shell(body){
  APP.innerHTML='<header class="top"><div class="topin"><a class="brand lexlearnBrandHome" href="index.html" title="الصفحة الرئيسية لـ LexLearn"><div class="mark"><img src="assets/lexlearn-logo.svg" alt="LexLearn"></div><div><b>LexLearn Admin</b><small>قاعدة بيانات مركزية</small></div></a>'+
- '<nav class="nav"><button data-tab="dashboard" class="'+(state.tab==="dashboard"?"active":"")+'">'+ico("chart")+'<span>الرئيسية</span></button><button data-tab="students" class="'+(state.tab==="students"?"active":"")+'">'+ico("users")+'<span>الطلاب</span></button><button data-tab="cohorts" class="'+(state.tab==="cohorts"?"active":"")+'">'+ico("group")+'<span>المجموعات</span></button><button data-tab="grading" class="'+(state.tab==="grading"?"active":"")+'">'+ico("audit")+'<span>تصحيح التدريب</span></button><button data-tab="content" class="'+(state.tab==="content"?"active":"")+'">'+ico("audit")+'<span>المحتوى</span></button><button data-tab="audit" class="'+(state.tab==="audit"?"active":"")+'">'+ico("audit")+'<span>السجل</span></button></nav>'+
- '<div class="topActions"><span class="topLink">● مركزي</span><a class="topLink" href="admin-instructors.html">الأساتذة الجامعيون</a><a class="topLink" href="admin-progress.html">تدرّج الحفظ والفهم</a><a class="topLink" href="references.html">تغذية الذكاء الاصطناعي</a><a class="topLink" href="pilot-review.html">مراجعة التدريب</a><a class="topLink" href="demo-supervisor.html">نتائج الديمو</a><a class="topLink" href="index.html">الموقع</a><button class="topLink" id="logout">خروج</button></div></div></header><main class="wrap">'+body+'</main>'+modal();
+ '<nav class="nav"><button id="openAnalytics">'+ico("chart")+'<span>الإحصاءات</span></button><button data-tab="dashboard" class="'+(state.tab==="dashboard"?"active":"")+'">'+ico("chart")+'<span>الرئيسية</span></button><button data-tab="students" class="'+(state.tab==="students"?"active":"")+'">'+ico("users")+'<span>الطلاب</span></button><button data-tab="cohorts" class="'+(state.tab==="cohorts"?"active":"")+'">'+ico("group")+'<span>المجموعات</span></button><button data-tab="grading" class="'+(state.tab==="grading"?"active":"")+'">'+ico("audit")+'<span>تصحيح التدريب</span></button><button data-tab="content" class="'+(state.tab==="content"?"active":"")+'">'+ico("audit")+'<span>المحتوى</span></button><button data-tab="audit" class="'+(state.tab==="audit"?"active":"")+'">'+ico("audit")+'<span>السجل</span></button></nav>'+
+ '<div class="topActions"><span class="topLink">● مركزي</span><a class="topLink" href="admin-analytics.html">إحصاءات الزيارات</a><a class="topLink" href="admin-instructors.html">الأساتذة الجامعيون</a><a class="topLink" href="admin-progress.html">تدرّج الحفظ والفهم</a><a class="topLink" href="references.html">تغذية الذكاء الاصطناعي</a><a class="topLink" href="pilot-review.html">مراجعة التدريب</a><a class="topLink" href="demo-supervisor.html">نتائج الديمو</a><a class="topLink" href="index.html">الموقع</a><button class="topLink" id="logout">خروج</button></div></div></header><main class="wrap">'+body+'</main>'+modal();
  document.querySelectorAll("[data-tab]").forEach(function(b){b.onclick=function(){state.tab=b.dataset.tab;render();};});
+ document.getElementById("openAnalytics").onclick=function(){location.href="admin-analytics.html";};
  var lo=document.getElementById("logout");if(lo)lo.onclick=async function(){await LEX_CLOUD.signOut();localStorage.removeItem(SKEY);location.replace("admin-login.html");};
  bind();
 }
@@ -131,15 +132,23 @@ function studentTree(list){
  );
  function known(s){return String(s||"").trim()||"غير محدد — استكمل البيانات";}
  var canonical=academic.text;
- var seenStudents=new Set();
- list.forEach(function(s){
-  if(seenStudents.has(s.id))return;seenStudents.add(s.id);
-  var c=String(s.country||"other").toLowerCase(),uni=known(s.university),faculty=academic.faculty(known(s.faculty),uni),year=displayYear(known(s.year));
+ function branch(country,university,facultyValue,yearValue){
+  var c=String(country||"other").toLowerCase(),uni=known(university),faculty=academic.faculty(known(facultyValue),uni),year=displayYear(known(yearValue));
   if(!countries.has(c))countries.set(c,new Map());
   var schools=countries.get(c),school=academic.universityKey(uni)+"|"+academic.facultyKey(faculty,uni);
   if(!schools.has(school))schools.set(school,{university:universityLabel(uni),faculty:faculty,years:new Map()});
   var y=schools.get(school).years;if(!y.has(year))y.set(year,[]);
-  y.get(year).push(s);
+  return y.get(year);
+ }
+ var seenStudents=new Set();
+ list.forEach(function(s){
+  if(seenStudents.has(s.id))return;seenStudents.add(s.id);
+  branch(s.country,s.university,s.faculty,s.year).push(s);
+ });
+ // A valid teaching assignment remains discoverable before the first enrollment.
+ if(!state.q.trim())state.instructorAssignments.forEach(function(a){
+  if(a.active!==false&&state.instructors.some(function(t){return t.instructor_id===a.instructor_id&&t.profiles&&t.profiles.active!==false;}))
+   branch(a.country_code,a.university,a.faculty,a.year_label);
  });
  var sort=function(a,b){return String(a).localeCompare(String(b),"ar");};
  function expanded(key,contains){
@@ -191,7 +200,7 @@ function studentTree(list){
       professorCards.push('<div class="treeProfessor"><div class="treeProfessorHeader"><div><b>'+esc(label)+'</b>'+
        '<small>'+esc(a.subject_name||"المادة المكلف بها")+' • '+subset.length+' طالب</small></div>'+
        '<a class="treeEditTeacher" href="admin-instructors.html?edit='+encodeURIComponent(a.instructor_id)+'">ملف الدكتور وتعديله</a></div>'+
-       '<div class="treeStudentGroup">'+(subset.length?subset.map(tile).join(""):'<small class="treeEmpty">لا يوجد طلاب مسجلون في هذه المادة بعد.</small>')+'</div></div>');
+       '<div class="treeStudentGroup">'+(subset.length?subset.map(tile).join(""):'<small class="treeEmpty">'+(students.length?'يوجد طلاب في الفرقة، لكن مقرر التكليف لا يطابق تسجيلهم. راجع المادة من ملف الدكتور.':'التكليف مسجل. لا يوجد طلاب في هذه المادة ضمن الكلية والفرقة بعد.')+'</small>')+'</div></div>');
     });
     var other=students.filter(function(st){return !covered.has(st.id);});
     if(other.length||!professorCards.length){

@@ -26,3 +26,8 @@ enabled = false
 enabled = false
 [analytics]
 enabled = false
+
+[functions.site-activity]
+verify_jwt = false
+[functions.admin-site-stats]
+verify_jwt = true
