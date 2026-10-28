@@ -9,7 +9,9 @@ const chrome=[process.env.CHROME_BIN,'/usr/bin/google-chrome','/usr/bin/google-c
   for(const page of ['index.html','index-en.html','conference.html','student-login.html','student-login-en.html','student-register.html','admin-login.html','admin-analytics.html','instructor-login.html']){
    await p.goto(BASE+page,{waitUntil:'networkidle'});
    const brand=p.locator('.v9-brand .lexWordmark,.en-brand .lexWordmark,.identity .lexWordmark,.brandTop .lexWordmark,.brand .lexWordmark').first();
-   await brand.waitFor();
+   console.log('WORDMARK_PAGE',page,width);
+   await brand.waitFor({state:'attached'});
+   if(!await brand.isVisible()){assert.equal(width,390);assert.match(page,/^(student-login(?:-en)?|admin-login)\.html$/,'only existing compact login panels hide their branding on phones');}
    for(let pass=0;pass<2;pass++){
     assert.equal(await brand.locator('.lexWordmarkLex').evaluate(el=>getComputedStyle(el).color),'rgb(20, 43, 95)',page);
     assert.equal(await brand.locator('.lexWordmarkLearn').evaluate(el=>getComputedStyle(el).color),'rgb(143, 29, 63)',page);
