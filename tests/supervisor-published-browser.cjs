@@ -55,6 +55,8 @@ async function installFixture(ctx,data){
    // Theme is a visual setting; fixture data never touches production services.
    if((await p.locator('html').getAttribute('data-learner-theme'))!==theme)await p.locator('#learnerThemeToggle').click();
    assert.ok(await p.locator('.topActions a[href="admin-instructors.html"]').isVisible(),'teacher administration stays available on phones');
+   assert.equal(await p.locator('.lexlearnBrandHome .lexWordmarkLex').evaluate(el=>getComputedStyle(el).color),'rgb(20, 43, 95)');
+   assert.equal(await p.locator('.lexlearnBrandHome .lexWordmarkLearn').evaluate(el=>getComputedStyle(el).color),'rgb(143, 29, 63)');
    assert.equal(await p.locator('.level-country').count(),4);
    for(const country of ['qa','eg','sa','ae']){
     const node=p.locator('.country-'+country);

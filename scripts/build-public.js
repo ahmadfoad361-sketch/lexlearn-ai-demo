@@ -13,7 +13,7 @@ const pages=[
 const assets=[
   "student-identity.js","student-identity.css","student-profile.js","student-card-pdf.js","qrcode-generator.js","qrcode-generator-LICENSE.txt",
   "session-moments.js","session-moments.css","grading-wait.js","grading-wait.css",
-  "learner-theme.js","learner-experience.css","staff-entry.css","learner-brand.js","legal-emphasis.js",
+  "brand-wordmark.js","brand-wordmark.css","learner-theme.js","learner-experience.css","staff-entry.css","learner-brand.js","legal-emphasis.js",
   "lexlearn-logo.svg","lexlearn-x-transparent.svg","lexlearn-og.jpg","lexlearn-public-pitch-en.pdf","lexlearn-go-qr.svg","conference.css","conference.js","conference-experience.css","conference-experience.js","conference-theme.css","conference-theme.js","conference-citations.js","conference-media/lexlearn-logo-hq.webp","conference-media/investor-men-v3.webp","conference-media/law-lecture-v3.webp","conference-media/student-law.webp","conference-media/logo-intro-navy.mp4","conference-pdf.js","lexlearn-navigation.css","lexlearn-navigation.js","lexlearn-learning-lines.js","lexlearn-investor-quotes.js","conference-promo.css","brand-intro.js","training-carousel.js",
   "v9-law.css","v9-law-content.js","v9-law.js",
   "adaptive-engine.js","learning-quality.js","pilot-learning.js","pilot-review.js","pilot-qa.js","quality.css",
@@ -79,6 +79,14 @@ for(const page of measuredPages){
  const full=path.join(out,page);let html=fs.readFileSync(full,'utf8');
  if(!html.includes('assets/lexlearn-config.js'))html=html.replace('</body>','<script src="assets/lexlearn-config.js"></script></body>');
  html=html.replace('</body>','<script src="assets/site-analytics.js" defer></script></body>');fs.writeFileSync(full,html);
+}
+
+// A shared brand wordmark also covers dashboards whose headers render after login.
+for(const page of pages){
+ if(!page.endsWith('.html')||page==='go/index.html')continue;
+ const full=path.join(out,page);let html=fs.readFileSync(full,'utf8');
+ html=html.replace('</head>','<link rel="stylesheet" href="assets/brand-wordmark.css"></head>');
+ html=html.replace('</body>','<script src="assets/brand-wordmark.js" defer></script></body>');fs.writeFileSync(full,html);
 }
 
 // Version all local JS/CSS references after every HTML transformation.

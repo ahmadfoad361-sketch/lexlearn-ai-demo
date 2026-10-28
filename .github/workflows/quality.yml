@@ -168,6 +168,7 @@ jobs:
           node tests/conference-viewport-browser.cjs
           LEX_VIDEO_DIR=supervisor-browser-evidence node tests/supervisor-published-browser.cjs
           node tests/site-stats-browser.cjs
+          node tests/brand-wordmark-browser.cjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
