@@ -81,7 +81,7 @@ async function listStudents(){
   var c=db();if(!c)return [];
   var r=await c.from("profiles").select("id,username,display_name,active,account_status,whatsapp_e164,whatsapp_verified_at,must_change_password,university,faculty,academic_section,student_registration_number,institutional_group_email,year_label,country_code,cohort_id,created_at,cohorts(name)").eq("role","student").order("created_at",{ascending:false});
   if(r.error)throw r.error;
-  return (r.data||[]).map(function(x){return{id:x.id,name:x.display_name,username:x.username,active:x.active,accountStatus:x.account_status||(x.active?"active":"disabled"),whatsapp:x.whatsapp_e164,whatsappVerified:!!x.whatsapp_verified_at,mustChangePassword:x.must_change_password,university:x.university,faculty:x.faculty,section:x.academic_section,studentRegistrationNumber:x.student_registration_number,groupEmail:x.institutional_group_email,year:x.year_label,country:x.country_code||"qa",cohort:x.cohorts&&x.cohorts.name||"",createdAt:x.created_at,cloud:true};});
+  return (r.data||[]).map(function(x){return{id:x.id,name:x.display_name,username:x.username,active:x.active,accountStatus:x.account_status||(x.active?"active":"disabled"),whatsapp:x.whatsapp_e164,whatsappVerified:!!x.whatsapp_verified_at,mustChangePassword:x.must_change_password,university:x.university,faculty:x.faculty,section:x.academic_section,studentRegistrationNumber:x.student_registration_number,groupEmail:x.institutional_group_email,year:x.year_label,country:x.country_code||"qa",cohortId:x.cohort_id||null,cohort:x.cohorts&&x.cohorts.name||"",createdAt:x.created_at,cloud:true};});
 }
 async function listCohorts(){
   var c=db();if(!c)return[];
