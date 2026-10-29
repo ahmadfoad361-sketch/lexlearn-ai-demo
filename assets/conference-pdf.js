@@ -48,7 +48,7 @@
     wrap(ctx, node.querySelector("p").textContent, x, Math.max(585, next + 55), W - 200, 59, 5);
     ctx.fillStyle = NAVY; ctx.fillRect(100, H - 108, W - 200, 2);
     ctx.font = "25px Tahoma, Arial, sans-serif"; ctx.fillStyle = "#59647B";
-    ctx.fillText(rtl ? "LexLearn | ملخص المؤتمر — قطر أولاً" : "LexLearn | Public conference overview — Qatar first", x, H - 57);
+    ctx.fillText(rtl ? "LexLearn | ملخص المؤتمر — تعاون جامعي" : "LexLearn | Public conference overview — University collaboration", x, H - 57);
     const raw = atob(c.toDataURL("image/jpeg", 0.87).split(",")[1]);
     const bytes = new Uint8Array(raw.length);
     for (let i = 0; i < raw.length; i++) bytes[i] = raw.charCodeAt(i);

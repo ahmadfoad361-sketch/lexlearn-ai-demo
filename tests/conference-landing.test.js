@@ -8,7 +8,7 @@ assert.ok(html.indexOf('class="paths"')<html.indexOf('id="problem"'),"visitor pa
 for(const id of ["studentCard","pilot","vision","how","demo","deck","contact","langEN","langAR","downloadDeck"])assert.ok(html.includes('id="'+id+'"'),"missing "+id);
 for(const skill of ["Recall","Understanding","Application","Legal precision","Exam answer structure"])assert.ok(js.includes(skill),"missing exact English skill "+skill);
 for(const skill of ["الحفظ","الفهم","التطبيق","الدقة القانونية","بناء الإجابة في الامتحان"])assert.ok(js.includes(skill),"missing exact Arabic skill "+skill);
-for(const phrase of ["Working beta","AI analysis of written answers: in progress","Learning impact not yet proven","30–60","6–8","Dr Ahmed Fouad El Feky","Founder & CEO","Qatari law faculties"])assert.ok(js.includes(phrase)||html.includes(phrase),"required public copy: "+phrase);
+for(const phrase of ["Working beta","AI analysis of written answers: in progress","Learning impact not yet proven","30–60","6–8","Dr Ahmed Fouad El Feky","Founder & CEO","law faculties"])assert.ok(js.includes(phrase)||html.includes(phrase),"required public copy: "+phrase);
 for(const forbidden of ["HBKU","exam performance","QAR","USD","$49","Google Ads","gtag(","fbq(","pixel"])assert.ok(!html.includes(forbidden)&&!js.includes(forbidden),"forbidden public item: "+forbidden);
 assert.ok(html.includes('<form id="leadForm"')&&html.includes('id="leadName"')&&html.includes('id="leadRole"')&&html.includes('id="leadContact"'),"conference contact form must contain opted-in contact fields");
 assert.ok(!/<script[^>]+src="https?:/i.test(html),"no third party scripts");

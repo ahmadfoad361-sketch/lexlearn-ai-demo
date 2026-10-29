@@ -31,23 +31,23 @@ async function readableError(error){
 function scopeFields(prefix,showTeacher=false){
  const options=state.courses.filter(c=>c.status==="approved"&&!c.metadata?.reference_track_only).map(c=>'<option value="'+esc(c.id)+'">'+esc(c.title_ar||c.id)+' — '+esc(c.id)+'</option>').join("");
  return '<div class="grid">'+
- (showTeacher?'<label>الدكتور<select name="instructor_id" required>'+state.teachers.map(x=>'<option value="'+x.instructor_id+'">'+esc(x.profiles?.display_name||x.official_email)+'</option>').join("")+'</select></label>':'')+
- '<label>المادة الموجودة في LexLearn<select name="course_id" required>'+options+'</select></label>'+
- '<label>عنوان المادة<input name="subject_name" required maxlength="160" placeholder="نظرية الحق"></label>'+
  '<label>الدولة<select name="country_code"><option value="qa">قطر</option><option value="eg">مصر</option><option value="sa">السعودية</option><option value="ae">الإمارات</option><option value="other">أخرى</option></select></label>'+
  '<label>الجامعة<input name="university" required maxlength="160" placeholder="اكتب اسم الجامعة بنفس صيغة تسجيل طلابها"></label>'+
  '<label>الكلية<input name="faculty" required maxlength="160" placeholder="كلية الحقوق"></label>'+
+ (showTeacher?'<label>الدكتور<select name="instructor_id" required>'+state.teachers.map(x=>'<option value="'+x.instructor_id+'">'+esc(x.profiles?.display_name||x.official_email)+'</option>').join("")+'</select></label>':'')+
+ '<label>المادة الموجودة في LexLearn<select name="course_id" required>'+options+'</select></label>'+
+ '<label>عنوان المادة<input name="subject_name" required maxlength="160" placeholder="نظرية الحق"></label>'+
  '<label>الفرقة<select name="year_label"><option value="السنة الأولى">الفرقة الأولى</option><option value="السنة الثانية">الفرقة الثانية</option><option value="السنة الثالثة">الفرقة الثالثة</option><option value="السنة الرابعة">الفرقة الرابعة</option></select></label></div>'+
  '<p class="hint">التطابق يتم وفق الدولة والجامعة والكلية والفرقة والمقرر، وليس مجرد نفس اسم الجامعة. لن تظهر للدكتور حسابات الطلاب خارج هذا النطاق.</p>';
 }
 function form(){
  return '<section class="panel"><h1>تسجيل بيانات الأساتذة الجامعيين</h1><p>إضافة حساب أكاديمي من داخل لوحة المشرف فقط، وتحديد المقرر والفرقة والكلية والجامعة.</p>'+
- '<form id="createInstructor"><div class="grid"><label>اسم عضو هيئة التدريس<input name="name" required maxlength="160"></label>'+
+ '<form id="createInstructor">'+scopeFields("new")+'<h3>بيانات الدكتور</h3><div class="grid"><label>اسم عضو هيئة التدريس<input name="name" required maxlength="160"></label>'+
  '<label>البريد الإلكتروني للدكتور<input name="email" type="email" required maxlength="254" placeholder="professor@gmail.com" autocomplete="email" dir="ltr"></label>'+
  '<label>اللقب العلمي<select name="academic_title"><option>دكتور</option><option>أستاذ مساعد</option><option>أستاذ مشارك</option><option>أستاذ</option></select></label>'+
  '<label>التخصص<input name="specialization" maxlength="160" placeholder="القانون المدني"></label>'+
  '<label>رقم واتساب دولي (اختياري)<input name="whatsapp" placeholder="+201000000000"></label></div>'+
- '<p class="hint">يُقبل Gmail والبريد الشخصي أو الجامعي. يُستخدم هذا البريد لتسجيل دخول الدكتور.</p><h3>التكليف الأكاديمي الأول</h3>'+scopeFields("new")+
+ '<p class="hint">يُقبل Gmail والبريد الشخصي أو الجامعي. يُستخدم هذا البريد لتسجيل دخول الدكتور.</p>'+
  '<button class="primary" type="submit">إنشاء حساب الدكتور وتكليفه بالمادة</button><p id="createStatus" role="status"></p></form></section>'+
  '<section class="panel"><h2>إسناد مادة أو فرقة إضافية لدكتور مسجل</h2><form id="assignInstructor">'+scopeFields("extra",true)+
  '<button type="submit" class="secondary">إضافة تكليف أكاديمي</button><p id="assignmentStatus" role="status"></p></form></section>';
@@ -109,6 +109,7 @@ function page(){
   useCohortDefaults(document.getElementById("assignInstructor"));
  }
  if(state.editing){const current=document.querySelector('.facultyEditForm');if(current)current.scrollIntoView({block:"nearest"});}
+ if(window.LEX_ACADEMIC_PICKER){LEX_ACADEMIC_PICKER.remember(state.assignments.concat(state.cohort?[state.cohort]:[]));LEX_ACADEMIC_PICKER.mountAll(APP);}
  document.getElementById("createInstructor").onsubmit=async e=>{
   e.preventDefault();const b=Object.fromEntries(new FormData(e.currentTarget));
   const status=document.getElementById("createStatus"),submit=e.currentTarget.querySelector('[type="submit"]');submit.disabled=true;status.textContent="جارٍ إنشاء حساب الدكتور…";

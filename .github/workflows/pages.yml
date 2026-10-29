@@ -73,6 +73,7 @@ jobs:
           node tests/showcase-semantic.test.mjs
       - name: Supervisor tree and academic identity checks
         run: |
+          node tests/academic-picker.test.js
           node tests/supervisor-password-resets.test.js
           node tests/admin-navigation-login-help.test.js
           node tests/instructor-password-session.test.js

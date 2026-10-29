@@ -11,6 +11,7 @@ const pages=[
   "privacy.html","privacy-en.html","terms.html","terms-en.html","reset-password.html",".nojekyll"
 ];
 const assets=[
+  "academic-picker.js","academic-picker.css",
   "student-identity.js","student-identity.css","student-profile.js","student-card-pdf.js","qrcode-generator.js","qrcode-generator-LICENSE.txt",
   "session-moments.js","session-moments.css","grading-wait.js","grading-wait.css",
   "brand-wordmark.js","brand-wordmark.css","learner-theme.js","learner-experience.css","staff-entry.css","learner-brand.js","legal-emphasis.js",
