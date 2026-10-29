@@ -63,7 +63,7 @@ function chrome(inner){
       (state.subjectId?'<button class="v9-topbtn" id="changeSubject">§ <span>'+esc(subject().title)+'</span></button>':'')+
       ''+
     '</div>'+
-    '<nav class="lexHomeLang" aria-label="اختر اللغة"><span class="lexHomeLangCurrent" lang="ar" aria-current="page" title="العربية">ع</span><a href="index-en.html" lang="en" hreflang="en" title="English" aria-label="Switch to English">E</a></nav></div><nav class="homeStaffEntry" aria-label="الإشراف"><a class="homeStaffLink" href="admin-login.html">دخول المشرف</a></nav></header>'+
+    '<nav class="lexHomeLang" aria-label="اختر اللغة"><span class="lexHomeLangCurrent" lang="ar" aria-current="page" title="العربية">ع</span><a href="index-en.html" lang="en" hreflang="en" title="English" aria-label="Switch to English">E</a></nav></div><nav class="homeStaffEntry" aria-label="الدخول الأكاديمي"><a class="homeStaffLink homeStaffLink--instructor" href="instructor-login.html">دخول أستاذ الجامعة</a><a class="homeStaffLink" href="admin-login.html">دخول المشرف</a></nav></header>'+
     '<main class="v9-app">'+
     ((state.countryId&&state.subjectId)?'<div class="stat-strip">'+labels.map(function(x){var v=metrics[x[0]];return '<div class="stat-pill"><b>'+x[1]+'</b><span>'+qualitativeIndicator(v)+'</span></div>';}).join("")+'</div>':'')+
     inner+'</main><footer class="footer">LexLearn • نفهم طريقة تفكيرك، ونبني طريقك.</footer></div>';
@@ -99,7 +99,7 @@ function renderSubjects(){
     '<div class="pilot-course-icon">'+icon("rights")+'</div>'+
     '<div class="pilot-course-copy"><span class="section-overline">LAWC 101 • THEORY OF RIGHT</span><h2>ابدأ من التقييم ثم يتحول البرنامج حسب طريقة تعلمك</h2><p>التقييم التشخيصي يحدد نقطة القوة والأولوية، ثم يفتح برنامج الأسابيع الستة. في المستويات الأصعب تدخل الأسئلة المقالية وتحليل أسلوب الإجابة.</p>'+
     '<div class="pilot-course-weeks"><span>1 الشخصية والموطن</span><span>2 القرابة والأهلية</span><span>3 الشخص المعنوي</span><span>4 الأموال</span><span>5 استعمال الحق</span><span>6 التكامل</span></div></div>'+
-    '<div class="pilot-course-actions"><a class="quick-live-btn primary-live" href="showcase.html?country=qa&subject=rights">جرّب الديمو</a><a class="quick-live-btn training-live" href="student-login.html?country=qa">دخول الطالب</a><a class="quick-live-btn admin-live" href="admin-login.html">دخول المشرف</a></div>'+
+    '<div class="pilot-course-actions"><a class="quick-live-btn primary-live" href="showcase.html?country=qa&subject=rights">جرّب الديمو</a><a class="quick-live-btn training-live" href="student-login.html?country=qa">دخول الطالب</a><a class="quick-live-btn admin-live" href="instructor-login.html">دخول أستاذ الجامعة</a><a class="quick-live-btn admin-live" href="admin-login.html">دخول المشرف</a></div>'+
   '</section>';
   chrome(html);
   document.getElementById("backCountry").onclick=function(){state.view="country";state.countryId=null;render();};
