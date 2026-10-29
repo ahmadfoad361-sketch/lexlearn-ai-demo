@@ -1,7 +1,7 @@
 /*
  * Conservative, language-aware free-answer screening for LexLearn.
  * Classification is an intake hint, NOT a legal score or a diagnosis of ability.
- * Only definite refusal or unmistakable noise is stopped automatically.
+ * Definite admission of not knowing gives a hint without a grade. Obvious noise earns task 0%.
  * Ambiguous/short meaningful legal answers still reach ordinary review.
  */
 export function classifyFreeAnswer(value) {
@@ -19,12 +19,12 @@ export function classifyFreeAnswer(value) {
  if(explicitAr.test(cleaned)||explicitEn.test(cleaned))
   return {kind:"explicit_unknown",reason:"student_declared_no_answer",grade:null,counts_as_evidence:false};
  if(!letters || /^(?:[\p{N}\s]+)$/u.test(cleaned))
-  return {kind:"obvious_noise",reason:"no_alphabetic_content",grade:null,counts_as_evidence:false};
+  return {kind:"obvious_noise",reason:"no_alphabetic_content",grade:0,counts_as_evidence:true};
  if(letters.length>=5 && new Set([...letters]).size<=1)
-  return {kind:"obvious_noise",reason:"repeated_character",grade:null,counts_as_evidence:false};
+  return {kind:"obvious_noise",reason:"repeated_character",grade:0,counts_as_evidence:true};
  if(/^(?:qwerty(?:uiop)?|asdf(?:ghjkl)?|zxcv(?:bnm)?)(?:\s*(?:qwerty(?:uiop)?|asdf(?:ghjkl)?|zxcv(?:bnm)?))*$/i.test(cleaned))
-  return {kind:"obvious_noise",reason:"keyboard_sequence",grade:null,counts_as_evidence:false};
+  return {kind:"obvious_noise",reason:"keyboard_sequence",grade:0,counts_as_evidence:true};
  if(words.length>=3 && new Set(words).size===1 && words[0].length<=5)
-  return {kind:"obvious_noise",reason:"repeated_token",grade:null,counts_as_evidence:false};
+  return {kind:"obvious_noise",reason:"repeated_token",grade:0,counts_as_evidence:true};
  return {kind:"assessable",reason:"not_confidently_nonanswer",grade:null,counts_as_evidence:null};
 }
