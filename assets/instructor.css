@@ -11,3 +11,14 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 @media(max-width:430px){.top{padding:12px;align-items:center}.top .brand{gap:8px}.top .brand img{width:40px}.top button{padding:9px 12px;max-width:34%}.top .brand strong{font-size:1rem}.layout{width:calc(100% - 20px)}.panel{padding:16px}.panel h1{font-size:1.65rem}}
 
 .passwordReveal{display:flex;align-items:center;gap:10px;font-size:.9rem}.passwordReveal input{width:20px;height:20px;flex:none}
+@media print{
+  .top,#instructorApp>.panel,#instructorApp>.studentSummary>aside,#groupResults,.studentSummary .print{display:none!important}
+  .studentSummary{display:block!important}
+  #individualResult{width:100%;display:block!important}
+  #professorSummaryPrintable{display:block!important;width:100%;margin:0;padding:0;border:0;box-shadow:none}
+  #professorSummaryPrintable .grid.three{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))}
+  #professorSummaryPrintable .tableScroll{overflow:visible}
+  #professorSummaryPrintable .dataTable{min-width:0;width:100%}
+  body{background:white;color:#111d31}
+}
+
