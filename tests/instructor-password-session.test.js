@@ -36,7 +36,7 @@ async function attempt(newPass,confirmation,returnValue){
   }
  };
  vm.runInNewContext(source,ctx,{filename:"instructor-dashboard.js"});
- await Promise.resolve();await Promise.resolve();
+ await new Promise(resolve=>setImmediate(resolve));
  assert.equal(typeof form.onsubmit,"function","Must show first-login password form");
  await form.onsubmit({preventDefault(){}});
  return {status:status.textContent,button,redirect,profileCalls,writeCalls,logoutCalls,reset:form.wasReset};
