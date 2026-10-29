@@ -152,7 +152,7 @@ function page(){
    const reply=await C.functions.invoke("admin-manage-instructors",{body:{action:"reset-password",instructor_id:teacher.instructor_id}});
    if(reply.error||!reply.data?.ok||!reply.data?.temporary_password)throw reply.error||Error(reply.data?.error||"instructor_password_reset_failed");
    state.credential=reply.data;page();
-   window.scrollTo({top:0,behavior:"instant"});
+   window.scrollTo(0,0);
   }catch(error){b.disabled=false;alert(await readableError(error));}
  });
  document.querySelectorAll("[data-teacher]").forEach(b=>b.onclick=async()=>{
