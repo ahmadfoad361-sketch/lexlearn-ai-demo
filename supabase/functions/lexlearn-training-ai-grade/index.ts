@@ -66,6 +66,7 @@ Deno.serve(async(req:Request)=>{
       return json({error:"reference_book_unapproved_or_wrong_jurisdiction"},422);
     bookReferences=found.data.map((page:any)=>{
       const book=books.data.find((x:any)=>x.id===page.book_id);
+      if(!book)throw Error("approved_book_reference_missing");
       return {id:page.id,book:book.title,page:page.page_number,excerpt:page.excerpt.slice(0,3000)};
     });
   }
