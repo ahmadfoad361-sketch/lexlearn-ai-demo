@@ -6,7 +6,7 @@ Deno.serve(async(req:Request)=>{
  try{
   const {user,admin}=await requireStaff(req);
   const body=await req.json(),action=String(body.action||"list");
-  if(!["list","save","assign","approve","pause","invite"].includes(action))return json({error:"invalid_action"},400);
+  if(!["list","get","save","assign","approve","pause","invite","move","approve_individual","pause_individual"].includes(action))return json({error:"invalid_action"},400);
   const data={...(body.data||{})};let token="";
   if(action==="invite"){
    token=Array.from(crypto.getRandomValues(new Uint8Array(32))).map(x=>x.toString(16).padStart(2,"0")).join("");
@@ -16,7 +16,7 @@ Deno.serve(async(req:Request)=>{
   if(result.error)return json({error:result.error.message},409);
   // Older paused accounts may have an Auth ban. Unban only after the database approval succeeds.
   const failed:string[]=[];
-  if(action==="approve")for(const id of data.user_ids||[]){
+  if(action==="approve"||action==="approve_individual")for(const id of action==="approve"?(data.user_ids||[]):[data.user_id]){
    const r=await admin.auth.admin.updateUserById(id,{ban_duration:"none"});if(r.error)failed.push(id);
   }
   return json({ok:true,...result.data,...(token?{invitation_url:ORIGIN+"student-register.html#invite="+token}:{}),...(failed.length?{auth_unban_failed:failed}:{} )});

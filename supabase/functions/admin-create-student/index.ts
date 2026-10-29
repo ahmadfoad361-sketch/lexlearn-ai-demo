@@ -15,6 +15,12 @@ Deno.serve(async(req)=>{
     const {user,admin,profile}=await requireStaff(req);
     const body=await req.json();
     if(body.accepted_registration_terms!==true||body.accepted_terms_version!=="2026-10-23-v6")return json({error:"registration_terms_required"},400);
+    if(body.trial_id){
+      const group=await admin.rpc("lex_admin_trials",{p_actor:user.id,p_action:"get",p_data:{trial_id:body.trial_id}});
+      if(group.error||!group.data)return json({error:"trial_not_found"},409);
+      if(!group.data.active||Date.parse(group.data.ends_at)<=Date.now())return json({error:"trial_unavailable"},409);
+      Object.assign(body,{university:group.data.university,faculty:group.data.faculty,year:group.data.year_label,country_code:group.data.country_code});
+    }
     const username=String(body.username||"").trim().toLowerCase();
     const password=String(body.password||temporaryPassword());
     const displayName=String(body.name||body.display_name||"").trim();

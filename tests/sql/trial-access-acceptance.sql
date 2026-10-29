@@ -52,3 +52,36 @@ end $$;
 reset role;
 rollback;
 \echo 'Trial access: atomic capacity, pending, pause/resume, dates, legacy approvals, instructor scope, invitations, RPC and REST denial PASS'
+
+begin;
+do $$declare owner_id uuid='90000000-0000-4000-8000-000000000001';b uuid='10000000-0000-4000-8000-000000000002';c uuid='10000000-0000-4000-8000-000000000003';d uuid='10000000-0000-4000-8000-000000000004';a_group uuid;b_group uuid;settings jsonb;before_name text;records integer;begin
+ settings=jsonb_build_object('name','Group A','university','جامعة الاختبار','faculty','كلية القانون','subject','نظرية الحق','year_label','الفرقة الثانية','country_code','eg','course_id','qa-qu-lawc101-rights','capacity',1,'starts_at',now()-interval '1 day','ends_at',now()+interval '2 days');
+ a_group=(public.lex_admin_trials(owner_id,'save',settings)->>'trial_id')::uuid;
+ b_group=(public.lex_admin_trials(owner_id,'save',settings||'{"name":"Group B"}'::jsonb)->>'trial_id')::uuid;
+ select count(*) into records from public.student_training_answers;
+ perform public.lex_admin_trials(owner_id,'assign',jsonb_build_object('trial_id',a_group,'user_ids',jsonb_build_array(b)));
+ if not exists(select 1 from public.profiles where id=b and year_label='الفرقة الثانية' and university='جامعة الاختبار' and country_code='eg') then raise exception 'group defaults not applied';end if;
+ perform public.lex_admin_trials(owner_id,'approve',jsonb_build_object('trial_id',a_group,'user_ids',jsonb_build_array(b)));
+ perform public.lex_admin_trials(owner_id,'assign',jsonb_build_object('trial_id',b_group,'user_ids',jsonb_build_array(c)));
+ perform public.lex_admin_trials(owner_id,'approve',jsonb_build_object('trial_id',b_group,'user_ids',jsonb_build_array(c)));
+ select display_name into before_name from public.profiles where id=b;
+ begin perform public.lex_admin_trials(owner_id,'move',jsonb_build_object('user_id',b,'trial_id',b_group,'patch',jsonb_build_object('display_name','Must rollback')));raise exception 'full destination accepted';exception when raise_exception then if sqlerrm<>'trial_capacity_reached' then raise;end if;end;
+ if not exists(select 1 from private.student_admissions where user_id=b and trial_id=a_group) or (select display_name from public.profiles where id=b)<>before_name then raise exception 'failed move changed membership or name';end if;
+ perform public.lex_admin_trials(owner_id,'move',jsonb_build_object('user_id',b,'trial_id',null,'patch',jsonb_build_object('display_name','Edited student','role','owner','active',false)));
+ if not private.student_can_train(b,'qa-qu-lawc101-rights') or (select role from public.profiles where id=b)<>'student' then raise exception 'individual transfer changed approval/role';end if;
+ if exists(select 1 from private.student_admissions where user_id=b and trial_id is not null) then raise exception 'individual not detached';end if;
+ perform public.lex_admin_trials(owner_id,'move',jsonb_build_object('user_id',b,'trial_id',a_group));
+ if not private.student_can_train(b,'qa-qu-lawc101-rights') then raise exception 'individual to group lost approval';end if;
+ perform public.lex_admin_trials(owner_id,'pause',jsonb_build_object('trial_id',a_group,'user_ids',jsonb_build_array(b)));
+ perform public.lex_admin_trials(owner_id,'move',jsonb_build_object('user_id',b,'trial_id',null));
+ if private.student_can_train(b,'qa-qu-lawc101-rights') then raise exception 'paused transfer reactivated';end if;
+ perform public.lex_admin_trials(owner_id,'approve_individual',jsonb_build_object('user_id',b));
+ if not private.student_can_train(b,'qa-qu-lawc101-rights') then raise exception 'individual approval failed';end if;
+ perform public.lex_admin_trials(owner_id,'move',jsonb_build_object('user_id',d,'trial_id',a_group));
+ if private.student_can_train(d,'qa-qu-lawc101-rights') then raise exception 'pending transfer autoactivated';end if;
+ perform public.lex_admin_trials(owner_id,'move',jsonb_build_object('user_id',d,'trial_id',null));
+ if private.student_can_train(d,'qa-qu-lawc101-rights') then raise exception 'pending individual autoactivated';end if;
+ if (select count(*) from public.student_training_answers)<>records then raise exception 'transfers changed results';end if;
+end $$;
+rollback;
+\echo 'Group defaults, atomic edits and full-capacity rollback, individual/group transfers preserving approval, role, results PASS'

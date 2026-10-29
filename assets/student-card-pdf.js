@@ -14,5 +14,34 @@ async function create(p){
  c.fillStyle='#536078';c.font='24px Tahoma,Arial';c.fillText('بطاقة تعريف بمشروع ليكس ليرن',525,1415);var bytes=Uint8Array.from(atob(canvas.toDataURL('image/jpeg',.95).split(',')[1]),function(v){return v.charCodeAt(0);});return pdf(bytes,1050,1480);
 }
 async function download(p){var blob=await create(p),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='LexLearn-'+root.LEX_IDENTITY.number(p)+'.pdf';document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(url);},30000);}
-root.LEX_CARD_PDF={create:create,download:download,encode:pdf};
+// One A4 page per student. Login QR never contains a password.
+function encodePages(pages){
+ var encoder=new TextEncoder(),parts=[],offsets=[0],size=0;
+ function add(v){var bytes=typeof v==='string'?encoder.encode(v):v;parts.push(bytes);size+=bytes.length;}
+ function obj(id,body){offsets[id]=size;add(id+' 0 obj\n'+body+'\nendobj\n');}
+ add('%PDF-1.4\n');obj(1,'<< /Type /Catalog /Pages 2 0 R >>');obj(2,'<< /Type /Pages /Kids ['+pages.map((_,i)=>(3+i*3)+' 0 R').join(' ')+'] /Count '+pages.length+' >>');
+ pages.forEach(function(p,i){var id=3+i*3,stream='q\n595.2756 0 0 841.8898 0 0 cm\n/Card Do\nQ\n';obj(id,'<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.2756 841.8898] /Resources << /XObject << /Card '+(id+2)+' 0 R >> >> /Contents '+(id+1)+' 0 R >>');obj(id+1,'<< /Length '+encoder.encode(stream).length+' >>\nstream\n'+stream+'endstream');offsets[id+2]=size;add((id+2)+' 0 obj\n<< /Type /XObject /Subtype /Image /Width 1050 /Height 1480 /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length '+p.length+' >>\nstream\n');add(p);add('\nendstream\nendobj\n');});
+ var xref=size,count=3+pages.length*3;add('xref\n0 '+count+'\n0000000000 65535 f \n');for(var i=1;i<count;i++)add(String(offsets[i]).padStart(10,'0')+' 00000 n \n');add('trailer\n<< /Size '+count+' /Root 1 0 R >>\nstartxref\n'+xref+'\n%%EOF');return new Blob(parts,{type:'application/pdf'});
+}
+async function accessPage(p,group,password,index,total){
+ var canvas=document.createElement('canvas');canvas.width=1050;canvas.height=1480;var c=canvas.getContext('2d');
+ c.fillStyle='#fffaf2';c.fillRect(0,0,1050,1480);c.strokeStyle='#bda16a';c.lineWidth=5;c.strokeRect(20,20,1010,1440);c.fillStyle='#172b50';c.fillRect(22,22,1006,255);
+ var logo=await image('assets/lexlearn-x-transparent.svg');c.drawImage(logo,700,65,105,105);
+ c.fillStyle='#f9f4ef';c.fillRect(260,60,415,110);c.font='bold 62px Arial';c.textAlign='left';c.fillStyle='#142b5f';c.fillText('Lex',280,137);c.fillStyle='#8f1d3f';c.fillText('Learn',280+c.measureText('Lex').width,137);
+ c.textAlign='center';c.fillStyle='#f0d5a2';c.font='30px Tahoma,Arial';c.fillText('بطاقة طالب · STUDENT CARD',525,225);
+ c.fillStyle='#e8d6bd';c.beginPath();c.arc(525,327,93,0,Math.PI*2);c.fill();c.strokeStyle='#fff';c.lineWidth=9;c.stroke();c.fillStyle='#172641';c.font='bold 85px Tahoma,Arial';c.fillText((p.display_name||p.username||'L').slice(0,1),525,356);
+ function text(v,y,size,color){c.fillStyle=color||'#172641';c.font='bold '+size+'px Tahoma,Arial';while(c.measureText(String(v||'')).width>910&&size>17)c.font='bold '+(--size)+'px Tahoma,Arial';c.fillText(String(v||''),525,y);}
+ c.direction='rtl';text(p.display_name,480,49);c.direction='ltr';text(root.LEX_IDENTITY.number(p)||p.username,535,36,'#8a1f39');c.direction='rtl';text(p.university,590,33);text(p.faculty,638,30);text(String(p.year_label||'').replace(/^السنة /,'الفرقة ')+' · '+(group.subject||''),684,29);text(group.name,731,25,'#536078');
+ c.direction='rtl';text('اسم الدخول',785,23,'#8a1f39');c.direction='ltr';text(p.username,827,33);c.direction='rtl';text(password?'كلمة المرور الأولية':'كلمة المرور',877,23,'#8a1f39');c.direction=password?'ltr':'rtl';text(password||'لا تُعرض مجددًا — استخدم كلمة مرورك الحالية',919,password?29:23);
+ var qr=root.qrcode(0,'M');qr.addData(root.LEX_ACCESS_CARD.loginUrl(p.username));qr.make();var n=qr.getModuleCount(),unit=Math.floor(355/(n+8)),side=(n+8)*unit,x=Math.round((1050-side)/2),top=960;c.fillStyle='#fff';c.fillRect(x,top,side,side);c.fillStyle='#142b5f';for(var row=0;row<n;row++)for(var col=0;col<n;col++)if(qr.isDark(row,col))c.fillRect(x+(col+4)*unit,top+(row+4)*unit,unit,unit);
+ c.direction='rtl';text('امسح الرمز لفتح صفحة الدخول. يبدأ التدريب بعد الاعتماد.',1350,23,'#536078');text(password?'احفظ البطاقة بشكل خاص وغيّر كلمة المرور عند أول دخول.':'النقل بين المجموعات لا يغيّر حسابك أو نتائجك.',1390,22,'#8a1f39');text(index+' / '+total,1432,20,'#536078');
+ var bytes=Uint8Array.from(atob(canvas.toDataURL('image/jpeg',.92).split(',')[1]),v=>v.charCodeAt(0));canvas.width=0;return bytes;
+}
+async function createGroup(students,options){
+ if(!Array.isArray(students)||!students.length)throw Error('no_students');if(document.fonts)await document.fonts.ready;
+ var pages=[];for(var i=0;i<students.length;i++){pages.push(await accessPage(students[i],options,options.passwordFor?.(students[i])||'',i+1,students.length));options.onProgress?.(i+1,students.length);await new Promise(resolve=>setTimeout(resolve,0));}return encodePages(pages);
+}
+async function downloadGroup(students,options){var blob=await createGroup(students,options),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='LexLearn-'+String(options.name||'group').replace(/[\\/:*?"<>|]/g,'-')+'-'+students.length+'-cards.pdf';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);}
+
+root.LEX_CARD_PDF={create:create,download:download,encode:pdf,createGroup:createGroup,downloadGroup:downloadGroup};
 })(window);
