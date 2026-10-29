@@ -87,7 +87,7 @@ function list(){
 }
 function page(){
  APP.innerHTML='<section class="panel"><span class="eyebrow">إدارة أكاديمية مستقلة عن الطلاب</span><h1>حسابات أساتذة الجامعات</h1><p>يتم إصدار اسم الدخول وكلمة مرور مؤقتة من المشرف. لا يظهر للدكتور شيء من وظائف إدارة الطالب أو أدوات مراجعة المحتوى.</p><a href="instructor-login.html" target="_blank" rel="noopener">فتح بوابة دخول الدكتور وإرسال رابطها إليه</a></section>'+
- (state.credential?'<section class="panel notice"><h2>بيانات الدخول المؤقتة — تظهر مرة واحدة</h2><p>البريد الإلكتروني: <b>'+esc(state.credential.email)+'</b></p><p>كلمة المرور المؤقتة: <b>'+esc(state.credential.temporary_password)+'</b></p><button id="copyTeacher" class="secondary">نسخ بيانات الدخول</button><p class="hint">سلّمها للدكتور بقناة آمنة واطلب منه تغيير كلمة المرور. لا نحتفظ بها داخل سجل الإدارة.</p></section>':'')+
+ (state.credential?'<section class="panel notice"><h2>بيانات الدخول الأولية — تظهر مرة واحدة</h2><p>البريد الإلكتروني: <b>'+esc(state.credential.email)+'</b></p><p>كلمة المرور المؤقتة: <b>'+esc(state.credential.temporary_password)+'</b></p><button id="copyTeacher" class="secondary">نسخ بيانات الدخول</button><p class="hint">سلّمها للدكتور بقناة آمنة واطلب منه تغيير كلمة المرور. لا نحتفظ بها داخل سجل الإدارة.</p></section>':'')+
  form()+list();
  if(state.editing){const current=document.querySelector('.facultyEditForm');if(current)current.scrollIntoView({block:"nearest"});}
  document.getElementById("createInstructor").onsubmit=async e=>{
