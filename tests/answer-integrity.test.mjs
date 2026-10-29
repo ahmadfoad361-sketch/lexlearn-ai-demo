@@ -27,11 +27,16 @@ let passed=0;
 for(const [answer,expected] of cases){
  const r=classifyFreeAnswer(answer);
  assert.equal(r.kind,expected,JSON.stringify({answer,expected,actual:r.kind}));
- assert.equal(r.grade,null,"Intake classification must never invent a legal grade");
- if(r.kind!=="assessable")assert.equal(r.counts_as_evidence,false,"No demonstration of knowledge");
+ if(r.kind==="obvious_noise") {
+  assert.equal(r.grade,0,"Obvious meaningless input gets deterministic task zero");
+  assert.equal(r.counts_as_evidence,true,"Task is recorded as an unsuccessful attempt");
+ } else {
+  assert.equal(r.grade,null,"Unknown and assessable input should not receive a fabricated grade");
+  if(r.kind==="explicit_unknown"||r.kind==="empty")assert.equal(r.counts_as_evidence,false,"A hint/no-answer is not a grade");
+ }
  passed++;
 }
 for(const s of ["لا أعلم","لا أتذكر الإجابة","مش عارف خالص","qwertyuiop","سسسسسسسسس"]){
  assert.notEqual(classifyFreeAnswer(s).kind,"assessable","Clearly non-substantive answers must bypass paid legal AI grading");
 }
-console.log("PASS: "+passed+" Arabic/English free-answer boundary cases. Conservative non-answer detection; no provider costs or production writes.");
+console.log("PASS: "+passed+" Arabic/English answer cases. Obvious nonsense => task 0%; explicit unknown => hint/no grade; legal content => semantic review.");
