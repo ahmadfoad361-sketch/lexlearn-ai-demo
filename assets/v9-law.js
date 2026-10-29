@@ -63,7 +63,7 @@ function chrome(inner){
       (state.subjectId?'<button class="v9-topbtn" id="changeSubject">§ <span>'+esc(subject().title)+'</span></button>':'')+
       ''+
     '</div>'+
-    '<nav class="lexHomeLang" aria-label="اختر اللغة"><span class="lexHomeLangCurrent" lang="ar" aria-current="page" title="العربية">ع</span><a href="index-en.html" lang="en" hreflang="en" title="English" aria-label="Switch to English">E</a></nav></div><nav class="homeStaffEntry" aria-label="الدخول الأكاديمي"><a class="homeStaffLink homeStaffLink--instructor" href="instructor-login.html">دخول أستاذ الجامعة</a><a class="homeStaffLink" href="admin-login.html">دخول المشرف</a></nav></header>'+
+    '<nav class="lexHomeLang" aria-label="اختر اللغة"><span class="lexHomeLangCurrent" lang="ar" aria-current="page" title="العربية">ع</span><a href="index-en.html" lang="en" hreflang="en" title="English" aria-label="Switch to English">E</a></nav></div><nav class="homeStaffEntry" aria-label="الدخول الأكاديمي"><a class="homeStaffLink--instructor" href="instructor-login.html">دخول أستاذ الجامعة</a><a class="homeStaffLink" href="admin-login.html">دخول المشرف</a></nav></header>'+
     '<main class="v9-app">'+
     ((state.countryId&&state.subjectId)?'<div class="stat-strip">'+labels.map(function(x){var v=metrics[x[0]];return '<div class="stat-pill"><b>'+x[1]+'</b><span>'+qualitativeIndicator(v)+'</span></div>';}).join("")+'</div>':'')+
     inner+'</main><footer class="footer">LexLearn • نفهم طريقة تفكيرك، ونبني طريقك.</footer></div>';
