@@ -24,4 +24,8 @@ assert.match(instructors,/navigator\.clipboard\.writeText\(state\.credential\.te
 assert.match(loginHtml,/id="showInstructorPassword"/);
 assert.match(login,/pwField\.type=reveal\.checked\?"text":"password"/);
 assert.match(loginHtml,/instructor-login\.js\?v=20261029\.loginhelp2/);
+const edge=read("supabase/functions/admin-manage-instructors/index.ts");
+assert.ok(edge.includes("getUserById(uid)"));
+assert.ok(edge.includes("signInWithPassword({email:loginEmail,password:temporary})"));
+assert.ok(edge.includes("login_verified:true"));
 console.log("PASS: five grouped supervisor sections, unchanged routes and permissions, isolated password copy and reveal");
