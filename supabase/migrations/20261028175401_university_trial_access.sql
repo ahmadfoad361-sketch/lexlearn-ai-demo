@@ -24,7 +24,7 @@ create table private.trial_invitations (
  token_hash text primary key check(token_hash ~ '^[a-f0-9]{64}$'),
  trial_id uuid not null references private.university_trials(id),
  expires_at timestamptz not null, created_by uuid not null references public.profiles(id),
- used_by uuid references public.profiles(id), used_at timestamptz,
+ used_by uuid references public.profiles(id) on delete set null, used_at timestamptz,
  created_at timestamptz not null default now()
 );
 alter table private.university_trials enable row level security;
@@ -231,6 +231,7 @@ begin
  if not t.active or t.ends_at<=now() then raise exception 'trial_unavailable'; end if;
  if not exists(select 1 from public.profiles where id=p_user and role='student' and not active and account_status='pending') then raise exception 'pending_student_required'; end if;
  insert into private.student_admissions(user_id,course_id,trial_id) values(p_user,t.course_id,t.id);
+ update public.profiles set university=t.university,faculty=t.faculty,year_label=t.year_label,country_code=t.country_code where id=p_user;
  update private.trial_invitations set used_by=p_user,used_at=now() where token_hash=p_hash;
  return true;
 end $$;
