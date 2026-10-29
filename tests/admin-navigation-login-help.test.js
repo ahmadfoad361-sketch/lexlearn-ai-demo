@@ -17,7 +17,7 @@ assert.ok(admin.includes('id="logout"'));
 assert.ok(admin.includes('id="openAnalytics"'));
 assert.match(css,/adminNavGroup/);
 assert.match(css,/@media\(max-width:460px\)/);
-assert.match(read("admin.html"),/admin-entry\.js\?v=20261029\.nav2/);
+assert.match(read("admin.html"),/admin-entry\.js\?v=20261029\.groups1/);
 assert.match(read("admin.html"),/admin-experience\.css\?v=20261029\.nav2/);
 assert.match(instructors,/id="copyTeacherPassword"/);
 assert.match(instructors,/navigator\.clipboard\.writeText\(state\.credential\.temporary_password\)/);
