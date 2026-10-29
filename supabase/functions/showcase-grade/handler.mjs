@@ -6,7 +6,7 @@ export function createHandler({createClient,env,assess}){
 const previewOrigin="https://ahmadfoad361-sketch.github.io";
 const extraOrigins=String(env("LEX_ALLOWED_ORIGINS")||"").split(",").map(x=>x.trim())
  .filter(x=>/^https:\/\/[a-z0-9.-]+(?::\d{2,5})?$/i.test(x));
-const allowedOrigins=new Set([previewOrigin,...extraOrigins]);
+const allowedOrigins=new Set([previewOrigin,"https://lexlearnsmart.com","https://www.lexlearnsmart.com",...extraOrigins]);
 // Only the server checks and stores free-text responses; a supervisor can review.
 // Unclear free text never receives a fabricated zero. No paid inference API calls.
 return async req=>{

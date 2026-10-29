@@ -7,7 +7,7 @@ const previewOrigin = "https://ahmadfoad361-sketch.github.io";
 function allowedOrigins() {
   const added=(Deno.env.get("LEX_ALLOWED_ORIGINS")||"").split(",").map(v=>v.trim())
     .filter(v=>/^https:\/\/[a-z0-9.-]+(?::\d{2,5})?$/i.test(v));
-  return new Set([previewOrigin,...added]);
+  return new Set([previewOrigin,"https://lexlearnsmart.com","https://www.lexlearnsmart.com",...added]);
 }
 const policyVersion = "2026-10-17";
 const encoder = new TextEncoder();
