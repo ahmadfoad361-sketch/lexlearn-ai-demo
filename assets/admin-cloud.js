@@ -127,7 +127,7 @@ function shell(body){
  '<a href="references.html">تغذية الذكاء الاصطناعي</a></div></details></nav>'+
  '<div class="topActions"><span class="topLink">● لوحة مركزية</span>'+
  '<a class="topLink" href="index.html">عرض الموقع</a>'+
- '<button class="topLink" id="logout">تسجيل الخروج</button>'</div></div></header><main class="wrap">'+body+'</main>'+modal();
+ '<button class="topLink" id="logout">تسجيل الخروج</button></div></div></header><main class="wrap">'+body+'</main>'+modal();
  document.querySelectorAll("[data-tab]").forEach(function(b){b.onclick=function(){state.tab=b.dataset.tab;render();};});
  var analyticsLink=document.getElementById("openAnalytics");if(analyticsLink)analyticsLink.onclick=function(){location.href="admin-analytics.html";};
  var lo=document.getElementById("logout");if(lo)lo.onclick=async function(){await LEX_CLOUD.signOut();localStorage.removeItem(SKEY);location.replace("admin-login.html");};
