@@ -1,4 +1,5 @@
 import {corsHeaders,json,requireUser} from "../_shared/auth.ts";
+import {createClient} from "npm:@supabase/supabase-js@2";
 // Staff-only user provisioning; instructor accounts are never self-registered.
 const clean=(v:unknown,max=160)=>String(v??"").trim().slice(0,max);
 function password(){
@@ -73,6 +74,9 @@ Deno.serve(async(req:Request)=>{
    const gated=await admin.from("profiles").update({must_change_password:true})
     .eq("id",uid).eq("role","instructor").select("id").single();
    if(gated.error||!gated.data)return json({error:"instructor_password_reset_failed"},500);
+   const authTarget=await admin.auth.admin.getUserById(uid);
+   if(authTarget.error||!authTarget.data.user?.email)return json({error:"instructor_auth_email_missing"},409);
+   const loginEmail=authTarget.data.user.email;
    const temporary=password();
    const rotated=await admin.auth.admin.updateUserById(uid,{
     password:temporary,user_metadata:{must_change_password:true}
@@ -82,12 +86,22 @@ Deno.serve(async(req:Request)=>{
      .eq("id",uid).eq("role","instructor");
     return json({error:"instructor_password_reset_failed"},500);
    }
+   // Verify the replacement works with the real Auth endpoint before sharing it.
+   // The checker uses a fresh, isolated session. Never log or persist the secret.
+   const verifyClient=createClient(
+    Deno.env.get("SUPABASE_URL")!,Deno.env.get("SUPABASE_ANON_KEY")!,
+    {auth:{persistSession:false,autoRefreshToken:false}}
+   );
+   const verified=await verifyClient.auth.signInWithPassword({email:loginEmail,password:temporary});
+   if(verified.error||verified.data.user?.id!==uid)
+    return json({error:"temporary_login_verification_failed"},500);
+   await verifyClient.auth.signOut();
    // Never write plaintext credentials to the audit trail or any persistent table.
    await admin.from("admin_audit").insert({
     actor_user_id:user.id,target_user_id:uid,action:"RESET_INSTRUCTOR_PASSWORD",
     details:{temporary:true,requires_password_change:true}
    });
-   return json({ok:true,email:academic.data.official_email,temporary_password:temporary});
+   return json({ok:true,email:loginEmail,temporary_password:temporary,login_verified:true});
   }
   if(action==="update"){
    const uid=clean(b.instructor_id,64),name=clean(b.name,160),

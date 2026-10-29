@@ -19,6 +19,7 @@ async function readableError(error){
   invalid_scope:"راجع المادة والدولة والجامعة والكلية والفرقة في التكليف الأكاديمي.",
   instructor_assignment_failed:"تعذر حفظ تكليف المادة، وأُلغي إنشاء الحساب. راجع المقرر وبيانات التكليف.",
   instructor_password_reset_failed:"تعذر إصدار كلمة مرور جديدة للدكتور. تواصل مع المسؤول التقني إذا تكرر الخطأ.",
+  temporary_login_verification_failed:"تغيرت كلمة المرور لكن فشل اختبار دخولها آليًا؛ أصدر كلمة مؤقتة أخرى قبل إرسالها للدكتور.",
   account_creation_failed:"تعذر إنشاء الحساب في خدمة الدخول. حاول مرة أخرى؛ لا يشترط بريد جامعي.",
   email_update_failed:"تعذر تغيير بريد تسجيل الدخول. لم يُحفظ البريد الجديد.",
   instructor_update_not_confirmed:"لم يتأكد حفظ التعديلات. حدّث الصفحة لمراجعة البيانات قبل المحاولة مجددًا.",
@@ -87,7 +88,7 @@ function list(){
 }
 function page(){
  APP.innerHTML='<section class="panel"><span class="eyebrow">إدارة أكاديمية مستقلة عن الطلاب</span><h1>حسابات أساتذة الجامعات</h1><p>يتم إصدار اسم الدخول وكلمة مرور مؤقتة من المشرف. لا يظهر للدكتور شيء من وظائف إدارة الطالب أو أدوات مراجعة المحتوى.</p><a href="instructor-login.html" target="_blank" rel="noopener">فتح بوابة دخول الدكتور وإرسال رابطها إليه</a></section>'+
- (state.credential?'<section class="panel notice"><h2>بيانات الدخول الأولية — تظهر مرة واحدة</h2><p>البريد الإلكتروني: <b>'+esc(state.credential.email)+'</b></p><p>كلمة المرور المؤقتة: <b>'+esc(state.credential.temporary_password)+'</b></p><button id="copyTeacher" class="secondary">نسخ بيانات الدخول</button><p class="hint">سلّمها للدكتور بقناة آمنة واطلب منه تغيير كلمة المرور. لا نحتفظ بها داخل سجل الإدارة.</p></section>':'')+
+ (state.credential?'<section class="panel notice"><h2>بيانات الدخول الأولية — تظهر مرة واحدة</h2><p>البريد الإلكتروني: <b>'+esc(state.credential.email)+'</b></p><p>كلمة المرور المؤقتة: <b>'+esc(state.credential.temporary_password)+'</b></p><div class="actions"><button id="copyTeacherPassword" type="button" class="primary">نسخ كلمة المرور فقط</button><button id="copyTeacher" type="button" class="secondary">نسخ بيانات الدخول كاملة</button></div><p class="hint">'+(state.credential.login_verified?'تم اختبار كلمة المرور الجديدة بنجاح من خدمة الدخول. ':'')+'سلّمها للدكتور بقناة آمنة واطلب منه تغيير كلمة المرور. لا نحتفظ بها داخل سجل الإدارة.</p></section>':'')+
  form()+list();
  if(state.editing){const current=document.querySelector('.facultyEditForm');if(current)current.scrollIntoView({block:"nearest"});}
  document.getElementById("createInstructor").onsubmit=async e=>{
@@ -163,7 +164,9 @@ function page(){
   b.disabled=true;await C.functions.invoke("admin-manage-instructors",{body:{action:"scope-active",
    instructor_id:b.dataset.owner,assignment_id:b.dataset.assignment,active:b.dataset.active==="true"}});await reload();
  });
- const copy=document.getElementById("copyTeacher");
+   const onlyPassword=document.getElementById("copyTeacherPassword");
+  if(onlyPassword)onlyPassword.onclick=async()=>{try{await navigator.clipboard.writeText(state.credential.temporary_password);onlyPassword.textContent="تم نسخ كلمة المرور فقط";}catch(_){alert("تعذر النسخ التلقائي؛ اضغط مطولًا على كلمة المرور وحدد نسخ.");}};
+const copy=document.getElementById("copyTeacher");
  if(copy)copy.onclick=()=>navigator.clipboard.writeText("LexLearn\nالبريد: "+state.credential.email+"\nكلمة المرور المؤقتة: "+state.credential.temporary_password+"\nhttps://ahmadfoad361-sketch.github.io/lexlearn-ai-demo/instructor-login.html");
 }
 async function reload(){

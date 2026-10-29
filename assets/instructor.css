@@ -9,3 +9,5 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 #firstProfessorPassword button,#changeProfessorPassword button{min-height:46px}
 #activateMessage,#passwordStatus{min-height:1.4em;line-height:1.7;overflow-wrap:anywhere}
 @media(max-width:430px){.top{padding:12px;align-items:center}.top .brand{gap:8px}.top .brand img{width:40px}.top button{padding:9px 12px;max-width:34%}.top .brand strong{font-size:1rem}.layout{width:calc(100% - 20px)}.panel{padding:16px}.panel h1{font-size:1.65rem}}
+
+.passwordReveal{display:flex;align-items:center;gap:10px;font-size:.9rem}.passwordReveal input{width:20px;height:20px;flex:none}

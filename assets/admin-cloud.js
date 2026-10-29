@@ -107,8 +107,27 @@ function adminAdvice(v){
 }
 function shell(body){
  APP.innerHTML='<header class="top"><div class="topin"><a class="brand lexlearnBrandHome" href="index.html" title="الصفحة الرئيسية لـ LexLearn"><div class="mark"><img src="assets/lexlearn-logo.svg" alt="LexLearn"></div><div><b>LexLearn Admin</b><small>قاعدة بيانات مركزية</small></div></a>'+
- '<nav class="nav"><button id="openAnalytics">'+ico("chart")+'<span>الإحصاءات</span></button><button data-tab="dashboard" class="'+(state.tab==="dashboard"?"active":"")+'">'+ico("chart")+'<span>الرئيسية</span></button><button data-tab="students" class="'+(state.tab==="students"?"active":"")+'">'+ico("users")+'<span>الطلاب</span></button><button data-tab="cohorts" class="'+(state.tab==="cohorts"?"active":"")+'">'+ico("group")+'<span>المجموعات</span></button><button data-tab="grading" class="'+(state.tab==="grading"?"active":"")+'">'+ico("audit")+'<span>تصحيح التدريب</span></button><button data-tab="content" class="'+(state.tab==="content"?"active":"")+'">'+ico("audit")+'<span>المحتوى</span></button><button data-tab="audit" class="'+(state.tab==="audit"?"active":"")+'">'+ico("audit")+'<span>السجل</span></button></nav>'+
- '<div class="topActions"><span class="topLink">● مركزي</span><a class="topLink" href="admin-analytics.html">إحصاءات الزيارات</a><a class="topLink" href="admin-instructors.html">الأساتذة الجامعيون</a><a class="topLink" href="admin-progress.html">تدرّج الحفظ والفهم</a><a class="topLink" href="references.html">تغذية الذكاء الاصطناعي</a><a class="topLink" href="pilot-review.html">مراجعة التدريب</a><a class="topLink" href="demo-supervisor.html">نتائج الديمو</a><a class="topLink" href="index.html">الموقع</a><button class="topLink" id="logout">خروج</button></div></div></header><main class="wrap">'+body+'</main>'+modal();
+ '<nav class="nav adminNav" aria-label="الأقسام الرئيسية للوحة المشرف">'+
+ '<button data-tab="dashboard" class="'+(state.tab==="dashboard"?"active":"")+'"><span>الرئيسية</span></button>'+
+ '<details class="adminNavGroup" '+(["students","cohorts"].includes(state.tab)?"open":"")+'><summary>الطلاب والمجموعات</summary><div class="adminNavItems">'+
+ '<button data-tab="students" class="'+(state.tab==="students"?"active":"")+'">الطلاب</button>'+
+ '<button data-tab="cohorts" class="'+(state.tab==="cohorts"?"active":"")+'">المجموعات</button></div></details>'+
+ '<details class="adminNavGroup"><summary>الأساتذة والجامعات</summary><div class="adminNavItems">'+
+ '<a href="admin-instructors.html">حسابات أساتذة الجامعات</a>'+
+ '<a href="references.html">الجامعات والمراجع الأكاديمية</a></div></details>'+
+ '<details class="adminNavGroup" '+(["grading","content"].includes(state.tab)?"open":"")+'><summary>التعلم والتقارير</summary><div class="adminNavItems">'+
+ '<button data-tab="grading" class="'+(state.tab==="grading"?"active":"")+'">تصحيح التدريب</button>'+
+ '<button data-tab="content" class="'+(state.tab==="content"?"active":"")+'">اعتماد المحتوى</button>'+
+ '<a href="admin-progress.html">تدرّج الحفظ والفهم</a>'+
+ '<a href="pilot-review.html">مراجعة التدريب</a>'+
+ '<button type="button" id="openAnalytics">إحصاءات الزيارات</button>'+
+ '<a href="demo-supervisor.html">نتائج الديمو</a></div></details>'+
+ '<details class="adminNavGroup" '+(state.tab==="audit"?"open":"")+'><summary>إدارة المنصة</summary><div class="adminNavItems">'+
+ '<button data-tab="audit" class="'+(state.tab==="audit"?"active":"")+'">سجل العمليات</button>'+
+ '<a href="references.html">تغذية الذكاء الاصطناعي</a></div></details></nav>'+
+ '<div class="topActions"><span class="topLink">● لوحة مركزية</span><a class="topLink" href="admin-instructors.html">الأساتذة الجامعيون</a>'+
+ '<a class="topLink" href="index.html">عرض الموقع</a>'+
+ '<button class="topLink" id="logout">تسجيل الخروج</button></div></div></header><main class="wrap">'+body+'</main>'+modal();
  document.querySelectorAll("[data-tab]").forEach(function(b){b.onclick=function(){state.tab=b.dataset.tab;render();};});
  var analyticsLink=document.getElementById("openAnalytics");if(analyticsLink)analyticsLink.onclick=function(){location.href="admin-analytics.html";};
  var lo=document.getElementById("logout");if(lo)lo.onclick=async function(){await LEX_CLOUD.signOut();localStorage.removeItem(SKEY);location.replace("admin-login.html");};
@@ -278,7 +297,8 @@ function essayAttempts(v){
 }
 function dashboard(){
  var list=studentList(),selected=state.students.find(function(s){return s.id===state.selected;})||list[0],v=selected?view(selected):null;if(selected)state.selected=selected.id;
- return '<section class="hero"><div><span class="demoTag">لوحة المشرف</span><h1>متابعة الطالب خطوة بخطوة</h1><p>التشخيص والجلسات والإجابات والتصحيح في مكان واحد، مع تقارير قابلة للطباعة والحفظ PDF.</p></div><button class="btn light" id="refresh">تحديث البيانات</button></section>'+kpis()+
+ return '<section class="hero"><div><span class="demoTag">لوحة المشرف</span><h1>متابعة الطالب خطوة بخطوة</h1><p>التشخيص والجلسات والإجابات والتصحيح في مكان واحد، مع تقارير قابلة للطباعة والحفظ PDF.</p></div><button class="btn light" id="refresh">تحديث البيانات</button></section>'+
+ '<section class="adminQuickActions" aria-label="الإجراءات السريعة"><button type="button" class="btn primary" id="quickAddHome">+ إضافة طالب</button><button type="button" class="btn secondary" data-tab="cohorts">المجموعات</button><a class="btn secondary" href="admin-instructors.html">إدارة الأساتذة</a><a class="btn secondary" href="admin-progress.html">تقارير الحفظ والفهم</a></section>'+kpis()+
  '<section class="dashboardGrid"><aside class="panel studentAside"><div class="panelHead"><div><h3>الطلاب</h3><p>'+list.length+' حساب</p></div><button class="iconBtn" id="quickAdd">'+ico("plus")+'</button></div><input class="search" id="search" value="'+esc(state.q)+'" placeholder="اسم أو مستخدم..."><div class="studentList studentHierarchy" aria-label="الطلاب حسب الدولة والكلية والفرقة">'+
   (state.instructorLoadWarning?'<p class="treeUnassignedLabel">تعذر تحديث تكليفات الدكاترة؛ الطلاب ظاهرون لكن قد لا تظهر بيانات الأساتذة. أعد تحديث الصفحة.</p>':'')+
   studentTree(list)+'</div></aside><div>'+(v?detail(v):'<div class="panel empty">لا يوجد طلاب بعد.</div>')+'</div></section>';
@@ -408,7 +428,7 @@ function bind(){
   document.querySelectorAll("button[data-student]").forEach(function(b){b.onclick=function(){state.selected=b.dataset.student;render();};});
  document.querySelectorAll("[data-open]").forEach(function(b){b.onclick=function(){state.selected=b.dataset.open;state.tab="dashboard";render();};});
  var q=document.getElementById("search")||document.getElementById("ssearch");if(q)q.oninput=function(){var pos=q.selectionStart;state.q=q.value;render();var again=document.getElementById(q.id);if(again){again.focus();try{again.setSelectionRange(pos,pos);}catch(_){}}};
- var add=document.getElementById("add")||document.getElementById("quickAdd");if(add)add.onclick=function(){state.modal="add";render();};
+ document.querySelectorAll("#add,#quickAdd,#quickAddHome").forEach(function(add){add.onclick=function(){state.modal="add";render();};});
  document.querySelectorAll("[data-close]").forEach(function(b){b.onclick=function(){state.modal=null;render();};});
  var ref=document.getElementById("refresh");if(ref)ref.onclick=load;
  var f=document.getElementById("addForm");if(f)f.onsubmit=async function(e){e.preventDefault();var nameEl=document.getElementById("n"),userEl=document.getElementById("usr"),uniEl=document.getElementById("uni"),yearEl=document.getElementById("yr"),countryEl=document.getElementById("country"),cohortEl=document.getElementById("coh");try{var countryCode=countryEl.value;var x=await LEX_CLOUD.createStudent({name:nameEl.value.trim(),username:userEl.value.trim(),university:uniEl.value.trim(),faculty:document.getElementById("faculty").value.trim(),academic_section:document.getElementById("academicSection").value.trim(),student_registration_number:document.getElementById("studentNumber").value.trim(),institutional_group_email:document.getElementById("groupEmail").value.trim(),year:yearEl.value,accepted_registration_terms:document.getElementById("registrationTerms").checked,accepted_terms_version:"2026-10-23-v6",country_code:countryCode,cohort_id:cohortEl.value||null,course_id:"qa-qu-lawc101-rights"});state.creds={username:x.username,password:x.temporary_password};await load();state.modal="creds";render();}catch(er){var message=await adminReadableError(er);alert("تعذر إنشاء الحساب: "+message);}};
