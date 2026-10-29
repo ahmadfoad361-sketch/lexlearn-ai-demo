@@ -4,7 +4,7 @@ var APP=document.getElementById("adminApp");
 var SKEY="lexlearn_admin_session";
 var ss=null;try{ss=JSON.parse(localStorage.getItem(SKEY)||"null");}catch(e){}
 if(!ss||!ss.cloud||!window.LEX_CLOUD||!LEX_CLOUD.isConfigured()){location.replace("admin-login.html");return;}
-var state={tab:"dashboard",students:[],cohorts:[],audit:[],content:[],snapshots:[],attempts:[],pilotAttempts:[],pilotGrades:[],pilotAi:[],selected:null,q:"",busy:false,error:"",creds:null,staffRole:null,officialRecords:{},recordDetail:null,recordStudent:null,recordError:"",instructors:[],instructorAssignments:[],enrollments:[],treeOpen:{},sectionOpen:{},instructorLoadWarning:false};
+var state={tab:"dashboard",students:[],cohorts:[],audit:[],content:[],snapshots:[],attempts:[],pilotAttempts:[],pilotGrades:[],pilotAi:[],selected:null,q:"",busy:false,error:"",creds:null,staffRole:null,officialRecords:{},recordDetail:null,recordStudent:null,recordError:"",instructors:[],instructorAssignments:[],enrollments:[],treeOpen:{},sectionOpen:{},instructorLoadWarning:false,cohortContext:null,cohortDraft:null};
 
 function nextStudentUsername(){
  var used=new Set(state.students.map(function(s){return String(s.username||"").toLowerCase();}));
@@ -307,8 +307,50 @@ function studentsTab(){
  var a=studentList(),pending=state.students.filter(function(x){return x.accountStatus==="pending";}).length;
  return '<section class="pageTitle"><div><span class="overline">Central Accounts</span><h1>الطلاب</h1><p>'+(pending?'طلبات تسجيل بانتظار الاعتماد: '+pending+' • ':'')+'حسابات مركزية، والمجموعة والأستاذ اختياريان. يمكن للمشرف مساعدة أي طالب تعثر في التسجيل.</p></div><div class="pageActions"><button class="btn primary" id="add">'+ico("plus")+' إضافة طالب</button><button class="btn secondary" id="export">تصدير CSV</button></div></section><section class="panel"><input class="search" id="ssearch" value="'+esc(state.q)+'" placeholder="بحث..."><div class="studentTable"><div class="tr head"><span>الطالب</span><span>المجموعة</span><span>التقدم</span><span>الأولوية</span><span>الحالة</span></div>'+a.map(function(s){var v=view(s),r=risk(v);return '<button class="tr" data-open="'+s.id+'"><span><b>'+esc(s.name||s.username)+'</b><small>@'+esc(s.username)+'</small></span><span>'+esc(s.cohort||"—")+'</span><span>'+v.completed+'/30</span><span>'+esc(v.model.weakest?label(v.model.weakest):"—")+'</span><span class="risk '+(s.active===false?"none":r)+'">'+(s.active===false?(s.accountStatus==="pending"?"بانتظار الاعتماد":s.accountStatus==="paused"?"موقوف مؤقتًا":"معطّل"):rlabel(r,v))+'</span></button>';}).join("")+'</div></section>';
 }
+function cohortDefaults(c){
+ var first=state.students.find(function(s){return s.cohortId===c.id;})||{};
+ return {university:c.institution||first.university||"",
+  faculty:c.faculty||first.faculty||"كلية الحقوق",
+  year:c.academic_year||first.year||"السنة الأولى",
+  country:c.country_code||first.country||"qa",
+  course:c.course_id||"qa-qu-lawc101-rights",
+  subject:c.subject_name||"نظرية الحق"};
+}
+function sameAcademicYear(a,b){
+ return String(a||"").replace("الفرقة","السنة").trim()===String(b||"").replace("الفرقة","السنة").trim();
+}
+function cohortProfessors(c){
+ var scope=cohortDefaults(c),names=new Map();
+ (state.instructorAssignments||[]).forEach(function(a){
+  if(!a.active||a.country_code!==scope.country||a.university!==scope.university||
+     a.faculty!==scope.faculty||!sameAcademicYear(a.year_label,scope.year)||a.course_id!==scope.course)return;
+  var t=state.instructors.find(function(p){return p.instructor_id===a.instructor_id;});
+  if(t&&t.profiles?.active)names.set(a.instructor_id,t.profiles.display_name||t.official_email);
+ });
+ return Array.from(names.values());
+}
 function cohortsTab(){
- return '<section class="pageTitle"><div><span class="overline">Cohorts</span><h1>المجموعات</h1><p>مجموعات الـPilot والمؤسسات.</p></div><button class="btn primary" id="newCohort">'+ico("plus")+' مجموعة جديدة</button></section><section class="cohortGrid">'+state.cohorts.map(function(c){return '<div class="panel cohortCard"><span class="cohortIcon">'+ico("group")+'</span><h3>'+esc(c.name)+'</h3><p>'+state.students.filter(function(s){return s.cohort===c.name;}).length+' طالب</p><div class="cohortMeta"><span>'+esc(c.institution||"—")+'</span><span>'+esc(c.academic_year||"—")+'</span></div></div>';}).join("")+'</section>';
+ return '<section class="pageTitle"><div><span class="overline">إدارة المجموعات</span><h1>المجموعات</h1>'+
+ '<p>افتح المجموعة لإضافة الطلاب والأساتذة ومراجعة بياناتها. بيانات المادة والجامعة والفرقة تُورّث تلقائيًا.</p></div>'+
+ '<button class="btn primary" id="newCohort">+ مجموعة جديدة</button></section>'+
+ '<section class="cohortGrid cohortGridManagement">'+state.cohorts.map(function(c){
+  var defaults=cohortDefaults(c),students=state.students.filter(function(s){return s.cohortId===c.id;}),
+  professors=cohortProfessors(c);
+  return '<article class="panel cohortCard cohortManaged"><div class="cohortHead"><div><span class="cohortIcon">'+ico("group")+
+  '</span><h2>'+esc(c.name)+'</h2></div><span class="cohortCount">'+students.length+' طالب</span></div>'+
+  '<p class="cohortScope">'+esc(defaults.university||"الجامعة غير محددة")+' · '+esc(defaults.faculty)+
+  ' · '+esc(displayYear(defaults.year))+' · '+esc(defaults.subject)+'</p>'+
+  '<div class="cohortButtons"><button type="button" class="btn primary" data-cohort-add="'+esc(c.id)+'">+ طالب</button>'+
+  '<button type="button" class="btn secondary" data-cohort-professor="'+esc(c.id)+'">+ أستاذ جامعي</button>'+
+  '<button type="button" class="btn secondary" data-cohort-edit="'+esc(c.id)+'">تعديل بيانات المجموعة</button></div>'+
+  '<details class="cohortMembers" open><summary>الطلاب ('+students.length+')</summary><div class="cohortMemberList">'+
+  (students.length?students.map(function(s){return '<button type="button" class="cohortStudentButton" data-cohort-student="'+esc(s.id)+'">'+
+   '<span>'+esc(s.name||s.username)+'</span><small>@'+esc(s.username)+' · '+(s.active===false?'بانتظار التفعيل/موقوف':'نشط')+'</small></button>';}).join(""):
+   '<p class="cohortEmpty">لا يوجد طلاب في هذه المجموعة بعد. اضغط «+ طالب» لتسجيل أول طالب.</p>')+
+  '</div></details>'+
+  '<div class="cohortProfessorList"><b>أعضاء هيئة التدريس</b><p>'+(professors.length?professors.map(esc).join("، "):
+  'لم يتم تكليف دكتور مطابق لجامعة المجموعة وكليتها وفرقتها ومادتها.')+'</p></div></article>';
+ }).join("")+'</section>';
 }
 function pilotSourceLinks(ids){
  var urls={"qa-civil-2004-art39":"https://www.almeezan.qa/LawArticles.aspx?LawArticleID=36483&LawID=2559&language=ar","qa-civil-2004-art40":"https://www.almeezan.qa/LawArticles.aspx?LawArticleID=36484&LawID=2559&language=ar","qa-civil-2004-art63":"https://www.almeezan.qa/LawArticles.aspx?LawArticleID=36507&LawID=2559&language=ar"};
