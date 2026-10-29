@@ -8,6 +8,38 @@ const num=x=>x===null||x===undefined||x===""||!Number.isFinite(Number(x))?null:M
 const pct=v=>num(v)===null?"لم يُقَس":num(v)+"%";
 const dimension=k=>({recall:"الحفظ / استرجاع القاعدة",understanding:"الفهم"})[k]||k;
 const datum=x=>x?new Date(x).toLocaleDateString("ar-EG"):"—";
+function passwordFields(){
+ return '<label>كلمة المرور الجديدة (10 أحرف على الأقل)<input name="password" type="password" minlength="10" required autocomplete="new-password"></label>'+
+ '<label>تأكيد كلمة المرور الجديدة<input name="password_confirm" type="password" minlength="10" required autocomplete="new-password"></label>';
+}
+async function savePasswordAndRelogin(form,statusId){
+ const status=el(statusId),submit=form.querySelector('[type="submit"]');
+ const values=new FormData(form);
+ const password=String(values.get("password")||"");
+ if(password.length<10){status.textContent="يجب ألا تقل كلمة المرور عن 10 أحرف.";return;}
+ if(password!==values.get("password_confirm")){status.textContent="كلمتا المرور غير متطابقتين.";return;}
+ submit.disabled=true;
+ status.textContent="جارٍ حفظ كلمة المرور الجديدة…";
+ try{
+  const result=await LEX_CLOUD.setOwnPassword(password);
+  if(!result||result.ok!==true)throw Error("password_change_unconfirmed");
+  // Password rotation may invalidate the previous access token; never reload with it.
+  status.textContent="تم تغيير كلمة المرور بنجاح. ستعود الآن لتسجيل الدخول بها.";
+  form.reset();
+  try{await LEX_CLOUD.signOut();}catch(_){}
+  location.replace("instructor-login.html?password_updated=1");
+ }catch(error){
+  const code=String(error?.message||"");
+  if(/401|unauthorized|jwt|session|refresh_token|token_expired/i.test(code)||error?.context?.status===401){
+   status.textContent="انتهت جلسة الدخول. ربما تم حفظ كلمة المرور بالفعل؛ جرّب الدخول بالكلمة الجديدة من بوابة الدكتور.";
+   const link=document.createElement("a");link.href="instructor-login.html";link.textContent="الذهاب لتسجيل الدخول";
+   status.appendChild(document.createTextNode(" "));status.appendChild(link);
+  }else{
+   status.textContent="تعذر التأكد من تغيير كلمة المرور. لا تكرر المحاولة قبل تجربة الدخول بالكلمة الجديدة أو التواصل مع المشرف.";
+  }
+  submit.disabled=false;
+ }
+}
 function policy(){return '<p class="notice">هذه مؤشرات أولية لتغطية عناصر الأسئلة في التدريبات، وليست درجات جامعية. لا يُستدل على تحسن ثابت بين فترتين إلا إذا كان القياس متكافئًا ومعايير التصحيح موحدة.</p>';}
 function scopeStudents(){
  const a=(state.roster?.students||[]);
@@ -29,7 +61,7 @@ function editForm(){
  '<label>الساعات المكتبية<input name="office_hours" maxlength="160" value="'+esc(p.office_hours)+'"></label></div>'+
  '<label>نبذة مختصرة<textarea name="bio" maxlength="600">'+esc(p.bio)+'</textarea></label>'+
  '<button class="primary" type="submit">حفظ البيانات</button><button id="cancelEdit" class="secondary" type="button">إلغاء</button><p id="profileStatus" role="status"></p></form>'+
- '<h3>تغيير كلمة المرور</h3><form id="changeProfessorPassword"><label>كلمة مرور جديدة (10 أحرف على الأقل)<input name="password" type="password" minlength="10" required autocomplete="new-password"></label><button type="submit" class="secondary">تغيير كلمة المرور</button><p id="passwordStatus" role="status"></p></form></section>';
+ '<h3>تغيير كلمة المرور</h3><form id="changeProfessorPassword">'+passwordFields()+'<button type="submit" class="secondary">حفظ كلمة المرور الجديدة</button><p id="passwordStatus" role="status" aria-live="polite"></p></form></section>';
 }
 function assignments(){
  const a=state.roster.assignments||[];
@@ -67,7 +99,7 @@ function render(showEdit=false){
  APP.innerHTML=profile()+(showEdit?editForm():"")+assignments()+roster()+groupIntro();
  el("editProfile").onclick=()=>render(true);
  if(el("profileEdit")){el("cancelEdit").onclick=()=>render(false);el("profileEdit").onsubmit=saveProfile;
- el("changeProfessorPassword").onsubmit=async e=>{e.preventDefault();try{await LEX_CLOUD.setOwnPassword(new FormData(e.currentTarget).get("password"));el("passwordStatus").textContent="تم تغيير كلمة المرور.";e.currentTarget.reset();}catch(_){el("passwordStatus").textContent="تعذر تحديث كلمة المرور.";}};}
+ el("changeProfessorPassword").onsubmit=e=>{e.preventDefault();return savePasswordAndRelogin(e.currentTarget,"passwordStatus");};}
  el("scopeSelect").onchange=e=>{state.assignment=e.target.value;state.report=null;state.selected="";render();};
  document.querySelectorAll("[data-student]").forEach(b=>b.onclick=()=>loadStudent(b.dataset.student));
  el("runGroup").onclick=groupAnalysis;
@@ -132,11 +164,10 @@ async function reload(){
  if(!c||c.role!=="instructor"||c.active!==true)throw Error("FORBIDDEN");
  if(c.must_change_password){
   APP.innerHTML='<section class="panel"><h1>تعيين كلمة مرور دائمة للدكتور</h1><p>لأمان بيانات الطلاب، يجب تغيير كلمة المرور المؤقتة قبل عرض أي سجل تعليمي.</p>'+
-   '<form id="firstProfessorPassword"><label>كلمة المرور الجديدة (10 أحرف على الأقل)<input name="password" type="password" required minlength="10" autocomplete="new-password"></label>'+
-   '<button type="submit" class="primary">تفعيل حساب الدكتور</button><p id="activateMessage" role="status"></p></form></section>';
+   '<form id="firstProfessorPassword">'+passwordFields()+
+   '<button type="submit" class="primary">حفظ كلمة المرور الجديدة</button><p id="activateMessage" role="status" aria-live="polite"></p></form></section>';
   document.getElementById("firstProfessorPassword").onsubmit=async e=>{
-   e.preventDefault();try{await LEX_CLOUD.setOwnPassword(new FormData(e.currentTarget).get("password"));await reload();}
-   catch(_){document.getElementById("activateMessage").textContent="لم يتم تغيير كلمة المرور، حاول مجددًا.";}
+   e.preventDefault();await savePasswordAndRelogin(e.currentTarget,"activateMessage");
   };
   return;
  }
