@@ -1,0 +1,36 @@
+const assert=require("node:assert/strict"),fs=require("node:fs"),vm=require("node:vm");
+const read=p=>fs.readFileSync(p,"utf8");
+const cloud=read("assets/cloud-data.js"),admin=read("assets/admin-cloud.js"),teachers=read("assets/admin-instructors.js");
+for(const p of ["assets/cloud-data.js","assets/admin-cloud.js","assets/admin-instructors.js"])
+ assert.doesNotThrow(()=>new vm.Script(read(p),{filename:p}),p+" has valid JavaScript");
+assert.match(admin,/data-cohort-add/);
+assert.match(admin,/data-cohort-professor/);
+assert.match(admin,/data-cohort-student/);
+assert.match(admin,/data-cohort-edit/);
+assert.match(admin,/cohortMembers/);
+assert.match(admin,/cohortProfessorList/);
+assert.match(admin,/state\.students\.filter\(function\(s\)\{return s\.cohortId===c\.id;/);
+assert.match(admin,/state\.cohortContext=button\.dataset\.cohortAdd/);
+assert.match(admin,/state\.cohortContext=state\.creds\.nextCohort/);
+assert.match(admin,/id="addNextGroupStudent"/);
+assert.match(admin,/id="backToCohort"/);
+assert.match(admin,/accepted_registration_terms:document\.getElementById\("registrationTerms"\)\.checked/);
+assert.match(admin,/accepted_terms_version:"2026-10-23-v6"/);
+assert.match(admin,/cohort_id:cohortEl\.value\|\|null/);
+assert.match(admin,/await LEX_CLOUD\.createStudent/);
+assert.match(admin,/data-cohort-professor/);
+assert.match(admin,/location\.href="admin-instructors\.html\?cohort="/);
+assert.match(teachers,/function useCohortDefaults/);
+assert.match(teachers,/state\.cohortId/);
+assert.match(teachers,/createInstructor/);
+assert.match(teachers,/assignInstructor/);
+assert.match(cloud,/cohortId:x\.cohort_id/);
+assert.match(cloud,/updateCohortDefaults/);
+assert.match(cloud,/country_code,course_id,subject_name/);
+assert.match(read("admin.html"),/admin-entry\.js\?v=20261029\.groups1/);
+assert.match(read("admin-instructors.html"),/admin-instructors\.js\?v=20261029\.groups1/);
+const schema=read("supabase/migrations/20261029_001_cohort_academic_defaults.sql");
+for(const name of ["faculty","country_code","course_id","subject_name"])
+ assert.ok(schema.includes("add column if not exists "+name));
+assert.doesNotMatch(schema,/drop table|delete from|truncate/i);
+console.log("PASS cohorts: stable IDs, add student/professor, reusable prefilled form, consent, and additive schema");
