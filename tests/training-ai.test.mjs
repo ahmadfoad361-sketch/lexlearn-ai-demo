@@ -56,6 +56,7 @@ function environment({consent=true,providerFailure=false}={}){
     }
     return {data:{answer_text:answer,evaluation}};
    }
+   if(table==="lex_reference_links")return {data:[]};
    throw Error(table);
   }return q;
  }};
