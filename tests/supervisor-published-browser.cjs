@@ -13,7 +13,7 @@ const teachers=[{instructor_id:'p1',academic_title:'دكتور',profiles:{displa
  {instructor_id:'p2',academic_title:'دكتور',profiles:{display_name:'أستاذ اختبار ثان',active:true}}];
 const assignments=teachers.map((t,i)=>({id:'assignment'+i,instructor_id:t.instructor_id,course_id:'course'+i,subject_name:i?'القانون الدستوري':'القانون المدني',country_code:'qa',university:i?'لوسيل':'Lusail University',faculty:i?'law':'كلية الحقوق',year_label:i?'الفرقة الأولى':'السنة الأولى',active:true}));
 const enrollments=[{user_id:'s1',course_id:'course0'},{user_id:'s1',course_id:'course1'},{user_id:'s2',course_id:'course0'}];
-function fakeCloud({students,teachers,assignments,enrollments,role='owner',active=true}){
+function fakeCloud({students,teachers,assignments,enrollments,cohorts=[],role='owner',active=true}){
  localStorage.setItem('lexlearn_admin_session',JSON.stringify({cloud:true}));
  const query=table=>{const q={select(){return q},eq(){return q},order(){return q},limit(){return q},then(resolve,reject){return Promise.resolve({data:table==='enrollments'?enrollments:table==='courses'?[{id:'course0',title_ar:'القانون المدني',status:'approved',metadata:{}}]:[]}).then(resolve,reject)}};return q;};
  window.__instructorCreates=[];
@@ -27,7 +27,9 @@ function fakeCloud({students,teachers,assignments,enrollments,role='owner',activ
  }}};
  window.__academicSaves=[];
  window.LEX_CLOUD={isConfigured:()=>true,db:()=>db,profile:async()=>({id:'fixture',role,active}),listStudents:async()=>students,
- listCohorts:async()=>[],listAudit:async()=>[],listContentItems:async()=>[],manageStudent:async data=>window.__academicSaves.push(data)};
+ listCohorts:async()=>cohorts,listAudit:async()=>[],listContentItems:async()=>[],
+ createStudent:async data=>{students.push({id:'fixture-created-'+students.length,username:data.username,name:data.name,active:true,accountStatus:'active',country:data.country_code,university:data.university,faculty:data.faculty,year:data.year,cohortId:data.cohort_id,cohort:cohorts.find(c=>c.id===data.cohort_id)?.name||''});return {ok:true,username:data.username,temporary_password:'FIXTURE-ONLY-NOT-A-REAL-PASSWORD'};},
+ manageStudent:async data=>window.__academicSaves.push(data)};
 }
 async function installFixture(ctx,data){
  await ctx.route('**/assets/cloud-data.js*',route=>route.fulfill({contentType:'application/javascript',body:'('+fakeCloud.toString()+')('+JSON.stringify(data)+');'}));
@@ -135,6 +137,42 @@ async function installFixture(ctx,data){
    assert.equal(await p.evaluate(()=>window.__instructorCreates.length),2,'Gmail reaches server; successful retry');
    if(process.env.LEX_VIDEO_DIR){await p.evaluate(()=>window.scrollTo(0,0));await p.screenshot({path:process.env.LEX_VIDEO_DIR+'/instructors-fixture-'+theme+'-'+(mobile?'mobile':'desktop')+'.png',fullPage:true});}
    assert.deepEqual(errors,[]);await ctx.close();
+  }
+  // Cohort enrollment UX using synthetic data only; no live student or professor account touched.
+  {
+   const cohort={id:'11111111-1111-4111-8111-111111111111',name:'المجموعة التجريبية',
+    institution:'Lusail University',faculty:'كلية القانون',academic_year:'السنة الثانية',
+    country_code:'qa',course_id:'qa-qu-lawc101-rights',subject_name:'نظرية الحق'};
+   const ctx=await browser.newContext({viewport:{width:390,height:844}});
+   await installFixture(ctx,{students:[],teachers:[],assignments:[],enrollments:[],cohorts:[cohort]});
+   await ctx.addInitScript(()=>{window.confirm=()=>true;});
+   const p=await ctx.newPage(),errors=[];p.on('pageerror',e=>errors.push(e.message));
+   await p.goto(BASE+'admin.html',{waitUntil:'networkidle'});
+   await p.locator('.studentHierarchy').waitFor();
+   await p.evaluate(()=>document.querySelector('[data-tab="cohorts"]').click());
+   await p.locator('.cohortManaged').waitFor();
+   assert.equal(await p.locator('.cohortManaged').count(),1);
+   await p.locator('[data-cohort-add]').click();
+   assert.equal(await p.locator('#uni').inputValue(),'Lusail University');
+   assert.equal(await p.locator('#faculty').inputValue(),'كلية القانون');
+   assert.equal(await p.locator('#yr').inputValue(),'السنة الثانية');
+   assert.equal(await p.locator('#coh').inputValue(),cohort.id);
+   await p.locator('#n').fill('طالب اختبار جديد');
+   await p.locator('#registrationTerms').check();
+   await p.locator('#addForm button[type="submit"]').click();
+   await p.locator('#addNextGroupStudent').waitFor();
+   await p.locator('#addNextGroupStudent').click();
+   await p.locator('#addForm').waitFor();
+   assert.equal(await p.locator('#n').inputValue(),'','new student form clears only personal details');
+   assert.equal(await p.locator('#uni').inputValue(),'Lusail University','academic defaults retained');
+   assert.equal(await p.locator('#coh').inputValue(),cohort.id,'same cohort retained');
+   assert.equal(await p.locator('#usr').inputValue(),'student02','new username created');
+   await p.locator('[data-close]').click();
+   await p.locator('[data-cohort-professor]').click();
+   assert.ok(p.url().includes('admin-instructors.html?cohort='+encodeURIComponent(cohort.id)),
+     'group professor button opens scoped instructor assignment page');
+   assert.deepEqual(errors,[]);
+   await ctx.close();
   }
   for(const role of ['student','owner','visitor']){
    const ctx=await browser.newContext();

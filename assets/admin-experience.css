@@ -268,3 +268,24 @@ html[data-learner-theme="dark"] .adminNavGroup[open]>summary,html[data-learner-t
 @media(max-width:460px){.adminNav{grid-template-columns:1fr}.adminNavGroup .adminNavItems{padding:8px}.adminNavGroup>summary{justify-content:space-between}}
 
 .adminQuickActions{display:flex;flex-wrap:wrap;gap:9px;margin:14px 0}.adminQuickActions .btn{display:inline-flex;align-items:center;justify-content:center;min-height:44px;text-decoration:none;padding:10px 16px}@media(max-width:600px){.adminQuickActions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.adminQuickActions .btn{white-space:normal;font-size:14px;padding:10px 8px}}
+
+/* Cohort management: clear roster and direct academic enrollment. */
+.cohortGridManagement{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,380px),1fr));gap:15px;align-items:start}
+.cohortManaged{min-height:0;padding:19px!important}
+.cohortHead{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.cohortHead>div{display:flex;align-items:center;gap:11px;min-width:0}
+.cohortHead h2{font-size:clamp(19px,2.1vw,24px);margin:0;overflow-wrap:anywhere;color:var(--ad-ink,#111d31)}
+.cohortCount{font-weight:800;font-size:14px;background:var(--ad-raised,#f3edf0);border-radius:30px;padding:6px 10px;white-space:nowrap}
+.cohortScope{font-size:15px;line-height:1.9;color:var(--ad-muted,#536176);overflow-wrap:anywhere;margin:12px 0}
+.cohortButtons{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0}
+.cohortButtons .btn{min-height:44px;font-size:15px;text-align:center;white-space:normal}
+.cohortMembers{border:1px solid var(--ad-line,#ded5cb);border-radius:12px;padding:8px 11px;margin-top:12px;background:var(--ad-surface,#fff)}
+.cohortMembers>summary{cursor:pointer;font-weight:800;font-size:17px;padding:7px 3px}
+.cohortMemberList{display:grid;gap:6px;padding:7px 0}
+.cohortStudentButton{border:1px solid var(--ad-line,#ded5cb);background:var(--ad-raised,#f8f3f0);border-radius:9px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center;text-align:start;color:var(--ad-ink,#111d31);padding:11px 12px;font-weight:700}
+.cohortStudentButton small{font-size:13px;color:var(--ad-muted,#536176);overflow-wrap:anywhere}
+.cohortStudentButton:hover{border-color:var(--ad-accent,#8a1f39)}
+.cohortEmpty{font-size:15px;color:var(--ad-muted,#536176)}
+.cohortProfessorList{margin-top:12px;border-top:1px solid var(--ad-line,#ded5cb);padding-top:11px;font-size:15px}
+.cohortProfessorList p{color:var(--ad-muted,#536176);margin:4px 0;line-height:1.8}
+@media(max-width:720px){.cohortGridManagement{grid-template-columns:1fr}.cohortManaged{padding:16px!important}.cohortButtons .btn{flex:1 1 45%}.cohortStudentButton{font-size:16px}}

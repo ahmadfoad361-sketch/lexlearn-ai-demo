@@ -4,7 +4,7 @@ var APP=document.getElementById("adminApp");
 var SKEY="lexlearn_admin_session";
 var ss=null;try{ss=JSON.parse(localStorage.getItem(SKEY)||"null");}catch(e){}
 if(!ss||!ss.cloud||!window.LEX_CLOUD||!LEX_CLOUD.isConfigured()){location.replace("admin-login.html");return;}
-var state={tab:"dashboard",students:[],cohorts:[],audit:[],content:[],snapshots:[],attempts:[],pilotAttempts:[],pilotGrades:[],pilotAi:[],selected:null,q:"",busy:false,error:"",creds:null,staffRole:null,officialRecords:{},recordDetail:null,recordStudent:null,recordError:"",instructors:[],instructorAssignments:[],enrollments:[],treeOpen:{},sectionOpen:{},instructorLoadWarning:false};
+var state={tab:location.hash==="#cohorts"?"cohorts":"dashboard",students:[],cohorts:[],audit:[],content:[],snapshots:[],attempts:[],pilotAttempts:[],pilotGrades:[],pilotAi:[],selected:null,q:"",busy:false,error:"",creds:null,staffRole:null,officialRecords:{},recordDetail:null,recordStudent:null,recordError:"",instructors:[],instructorAssignments:[],enrollments:[],treeOpen:{},sectionOpen:{},instructorLoadWarning:false,cohortContext:null,cohortDraft:null};
 
 function nextStudentUsername(){
  var used=new Set(state.students.map(function(s){return String(s.username||"").toLowerCase();}));
@@ -307,8 +307,50 @@ function studentsTab(){
  var a=studentList(),pending=state.students.filter(function(x){return x.accountStatus==="pending";}).length;
  return '<section class="pageTitle"><div><span class="overline">Central Accounts</span><h1>الطلاب</h1><p>'+(pending?'طلبات تسجيل بانتظار الاعتماد: '+pending+' • ':'')+'حسابات مركزية، والمجموعة والأستاذ اختياريان. يمكن للمشرف مساعدة أي طالب تعثر في التسجيل.</p></div><div class="pageActions"><button class="btn primary" id="add">'+ico("plus")+' إضافة طالب</button><button class="btn secondary" id="export">تصدير CSV</button></div></section><section class="panel"><input class="search" id="ssearch" value="'+esc(state.q)+'" placeholder="بحث..."><div class="studentTable"><div class="tr head"><span>الطالب</span><span>المجموعة</span><span>التقدم</span><span>الأولوية</span><span>الحالة</span></div>'+a.map(function(s){var v=view(s),r=risk(v);return '<button class="tr" data-open="'+s.id+'"><span><b>'+esc(s.name||s.username)+'</b><small>@'+esc(s.username)+'</small></span><span>'+esc(s.cohort||"—")+'</span><span>'+v.completed+'/30</span><span>'+esc(v.model.weakest?label(v.model.weakest):"—")+'</span><span class="risk '+(s.active===false?"none":r)+'">'+(s.active===false?(s.accountStatus==="pending"?"بانتظار الاعتماد":s.accountStatus==="paused"?"موقوف مؤقتًا":"معطّل"):rlabel(r,v))+'</span></button>';}).join("")+'</div></section>';
 }
+function cohortDefaults(c){
+ var first=state.students.find(function(s){return s.cohortId===c.id;})||{};
+ return {university:c.institution||first.university||"",
+  faculty:c.faculty||first.faculty||"كلية الحقوق",
+  year:c.academic_year||first.year||"السنة الأولى",
+  country:c.country_code||first.country||"qa",
+  course:c.course_id||"qa-qu-lawc101-rights",
+  subject:c.subject_name||"نظرية الحق"};
+}
+function sameAcademicYear(a,b){
+ return String(a||"").replace("الفرقة","السنة").trim()===String(b||"").replace("الفرقة","السنة").trim();
+}
+function cohortProfessors(c){
+ var scope=cohortDefaults(c),names=new Map();
+ (state.instructorAssignments||[]).forEach(function(a){
+  if(!a.active||a.country_code!==scope.country||a.university!==scope.university||
+     a.faculty!==scope.faculty||!sameAcademicYear(a.year_label,scope.year)||a.course_id!==scope.course)return;
+  var t=state.instructors.find(function(p){return p.instructor_id===a.instructor_id;});
+  if(t&&t.profiles?.active)names.set(a.instructor_id,t.profiles.display_name||t.official_email);
+ });
+ return Array.from(names.values());
+}
 function cohortsTab(){
- return '<section class="pageTitle"><div><span class="overline">Cohorts</span><h1>المجموعات</h1><p>مجموعات الـPilot والمؤسسات.</p></div><button class="btn primary" id="newCohort">'+ico("plus")+' مجموعة جديدة</button></section><section class="cohortGrid">'+state.cohorts.map(function(c){return '<div class="panel cohortCard"><span class="cohortIcon">'+ico("group")+'</span><h3>'+esc(c.name)+'</h3><p>'+state.students.filter(function(s){return s.cohort===c.name;}).length+' طالب</p><div class="cohortMeta"><span>'+esc(c.institution||"—")+'</span><span>'+esc(c.academic_year||"—")+'</span></div></div>';}).join("")+'</section>';
+ return '<section class="pageTitle"><div><span class="overline">إدارة المجموعات</span><h1>المجموعات</h1>'+
+ '<p>افتح المجموعة لإضافة الطلاب والأساتذة ومراجعة بياناتها. بيانات المادة والجامعة والفرقة تُورّث تلقائيًا.</p></div>'+
+ '<button class="btn primary" id="newCohort">+ مجموعة جديدة</button></section>'+
+ '<section class="cohortGrid cohortGridManagement">'+state.cohorts.map(function(c){
+  var defaults=cohortDefaults(c),students=state.students.filter(function(s){return s.cohortId===c.id;}),
+  professors=cohortProfessors(c);
+  return '<article class="panel cohortCard cohortManaged"><div class="cohortHead"><div><span class="cohortIcon">'+ico("group")+
+  '</span><h2>'+esc(c.name)+'</h2></div><span class="cohortCount">'+students.length+' طالب</span></div>'+
+  '<p class="cohortScope">'+esc(defaults.university||"الجامعة غير محددة")+' · '+esc(defaults.faculty)+
+  ' · '+esc(displayYear(defaults.year))+' · '+esc(defaults.subject)+'</p>'+
+  '<div class="cohortButtons"><button type="button" class="btn primary" data-cohort-add="'+esc(c.id)+'">+ طالب</button>'+
+  '<button type="button" class="btn secondary" data-cohort-professor="'+esc(c.id)+'">+ أستاذ جامعي</button>'+
+  '<button type="button" class="btn secondary" data-cohort-edit="'+esc(c.id)+'">تعديل بيانات المجموعة</button></div>'+
+  '<details class="cohortMembers" open><summary>الطلاب ('+students.length+')</summary><div class="cohortMemberList">'+
+  (students.length?students.map(function(s){return '<button type="button" class="cohortStudentButton" data-cohort-student="'+esc(s.id)+'">'+
+   '<span>'+esc(s.name||s.username)+'</span><small>@'+esc(s.username)+' · '+(s.active===false?'بانتظار التفعيل/موقوف':'نشط')+'</small></button>';}).join(""):
+   '<p class="cohortEmpty">لا يوجد طلاب في هذه المجموعة بعد. اضغط «+ طالب» لتسجيل أول طالب.</p>')+
+  '</div></details>'+
+  '<div class="cohortProfessorList"><b>أعضاء هيئة التدريس</b><p>'+(professors.length?professors.map(esc).join("، "):
+  'لم يتم تكليف دكتور مطابق لجامعة المجموعة وكليتها وفرقتها ومادتها.')+'</p></div></article>';
+ }).join("")+'</section>';
 }
 function pilotSourceLinks(ids){
  var urls={"qa-civil-2004-art39":"https://www.almeezan.qa/LawArticles.aspx?LawArticleID=36483&LawID=2559&language=ar","qa-civil-2004-art40":"https://www.almeezan.qa/LawArticles.aspx?LawArticleID=36484&LawID=2559&language=ar","qa-civil-2004-art63":"https://www.almeezan.qa/LawArticles.aspx?LawArticleID=36507&LawID=2559&language=ar"};
@@ -341,8 +383,24 @@ function gradingTab(){
 }
 function modal(){
  if(!state.modal)return "";
- if(state.modal==="add")return '<div class="modalBack"><div class="modal"><button class="close" data-close>×</button><span class="overline">حساب مركزي</span><h2>تسجيل طالب بمساعدة المشرف</h2><p class="registrationHint">يمكن تسجيل الطالب حتى لو لم يكن تابعًا لمجموعة أو أستاذ. سيُطلب منه تغيير كلمة المرور المؤقتة عند أول دخول. التجربة الحالية لمقرر نظرية الحق القطري؛ يؤكد المشرف قبول الطالب لشروط التسجيل الكاملة مرة واحدة.</p><form id="addForm" class="formGrid"><label>الاسم<input id="n" required></label><label>اسم المستخدم (بالإنجليزية فقط)<input id="usr" pattern="[A-Za-z0-9._-]{3,32}" value="'+nextStudentUsername()+'" title="استخدم حروفًا إنجليزية وأرقامًا فقط؛ مثال: student02" placeholder="student02" required></label><label>الجامعة<input id="uni" maxlength="160" value="Qatar University" required></label><label>الكلية<input id="faculty" maxlength="160" value="كلية الحقوق" required></label><label>الشعبة / القسم (اختياري)<input id="academicSection" maxlength="100"></label><label>رقم القيد الجامعي (اختياري)<input id="studentNumber" maxlength="80"></label><label>بريد المجموعة المؤسسي (اختياري)<input id="groupEmail" type="email" maxlength="254"></label><label>الفرقة<select id="yr"><option value="السنة الأولى">الفرقة الأولى</option><option value="السنة الثانية">الفرقة الثانية</option><option value="السنة الثالثة">الفرقة الثالثة</option><option value="السنة الرابعة">الفرقة الرابعة</option></select></label><label>الدولة<select id="country"><option value="qa">قطر</option><option value="eg">مصر</option></select></label><label>المجموعة (اختيارية)<select id="coh"><option value="">بدون مجموعة</option>'+state.cohorts.map(function(c){return '<option value="'+c.id+'">'+esc(c.name)+'</option>';}).join("")+'</select></label><label class="registrationHint"><input type="checkbox" id="registrationTerms" required>أؤكد موافقة الطالب عند التسجيل على سياسة الخصوصية وشروط الاستخدام، بما يشمل حفظ بيانات التعلم وإرسال إجاباته إلى OpenAI للتصحيح والتدريب المتكيف دون اسمه أو بيانات اتصاله. <a href="privacy.html" target="_blank" rel="noopener">سياسة الخصوصية</a> · <a href="terms.html" target="_blank" rel="noopener">شروط الاستخدام</a></label><div class="modalActions"><button class="btn primary" type="submit">إنشاء الحساب</button></div></form></div></div>';
- if(state.modal==="creds")return '<div class="modalBack"><div class="modal"><button class="close" data-close>×</button><span class="overline">بيانات مؤقتة</span><h2>سلمها للطالب مرة واحدة</h2><div class="credentials"><span>اسم المستخدم</span><b>'+esc(state.creds.username)+'</b><span>كلمة المرور المؤقتة</span><b>'+esc(state.creds.password)+'</b></div><button class="btn primary" id="copyCreds">نسخ البيانات</button><div class="warn">سيُطلب من الطالب تغيير كلمة المرور. لا نخزن كلمة المرور في لوحة الإدارة.</div></div></div>';
+ if(state.modal==="cohort"){
+  var record=state.cohorts.find(function(x){return x.id===state.cohortDraft;})||null;
+  var defaults=record?cohortDefaults(record):{university:"",faculty:"كلية الحقوق",year:"السنة الأولى",country:"qa",course:"qa-qu-lawc101-rights",subject:"نظرية الحق"};
+  var countries=[["qa","قطر"],["eg","مصر"],["sa","السعودية"],["ae","الإمارات"]],years=[["السنة الأولى","الفرقة الأولى"],["السنة الثانية","الفرقة الثانية"],["السنة الثالثة","الفرقة الثالثة"],["السنة الرابعة","الفرقة الرابعة"]];
+  return '<div class="modalBack"><div class="modal"><button class="close" data-close type="button" aria-label="إغلاق">×</button>'+
+   '<h2>'+(record?'تعديل بيانات المجموعة':'مجموعة جديدة')+'</h2>'+
+   '<p class="registrationHint">تُستخدم هذه البيانات تلقائيًا عند إضافة أي طالب أو تكليف أستاذ جامعي من المجموعة.</p>'+
+   '<form id="cohortForm" class="formGrid"><label>اسم المجموعة<input id="cohortName" maxlength="120" required value="'+esc(record?.name||"")+'"></label>'+
+   '<label>الدولة<select id="cohortCountry">'+countries.map(function(x){return '<option value="'+x[0]+'" '+(defaults.country===x[0]?'selected':'')+'>'+x[1]+'</option>';}).join("")+'</select></label>'+
+   '<label>الجامعة<input id="cohortUniversity" maxlength="160" required value="'+esc(defaults.university)+'"></label>'+
+   '<label>الكلية<input id="cohortFaculty" maxlength="160" required value="'+esc(defaults.faculty)+'"></label>'+
+   '<label>الفرقة<select id="cohortYear">'+years.map(function(x){return '<option value="'+x[0]+'" '+(sameAcademicYear(defaults.year,x[0])?'selected':'')+'>'+x[1]+'</option>';}).join("")+'</select></label>'+
+   '<label>المادة<input id="cohortSubject" maxlength="160" required value="'+esc(defaults.subject)+'"></label>'+
+   '<p class="registrationHint">المقرر التدريبي المعتمد حاليًا لطلاب التجربة: نظرية الحق. لا يغيّر اسم المادة هنا المقرر التدريبي تلقائيًا.</p>'+
+   '<div class="modalActions"><button class="btn primary" type="submit">'+(record?'حفظ بيانات المجموعة':'إنشاء المجموعة')+'</button></div></form></div></div>';
+ }
+ if(state.modal==="add"){var selectedCohort=state.cohorts.find(function(x){return x.id===state.cohortContext;})||null,groupFields=selectedCohort?cohortDefaults(selectedCohort):null;return '<div class="modalBack"><div class="modal"><button class="close" data-close>×</button><span class="overline">حساب مركزي</span><h2>'+(selectedCohort?'إضافة طالب إلى مجموعة '+esc(selectedCohort.name):'تسجيل طالب بمساعدة المشرف')+'</h2><p class="registrationHint">يمكن تسجيل الطالب حتى لو لم يكن تابعًا لمجموعة أو أستاذ. سيُطلب منه تغيير كلمة المرور المؤقتة عند أول دخول. التجربة الحالية لمقرر نظرية الحق القطري؛ يؤكد المشرف قبول الطالب لشروط التسجيل الكاملة مرة واحدة.</p><form id="addForm" class="formGrid"><label>الاسم<input id="n" required></label><label>اسم المستخدم (بالإنجليزية فقط)<input id="usr" pattern="[A-Za-z0-9._-]{3,32}" value="'+nextStudentUsername()+'" title="استخدم حروفًا إنجليزية وأرقامًا فقط؛ مثال: student02" placeholder="student02" required></label><label>الجامعة<input id="uni" maxlength="160" value="'+esc(groupFields?.university||"Qatar University")+'" required></label><label>الكلية<input id="faculty" maxlength="160" value="'+esc(groupFields?.faculty||"كلية الحقوق")+'" required></label><label>الشعبة / القسم (اختياري)<input id="academicSection" maxlength="100"></label><label>رقم القيد الجامعي (اختياري)<input id="studentNumber" maxlength="80"></label><label>بريد المجموعة المؤسسي (اختياري)<input id="groupEmail" type="email" maxlength="254"></label><label>الفرقة<select id="yr"><option value="السنة الأولى">الفرقة الأولى</option><option value="السنة الثانية">الفرقة الثانية</option><option value="السنة الثالثة">الفرقة الثالثة</option><option value="السنة الرابعة">الفرقة الرابعة</option></select></label><label>الدولة<select id="country"><option value="qa">قطر</option><option value="eg">مصر</option><option value="sa">السعودية</option><option value="ae">الإمارات</option></select></label><label>المجموعة (اختيارية)<select id="coh"><option value="">بدون مجموعة</option>'+state.cohorts.map(function(c){return '<option value="'+c.id+'" '+(selectedCohort&&selectedCohort.id===c.id?'selected':'')+'>'+esc(c.name)+'</option>';}).join("")+'</select></label><label class="registrationHint"><input type="checkbox" id="registrationTerms" required>أؤكد موافقة الطالب عند التسجيل على سياسة الخصوصية وشروط الاستخدام، بما يشمل حفظ بيانات التعلم وإرسال إجاباته إلى OpenAI للتصحيح والتدريب المتكيف دون اسمه أو بيانات اتصاله. <a href="privacy.html" target="_blank" rel="noopener">سياسة الخصوصية</a> · <a href="terms.html" target="_blank" rel="noopener">شروط الاستخدام</a></label><div class="modalActions"><button class="btn primary" type="submit">إنشاء الحساب</button></div></form></div></div>';}
+ if(state.modal==="creds")return '<div class="modalBack"><div class="modal"><button class="close" data-close>×</button><span class="overline">بيانات مؤقتة</span><h2>سلمها للطالب مرة واحدة</h2><div class="credentials"><span>اسم المستخدم</span><b>'+esc(state.creds.username)+'</b><span>كلمة المرور المؤقتة</span><b>'+esc(state.creds.password)+'</b></div><div class="modalActions"><button class="btn primary" id="copyCreds">نسخ البيانات</button>'+(state.creds.nextCohort?'<button class="btn secondary" id="addNextGroupStudent">+ تسجيل طالب جديد</button><button class="btn secondary" id="backToCohort">العودة للمجموعة</button>':'<button class="btn secondary" id="finishCreds">إغلاق</button>')+'</div><div class="warn">سيُطلب من الطالب تغيير كلمة المرور. لا نخزن كلمة المرور في لوحة الإدارة.</div></div></div>';
  return "";
 }
 async function load(){
@@ -428,12 +486,60 @@ function bind(){
   document.querySelectorAll("button[data-student]").forEach(function(b){b.onclick=function(){state.selected=b.dataset.student;render();};});
  document.querySelectorAll("[data-open]").forEach(function(b){b.onclick=function(){state.selected=b.dataset.open;state.tab="dashboard";render();};});
  var q=document.getElementById("search")||document.getElementById("ssearch");if(q)q.oninput=function(){var pos=q.selectionStart;state.q=q.value;render();var again=document.getElementById(q.id);if(again){again.focus();try{again.setSelectionRange(pos,pos);}catch(_){}}};
- document.querySelectorAll("#add,#quickAdd,#quickAddHome").forEach(function(add){add.onclick=function(){state.modal="add";render();};});
+ document.querySelectorAll("#add,#quickAdd,#quickAddHome").forEach(function(add){add.onclick=function(){state.cohortContext=null;state.modal="add";render();};});
  document.querySelectorAll("[data-close]").forEach(function(b){b.onclick=function(){state.modal=null;render();};});
  var ref=document.getElementById("refresh");if(ref)ref.onclick=load;
- var f=document.getElementById("addForm");if(f)f.onsubmit=async function(e){e.preventDefault();var nameEl=document.getElementById("n"),userEl=document.getElementById("usr"),uniEl=document.getElementById("uni"),yearEl=document.getElementById("yr"),countryEl=document.getElementById("country"),cohortEl=document.getElementById("coh");try{var countryCode=countryEl.value;var x=await LEX_CLOUD.createStudent({name:nameEl.value.trim(),username:userEl.value.trim(),university:uniEl.value.trim(),faculty:document.getElementById("faculty").value.trim(),academic_section:document.getElementById("academicSection").value.trim(),student_registration_number:document.getElementById("studentNumber").value.trim(),institutional_group_email:document.getElementById("groupEmail").value.trim(),year:yearEl.value,accepted_registration_terms:document.getElementById("registrationTerms").checked,accepted_terms_version:"2026-10-23-v6",country_code:countryCode,cohort_id:cohortEl.value||null,course_id:"qa-qu-lawc101-rights"});state.creds={username:x.username,password:x.temporary_password};await load();state.modal="creds";render();}catch(er){var message=await adminReadableError(er);alert("تعذر إنشاء الحساب: "+message);}};
+ var chooseCohort=document.getElementById("coh");
+ if(chooseCohort)chooseCohort.onchange=function(){
+  state.cohortContext=chooseCohort.value||null;
+  var group=state.cohorts.find(function(x){return x.id===chooseCohort.value;});
+  if(!group)return;
+  var d=cohortDefaults(group);
+  document.getElementById("uni").value=d.university;
+  document.getElementById("faculty").value=d.faculty;
+  document.getElementById("yr").value=["السنة الأولى","السنة الثانية","السنة الثالثة","السنة الرابعة"].find(function(y){return sameAcademicYear(y,d.year);})||"السنة الأولى";
+  document.getElementById("country").value=d.country;
+ };
+ var cohortForm=document.getElementById("cohortForm");
+ if(cohortForm)cohortForm.onsubmit=async function(e){
+   e.preventDefault();var button=cohortForm.querySelector('[type="submit"]');
+   button.disabled=true;
+   var data={name:document.getElementById("cohortName").value.trim(),
+    institution:document.getElementById("cohortUniversity").value.trim(),
+    academic_year:document.getElementById("cohortYear").value,
+    faculty:document.getElementById("cohortFaculty").value.trim(),
+    country_code:document.getElementById("cohortCountry").value,
+    course_id:"qa-qu-lawc101-rights",subject_name:document.getElementById("cohortSubject").value.trim()};
+   try{
+    if(state.cohortDraft&&state.cohortDraft!=="new")await LEX_CLOUD.updateCohortDefaults({id:state.cohortDraft,...data});
+    else await LEX_CLOUD.createCohort(data);
+    state.modal=null;state.cohortDraft=null;state.tab="cohorts";await load();
+   }catch(error){button.disabled=false;alert("تعذر حفظ المجموعة: "+String(error?.message||error));}
+ };
+ document.querySelectorAll("[data-cohort-add]").forEach(function(button){button.onclick=function(){
+  state.cohortContext=button.dataset.cohortAdd;state.modal="add";render();
+ };});
+ document.querySelectorAll("[data-cohort-edit]").forEach(function(button){button.onclick=function(){
+  state.cohortDraft=button.dataset.cohortEdit;state.modal="cohort";render();
+ };});
+ document.querySelectorAll("[data-cohort-professor]").forEach(function(button){button.onclick=function(){
+  location.href="admin-instructors.html?cohort="+encodeURIComponent(button.dataset.cohortProfessor);
+ };});
+ document.querySelectorAll("[data-cohort-student]").forEach(function(button){button.onclick=function(){
+  state.selected=button.dataset.cohortStudent;state.tab="dashboard";state.modal=null;render();
+ };});
+ var f=document.getElementById("addForm");if(f){if(state.cohortContext){var ccGroup=state.cohorts.find(function(x){return x.id===state.cohortContext;});if(ccGroup){var defaults=cohortDefaults(ccGroup);document.getElementById("yr").value=["السنة الأولى","السنة الثانية","السنة الثالثة","السنة الرابعة"].find(function(y){return sameAcademicYear(y,defaults.year);})||"السنة الأولى";document.getElementById("country").value=defaults.country;}}f.onsubmit=async function(e){e.preventDefault();var nameEl=document.getElementById("n"),userEl=document.getElementById("usr"),uniEl=document.getElementById("uni"),yearEl=document.getElementById("yr"),countryEl=document.getElementById("country"),cohortEl=document.getElementById("coh");try{var countryCode=countryEl.value;var x=await LEX_CLOUD.createStudent({name:nameEl.value.trim(),username:userEl.value.trim(),university:uniEl.value.trim(),faculty:document.getElementById("faculty").value.trim(),academic_section:document.getElementById("academicSection").value.trim(),student_registration_number:document.getElementById("studentNumber").value.trim(),institutional_group_email:document.getElementById("groupEmail").value.trim(),year:yearEl.value,accepted_registration_terms:document.getElementById("registrationTerms").checked,accepted_terms_version:"2026-10-23-v6",country_code:countryCode,cohort_id:cohortEl.value||null,course_id:"qa-qu-lawc101-rights"});if(!x||x.ok!==true||!x.temporary_password)throw Error(x?.error||"student_create_unconfirmed");state.creds={username:x.username,password:x.temporary_password,nextCohort:cohortEl.value||null};state.cohortContext=cohortEl.value||null;await load();state.modal="creds";render();}catch(er){var message=await adminReadableError(er);alert("تعذر إنشاء الحساب: "+message);}};}
+ var next=document.getElementById("addNextGroupStudent");if(next)next.onclick=function(){
+  if(!state.creds?.nextCohort)return;
+  if(!confirm("تأكد من نسخ بيانات الدخول المؤقتة للطالب الحالي قبل الانتقال؛ لن تُعرض مرة أخرى."))return;
+  state.cohortContext=state.creds.nextCohort;state.creds=null;state.modal="add";render();
+ };
+ var back=document.getElementById("backToCohort");if(back)back.onclick=function(){
+  state.creds=null;state.modal=null;state.cohortContext=null;state.tab="cohorts";render();
+ };
+ var done=document.getElementById("finishCreds");if(done)done.onclick=function(){state.creds=null;state.modal=null;render();};
  var cc=document.getElementById("copyCreds");if(cc)cc.onclick=function(){var t="Username: "+state.creds.username+"\nTemporary password: "+state.creds.password;navigator.clipboard&&navigator.clipboard.writeText(t);cc.textContent="تم النسخ";};
- var nc=document.getElementById("newCohort");if(nc)nc.onclick=async function(){var name=prompt("اسم المجموعة");if(!name)return;try{await LEX_CLOUD.createCohort({name:name,institution:"Qatar University"});await load();}catch(e){alert("تعذر إنشاء المجموعة");}};
+ var nc=document.getElementById("newCohort");if(nc)nc.onclick=function(){state.cohortDraft="new";state.modal="cohort";render();};
  document.querySelectorAll("[data-reset]").forEach(function(b){b.onclick=async function(){
   var s=state.students.find(function(x){return x.id===b.dataset.reset;});
   if(!s||!confirm("إصدار كلمة مرور مؤقتة جديدة للطالب "+(s.name||s.username)+"؟ ستتوقف كلمة المرور السابقة، ولن تتغير حالة تفعيل الحساب أو نتائج الطالب."))return;

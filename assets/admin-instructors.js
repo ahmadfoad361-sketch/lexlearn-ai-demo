@@ -2,7 +2,7 @@
 "use strict";
 const APP=document.getElementById("adminInstructorApp"),C=LEX_CLOUD.db();
 const esc=v=>String(v??"").replace(/[&<>"']/g,k=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[k]));
-let state={teachers:[],assignments:[],courses:[],credential:null,editing:new URLSearchParams(location.search).get("edit")||""};
+let state={teachers:[],assignments:[],courses:[],credential:null,editing:new URLSearchParams(location.search).get("edit")||"",cohort:null,cohortId:new URLSearchParams(location.search).get("cohort")||""};
 async function readableError(error){
  let code=error?.message||"";
  try{if(error?.context?.json){const body=await error.context.json();code=body.error||code;}}catch(_){}
@@ -86,10 +86,28 @@ function list(){
  '<button type="button" class="secondary" data-assignment="'+x.id+'" data-owner="'+t.instructor_id+'" data-active="'+(!x.active)+'">'+(x.active?"إيقاف تكليف":"تفعيل تكليف")+'</button></div>').join("")+'</div>';
  }).join(""))+'</section>';
 }
+function useCohortDefaults(form){
+ if(!state.cohort||!form)return;
+ const g=state.cohort;
+ const values={course_id:g.course_id||"qa-qu-lawc101-rights",
+ subject_name:g.subject_name||"نظرية الحق",country_code:g.country_code||"qa",
+ university:g.institution||"",faculty:g.faculty||"كلية الحقوق",
+ year_label:g.academic_year||"السنة الأولى"};
+ for(const [key,value] of Object.entries(values)){
+  const input=form.elements.namedItem(key);if(!input||!value)continue;
+  if(key==="year_label")input.value=["السنة الأولى","السنة الثانية","السنة الثالثة","السنة الرابعة"]
+   .find(y=>LEX_ACADEMIC.year(y)===LEX_ACADEMIC.year(value))||"السنة الأولى";
+  else input.value=value;
+ }
+}
 function page(){
- APP.innerHTML='<section class="panel"><span class="eyebrow">إدارة أكاديمية مستقلة عن الطلاب</span><h1>حسابات أساتذة الجامعات</h1><p>يتم إصدار اسم الدخول وكلمة مرور مؤقتة من المشرف. لا يظهر للدكتور شيء من وظائف إدارة الطالب أو أدوات مراجعة المحتوى.</p><a href="instructor-login.html" target="_blank" rel="noopener">فتح بوابة دخول الدكتور وإرسال رابطها إليه</a></section>'+
+ APP.innerHTML=(state.cohort?'<section class="panel notice"><h2>إضافة أستاذ جامعي لمجموعة '+esc(state.cohort.name)+'</h2><p>بيانات الجامعة والكلية والفرقة والمادة أدناه مملوءة تلقائيًا. اختر إسناد تكليف لدكتور مسجل أو أنشئ حساب دكتور جديدًا. التكليف يشمل الطلاب المطابقين لنفس النطاق الأكاديمي.</p><a href="admin.html#cohorts">العودة إلى المجموعات</a></section>':'')+'<section class="panel"><span class="eyebrow">إدارة أكاديمية مستقلة عن الطلاب</span><h1>حسابات أساتذة الجامعات</h1><p>يتم إصدار اسم الدخول وكلمة مرور مؤقتة من المشرف. لا يظهر للدكتور شيء من وظائف إدارة الطالب أو أدوات مراجعة المحتوى.</p><a href="instructor-login.html" target="_blank" rel="noopener">فتح بوابة دخول الدكتور وإرسال رابطها إليه</a></section>'+
  (state.credential?'<section class="panel notice"><h2>بيانات الدخول الأولية — تظهر مرة واحدة</h2><p>البريد الإلكتروني: <b>'+esc(state.credential.email)+'</b></p><p>كلمة المرور المؤقتة: <b>'+esc(state.credential.temporary_password)+'</b></p><div class="actions"><button id="copyTeacherPassword" type="button" class="primary">نسخ كلمة المرور فقط</button><button id="copyTeacher" type="button" class="secondary">نسخ بيانات الدخول كاملة</button></div><p class="hint">'+(state.credential.login_verified?'تم اختبار كلمة المرور الجديدة بنجاح من خدمة الدخول. ':'')+'سلّمها للدكتور بقناة آمنة واطلب منه تغيير كلمة المرور. لا نحتفظ بها داخل سجل الإدارة.</p></section>':'')+
  form()+list();
+ if(state.cohort){
+  useCohortDefaults(document.getElementById("createInstructor"));
+  useCohortDefaults(document.getElementById("assignInstructor"));
+ }
  if(state.editing){const current=document.querySelector('.facultyEditForm');if(current)current.scrollIntoView({block:"nearest"});}
  document.getElementById("createInstructor").onsubmit=async e=>{
   e.preventDefault();const b=Object.fromEntries(new FormData(e.currentTarget));
@@ -172,11 +190,14 @@ const copy=document.getElementById("copyTeacher");
 async function reload(){
  const me=await LEX_CLOUD.profile();
  if(!me||!["owner","admin"].includes(me.role)||me.active!==true)throw Error("FORBIDDEN");
- const [x,c]=await Promise.all([
+ const [x,c,group]=await Promise.all([
+
   C.functions.invoke("admin-manage-instructors",{body:{action:"list"}}),
-  C.from("courses").select("id,title_ar,country_code,status,metadata").order("title_ar")
+  C.from("courses").select("id,title_ar,country_code,status,metadata").order("title_ar"),
+  state.cohortId&&/^[0-9a-f-]{36}$/i.test(state.cohortId)?C.from("cohorts").select("id,name,institution,academic_year,faculty,country_code,course_id,subject_name").eq("id",state.cohortId).maybeSingle():Promise.resolve({data:null,error:null})
  ]);
  if(x.error||!x.data?.ok||c.error)throw Error("load_failed");
+ if(group.error)throw Error("cohort_load_failed");state.cohort=group.data||null;
  state.teachers=x.data.instructors||[];state.assignments=x.data.assignments||[];state.courses=c.data||[];
  page();
 }
