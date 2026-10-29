@@ -4,7 +4,7 @@ const source=fs.readFileSync("assets/instructor-dashboard.js","utf8");
 const page=fs.readFileSync("instructor.html","utf8");
 const login=fs.readFileSync("instructor-login.html","utf8");
 assert.match(page,/instructor-dashboard\.js\?v=20261029\.passwordfix1/);
-assert.match(login,/instructor-login\.js\?v=20261029\.passwordfix1/);
+assert.match(login,/instructor-login\.js\?v=20261029\.loginhelp2/);
 assert.doesNotMatch(source,/setOwnPassword\([^)]*\);await reload\(\)/,
  "Never reload old JWT immediately after password rotation");
 assert.match(source,/location\.replace\("instructor-login\.html\?password_updated=1"\)/);
