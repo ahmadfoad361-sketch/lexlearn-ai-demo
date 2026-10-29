@@ -18,6 +18,7 @@ async function readableError(error){
   assignment_conflict:"يوجد تكليف مماثل للدكتور بالفعل. راجع التكليفات الحالية.",
   invalid_scope:"راجع المادة والدولة والجامعة والكلية والفرقة في التكليف الأكاديمي.",
   instructor_assignment_failed:"تعذر حفظ تكليف المادة، وأُلغي إنشاء الحساب. راجع المقرر وبيانات التكليف.",
+  instructor_password_reset_failed:"تعذر إصدار كلمة مرور جديدة للدكتور. تواصل مع المسؤول التقني إذا تكرر الخطأ.",
   account_creation_failed:"تعذر إنشاء الحساب في خدمة الدخول. حاول مرة أخرى؛ لا يشترط بريد جامعي.",
   email_update_failed:"تعذر تغيير بريد تسجيل الدخول. لم يُحفظ البريد الجديد.",
   instructor_update_not_confirmed:"لم يتأكد حفظ التعديلات. حدّث الصفحة لمراجعة البيانات قبل المحاولة مجددًا.",
@@ -75,6 +76,7 @@ function list(){
  const a=state.assignments.filter(x=>x.instructor_id===t.instructor_id);
  return '<div class="summary"><div class="toolbar"><div><h3>'+esc(t.academic_title||"دكتور")+' '+esc(t.profiles?.display_name||"")+'</h3><p>'+esc(t.official_email)+' • '+esc(t.specialization||"")+'</p><small>واتساب: '+esc(t.whatsapp_e164||"—")+'</small></div>'+
  '<div class="actions"><button data-edit-teacher="'+t.instructor_id+'" class="secondary">فتح وتعديل البيانات</button> '+
+ '<button type="button" data-reset-teacher="'+esc(t.instructor_id)+'" class="secondary">إصدار كلمة مرور بديلة</button> '+
  '<button data-teacher="'+t.instructor_id+'" data-active="'+(t.profiles?.active?"false":"true")+'" class="secondary">'+(t.profiles?.active?"تعطيل حساب الدكتور":"تفعيل الحساب")+'</button></div></div>'+
  editTeacher(t)+
   a.map(x=>'<div class="course"><b>'+esc(x.subject_name)+'</b><p>'+esc(window.LEX_ACADEMIC.university(x.university))+' — '+esc(x.faculty)+' — '+esc(window.LEX_ACADEMIC.year(x.year_label))+'</p>'+
@@ -84,7 +86,7 @@ function list(){
  }).join(""))+'</section>';
 }
 function page(){
- APP.innerHTML='<section class="panel"><span class="eyebrow">إدارة أكاديمية مستقلة عن الطلاب</span><h1>حسابات أساتذة الجامعات</h1><p>يتم إصدار اسم الدخول وكلمة مرور مؤقتة من المشرف. لا يظهر للدكتور شيء من وظائف إدارة الطالب أو أدوات مراجعة المحتوى.</p><a href="instructor-login.html" target="_blank" rel="noopener">معاينة صفحة «تسجيل دخول الدكتور»</a></section>'+
+ APP.innerHTML='<section class="panel"><span class="eyebrow">إدارة أكاديمية مستقلة عن الطلاب</span><h1>حسابات أساتذة الجامعات</h1><p>يتم إصدار اسم الدخول وكلمة مرور مؤقتة من المشرف. لا يظهر للدكتور شيء من وظائف إدارة الطالب أو أدوات مراجعة المحتوى.</p><a href="instructor-login.html" target="_blank" rel="noopener">فتح بوابة دخول الدكتور وإرسال رابطها إليه</a></section>'+
  (state.credential?'<section class="panel notice"><h2>بيانات الدخول الأولية — تظهر مرة واحدة</h2><p>البريد الإلكتروني: <b>'+esc(state.credential.email)+'</b></p><p>كلمة المرور المؤقتة: <b>'+esc(state.credential.temporary_password)+'</b></p><button id="copyTeacher" class="secondary">نسخ بيانات الدخول</button><p class="hint">سلّمها للدكتور بقناة آمنة واطلب منه تغيير كلمة المرور. لا نحتفظ بها داخل سجل الإدارة.</p></section>':'')+
  form()+list();
  if(state.editing){const current=document.querySelector('.facultyEditForm');if(current)current.scrollIntoView({block:"nearest"});}
@@ -141,6 +143,17 @@ function page(){
    const updated=document.querySelector(".facultyEditForm .editTeacherStatus");
    if(updated)updated.textContent="تم تحديث بيانات الدكتور.";
   }catch(error){submit.disabled=false;status.textContent=await readableError(error);}
+ });
+ document.querySelectorAll("[data-reset-teacher]").forEach(b=>b.onclick=async()=>{
+  const teacher=state.teachers.find(t=>t.instructor_id===b.dataset.resetTeacher);
+  if(!teacher||!confirm("إصدار كلمة مرور مؤقتة جديدة للدكتور "+(teacher.profiles?.display_name||teacher.official_email)+"؟ ستتوقف كلمة المرور السابقة، ولن تتغير صلاحيات الحساب."))return;
+  b.disabled=true;
+  try{
+   const reply=await C.functions.invoke("admin-manage-instructors",{body:{action:"reset-password",instructor_id:teacher.instructor_id}});
+   if(reply.error||!reply.data?.ok||!reply.data?.temporary_password)throw reply.error||Error(reply.data?.error||"instructor_password_reset_failed");
+   state.credential=reply.data;page();
+   window.scrollTo(0,0);
+  }catch(error){b.disabled=false;alert(await readableError(error));}
  });
  document.querySelectorAll("[data-teacher]").forEach(b=>b.onclick=async()=>{
   if(!confirm("تأكيد تعديل حالة حساب الدكتور؟"))return;

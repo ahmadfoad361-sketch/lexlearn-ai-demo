@@ -58,6 +58,37 @@ Deno.serve(async(req:Request)=>{
    }catch(e){await admin.auth.admin.deleteUser(uid);throw e;}
    return json({ok:true,instructor_id:uid,email,temporary_password:temp});
   }
+  if(action==="reset-password"){
+   const uid=clean(b.instructor_id,64);
+   if(!/^[0-9a-f-]{36}$/i.test(uid))return json({error:"invalid_instructor"},400);
+   if(uid===user.id)return json({error:"self_action_denied"},403);
+   const [account,academic]=await Promise.all([
+    admin.from("profiles").select("id,role,active,must_change_password").eq("id",uid).maybeSingle(),
+    admin.from("instructor_profiles").select("instructor_id,official_email").eq("instructor_id",uid).maybeSingle()
+   ]);
+   if(account.error||academic.error||account.data?.role!=="instructor"||!academic.data)
+    return json({error:"not_instructor"},404);
+   // Set the first-login gate before rotating credentials; do not activate disabled accounts.
+   const previousGate=account.data.must_change_password===true;
+   const gated=await admin.from("profiles").update({must_change_password:true})
+    .eq("id",uid).eq("role","instructor").select("id").single();
+   if(gated.error||!gated.data)return json({error:"instructor_password_reset_failed"},500);
+   const temporary=password();
+   const rotated=await admin.auth.admin.updateUserById(uid,{
+    password:temporary,user_metadata:{must_change_password:true}
+   });
+   if(rotated.error){
+    if(!previousGate)await admin.from("profiles").update({must_change_password:false})
+     .eq("id",uid).eq("role","instructor");
+    return json({error:"instructor_password_reset_failed"},500);
+   }
+   // Never write plaintext credentials to the audit trail or any persistent table.
+   await admin.from("admin_audit").insert({
+    actor_user_id:user.id,target_user_id:uid,action:"RESET_INSTRUCTOR_PASSWORD",
+    details:{temporary:true,requires_password_change:true}
+   });
+   return json({ok:true,email:academic.data.official_email,temporary_password:temporary});
+  }
   if(action==="update"){
    const uid=clean(b.instructor_id,64),name=clean(b.name,160),
     email=String(b.email??"").trim().toLowerCase(),title=clean(b.academic_title,90)||"دكتور",

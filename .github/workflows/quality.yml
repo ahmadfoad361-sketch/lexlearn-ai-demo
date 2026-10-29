@@ -76,6 +76,8 @@ jobs:
           node tests/pilot-readiness.test.js
           node tests/pilot-supervisor-audit.test.js
           node tests/instructor-platform.test.js
+          node tests/professor-entry-links.test.js
+          node tests/supervisor-password-resets.test.js
           node tests/supervisor-country-tree.test.js
           node tests/site-analytics.test.js
           node tests/student-academic-profile-update.test.js

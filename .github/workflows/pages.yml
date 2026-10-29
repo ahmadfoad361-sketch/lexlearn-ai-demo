@@ -73,6 +73,7 @@ jobs:
           node tests/showcase-semantic.test.mjs
       - name: Supervisor tree and academic identity checks
         run: |
+          node tests/supervisor-password-resets.test.js
           node tests/supervisor-country-tree.test.js
           node tests/student-academic-profile-update.test.js
       - name: Conference registration smoke tests

@@ -194,7 +194,7 @@ assert.equal(uniqueInvestor.size,10,"all ten original insights should rotate wit
 assert.ok(en.includes('class="wsqEventCTA"')&&ar.includes('class="wsqEventCTA"'),"Web Summit homepage needs a static dedicated conference entry in both languages");
 assert.ok(en.includes("qatar.websummit.com/wp-media/2026/02/QAT27_positive-768x139.png"),"home button must use the official unchanged 2027 logo");
 assert.ok(read("assets/conference-promo.css").includes(".wsqEventCTA"),"branded conference entry must have responsive styles");
-assert.ok(ar.includes("assets/v9-law.js?v=20261014.15"),"publish refreshed Arabic homepage");
+assert.ok(ar.includes("assets/v9-law.js?v=20261029.instructor1"),"publish refreshed Arabic homepage");
 assert.ok(ar.includes("wsqHomeFeature")&&en.includes("wsqHomeFeature"),"2027 conference entry must be visible without waiting for dynamic app scripts");
 assert.ok(!arLogic.includes('class="wsqEventCTA"'),"conference button should not duplicate in the Arabic app");
 assert.ok(ar.includes("QAT27_positive-768x139.png")&&en.includes("QAT27_positive-768x139.png"),"both conference buttons need the official logo");
@@ -369,7 +369,7 @@ assert.ok(js.includes('promo:"\\u2066LexLearn\\u2069 في مؤتمر \\u2066Web 
 assert.ok(!js.includes("ويب ساميت قطر ٢٠٢٧")&&!js.includes("ليكس ليرن · ويب ساميت"),"do not localize the event or project brand names in event strip");
 assert.ok(js.includes('promoShort:"LexLearn · Web Summit Qatar 2027 · ALPHA"'),"English banner retains official event identity");
 assert.ok(html.includes('title="Web Summit Qatar 2027 · ALPHA"')&&pub.includes('"go/index.html"')&&pub.includes('"lexlearn-go-qr.svg"'),"translated strip and permanent printed QR retained without visitor download");
-assert.ok(html.includes("assets/conference.css?v=20261019.12")&&html.includes("assets/conference.js?v=20261017.11"),"invalidate mobile first-fold UI cache");
+assert.ok(html.includes("assets/conference.css?v=20261019.12")&&html.includes("assets/conference.js?v=20261029.instructor1"),"invalidate mobile first-fold UI cache");
 
 
 /* Follow-up UX contract: conference, pilot, investor and student demo. */
@@ -398,7 +398,7 @@ for(const code of [sc,scEn]){
 assert.ok(nav.includes('showcase(?:-en)?'),"public demo must skip generic floating Back injection");
 assert.ok(scCss.includes(".demoIntro .demoStart{display:block;width:min(100%,485px)")&&scCss.includes(".demoIntro .stageCard:before{display:none}"),"wide CTA and no abrupt colored stripe");
 assert.ok(!read("showcase.html").includes("fonts.googleapis.com")&&!read("showcase-en.html").includes("fonts.googleapis.com"),"remove blocking remote Google fonts");
-assert.ok(html.includes("assets/conference.css?v=20261019.12")&&html.includes("assets/conference.js?v=20261017.11"),"bump CSS/JS cache");
+assert.ok(html.includes("assets/conference.css?v=20261019.12")&&html.includes("assets/conference.js?v=20261029.instructor1"),"bump CSS/JS cache");
 
 
 /* Conversion UX: direct email and WhatsApp, without any visitor data collection. */
@@ -475,7 +475,7 @@ assert.ok(pilotText.includes('30–60')&&pilotText.includes('6–8')&&pilotText.
 assert.ok(css.includes(".pilotExchange>div{background:#fffdfb!important"),"all three role cards must have identical background and border");
 assert.ok(css.includes(".pilotOffer{display:inline-block"),"free pilot line receives visible highlighting");
 assert.ok(css.includes(".pilotActions{grid-column:1/-1;display:grid"),"two direct-contact pilot buttons align responsively");
-assert.ok(html.includes("assets/conference.js?v=20261017.11")&&html.includes("assets/conference.css?v=20261019.12"),"invalidate conference client cache");
+assert.ok(html.includes("assets/conference.js?v=20261029.instructor1")&&html.includes("assets/conference.css?v=20261019.12"),"invalidate conference client cache");
 assert.ok(js.includes('id="pilotWhatsApp"')===false,"pilot WhatsApp IDs belong in HTML, not generated markup");
 
 console.log("conference landing release test PASS");
