@@ -4,7 +4,7 @@ var APP=document.getElementById("adminApp");
 var SKEY="lexlearn_admin_session";
 var ss=null;try{ss=JSON.parse(localStorage.getItem(SKEY)||"null");}catch(e){}
 if(!ss||!ss.cloud||!window.LEX_CLOUD||!LEX_CLOUD.isConfigured()){location.replace("admin-login.html");return;}
-var state={tab:"dashboard",students:[],cohorts:[],audit:[],content:[],snapshots:[],attempts:[],pilotAttempts:[],pilotGrades:[],pilotAi:[],selected:null,q:"",busy:false,error:"",creds:null,staffRole:null,officialRecords:{},recordDetail:null,recordStudent:null,recordError:"",instructors:[],instructorAssignments:[],enrollments:[],treeOpen:{},sectionOpen:{},instructorLoadWarning:false,cohortContext:null,cohortDraft:null};
+var state={tab:location.hash==="#cohorts"?"cohorts":"dashboard",students:[],cohorts:[],audit:[],content:[],snapshots:[],attempts:[],pilotAttempts:[],pilotGrades:[],pilotAi:[],selected:null,q:"",busy:false,error:"",creds:null,staffRole:null,officialRecords:{},recordDetail:null,recordStudent:null,recordError:"",instructors:[],instructorAssignments:[],enrollments:[],treeOpen:{},sectionOpen:{},instructorLoadWarning:false,cohortContext:null,cohortDraft:null};
 
 function nextStudentUsername(){
  var used=new Set(state.students.map(function(s){return String(s.username||"").toLowerCase();}));
@@ -489,6 +489,17 @@ function bind(){
  document.querySelectorAll("#add,#quickAdd,#quickAddHome").forEach(function(add){add.onclick=function(){state.cohortContext=null;state.modal="add";render();};});
  document.querySelectorAll("[data-close]").forEach(function(b){b.onclick=function(){state.modal=null;render();};});
  var ref=document.getElementById("refresh");if(ref)ref.onclick=load;
+ var chooseCohort=document.getElementById("coh");
+ if(chooseCohort)chooseCohort.onchange=function(){
+  state.cohortContext=chooseCohort.value||null;
+  var group=state.cohorts.find(function(x){return x.id===chooseCohort.value;});
+  if(!group)return;
+  var d=cohortDefaults(group);
+  document.getElementById("uni").value=d.university;
+  document.getElementById("faculty").value=d.faculty;
+  document.getElementById("yr").value=["السنة الأولى","السنة الثانية","السنة الثالثة","السنة الرابعة"].find(function(y){return sameAcademicYear(y,d.year);})||"السنة الأولى";
+  document.getElementById("country").value=d.country;
+ };
  var cohortForm=document.getElementById("cohortForm");
  if(cohortForm)cohortForm.onsubmit=async function(e){
    e.preventDefault();var button=cohortForm.querySelector('[type="submit"]');
