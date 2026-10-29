@@ -41,16 +41,20 @@ function mount(form){
  var current=[],active=-1;
  function close(){list.hidden=true;uni.setAttribute('aria-expanded','false');uni.removeAttribute('aria-activedescendant');active=-1;}
  function choose(index){if(!current[index])return;uni.value=current[index].value;close();uni.dispatchEvent(new Event('change',{bubbles:true}));}
+ function place(){
+  if(list.hidden)return;
+  var rect=uni.getBoundingClientRect(),spaceBelow=window.innerHeight-rect.bottom-12;
+  list.style.left=rect.left+'px';list.style.width=rect.width+'px';
+  list.style.maxHeight=Math.max(100,Math.min(260,spaceBelow>160?spaceBelow:rect.top-12))+'px';
+  list.style.top=(spaceBelow>160?rect.bottom+4:Math.max(8,rect.top-list.offsetHeight-4))+'px';
+ }
  function draw(query){
   document.querySelectorAll('.academicOptions').forEach(function(other){if(other!==list&&other._close)other._close();});
   current=options(country.value,query);active=-1;list.replaceChildren();uni.removeAttribute('aria-activedescendant');
   current.forEach(function(row,i){var item=document.createElement('div');item.id=list.id+'-'+i;item.setAttribute('role','option');item.setAttribute('aria-selected','false');item.textContent=row.names.join(' — ');item.addEventListener('mousedown',function(e){e.preventDefault();});item.addEventListener('click',function(){choose(i);});list.appendChild(item);});
   if(!current.length){var empty=document.createElement('p');empty.textContent=en?'No match — you can keep the university name you typed.':'لا توجد نتيجة؛ يمكنك استخدام اسم الجامعة الذي كتبته.';list.appendChild(empty);}
   list.hidden=false;uni.setAttribute('aria-expanded','true');
-  var rect=uni.getBoundingClientRect(),spaceBelow=window.innerHeight-rect.bottom-12;
-  list.style.left=rect.left+'px';list.style.width=rect.width+'px';
-  list.style.maxHeight=Math.max(100,Math.min(260,spaceBelow>160?spaceBelow:rect.top-12))+'px';
-  list.style.top=(spaceBelow>160?rect.bottom+4:Math.max(8,rect.top-list.offsetHeight-4))+'px';
+  place();
  }
  uni.addEventListener('focus',function(){draw('');});uni.addEventListener('input',function(){draw(uni.value);});uni.addEventListener('blur',close);
  uni.addEventListener('keydown',function(e){
@@ -62,14 +66,14 @@ function mount(form){
   uni.setAttribute('aria-activedescendant',list.children[active].id);list.children[active].scrollIntoView({block:'nearest'});
  });
  country.addEventListener('change',function(){uni.value='';faculty.value='';close();uni.dispatchEvent(new Event('change',{bubbles:true}));});
- list._close=close;form.addEventListener('reset',close);
+ list._close=close;list._place=place;form.addEventListener('reset',close);
 }
 function mountAll(scope){document.querySelectorAll('.academicOptions').forEach(function(list){if(!list._academicOwner.isConnected)list.remove();});(scope||document).querySelectorAll('form').forEach(mount);}
 root.LEX_ACADEMIC_PICKER={mount:mount,mountAll:mountAll,remember:remember,options:options};
 if(typeof module!=='undefined'&&module.exports)module.exports={options:options,key:key,remember:remember};
 if(typeof document!=='undefined'){
- function closeLists(e){if(e&&e.target&&e.target.closest&&e.target.closest('.academicOptions'))return;document.querySelectorAll('.academicOptions').forEach(function(list){if(list._close)list._close();});}
- document.addEventListener('scroll',closeLists,true);window.addEventListener('resize',closeLists);
+ function positionLists(e){if(e&&e.target&&e.target.closest&&e.target.closest('.academicOptions'))return;document.querySelectorAll('.academicOptions').forEach(function(list){if(list._place)list._place();});}
+ document.addEventListener('scroll',positionLists,true);window.addEventListener('resize',positionLists);
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){mountAll();});else mountAll();
 }
 })(typeof window!=='undefined'?window:globalThis);
