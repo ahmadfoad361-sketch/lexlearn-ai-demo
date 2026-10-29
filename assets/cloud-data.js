@@ -85,7 +85,7 @@ async function listStudents(){
 }
 async function listCohorts(){
   var c=db();if(!c)return[];
-  var r=await c.from("cohorts").select("id,name,institution,academic_year,active,created_at").order("created_at");
+  var r=await c.from("cohorts").select("id,name,institution,academic_year,faculty,country_code,course_id,subject_name,active,created_at").order("created_at");
   if(r.error)throw r.error;return r.data||[];
 }
 async function listAudit(){
@@ -109,9 +109,19 @@ async function listContentItems(courseId){
 async function reviewContent(data){return invoke("content-review",data);}
 async function createCohort(data){
   var c=db();if(!c)throw new Error("cloud_not_configured");
-  var row={name:String(data.name||"").trim(),institution:data.institution||null,academic_year:data.academic_year||null,active:true};
+  var row={name:String(data.name||"").trim(),institution:String(data.institution||"").trim()||null,academic_year:data.academic_year||null,faculty:String(data.faculty||"").trim()||null,country_code:data.country_code||"qa",course_id:data.course_id||"qa-qu-lawc101-rights",subject_name:String(data.subject_name||"").trim()||"نظرية الحق",active:true};
   if(!row.name)throw new Error("cohort_name_required");
   var r=await c.from("cohorts").insert(row).select().single();if(r.error)throw r.error;return r.data;
+}
+async function updateCohortDefaults(data){
+ var c=db();if(!c)throw new Error("cloud_not_configured");
+ var id=String(data.id||"");
+ if(!/^[0-9a-f-]{36}$/i.test(id))throw Error("invalid_cohort");
+ var row={institution:String(data.institution||"").trim()||null,academic_year:data.academic_year||null,
+ faculty:String(data.faculty||"").trim()||null,country_code:data.country_code||"qa",
+ course_id:data.course_id||"qa-qu-lawc101-rights",subject_name:String(data.subject_name||"").trim()||"نظرية الحق"};
+ var r=await c.from("cohorts").update(row).eq("id",id).select("id").single();
+ if(r.error)throw r.error;return r.data;
 }
 async function setOwnPassword(password){
   if(String(password||"").length<10)throw new Error("password_too_short");
@@ -191,7 +201,7 @@ async function saveLearningPlan(row){
   row=Object.assign({},row,{user_id:u.data.user.id,updated_at:new Date().toISOString()});
   var r=await c.from("learning_plans").upsert(row,{onConflict:"user_id,course_id"}).select().single();if(r.error)throw r.error;return r.data;
 }
-root.LEX_CLOUD={isConfigured:isConfigured,db:db,rememberMe:rememberMe,setRememberMe:setRememberMe,studentEmail:studentEmail,profile:profile,signInStudent:signInStudent,signInAdmin:signInAdmin,signOut:signOut,requestPasswordReset:requestPasswordReset,loadSnapshot:loadSnapshot,saveSnapshot:saveSnapshot,listStudents:listStudents,listCohorts:listCohorts,listAudit:listAudit,listContentItems:listContentItems,reviewContent:reviewContent,createStudent:createStudent,manageStudent:manageStudent,createCohort:createCohort,setOwnPassword:setOwnPassword,updateOwnProfile:updateOwnProfile,studentLifecycleRpc:studentLifecycleRpc,gradeAnswer:gradeAnswer,gradePilot:gradePilot,gradeDiagnosticAi:gradeDiagnosticAi,gradeTrainingAi:gradeTrainingAi,trainingAiSummary:trainingAiSummary,getDiagnosticAiAudit:getDiagnosticAiAudit,getConsent:getConsent,recordConsent:recordConsent,logEvent:logEvent,recordAttempt:recordAttempt,saveLearningPlan:saveLearningPlan};
+root.LEX_CLOUD={isConfigured:isConfigured,db:db,rememberMe:rememberMe,setRememberMe:setRememberMe,studentEmail:studentEmail,profile:profile,signInStudent:signInStudent,signInAdmin:signInAdmin,signOut:signOut,requestPasswordReset:requestPasswordReset,loadSnapshot:loadSnapshot,saveSnapshot:saveSnapshot,listStudents:listStudents,listCohorts:listCohorts,listAudit:listAudit,listContentItems:listContentItems,reviewContent:reviewContent,createStudent:createStudent,manageStudent:manageStudent,createCohort:createCohort,updateCohortDefaults:updateCohortDefaults,setOwnPassword:setOwnPassword,updateOwnProfile:updateOwnProfile,studentLifecycleRpc:studentLifecycleRpc,gradeAnswer:gradeAnswer,gradePilot:gradePilot,gradeDiagnosticAi:gradeDiagnosticAi,gradeTrainingAi:gradeTrainingAi,trainingAiSummary:trainingAiSummary,getDiagnosticAiAudit:getDiagnosticAiAudit,getConsent:getConsent,recordConsent:recordConsent,logEvent:logEvent,recordAttempt:recordAttempt,saveLearningPlan:saveLearningPlan};
 if(typeof window!=="undefined"){
   window.addEventListener("error",function(ev){
     if(!isConfigured())return;
