@@ -43,3 +43,9 @@ export async function requireContentReviewer(req:Request){
   if(pe||!profile||profile.active===false||!["owner","admin","content_reviewer"].includes(profile.role))throw new Error("FORBIDDEN");
   return {user,profile,admin};
 }
+
+// Recheck database approval on every paid training request, never JWT user metadata.
+export async function requireTrainingAccess(admin:any,userId:string,courseId:string){
+ const r=await admin.rpc("lex_student_access_for",{p_user:userId,p_course:courseId});
+ if(r.error||r.data!==true)throw new Error("FORBIDDEN");
+}
