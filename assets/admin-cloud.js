@@ -107,8 +107,27 @@ function adminAdvice(v){
 }
 function shell(body){
  APP.innerHTML='<header class="top"><div class="topin"><a class="brand lexlearnBrandHome" href="index.html" title="الصفحة الرئيسية لـ LexLearn"><div class="mark"><img src="assets/lexlearn-logo.svg" alt="LexLearn"></div><div><b>LexLearn Admin</b><small>قاعدة بيانات مركزية</small></div></a>'+
- '<nav class="nav"><button id="openAnalytics">'+ico("chart")+'<span>الإحصاءات</span></button><button data-tab="dashboard" class="'+(state.tab==="dashboard"?"active":"")+'">'+ico("chart")+'<span>الرئيسية</span></button><button data-tab="students" class="'+(state.tab==="students"?"active":"")+'">'+ico("users")+'<span>الطلاب</span></button><button data-tab="cohorts" class="'+(state.tab==="cohorts"?"active":"")+'">'+ico("group")+'<span>المجموعات</span></button><button data-tab="grading" class="'+(state.tab==="grading"?"active":"")+'">'+ico("audit")+'<span>تصحيح التدريب</span></button><button data-tab="content" class="'+(state.tab==="content"?"active":"")+'">'+ico("audit")+'<span>المحتوى</span></button><button data-tab="audit" class="'+(state.tab==="audit"?"active":"")+'">'+ico("audit")+'<span>السجل</span></button></nav>'+
- '<div class="topActions"><span class="topLink">● مركزي</span><a class="topLink" href="admin-analytics.html">إحصاءات الزيارات</a><a class="topLink" href="admin-instructors.html">الأساتذة الجامعيون</a><a class="topLink" href="admin-progress.html">تدرّج الحفظ والفهم</a><a class="topLink" href="references.html">تغذية الذكاء الاصطناعي</a><a class="topLink" href="pilot-review.html">مراجعة التدريب</a><a class="topLink" href="demo-supervisor.html">نتائج الديمو</a><a class="topLink" href="index.html">الموقع</a><button class="topLink" id="logout">خروج</button></div></div></header><main class="wrap">'+body+'</main>'+modal();
+ '<nav class="nav adminNav" aria-label="الأقسام الرئيسية للوحة المشرف">'+
+ '<button data-tab="dashboard" class="'+(state.tab==="dashboard"?"active":"")+'"><span>الرئيسية</span></button>'+
+ '<details class="adminNavGroup" '+(["students","cohorts"].includes(state.tab)?"open":"")+'><summary>الطلاب والمجموعات</summary><div class="adminNavItems">'+
+ '<button data-tab="students" class="'+(state.tab==="students"?"active":"")+'">الطلاب</button>'+
+ '<button data-tab="cohorts" class="'+(state.tab==="cohorts"?"active":"")+'">المجموعات</button></div></details>'+
+ '<details class="adminNavGroup"><summary>الأساتذة والجامعات</summary><div class="adminNavItems">'+
+ '<a href="admin-instructors.html">حسابات أساتذة الجامعات</a>'+
+ '<a href="references.html">الجامعات والمراجع الأكاديمية</a></div></details>'+
+ '<details class="adminNavGroup" '+(["grading","content"].includes(state.tab)?"open":"")+'><summary>التعلم والتقارير</summary><div class="adminNavItems">'+
+ '<button data-tab="grading" class="'+(state.tab==="grading"?"active":"")+'">تصحيح التدريب</button>'+
+ '<button data-tab="content" class="'+(state.tab==="content"?"active":"")+'">اعتماد المحتوى</button>'+
+ '<a href="admin-progress.html">تدرّج الحفظ والفهم</a>'+
+ '<a href="pilot-review.html">مراجعة التدريب</a>'+
+ '<button type="button" id="openAnalytics">إحصاءات الزيارات</button>'+
+ '<a href="demo-supervisor.html">نتائج الديمو</a></div></details>'+
+ '<details class="adminNavGroup" '+(state.tab==="audit"?"open":"")+'><summary>إدارة المنصة</summary><div class="adminNavItems">'+
+ '<button data-tab="audit" class="'+(state.tab==="audit"?"active":"")+'">سجل العمليات</button>'+
+ '<a href="references.html">تغذية الذكاء الاصطناعي</a></div></details></nav>'+
+ '<div class="topActions"><span class="topLink">● لوحة مركزية</span>'+
+ '<a class="topLink" href="index.html">عرض الموقع</a>'+
+ '<button class="topLink" id="logout">تسجيل الخروج</button>'</div></div></header><main class="wrap">'+body+'</main>'+modal();
  document.querySelectorAll("[data-tab]").forEach(function(b){b.onclick=function(){state.tab=b.dataset.tab;render();};});
  var analyticsLink=document.getElementById("openAnalytics");if(analyticsLink)analyticsLink.onclick=function(){location.href="admin-analytics.html";};
  var lo=document.getElementById("logout");if(lo)lo.onclick=async function(){await LEX_CLOUD.signOut();localStorage.removeItem(SKEY);location.replace("admin-login.html");};
