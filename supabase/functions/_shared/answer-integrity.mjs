@@ -8,7 +8,7 @@ export function classifyFreeAnswer(value) {
  const raw = String(value ?? "").trim();
  const normalized = raw.normalize("NFKC")
   .replace(/[\u064B-\u065F\u0670\u0640]/g, "")
-  .replace(/[أإآٱ]/g, "ا").replace(/ى/g, "ي")
+  .replace(/[أإآٱ]/g, "ا").replace(/ى/g, "ي").replace(/ة/g, "ه")
   .replace(/\s+/g, " ").toLowerCase().trim();
  const cleaned = normalized.replace(/[^\p{L}\p{N}\s']/gu, " ").replace(/\s+/g, " ").trim();
  if (!raw || !cleaned) return {kind:"empty",reason:"no_text",grade:null,counts_as_evidence:false};
