@@ -486,12 +486,49 @@ function bind(){
   document.querySelectorAll("button[data-student]").forEach(function(b){b.onclick=function(){state.selected=b.dataset.student;render();};});
  document.querySelectorAll("[data-open]").forEach(function(b){b.onclick=function(){state.selected=b.dataset.open;state.tab="dashboard";render();};});
  var q=document.getElementById("search")||document.getElementById("ssearch");if(q)q.oninput=function(){var pos=q.selectionStart;state.q=q.value;render();var again=document.getElementById(q.id);if(again){again.focus();try{again.setSelectionRange(pos,pos);}catch(_){}}};
- document.querySelectorAll("#add,#quickAdd,#quickAddHome").forEach(function(add){add.onclick=function(){state.modal="add";render();};});
+ document.querySelectorAll("#add,#quickAdd,#quickAddHome").forEach(function(add){add.onclick=function(){state.cohortContext=null;state.modal="add";render();};});
  document.querySelectorAll("[data-close]").forEach(function(b){b.onclick=function(){state.modal=null;render();};});
  var ref=document.getElementById("refresh");if(ref)ref.onclick=load;
- var f=document.getElementById("addForm");if(f)f.onsubmit=async function(e){e.preventDefault();var nameEl=document.getElementById("n"),userEl=document.getElementById("usr"),uniEl=document.getElementById("uni"),yearEl=document.getElementById("yr"),countryEl=document.getElementById("country"),cohortEl=document.getElementById("coh");try{var countryCode=countryEl.value;var x=await LEX_CLOUD.createStudent({name:nameEl.value.trim(),username:userEl.value.trim(),university:uniEl.value.trim(),faculty:document.getElementById("faculty").value.trim(),academic_section:document.getElementById("academicSection").value.trim(),student_registration_number:document.getElementById("studentNumber").value.trim(),institutional_group_email:document.getElementById("groupEmail").value.trim(),year:yearEl.value,accepted_registration_terms:document.getElementById("registrationTerms").checked,accepted_terms_version:"2026-10-23-v6",country_code:countryCode,cohort_id:cohortEl.value||null,course_id:"qa-qu-lawc101-rights"});state.creds={username:x.username,password:x.temporary_password};await load();state.modal="creds";render();}catch(er){var message=await adminReadableError(er);alert("تعذر إنشاء الحساب: "+message);}};
+ var cohortForm=document.getElementById("cohortForm");
+ if(cohortForm)cohortForm.onsubmit=async function(e){
+   e.preventDefault();var button=cohortForm.querySelector('[type="submit"]');
+   button.disabled=true;
+   var data={name:document.getElementById("cohortName").value.trim(),
+    institution:document.getElementById("cohortUniversity").value.trim(),
+    academic_year:document.getElementById("cohortYear").value,
+    faculty:document.getElementById("cohortFaculty").value.trim(),
+    country_code:document.getElementById("cohortCountry").value,
+    course_id:"qa-qu-lawc101-rights",subject_name:document.getElementById("cohortSubject").value.trim()};
+   try{
+    if(state.cohortDraft&&state.cohortDraft!=="new")await LEX_CLOUD.updateCohortDefaults({id:state.cohortDraft,...data});
+    else await LEX_CLOUD.createCohort(data);
+    state.modal=null;state.cohortDraft=null;state.tab="cohorts";await load();
+   }catch(error){button.disabled=false;alert("تعذر حفظ المجموعة: "+String(error?.message||error));}
+ };
+ document.querySelectorAll("[data-cohort-add]").forEach(function(button){button.onclick=function(){
+  state.cohortContext=button.dataset.cohortAdd;state.modal="add";render();
+ };});
+ document.querySelectorAll("[data-cohort-edit]").forEach(function(button){button.onclick=function(){
+  state.cohortDraft=button.dataset.cohortEdit;state.modal="cohort";render();
+ };});
+ document.querySelectorAll("[data-cohort-professor]").forEach(function(button){button.onclick=function(){
+  location.href="admin-instructors.html?cohort="+encodeURIComponent(button.dataset.cohortProfessor);
+ };});
+ document.querySelectorAll("[data-cohort-student]").forEach(function(button){button.onclick=function(){
+  state.selected=button.dataset.cohortStudent;state.tab="dashboard";state.modal=null;render();
+ };});
+ var f=document.getElementById("addForm");if(f){if(state.cohortContext){var ccGroup=state.cohorts.find(function(x){return x.id===state.cohortContext;});if(ccGroup){var defaults=cohortDefaults(ccGroup);document.getElementById("yr").value=["السنة الأولى","السنة الثانية","السنة الثالثة","السنة الرابعة"].find(function(y){return sameAcademicYear(y,defaults.year);})||"السنة الأولى";document.getElementById("country").value=defaults.country;}}f.onsubmit=async function(e){e.preventDefault();var nameEl=document.getElementById("n"),userEl=document.getElementById("usr"),uniEl=document.getElementById("uni"),yearEl=document.getElementById("yr"),countryEl=document.getElementById("country"),cohortEl=document.getElementById("coh");try{var countryCode=countryEl.value;var x=await LEX_CLOUD.createStudent({name:nameEl.value.trim(),username:userEl.value.trim(),university:uniEl.value.trim(),faculty:document.getElementById("faculty").value.trim(),academic_section:document.getElementById("academicSection").value.trim(),student_registration_number:document.getElementById("studentNumber").value.trim(),institutional_group_email:document.getElementById("groupEmail").value.trim(),year:yearEl.value,accepted_registration_terms:document.getElementById("registrationTerms").checked,accepted_terms_version:"2026-10-23-v6",country_code:countryCode,cohort_id:cohortEl.value||null,course_id:"qa-qu-lawc101-rights"});if(!x||x.ok!==true||!x.temporary_password)throw Error(x?.error||"student_create_unconfirmed");state.creds={username:x.username,password:x.temporary_password,nextCohort:cohortEl.value||null};state.cohortContext=cohortEl.value||null;await load();state.modal="creds";render();}catch(er){var message=await adminReadableError(er);alert("تعذر إنشاء الحساب: "+message);}};}
+ var next=document.getElementById("addNextGroupStudent");if(next)next.onclick=function(){
+  if(!state.creds?.nextCohort)return;
+  if(!confirm("تأكد من نسخ بيانات الدخول المؤقتة للطالب الحالي قبل الانتقال؛ لن تُعرض مرة أخرى."))return;
+  state.cohortContext=state.creds.nextCohort;state.creds=null;state.modal="add";render();
+ };
+ var back=document.getElementById("backToCohort");if(back)back.onclick=function(){
+  state.creds=null;state.modal=null;state.cohortContext=null;state.tab="cohorts";render();
+ };
+ var done=document.getElementById("finishCreds");if(done)done.onclick=function(){state.creds=null;state.modal=null;render();};
  var cc=document.getElementById("copyCreds");if(cc)cc.onclick=function(){var t="Username: "+state.creds.username+"\nTemporary password: "+state.creds.password;navigator.clipboard&&navigator.clipboard.writeText(t);cc.textContent="تم النسخ";};
- var nc=document.getElementById("newCohort");if(nc)nc.onclick=async function(){var name=prompt("اسم المجموعة");if(!name)return;try{await LEX_CLOUD.createCohort({name:name,institution:"Qatar University"});await load();}catch(e){alert("تعذر إنشاء المجموعة");}};
+ var nc=document.getElementById("newCohort");if(nc)nc.onclick=function(){state.cohortDraft="new";state.modal="cohort";render();};
  document.querySelectorAll("[data-reset]").forEach(function(b){b.onclick=async function(){
   var s=state.students.find(function(x){return x.id===b.dataset.reset;});
   if(!s||!confirm("إصدار كلمة مرور مؤقتة جديدة للطالب "+(s.name||s.username)+"؟ ستتوقف كلمة المرور السابقة، ولن تتغير حالة تفعيل الحساب أو نتائج الطالب."))return;
