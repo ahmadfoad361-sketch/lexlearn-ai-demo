@@ -95,8 +95,8 @@ html[lang=ar] .visual-scene h2,html[lang=ar] .visual-scene h3{line-height:1.55}
 .skill-loop{gap:18px 26px;align-items:center}.skill-loop li{position:relative;overflow:visible}.skill-loop li:not(:last-child):after{content:"↔";position:absolute;inset-inline-end:-21px;top:50%;transform:translateY(-50%);font-size:18px;color:#edcbbb}.skill-loop li:before{display:none}
 .citation-bank{margin:20px 0 10px;padding:16px 18px;border-inline-start:3px solid #b89078;background:#111d3166;border-radius:12px}
 .citation-bank .visual-quote{font-size:clamp(18px,2.6vw,27px);min-height:3.2em;margin:0;line-height:1.65;max-width:40ch}
-.quote-attribution{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;margin-top:12px;color:#e2cbbd;font-size:11px;line-height:1.8}
-.quote-attribution a{color:inherit;min-height:36px;display:inline-flex;align-items:center;text-underline-offset:4px}
+.quote-attribution{display:block;text-align:center;margin-top:12px;color:#e2cbbd;font-size:11px;line-height:1.8}
+.quote-attribution a{color:inherit;display:inline-block;padding-block:6px;text-underline-offset:4px;overflow-wrap:anywhere}
 .visionInvestorQuote[data-quote-bank]{background:#fffaf5;color:#111d31}.visionInvestorQuote[data-quote-bank] .visual-quote{color:#111d31;font-size:22px}.visionInvestorQuote[data-quote-bank] .quote-attribution{color:#6b4351}
 .visual-modal .visual-scene{background:#111d31;min-height:680px}.visual-modal .visual-scene:before{background:linear-gradient(0deg,#111d31fa,#111d31e8 70%,#111d31d9)}
 .visual-modal .visual-scene figcaption{padding-top:45px}.visual-modal .visual-scene h2{font-size:clamp(24px,3.5vw,36px);max-width:31ch}

@@ -359,7 +359,7 @@ html[dir=rtl] .roadmap{padding:3px 36px 2px 0}
 .leadStatus[data-state=success]{color:#237049}
 .leadStatus[data-state=error]{color:#97203d}
 .founder{margin:27px 0 0;max-width:780px;gap:15px;padding:17px 0;border-top:1px solid var(--line)}
-.founderPhoto{width:62px;height:62px;flex:none;border-radius:50%;display:grid;place-items:center;overflow:hidden;background:#f0e9e2;border:1px solid #e2d9d2}
+.founderPhoto{width:62px;height:62px;flex:none;border-radius:0;display:grid;place-items:center;overflow:visible;background:transparent;border:0;box-shadow:none}
 .founderPhoto img{width:100%;height:100%;object-fit:contain}
 .founderEmail{display:block;font-size:12px;color:var(--burgundy);text-decoration:none;overflow-wrap:anywhere}
 .pathsReturn{width:44px;height:44px;min-height:44px;max-width:44px;padding:0;border-radius:50%}
@@ -499,7 +499,10 @@ html[dir=rtl] .roadmap{padding-inline-start:68px;padding-inline-end:0}
 .contactButtons{justify-content:flex-start;align-items:stretch}
 .contactButtons .shareIcon{width:46px;height:50px;min-width:46px;display:inline-grid;place-items:center}
 .contactButtons .shareIcon svg{width:19px;height:19px}
-.founder{margin-inline:0}
+.founder{margin-inline:auto;justify-content:center;align-items:center;text-align:center}
+.founderDetails{display:flex;flex-direction:column;align-items:center;min-width:0;gap:3px}
+.founderDetails>*{max-width:100%;text-align:center}
+.founderEmail{direction:ltr;unicode-bidi:isolate}
 .evidenceNote{font-size:clamp(16px,1.7vw,18px)!important;line-height:1.75!important;font-weight:750;padding:14px 17px!important}
 .roadmapDemoLink{display:inline-block;color:var(--burgundy);font-size:15px;font-weight:800;text-decoration:underline;text-underline-offset:3px;margin-top:11px}
 .pitchNote{margin:10px 0 15px!important;font-size:15px;color:var(--sub);line-height:1.65}

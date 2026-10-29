@@ -58,7 +58,7 @@ html[data-theme=dark] .leadConsent input{accent-color:#8A1F39}
 html[data-theme=dark] .leadForm .leadStatus[data-state=info]{color:#bdc8d9}
 html[data-theme=dark] .leadForm .leadStatus[data-state=error]{color:#ffb9c7}
 html[data-theme=dark] .leadForm .leadStatus[data-state=success]{color:#a1e8c4}
-html[data-theme=dark] .founderPhoto{background:#243650;border-color:#8290a6}
+html[data-theme=dark] .founderPhoto{background:transparent;border:0;box-shadow:none}
 html[data-theme=dark] .founderPhoto img{filter:drop-shadow(0 0 6px #fff5)}
 html[data-theme=dark] .header-logo-orbit img,html[data-theme=dark] .exhibit-mark img{filter:drop-shadow(0 0 7px #fff5)}
 html[data-theme=dark] .foot{background:#0a1424;border-top:1px solid var(--line)}

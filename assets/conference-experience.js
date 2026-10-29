@@ -17,7 +17,7 @@ const lang=()=>root.lang==='ar'?'ar':'en';
 const order=citations.investor.map((_,i)=>i);
 for(let i=order.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[order[i],order[j]]=[order[j],order[i]];}
 function item(bank){const list=citations[bank]||[];if(!list.length)return null;return bank==='investor'?list[order[quoteIndex%order.length]]:list[quoteIndex%list.length];}
-function attribution(host,q){if(!host||!q)return;const ar=lang()==='ar',t=copy[lang()];host.replaceChildren();const author=document.createElement('span');author.textContent=(ar?q.authorAr:q.authorEn)+' · '+q.year;const link=document.createElement('a');link.href=q.url;link.target='_blank';link.rel='noopener noreferrer';link.textContent=t.source;host.appendChild(author);host.appendChild(link);}
+function attribution(host,q){if(!host||!q)return;const ar=lang()==='ar';host.replaceChildren();const link=document.createElement('a');link.href=q.url;link.target='_blank';link.rel='noopener noreferrer';link.textContent='('+(ar?'المصدر: ':'Source: ')+(ar?q.authorAr:q.authorEn)+' · '+q.year+')';host.appendChild(link);}
 function renderBanks(){document.querySelectorAll('[data-quote-bank]').forEach(host=>{const q=item(host.getAttribute('data-quote-bank'));if(!q)return;const quote=document.createElement('p');quote.className='visual-quote';quote.textContent='“'+q[lang()]+'”';const credit=document.createElement('div');credit.className='quote-attribution';attribution(credit,q);host.replaceChildren(quote,credit);});}
 function demoURL(){return 'showcase'+(lang()==='ar'?'':'-en')+'.html?country=qa&subject=rights';}
 function clearSpot(){cards.forEach(card=>card.classList.remove('is-spotlight'));}
