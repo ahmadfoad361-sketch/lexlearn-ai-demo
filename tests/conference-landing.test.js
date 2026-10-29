@@ -12,7 +12,7 @@ for(const phrase of ["Working beta","AI analysis of written answers: in progress
 for(const forbidden of ["HBKU","exam performance","QAR","USD","$49","Google Ads","gtag(","fbq(","pixel"])assert.ok(!html.includes(forbidden)&&!js.includes(forbidden),"forbidden public item: "+forbidden);
 assert.ok(html.includes('<form id="leadForm"')&&html.includes('id="leadName"')&&html.includes('id="leadRole"')&&html.includes('id="leadContact"'),"conference contact form must contain opted-in contact fields");
 assert.ok(!/<script[^>]+src="https?:/i.test(html),"no third party scripts");
-assert.ok(html.includes("mailto:Ahmadfoad361@gmail.com"),"confirmed email must be a working mailto link");
+assert.ok(html.includes("mailto:info@lexlearnsmart.com"),"confirmed email must be a working mailto link");
 
 assert.ok(!html.includes('id="science"')&&!html.includes("researchBasis")&&!html.includes("researchCards"),"scientific sources should appear in transition quotes, not as a standalone presentation section");
 assert.ok(!js.includes("scienceEyebrow:")&&!js.includes("scienceHeading:"),"unused research-section translations should be removed");
@@ -415,7 +415,7 @@ assert.ok(js.includes('leadMode!=="save"')&&js.includes("response.ok&&result.ok=
 assert.ok(js.includes("functions/v1/conference-lead")&&js.includes("sendStoredLead")&&js.includes("turnstileToken"),"conference lead form uses secure server intake after Turnstile verification");
 assert.ok(html.includes('class="button buttonSecondary" id="waBusiness"')&&html.includes("https://wa.me/201014408788"),"verified WhatsApp remains an alternative to the secure contact form");
 assert.ok(html.includes('class="button buttonSecondary" id="emailContact"')&&html.includes('class="shareIcon" id="waShare"'),"email and share icon still available");
-assert.ok(html.includes('href="mailto:Ahmadfoad361@gmail.com"'),"founder email is unchanged");
+assert.ok(html.includes('href="mailto:info@lexlearnsmart.com"'),"founder email uses the official domain");
 assert.ok(html.includes('class="founderPhoto"'),"founder card image slot remains");
 assert.ok(read("privacy.html").includes("موافقة صريحة")&&read("privacy-en.html").includes("unticked consent box"),"privacy policies disclose opt-in secure conference storage");
 assert.ok(html.includes('<bdi dir="ltr">30–60</bdi>')&&html.includes('<bdi dir="ltr">6–8</bdi>'),"retain proposed pilot ranges in readable order");
