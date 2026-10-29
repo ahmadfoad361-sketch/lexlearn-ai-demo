@@ -185,7 +185,7 @@ function page(){
    const onlyPassword=document.getElementById("copyTeacherPassword");
   if(onlyPassword)onlyPassword.onclick=async()=>{try{await navigator.clipboard.writeText(state.credential.temporary_password);onlyPassword.textContent="تم نسخ كلمة المرور فقط";}catch(_){alert("تعذر النسخ التلقائي؛ اضغط مطولًا على كلمة المرور وحدد نسخ.");}};
 const copy=document.getElementById("copyTeacher");
- if(copy)copy.onclick=()=>navigator.clipboard.writeText("LexLearn\nالبريد: "+state.credential.email+"\nكلمة المرور المؤقتة: "+state.credential.temporary_password+"\nhttps://ahmadfoad361-sketch.github.io/lexlearn-ai-demo/instructor-login.html");
+ if(copy)copy.onclick=()=>navigator.clipboard.writeText("LexLearn\nالبريد: "+state.credential.email+"\nكلمة المرور المؤقتة: "+state.credential.temporary_password+"\nhttps://lexlearnsmart.com/instructor-login.html");
 }
 async function reload(){
  const me=await LEX_CLOUD.profile();

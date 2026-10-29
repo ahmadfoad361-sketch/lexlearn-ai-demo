@@ -9,6 +9,7 @@ async function run(source,{body=event,origin='https://ahmadfoad361-sketch.github
  const r=await handler(new Request('https://test.invalid',{method:'POST',headers:{origin,Authorization:token,'x-forwarded-for':'192.0.2.1'},body:JSON.stringify(body)}));return{status:r.status,data:await r.json(),calls};
 }
 let r=await run(activity,{body:{...event,user_id:'forged-user'}});assert.equal(r.status,200);assert.equal(r.calls[0].args.p_user,null);assert.match(r.calls[0].args.p_network,/^[a-f0-9]{64}$/);assert.doesNotMatch(JSON.stringify(r.calls),/192\.0\.2/);
+for(const origin of ['https://lexlearnsmart.com','https://www.lexlearnsmart.com']){r=await run(activity,{origin});assert.equal(r.status,200);assert.equal(r.calls.length,1);}
 r=await run(activity,{token:'Bearer valid'});assert.equal(r.calls[0].args.p_user,'verified-user');
 for(const options of [{origin:'https://evil.invalid'},{body:{...event,page:'index.html?email=secret'}},{body:{...event,event_id:'broken'}},{body:{...event,page:'admin.html'}},{token:'Bearer invalid',invalidToken:true}]){r=await run(activity,options);assert.ok(r.status>=400);assert.equal(r.calls.length,0);}
 r=await run(stats,{body:{days:7},staff:false});assert.equal(r.status,403);assert.equal(r.calls.length,0);

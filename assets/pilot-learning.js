@@ -60,7 +60,7 @@ async function gradeAttempt(attemptId,lang){if(!root.LEX_CLOUD||!root.LEX_CLOUD.
 function calendar(reviews,lang,now){
  function stamp(t){return new Date(t).toISOString().replace(/[-:]/g,"").replace(/\.\d{3}Z$/,"Z");}
  var lines=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//LexLearn//Review//EN","CALSCALE:GREGORIAN"];
- reviews.filter(function(r){return r.status==="due";}).forEach(function(r){var title=(lang==="ar"?"مراجعة LexLearn: ":"LexLearn review: ")+content[r.topic][lang].title;lines=lines.concat(["BEGIN:VEVENT","UID:"+r.id+"-"+r.createdAt+"@lexlearn","DTSTAMP:"+stamp(now==null?Date.now():now),"DTSTART:"+stamp(r.dueAt),"DTEND:"+stamp(r.dueAt+600000),"SUMMARY:"+title,"URL:https://ahmadfoad361-sketch.github.io/lexlearn-ai-demo/program"+(lang==="en"?"-en":"")+".html","BEGIN:VALARM","TRIGGER:PT0M","ACTION:DISPLAY","DESCRIPTION:"+title,"END:VALARM","END:VEVENT"]);});
+ reviews.filter(function(r){return r.status==="due";}).forEach(function(r){var title=(lang==="ar"?"مراجعة LexLearn: ":"LexLearn review: ")+content[r.topic][lang].title;lines=lines.concat(["BEGIN:VEVENT","UID:"+r.id+"-"+r.createdAt+"@lexlearn","DTSTAMP:"+stamp(now==null?Date.now():now),"DTSTART:"+stamp(r.dueAt),"DTEND:"+stamp(r.dueAt+600000),"SUMMARY:"+title,"URL:https://lexlearnsmart.com/program"+(lang==="en"?"-en":"")+".html","BEGIN:VALARM","TRIGGER:PT0M","ACTION:DISPLAY","DESCRIPTION:"+title,"END:VALARM","END:VEVENT"]);});
  // RFC 5545: fold content lines by UTF-8 octets, without splitting a character.
  function fold(line){var out="",size=0;for(var ch of line){var bytes=new TextEncoder().encode(ch).length;if(size+bytes>75){out+="\r\n ";size=1;}out+=ch;size+=bytes;}return out;}
  return lines.concat(["END:VCALENDAR",""]).map(fold).join("\r\n");

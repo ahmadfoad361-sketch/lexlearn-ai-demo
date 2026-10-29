@@ -192,7 +192,7 @@ function setLang(next){
  deck.removeAttribute("download");
  deck.href=active==="ar"?"#deck":"assets/lexlearn-public-pitch-en.pdf";
  if(active==="en")deck.setAttribute("download","LexLearn-Public-Pitch-EN.pdf");
- waShare.href="https://api.whatsapp.com/send?text="+encodeURIComponent("LexLearn — https://ahmadfoad361-sketch.github.io/lexlearn-ai-demo/go/");
+ waShare.href="https://api.whatsapp.com/send?text="+encodeURIComponent("LexLearn — https://lexlearnsmart.com/go/");
  const business=document.getElementById("waBusiness"),pilotWA=document.getElementById("pilotWhatsApp");
  const greeting=active==="ar"?"مرحبًا، تعرفت على LexLearn في Web Summit Qatar 2027 وأرغب في معرفة المزيد.":"Hello, I discovered LexLearn at Web Summit Qatar 2027 and would like to learn more.";
  const pilotMessage=active==="ar"?"مرحبًا، أرغب في مناقشة التجربة الجامعية المقترحة لـLexLearn.":"Hello, I'd like to discuss the proposed LexLearn university pilot.";

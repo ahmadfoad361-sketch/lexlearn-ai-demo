@@ -1,11 +1,14 @@
 import {adminClient} from "../_shared/auth.ts";
-const origin="https://ahmadfoad361-sketch.github.io";
-const headers={"Access-Control-Allow-Origin":origin,"Access-Control-Allow-Headers":"authorization, apikey, content-type","Access-Control-Allow-Methods":"POST, OPTIONS","Content-Type":"application/json","Vary":"Origin"};
+const allowedOrigins=new Set(["https://ahmadfoad361-sketch.github.io","https://lexlearnsmart.com","https://www.lexlearnsmart.com"]);
+const baseHeaders={"Access-Control-Allow-Headers":"authorization, apikey, content-type","Access-Control-Allow-Methods":"POST, OPTIONS","Content-Type":"application/json","Vary":"Origin"};
 const pages=new Set(["index.html","index-en.html","conference.html","showcase.html","showcase-en.html","showcase-level1.html","showcase-level1-en.html","program.html","program-en.html","diagnostic.html","student-practice.html","student-path.html","student-profile.html","student.html","student-en.html","student-login.html","student-login-en.html","student-register.html","student-register-en.html","privacy.html","privacy-en.html","terms.html","terms-en.html"]);
 const uuid=(value:unknown)=>typeof value==="string"&&/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
-const reply=(body:unknown,status=200)=>new Response(JSON.stringify(body),{status,headers});
 Deno.serve(async(req:Request)=>{
- if(req.headers.get("origin")!==origin)return reply({error:"origin_not_allowed"},403);
+ const origin=req.headers.get("origin")||"";
+ const headers:Record<string,string>={...baseHeaders};
+ if(allowedOrigins.has(origin))headers["Access-Control-Allow-Origin"]=origin;
+ const reply=(body:unknown,status=200)=>new Response(JSON.stringify(body),{status,headers});
+ if(!allowedOrigins.has(origin))return reply({error:"origin_not_allowed"},403);
  if(req.method==="OPTIONS")return new Response(null,{status:204,headers});
  if(req.method!=="POST")return reply({error:"method_not_allowed"},405);
  try{
