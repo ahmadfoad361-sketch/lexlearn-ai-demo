@@ -47,7 +47,7 @@ async function signInStudent(username,password){
    await c.auth.signOut();
    throw new Error(p&&p.account_status==="pending"?"student_pending_approval":"student_account_not_active");
   }
-  var access=await c.rpc("lex_student_access",{p_course:"qa-qu-lawc101-rights"});
+  var access=await c.rpc("lex_student_access",{p_course:null});
   if(access.error||access.data?.allowed!==true){await c.auth.signOut();throw new Error("student_access_"+(access.data?.status||"pending"));}
   return {user:r.data.user,profile:p};
 }

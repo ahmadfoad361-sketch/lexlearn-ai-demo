@@ -320,4 +320,5 @@ jobs:
           psql -v ON_ERROR_STOP=1 -f tests/sql/site-activity-acceptance.sql
           psql -v ON_ERROR_STOP=1 -f tests/sql/trial-access-fixture.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261028175401_university_trial_access.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261029015650_preserve_approved_course_signin.sql
           psql -v ON_ERROR_STOP=1 -f tests/sql/trial-access-acceptance.sql

@@ -2,6 +2,7 @@
 begin;
 do $$declare t uuid; r jsonb; owner_id uuid='90000000-0000-4000-8000-000000000001'; a uuid='10000000-0000-4000-8000-000000000001'; b uuid='10000000-0000-4000-8000-000000000002'; c uuid='10000000-0000-4000-8000-000000000003'; course text='qa-qu-lawc101-rights'; saved integer;
 begin
+ r=public.lex_admin_trials(owner_id,'list');if jsonb_array_length(r->'students')<4 then raise exception 'staff list incomplete';end if;
  if not private.student_can_train(a,course) then raise exception 'existing staff approval lost'; end if;
  if private.student_can_train(b,course) then raise exception 'self-registration grandfathered'; end if;
  if not exists(select 1 from public.profiles where id=b and account_status='pending' and not active) then raise exception 'pending status missing'; end if;
@@ -9,6 +10,8 @@ begin
  begin perform public.lex_admin_trials(b,'list');raise exception 'student can administer';exception when insufficient_privilege then null;end;
  r=public.lex_admin_trials(owner_id,'save',jsonb_build_object('name','Trial CI','university','University','faculty','Law','subject','Rights','course_id',course,'professor_id','30000000-0000-4000-8000-000000000001','capacity',1,'starts_at',now()-interval '1 day','ends_at',now()+interval '1 day'));
  t=(r->>'trial_id')::uuid;
+ r=public.lex_admin_trials(owner_id,'list');if jsonb_array_length(r->'trials')<>1 then raise exception 'group list incomplete';end if;
+ r=public.lex_admin_trials(owner_id,'get',jsonb_build_object('trial_id',t));if r->>'name'<>'Trial CI' then raise exception 'group defaults read failed';end if;
  perform public.lex_admin_trials(owner_id,'assign',jsonb_build_object('trial_id',t,'user_ids',jsonb_build_array(b,c)));
  begin perform public.lex_admin_trials(owner_id,'approve',jsonb_build_object('trial_id',t,'user_ids',jsonb_build_array(b,c)));raise exception 'capacity bypass';exception when raise_exception then if sqlerrm<>'trial_capacity_reached' then raise;end if;end;
  if exists(select 1 from private.student_admissions where trial_id=t and status='approved') then raise exception 'bulk partial activation';end if;
@@ -85,3 +88,16 @@ do $$declare owner_id uuid='90000000-0000-4000-8000-000000000001';b uuid='100000
 end $$;
 rollback;
 \echo 'Group defaults, atomic edits and full-capacity rollback, individual/group transfers preserving approval, role, results PASS'
+
+begin;
+insert into public.courses(id) values('another-approved-course');
+insert into public.enrollments(user_id,course_id,status) values('10000000-0000-4000-8000-000000000002','another-approved-course','active');
+insert into private.student_admissions(user_id,course_id,status,approved_by) values('10000000-0000-4000-8000-000000000002','another-approved-course','approved','90000000-0000-4000-8000-000000000001');
+update public.profiles set active=true,account_status='active' where id='10000000-0000-4000-8000-000000000002';
+select set_config('request.jwt.claim.sub','10000000-0000-4000-8000-000000000002',true);
+do $$begin
+ if not (public.lex_student_access(null)->>'allowed')::boolean then raise exception 'other approved course cannot sign in';end if;
+ if (public.lex_student_access('qa-qu-lawc101-rights')->>'allowed')::boolean then raise exception 'other course approval leaked to full rights training';end if;
+end $$;
+rollback;
+\echo 'Staff list/get execution and approved-course login without cross-course training access PASS'
