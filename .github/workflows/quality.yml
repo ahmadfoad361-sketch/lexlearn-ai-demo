@@ -55,6 +55,7 @@ jobs:
       - name: Check diagnostic AI Edge Function
         run: |
           deno check supabase/functions/lexlearn-diagnostic-ai-grade/index.ts
+          deno check supabase/functions/lexlearn-training-ai-grade/index.ts
           deno check supabase/functions/lexlearn-grading-smoke/index.ts
           deno check supabase/functions/student-register-whatsapp/index.ts
           deno check supabase/functions/admin-manage-instructors/index.ts
@@ -91,6 +92,7 @@ jobs:
           node tests/official-diagnostic-dom-flow.test.js
           node tests/server-diagnostic-ui.test.js
           node tests/diagnostic-ai-v2.test.mjs
+          node tests/answer-integrity.test.mjs
           node tests/consent-once.test.js
           node tests/diagnostic-layout.test.js
           node tests/student-gate-source.test.js
@@ -308,7 +310,9 @@ jobs:
           psql -v ON_ERROR_STOP=1 -f tests/sql/full-adaptive-fixture.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261019_005_full_adaptive_internal_pilot.sql
            psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261023_003_balanced_training_until_verified.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/sql/answer-integrity-20261029.sql
           psql -v ON_ERROR_STOP=1 -f tests/sql/full-adaptive-acceptance.sql
+          psql -v ON_ERROR_STOP=1 -f tests/sql/answer-integrity-acceptance.sql
           psql -v ON_ERROR_STOP=1 -f tests/sql/instructor-ci-fixture.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261025_001_instructor_scoped_progress.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261026_001_restore_rls_helper_execute.sql

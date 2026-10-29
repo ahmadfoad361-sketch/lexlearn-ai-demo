@@ -70,9 +70,16 @@ function startGradingWait(settings){
 // Only verified current-version OpenAI rubric results may affect displayed scores.
 function confirmedGrade(ev){return !!(ev&&ev.status==="preliminary_ai"&&ev.rubric_version==="lexlearn-training-ai-v4"&&
  typeof ev.provisional_percent==="number"&&Number.isFinite(ev.provisional_percent)&&ev.provisional_percent>=0&&ev.provisional_percent<=100);}
-function needsAssessment(v){return !confirmedGrade(v&&v.evaluation);}
+function deterministicZero(ev){return !!(ev&&ev.status==="nonanswer_zero"&&ev.provisional_percent===0);}
+function needsAssessment(v){return !confirmedGrade(v&&v.evaluation)&&!deterministicZero(v&&v.evaluation);}
 function feedback(item){
  var ev=item&&item.evaluation||{};
+ if(deterministicZero(ev)){
+  return "<div class='feedback' role='status'><b>"+t("درجة السؤال: 0%","Task score: 0%")+"</b><p>"+
+    t("الإجابة المكتوبة لا تحمل معنى يمكن تصحيحه. هذه درجة السؤال فقط؛ راجع القاعدة وأجب بوضوح في التدريب التالي.",
+    "The submitted text has no assessable meaning. This is a task-level zero; review the rule and write a meaningful reply in later practice.")+
+    "</p><small>"+t("تصنيف واضح للنص العشوائي، وليس حكمًا على مستواك العام.","Obvious nonsense classification; not a judgement of overall ability.")+"</small></div>";
+ }
  if(confirmedGrade(ev)){
   var verdict={correct:t("إجابة صحيحة","Correct answer"),partially_correct:t("إجابة صحيحة جزئيًا","Partly correct answer"),needs_revision:t("الإجابة تحتاج تصحيحًا","Answer needs correction")}[ev.verdict]||t("تصحيح إجابتك","Your answer assessment");
   var details=Array.isArray(ev.criteria)?"<ul class='criterionFeedback'>"+ev.criteria.map(function(c){
@@ -91,7 +98,7 @@ function progressModel(rows,session){
  var start=Math.floor((session-1)/5)*5+1,checkpoint=session%5===0;
  function metric(dim,from,to){
   var all=(rows||[]).filter(function(x){return x.dimension===dim&&x.session_number>=from&&x.session_number<=to;});
-  var scored=all.filter(function(x){return confirmedGrade(x.evaluation);}).map(function(x){return x.evaluation&&x.evaluation.provisional_percent;}).filter(function(v){return typeof v==="number"&&Number.isFinite(v)&&v>=0&&v<=100;});
+  var scored=all.filter(function(x){return confirmedGrade(x.evaluation)||deterministicZero(x.evaluation);}).map(function(x){return x.evaluation&&x.evaluation.provisional_percent;}).filter(function(v){return typeof v==="number"&&Number.isFinite(v)&&v>=0&&v<=100;});
   return {score:scored.length?Math.round(scored.reduce(function(a,b){return a+b;},0)/scored.length):null,assessed:scored.length,total:all.length};
  }
  var skills=["recall","understanding"].map(function(dim){
@@ -103,7 +110,7 @@ function progressModel(rows,session){
 function examSummary(rows,session){
  var entries=(rows||[]).filter(function(r){return r.session_number===session&&r.dimension==="exam_execution";});
  if(!entries.length)return "";
- var values=entries.filter(function(r){return confirmedGrade(r.evaluation);}).map(function(r){return r.evaluation.provisional_percent;}).filter(function(v){return typeof v==="number"&&Number.isFinite(v)&&v>=0&&v<=100;});
+ var values=entries.filter(function(r){return confirmedGrade(r.evaluation)||deterministicZero(r.evaluation);}).map(function(r){return r.evaluation.provisional_percent;}).filter(function(v){return typeof v==="number"&&Number.isFinite(v)&&v>=0&&v<=100;});
  return "<p class='examSummary'><b>"+t("بناء الإجابة والتطبيق في هذه الجلسة: ","Answer structure and application in this session: ")+(values.length?noHtmlScore(values.reduce(function(a,b){return a+b;},0)/values.length):t("التصحيح غير مكتمل","Assessment incomplete"))+"</b><br><small>"+t("هذه نتيجة سؤال التطبيق، وتُعرض منفصلة عن الحفظ والفهم.","This is the application question result, shown separately from recall and understanding.")+"</small></p>";
 }
 function progressHtml(rows,session,historyAvailable){
@@ -114,7 +121,7 @@ function progressHtml(rows,session,historyAvailable){
  (root.LEX_SESSION_MOMENTS?root.LEX_SESSION_MOMENTS.render(session,lang(),card):"")+
  "<p class='completionState'>✓ "+t("أكملت مهام هذه الجلسة وحُفظت إجاباتك.","You completed this session and your answers were saved.")+"</p>"+
  "<div class='progressSkills'>"+m.skills.map(function(x){
-   var aiRows=(rows||[]).filter(function(r){return r.dimension===x.dimension&&r.session_number===session&&r.evaluation&&confirmedGrade(r.evaluation);});
+   var aiRows=(rows||[]).filter(function(r){return r.dimension===x.dimension&&r.session_number===session&&r.evaluation&&(confirmedGrade(r.evaluation)||deterministicZero(r.evaluation));});
    var values=aiRows.map(function(r){return r.evaluation.provisional_percent;}).filter(function(v){return typeof v==="number"&&Number.isFinite(v)&&v>=0&&v<=100;});
    var shown=values.length?noHtmlScore(values.reduce(function(a,b){return a+b;},0)/values.length):t("التصحيح غير مكتمل","Assessment incomplete");
    return "<article class='progressSkill'><h3>"+esc(weakName(x.dimension))+"</h3>"+(visual&&values.length?visual.ring(card[x.dimension],x.dimension):"")+"<strong class='"+(values.length?"":"assessmentMissing")+"'>"+esc(values.length?shown:t("التصحيح غير مكتمل","Assessment incomplete"))+"</strong>"+
@@ -125,7 +132,7 @@ function progressHtml(rows,session,historyAvailable){
 }
 function momentData(rows,session){
  var data={kind:session%5===0?"level":"session",level:Math.ceil(session/5),session:session};
- ["recall","understanding"].forEach(function(dim){var a=(rows||[]).filter(function(r){return r.session_number===session&&r.dimension===dim&&r.evaluation&&confirmedGrade(r.evaluation);}).map(function(r){return r.evaluation.provisional_percent;}).filter(function(v){return typeof v==="number"&&Number.isFinite(v)&&v>=0&&v<=100;});data[dim]=a.length?Math.round(a.reduce(function(x,y){return x+y;},0)/a.length):null;});
+ ["recall","understanding"].forEach(function(dim){var a=(rows||[]).filter(function(r){return r.session_number===session&&r.dimension===dim&&r.evaluation&&(confirmedGrade(r.evaluation)||deterministicZero(r.evaluation));}).map(function(r){return r.evaluation.provisional_percent;}).filter(function(v){return typeof v==="number"&&Number.isFinite(v)&&v>=0&&v<=100;});data[dim]=a.length?Math.round(a.reduce(function(x,y){return x+y;},0)/a.length):null;});
  return data;
 }
 
@@ -155,7 +162,7 @@ async function boot(){
    return t("لم يكتمل التصحيح الآلي. إجابتك محفوظة؛ أعد التصحيح من الزر أدناه لتظهر النتيجة والملاحظات.","Automatic assessment did not complete. Your answer is saved; retry below to see the result and feedback.");
   }
   async function requestAssessment(itemId){
-   try{var result=await cloud.gradeTrainingAi(selected,itemId);if(!result||result.status!=="preliminary_ai")gradingIssue=result&&result.reason||"assessment_unconfirmed";return result;}
+   try{var result=await cloud.gradeTrainingAi(selected,itemId);if(!result||!(result.status==="preliminary_ai"||result.status==="nonanswer_zero"))gradingIssue=result&&result.reason||"assessment_unconfirmed";return result;}
    catch(error){gradingIssue=error&&error.code||error&&error.message||"assessment_unavailable";throw error;}
   }
   async function refreshAdaptation(){
@@ -255,7 +262,8 @@ async function boot(){
       "<textarea id='adaptiveEssay' rows='7' maxlength='4000' placeholder='"+t("اكتب إجابتك بأسلوبك...","Write your answer in your own words...")+"'></textarea>"+
       "<button type='button' id='adaptiveSubmit'>"+t("احفظ الإجابة وحللها ثم انتقل","Save, analyse, and continue")+"</button>";
     }
-    main+="<div id='answerSaveProgress'></div><p id='adaptiveError' role='alert' aria-live='polite'></p>";
+    main+="<button type='button' id='adaptiveUnknown'>"+t("لا أعرف الإجابة — أعطني تلميحًا","I don't know — give me a hint")+"</button>"+
+      "<div id='answerSaveProgress'></div><p id='adaptiveError' role='alert' aria-live='polite'></p>";
    }
    main+="</section>";
    show(nav()+main);
@@ -264,7 +272,7 @@ async function boot(){
     if(busy)return;busy=true;retry.disabled=true;retry.textContent=t("نصحح إجابتك…","Assessing your answer…");
     var wait=startGradingWait({name:learnerDisplayName,language:lang(),dimension:v.dimension,stage:"grading"});
     if(wait)wait.setPhase("grading");
-    try{var graded=await requestAssessment(v.item_id);aiUnavailable=!graded||graded.status!=="preliminary_ai";
+    try{var graded=await requestAssessment(v.item_id);aiUnavailable=!graded||!(graded.status==="preliminary_ai"||graded.status==="nonanswer_zero");
      var reread=await cloud.studentLifecycleRpc("trainingOpen",{courseId:COURSE,session:selected});
      if(!reread||!reread.allowed||!Array.isArray(reread.saved))throw Error("grade_readback_failed");
      data=reread;await refreshAdaptation();if(data.completed)await loadProgress();busy=false;render();
@@ -280,7 +288,7 @@ async function boot(){
     for(var i=0;i<missing.length;i++){
      if(note)note.textContent=t("نصحح الإجابة ","Assessing answer ")+(i+1)+" / "+missing.length;
      if(wait)wait.setStep(i+1,missing.length);
-     try{var outcome=await requestAssessment(missing[i].item_id);aiUnavailable=!outcome||outcome.status!=="preliminary_ai";}catch(_){aiUnavailable=true;}
+     try{var outcome=await requestAssessment(missing[i].item_id);aiUnavailable=!outcome||!(outcome.status==="preliminary_ai"||outcome.status==="nonanswer_zero");}catch(_){aiUnavailable=true;}
     }
     try{var updated=await cloud.studentLifecycleRpc("trainingOpen",{courseId:COURSE,session:selected});if(!updated||!updated.allowed||!Array.isArray(updated.saved))throw Error();data=updated;await refreshAdaptation();await loadProgress();busy=false;render();}
     catch(_){busy=false;allRetry.disabled=false;if(note)note.textContent=t("تعذر تحديث النتيجة الآن. أعد المحاولة.","Results could not refresh. Retry.");}
@@ -292,7 +300,7 @@ async function boot(){
     if(busy)return;
     answer=String(answer||"").trim();
     var error=host.querySelector("#adaptiveError");
-    if(answer.length<8){if(error)error.textContent=t("اكتب إجابة من ثمانية أحرف على الأقل.","Write at least eight characters.");return;}
+    if(!answer){if(error)error.textContent=t("اكتب إجابة أو اضغط «لا أعرف» للحصول على تلميح.","Write an answer or choose I don\u0027t know for a hint.");return;}
     busy=true;button.disabled=true;
     if(error)error.textContent=t("جارٍ حفظ إجابتك وتحليلها...","Saving and performing provisional review...");
     var savingView=host.querySelector("#answerSaveProgress");
@@ -302,12 +310,17 @@ async function boot(){
     var wait=startGradingWait({name:learnerDisplayName,language:lang(),dimension:next.dimension,stage:"saving"});
     try{
      var v=await cloud.studentLifecycleRpc("trainingSubmit",{courseId:COURSE,session:selected,itemId:next.id,answer:answer});
+     if(v&&v.status==="hint_required"){
+      if(savingView)savingView.innerHTML="";
+      if(error)error.textContent=String((lang()==="en"?v.hint_en:v.hint_ar)||t("ابدأ بأحد شروط القاعدة وحاول مرة ثانية.","Start with one rule condition and try again."));
+      busy=false;button.disabled=false;return;
+     }
      if(!v||!v.allowed||!v.saved||!byId(v.saved,next.id))throw Error("answer_not_verified");
      if(savingView&&root.LEX_MOMENTS)savingView.innerHTML=root.LEX_MOMENTS.saveProgress("assessment",lang());
      if(wait&&acceptedAi&&cloud.gradeTrainingAi)wait.setPhase("grading");
      aiUnavailable=false;
      if(acceptedAi&&cloud.gradeTrainingAi){
-      try{var ai=await requestAssessment(next.id);aiUnavailable=!ai||ai.status!=="preliminary_ai";}
+      try{var ai=await requestAssessment(next.id);aiUnavailable=!ai||!(ai.status==="preliminary_ai"||ai.status==="nonanswer_zero");}
       catch(_){aiUnavailable=true;}
      }
      var checked=await cloud.studentLifecycleRpc("trainingOpen",{courseId:COURSE,session:selected});
@@ -326,6 +339,10 @@ async function boot(){
      if(savingView)savingView.innerHTML="";
      if(error)error.textContent=t("تعذر تأكيد حفظ الإجابة. إجابتك ما زالت هنا؛ تحقق من الاتصال ثم أعد المحاولة.","We could not confirm your answer was saved. Your text is still here; check the connection and try again.");
     }finally{if(wait)wait.finish();}
+   }
+   if(next){
+    var unknown=host.querySelector("#adaptiveUnknown");
+    if(unknown)unknown.onclick=function(){return submitAnswer(lang()==="en"?"I don't know":"لا أعلم",this);};
    }
    if(next&&guided){
     guide.mount(host.querySelector("#legalExamGuide"),{prompt:prompt,language:lang(),onSubmit:submitAnswer});

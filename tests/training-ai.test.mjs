@@ -25,6 +25,10 @@ assert.equal(summarize([{dimension:"recall",evaluation:{status:"preliminary_inte
 assert.equal(summarize([{dimension:"recall",evaluation:{status:"preliminary_ai",rubric_version:VERSION,provisional_percent:95}}],diagnostic).priority,"understanding");
 assert.equal(summarize([{dimension:"recall",evaluation:{status:"preliminary_ai",provisional_percent:95}}],diagnostic).skills.recall,40,"unversioned historical scores must not supersede a verified diagnostic result");
 assert.deepEqual(summarize([],{}).skills,{recall:null,understanding:null});
+assert.equal(summarize([{dimension:"recall",evaluation:{status:"nonanswer_zero",provisional_percent:0}}],{}).skills.recall,0,
+ "a meaningless submitted task earns zero rather than disappearing from skill evidence");
+assert.equal(summarize([{dimension:"recall",evaluation:{status:"pending_semantic_assessment",provisional_percent:null}}],{}).skills.recall,null,
+ "an ungraded honest attempt must never be represented as a zero");
 // Exercise the actual deployed handler with fake database/provider boundaries.
 let handler,providerCalls=0;
 const source=stripTypeScriptTypes(fs.readFileSync("supabase/functions/lexlearn-training-ai-grade/index.ts","utf8").replace(/^import .*;\r?\n/gm,""));
@@ -44,6 +48,7 @@ function environment({consent=true,providerFailure=false}={}){
     const filter=filters.find(([k])=>k==='status');return {data:filter&&filter[1]!==item.status?null:item};
    }
    if(table==="content_sources")return {data:[{id:"qa-civil-2004-art39",status:"approved",excerpt:"The approved source."}]};
+   if(table==="lex_reference_links")return {data:[]};
    if(table==="ai_grading_runs"){
     if(operation==="insert"){auditCount++;return {data:{id:"audit"}};}
     return {data:null,count:filters.some(([k])=>k==="item_id")?(options.attempts||0):0};
@@ -60,11 +65,17 @@ function environment({consent=true,providerFailure=false}={}){
   }return q;
  }};
  const context={Deno:{env:{get:()=>"fake-secret"},serve:f=>{handler=f;}},corsHeaders:{},json:(body,status=200)=>new Response(JSON.stringify(body),{status}),
-  requireUser:async()=>({user:{id:"student"},profile:{role:"student"},admin}),VERSION,SCHEMA,interpret,summarize,Response,AbortSignal,console,legalSources,
+  requireUser:async()=>({user:{id:"student"},profile:{role:"student"},admin}),requireTrainingAccess:async()=>{},VERSION,SCHEMA,interpret,summarize,Response,AbortSignal,console,legalSources,
   fetch:async(_url,request)=>{providerCalls++;localCalls++;const body=JSON.parse(request.body);assert.ok(body.input[1].content.includes("full_text_ar"));assert.ok(!body.input[1].content.includes("human_review_required_before_activation"),"activation metadata cannot override the released practice assessment");if(localCalls===2){assert.equal(body.model,"gpt-5.4");assert.equal(body.reasoning.effort,"medium");}return providerFailure||(options.verifierFailure&&localCalls===2)||(options.modelDenied&&localCalls===2)?new Response("unavailable",{status:options.modelDenied?403:503}):new Response(JSON.stringify({status:"completed",output_text:JSON.stringify(localCalls===2&&options.verifierResult?options.verifierResult:valid)}));}};
  vm.runInNewContext(source,context);
  return {call:()=>handler(new Request("https://test.invalid",{method:"POST",body:JSON.stringify({session:1,item_id:"rights-v1-s1-recall",answer:"caller cannot override saved answer"})})),grade:()=>evaluation,audits:()=>auditCount};
 }
+const junk=environment({initialEvaluation:{status:"nonanswer_zero",provisional_percent:0,grading_method:"deterministic_nonanswer"}});
+const beforeJunkCalls=providerCalls;
+assert.equal((await junk.call()).status,200);
+assert.equal(providerCalls,beforeJunkCalls,"obvious nonsense is never billed to a semantic provider");
+assert.equal(junk.grade().provisional_percent,0,"zero task score must survive the handler");
+assert.equal(junk.audits(),0,"do not fabricate a paid-model audit for a deterministic zero");
 const denied=environment({consent:false});assert.equal((await denied.call()).status,403);assert.equal(providerCalls,0);
 const ok=environment();assert.equal((await ok.call()).status,200);assert.equal(ok.grade().provisional_percent,67);assert.equal(ok.audits(),1);
 await ok.call();assert.equal(providerCalls,2,"cached attempts never charge twice");
