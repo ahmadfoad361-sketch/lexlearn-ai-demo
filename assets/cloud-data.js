@@ -117,7 +117,7 @@ async function updateCohortDefaults(data){
  var c=db();if(!c)throw new Error("cloud_not_configured");
  var id=String(data.id||"");
  if(!/^[0-9a-f-]{36}$/i.test(id))throw Error("invalid_cohort");
- var row={institution:String(data.institution||"").trim()||null,academic_year:data.academic_year||null,
+ var row={name:String(data.name||"").trim(),institution:String(data.institution||"").trim()||null,academic_year:data.academic_year||null,
  faculty:String(data.faculty||"").trim()||null,country_code:data.country_code||"qa",
  course_id:data.course_id||"qa-qu-lawc101-rights",subject_name:String(data.subject_name||"").trim()||"نظرية الحق"};
  var r=await c.from("cohorts").update(row).eq("id",id).select("id").single();
