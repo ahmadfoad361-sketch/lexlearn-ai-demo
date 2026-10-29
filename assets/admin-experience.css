@@ -248,3 +248,21 @@ html[data-learner-theme] .studentTreeNode.level-faculty {border-inline-start:5px
 @media print{
   html[data-learner-theme] :is(.panel,.studentTreeNode,.studentRecordSection,.kpis>div){box-shadow:none}
 }
+
+/* Supervisor navigation, 29 Oct 2026: five clear areas instead of a crowded mixed menu. */
+.adminNav{display:flex!important;flex-wrap:wrap!important;gap:8px!important;align-items:flex-start!important;overflow:visible!important;padding-block:7px!important}
+.adminNav>button,.adminNavGroup>summary{display:flex;align-items:center;min-height:44px;padding:10px 14px;border-radius:12px;font-weight:750;font-size:var(--ad-control,16px);white-space:normal;cursor:pointer}
+.adminNavGroup{position:relative;min-width:0;border:1px solid var(--ad-line,#d5d5db);border-radius:13px;background:var(--ad-surface,#fff);color:var(--ad-ink,#111d31)}
+.adminNavGroup>summary{color:inherit;list-style:none;gap:8px}
+.adminNavGroup>summary::-webkit-details-marker{display:none}
+.adminNavGroup>summary::after{content:"⌄";font-weight:900;margin-inline-start:6px}
+.adminNavGroup[open]>summary{background:var(--ad-raised,#f5eef0);color:var(--ad-ink,#111d31)}
+.adminNavGroup[open]>summary::after{transform:rotate(180deg)}
+.adminNavItems{position:absolute;z-index:45;top:calc(100% + 4px);right:0;min-width:230px;max-width:min(92vw,330px);display:grid;gap:5px;padding:10px;background:var(--ad-surface,#fff);border:1px solid var(--ad-line,#d5d5db);box-shadow:0 12px 30px #111d3130;border-radius:12px}
+.adminNavItems>a,.adminNavItems>button{display:block;text-align:start;width:100%;max-width:100%;padding:10px 12px;min-height:44px;border-radius:9px;font:inherit;font-weight:650;color:var(--ad-ink,#111d31)!important;background:transparent;text-decoration:none;white-space:normal;cursor:pointer}
+.adminNavItems>a:hover,.adminNavItems>button:hover,.adminNavItems>button.active{background:var(--ad-raised,#f4e9ed);color:var(--ad-accent,#8a1f39)!important}
+.adminNavGroup>summary:focus-visible,.adminNavItems>a:focus-visible,.adminNavItems>button:focus-visible{outline:3px solid var(--ad-accent,#8a1f39);outline-offset:2px}
+html[data-learner-theme="dark"] .adminNavGroup,html[data-learner-theme="dark"] .adminNavItems{background:var(--ad-surface,#1d293c);color:var(--ad-ink,#f9f4ef)}
+html[data-learner-theme="dark"] .adminNavGroup[open]>summary,html[data-learner-theme="dark"] .adminNavItems>a:hover,html[data-learner-theme="dark"] .adminNavItems>button:hover{background:#344b60}
+@media(max-width:800px){.adminNav{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));width:100%;gap:8px!important}.adminNav>button,.adminNavGroup>summary{justify-content:center;text-align:center;width:100%;font-size:15px!important;min-height:48px}.adminNavGroup .adminNavItems{position:static;box-shadow:none;border:0;border-top:1px solid var(--ad-line,#ccc);max-width:100%;min-width:0}.adminNavGroup{width:100%}.topActions{flex-wrap:wrap;gap:8px}}
+@media(max-width:460px){.adminNav{grid-template-columns:1fr}.adminNavGroup .adminNavItems{padding:8px}.adminNavGroup>summary{justify-content:space-between}}
