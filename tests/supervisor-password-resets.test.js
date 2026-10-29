@@ -25,5 +25,5 @@ assert.match(studentApi,/function temporaryPassword\(\)/);
 assert.match(studentApi,/if\(action==="reset_password"\)/);
 assert.match(studentApi,/await requireStaff\(req\)/);
 assert.match(studentApi,/must_change_password:true/);
-assert.match(read("admin.html"),/admin-entry\.js\?v=20261029\.reset1/);
+assert.match(read("admin.html"),/admin-entry\.js\?v=20261029\.nav2/);
 console.log("PASS supervisor temporary password resets: instructor and student, guarded, one-time, forced change");
