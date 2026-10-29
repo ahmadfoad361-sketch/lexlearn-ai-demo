@@ -1,11 +1,11 @@
 /* Visible staff entry on public homes, independent of the learner/demo state. */
 .homeStaffEntry{display:flex;justify-content:flex-end;flex-wrap:wrap;max-width:1280px;margin:0 auto;padding:0 22px 12px;gap:12px}
-.homeStaffEntry .homeStaffLink{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:9px 18px;border:1px solid #8a1f39;border-radius:12px;background:#8a1f39;color:#f9f4ef;font:700 16px/1.5 system-ui,Tahoma,Arial,sans-serif;text-decoration:none;white-space:nowrap}
+.homeStaffEntry .homeStaffLink,.homeStaffEntry .homeStaffLink--instructor{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:9px 18px;border:1px solid #8a1f39;border-radius:12px;background:#8a1f39;color:#f9f4ef;font:700 16px/1.5 system-ui,Tahoma,Arial,sans-serif;text-decoration:none;white-space:nowrap}
 .homeStaffEntry .homeStaffLink--instructor{background:#111d31;border-color:#111d31;color:#f9f4ef}
 .homeStaffEntry .homeStaffLink:hover{background:#111d31;border-color:#111d31;color:#f9f4ef}
 .homeStaffEntry .homeStaffLink--instructor:hover{background:#8a1f39;border-color:#8a1f39;color:#f9f4ef}
-.homeStaffEntry .homeStaffLink:focus-visible{outline:3px solid #8a1f39;outline-offset:3px}
-html[data-theme=dark] .homeStaffLink,html[data-learner-theme=dark] .homeStaffLink{border-color:#bb7187}
-html[data-theme=dark] .homeStaffLink:focus-visible,html[data-learner-theme=dark] .homeStaffLink:focus-visible{outline-color:#e6c4d0}
-@media(max-width:600px){.homeStaffEntry{padding:0 12px 10px}.homeStaffEntry .homeStaffLink{padding-inline:16px}}
+.homeStaffEntry .homeStaffLink:focus-visible,.homeStaffEntry .homeStaffLink--instructor:focus-visible{outline:3px solid #8a1f39;outline-offset:3px}
+html[data-theme=dark] .homeStaffLink,html[data-theme=dark] .homeStaffLink--instructor,html[data-learner-theme=dark] .homeStaffLink,html[data-learner-theme=dark] .homeStaffLink--instructor{border-color:#bb7187}
+html[data-theme=dark] .homeStaffLink:focus-visible,html[data-theme=dark] .homeStaffLink--instructor:focus-visible,html[data-learner-theme=dark] .homeStaffLink:focus-visible,html[data-learner-theme=dark] .homeStaffLink--instructor:focus-visible{outline-color:#e6c4d0}
+@media(max-width:600px){.homeStaffEntry{padding:0 12px 10px}.homeStaffEntry .homeStaffLink,.homeStaffEntry .homeStaffLink--instructor{padding-inline:16px}}
 @media print{.homeStaffEntry{display:none}}
