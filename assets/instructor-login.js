@@ -1,6 +1,11 @@
 (function(){
 "use strict";
 const f=document.getElementById("instructorLogin"),error=document.getElementById("instructorError");
+if(new URLSearchParams(location.search).get("password_updated")==="1"){
+ error.textContent="تم حفظ كلمة المرور الجديدة. سجّل الدخول الآن باستخدام البريد الإلكتروني وكلمة المرور الجديدة.";
+ error.setAttribute("role","status");
+ document.getElementById("instructorEmail").focus();
+}
 f.onsubmit=async function(e){
  e.preventDefault();error.textContent="جارٍ التحقق من الحساب…";
  try{
