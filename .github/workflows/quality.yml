@@ -55,6 +55,7 @@ jobs:
       - name: Check diagnostic AI Edge Function
         run: |
           deno check supabase/functions/lexlearn-diagnostic-ai-grade/index.ts
+          deno check supabase/functions/lexlearn-training-ai-grade/index.ts
           deno check supabase/functions/lexlearn-grading-smoke/index.ts
           deno check supabase/functions/student-register-whatsapp/index.ts
           deno check supabase/functions/admin-manage-instructors/index.ts
