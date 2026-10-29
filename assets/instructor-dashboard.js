@@ -68,27 +68,21 @@ function assignments(){
  return '<section class="panel"><h2>المواد والفرق المكلف بتدريسها</h2><div class="grid">'+a.map(x=>'<div class="course"><b>'+esc(x.subject)+'</b><p>'+esc(window.LEX_ACADEMIC.university(x.university))+' — '+esc(x.faculty)+'</p><small>'+esc(window.LEX_ACADEMIC.year(x.year))+'</small></div>').join("")+'</div><label>المادة المعروضة<select id="scopeSelect">'+a.map(x=>'<option value="'+esc(x.id)+'" '+(state.assignment===x.id?"selected":"")+'>'+esc(x.subject)+' — '+esc(window.LEX_ACADEMIC.university(x.university))+' — '+esc(window.LEX_ACADEMIC.year(x.year))+'</option>').join("")+'</select></label></section>';
 }
 function studentProgress(r){
- if(!r)return '<p class="loading">اختر طالبًا لعرض تقدم المهارات.</p>';
- const d=r.diagnostic||{},points=Array.isArray(r.checkpoints)?r.checkpoints:[],missing=Array.isArray(r.missing_criteria)?r.missing_criteria:[];
- const periods=[...new Set(points.map(x=>x.period))].sort((a,b)=>a-b);
- return '<div class="panel"><div class="toolbar"><div><span class="eyebrow">تطور المهارات</span><h2>'+esc(r.student?.name)+'</h2><p>'+esc(window.LEX_ACADEMIC.university(r.student?.university))+' — '+esc(r.student?.faculty)+' — '+esc(window.LEX_ACADEMIC.year(r.student?.year))+'</p></div><button class="print" id="printReport">طباعة التقرير</button></div>'+
- '<div class="grid three"><div class="metric">تقدير الحفظ عند التشخيص<strong>'+pct(d.recall)+'</strong><small>قياس أولي مستقل</small></div><div class="metric">تقدير الفهم عند التشخيص<strong>'+pct(d.understanding)+'</strong><small>قياس أولي مستقل</small></div><div class="metric">جلسات مكتملة<strong>'+Number(r.completed_sessions||0)+'</strong><small>كل خمس جلسات = فترة متابعة</small></div></div>'+
+ if(!r)return '<p class="loading">اختر طالبًا لعرض ملخص حفظه وفهمه.</p>';
+ const d=r.diagnostic||{},points=Array.isArray(r.checkpoints)?r.checkpoints:[];
+ return '<section class="panel" id="professorSummaryPrintable"><div class="toolbar"><div>'+
+ '<span class="eyebrow">ملخص تقدم المهارات</span><h2>'+esc(r.student?.name||"الطالب")+'</h2>'+
+ '<p>'+esc(window.LEX_ACADEMIC.university(r.student?.university))+' — '+esc(r.student?.faculty)+' — '+esc(window.LEX_ACADEMIC.year(r.student?.year))+'</p></div>'+
+ '<button type="button" class="print" id="printReport">طباعة ملخص الحفظ والفهم فقط</button></div>'+
+ '<div class="grid three"><div class="metric"><span>تقدير الحفظ عند التشخيص</span><strong>'+pct(d.recall)+'</strong><small>قياس أولي مستقل</small></div>'+
+ '<div class="metric"><span>تقدير الفهم عند التشخيص</span><strong>'+pct(d.understanding)+'</strong><small>قياس أولي مستقل</small></div>'+
+ '<div class="metric"><span>جلسات مكتملة</span><strong>'+Math.max(0,Number(r.completed_sessions)||0)+'</strong><small>كل خمس جلسات = فترة متابعة</small></div></div>'+
  '<h3>متابعة كل خمس جلسات مكتملة</h3>'+
- (points.length?'<div class="tableScroll"><table class="dataTable"><thead><tr><th>الفترة</th><th>المهارة</th><th>التقدير</th><th>إجابات مقيمة</th><th>نسخة التصحيح</th></tr></thead><tbody>'+
- points.map(x=>'<tr><td>جلسات '+((x.period-1)*5+1)+'–'+(x.period*5)+'</td><td>'+dimension(x.dimension)+'</td><td><strong>'+pct(x.percent)+'</strong><div class="bar"><span style="width:'+Math.max(0,Math.min(100,num(x.percent)||0))+'%"></span></div></td><td>'+x.samples+'</td><td>'+esc(x.rubric_version||"غير موثقة")+'</td></tr>').join("")+'</tbody></table></div>':
- '<p class="notice">لم تكتمل فترة من 5 جلسات بعد، أو لا توجد نتائج قابلة للعرض لهذه الفترة. لن نخترع خطًا بيانيًا قبل توفر القياس.</p>')+
- '<h3>توجيهات التقوية</h3>'+recommend(r)+
- '<h3>العناصر التي تكررت الإشارة إلى نقصها</h3><p>'+ (missing.length?missing.map(m=>'<span class="tag">'+esc(m.element)+' ('+m.count+')</span>').join(" "):"لا توجد عناصر نقص مسجلة بصورة قابلة للاستخلاص بعد")+'</p>'+policy()+'</div>';
-}
-function recommend(r){
- const p=r.checkpoints||[],rs=p.filter(x=>x.dimension==="recall").at(-1),
-  us=p.filter(x=>x.dimension==="understanding").at(-1);
- const advice=[];
- if(rs&&rs.samples>0&&num(rs.percent)<65)advice.push("الرجوع إلى العناصر الأساسية للقاعدة، ثم تدريب الطالب على استرجاعها دون النظر للنص.");
- if(us&&us.samples>0&&num(us.percent)<65)advice.push("شرح القاعدة بأمثلة متقابلة، ثم تكليف الطالب بتفسير سبب الاختيار لا مجرد تحديد الإجابة.");
- if(!p.length)advice.push("استكمال خمس جلسات أولًا، ثم مراجعة إجابات الطالب مع أستاذ المادة قبل إصدار أي توصية فردية.");
- if(!advice.length)advice.push("الاستمرار في المراجعة الدورية وتقديم مسائل متنوعة، مع التحقق من ثبات مستوى الإجابات.");
- return '<div class="summary">'+advice.map(x=>'<p>• '+x+'</p>').join("")+'</div>';
+ (points.length?'<div class="tableScroll"><table class="dataTable"><thead><tr><th>الفترة</th><th>المهارة</th><th>التقدير</th></tr></thead><tbody>'+
+ points.map(x=>'<tr><td>جلسات '+((x.period-1)*5+1)+'–'+(x.period*5)+'</td><td>'+esc(dimension(x.dimension))+
+ '</td><td><strong>'+pct(x.percent)+'</strong><div class="bar"><span style="width:'+Math.max(0,Math.min(100,num(x.percent)||0))+'%"></span></div></td></tr>').join("")+'</tbody></table></div>':
+ '<p class="notice">لم تكتمل فترة متابعة من خمس جلسات بعد. سيظهر تطور الحفظ والفهم بعد اكتمالها وتوفر قياسات قابلة للمقارنة.</p>')+
+ policy()+'</section>';
 }
 function roster(){
  const students=scopeStudents();
@@ -131,32 +125,43 @@ async function loadStudent(studentId){
 }
 async function groupAnalysis(){
  const students=scopeStudents(),node=el("groupResults");
- if(students.length<5){node.innerHTML='<p class="notice">نحتاج بيانات خمسة طلاب على الأقل لإظهار تحليل جماعي قابل للاستخدام. يمكنك متابعة الطلبة فرديًا الآن.</p>';return;}
- node.innerHTML='<p class="loading">جارٍ تلخيص المؤشرات المتاحة لطلاب المادة…</p>';
+ if(students.length<5){node.innerHTML='<p class="notice">يلزم وجود خمسة طلاب على الأقل لعرض تحليل جماعي. تبقى مؤشرات كل طالب متاحة على حدة.</p>';return;}
+ node.innerHTML='<p class="loading">جارٍ حساب المؤشرات الإجمالية للفرقة والمقرر…</p>';
  try{
   const reports=[];
   for(const s of students.slice(0,150)){
    const r=await C.rpc("lex_staff_skill_progress",{p_student:s.id,p_course:(state.roster.assignments||[]).find(a=>a.id===state.assignment)?.course_id});
    if(!r.error&&r.data)reports.push(r.data);
   }
-  const by=new Map(),missing=new Map();
-  reports.forEach(r=>{
+  if(reports.length<5){node.innerHTML='<p class="notice">البيانات المتاحة لأقل من خمسة طلاب، لذلك لا نعرض متوسطًا جماعيًا.</p>';return;}
+  const means={recall:[],understanding:[]};
+  const groups=new Map();
+  let completed=0;
+  for(const r of reports){
+   completed+=Math.max(0,Number(r.completed_sessions)||0);
+   for(const dim of ["recall","understanding"]){
+    const n=num(r.diagnostic?.[dim]);
+    if(n!==null&&n>=0&&n<=100)means[dim].push(n);
+   }
    (r.checkpoints||[]).forEach(c=>{
     const key=[c.period,c.dimension,c.rubric_version||"unspecified"].join("|");
-    const g=by.get(key)||{period:c.period,dimension:c.dimension,rubric:c.rubric_version,students:0,values:[]};
-    g.students++;g.values.push(Number(c.percent));by.set(key,g);
+    const group=groups.get(key)||{period:c.period,dimension:c.dimension,rubric:c.rubric_version,students:0,values:[]};
+    if(num(c.percent)!==null){group.students++;group.values.push(num(c.percent));groups.set(key,group);}
    });
-   new Set((r.missing_criteria||[]).map(m=>m.element)).forEach(element=>missing.set(element,(missing.get(element)||0)+1));
-  });
-  const rows=[...by.values()].filter(g=>g.students>=5).sort((a,b)=>a.period-b.period);
-  node.innerHTML='<p>عدد الطلاب المشمولين بالتحليل: '+reports.length+' من '+students.length+' — التقديرات آلية وتجريبية.</p>'+
-   (rows.length?'<div class="tableScroll"><table class="dataTable"><thead><tr><th>الفترة</th><th>المهارة</th><th>عدد الطلاب</th><th>متوسط تغطية العناصر</th><th>معيار التصحيح</th></tr></thead><tbody>'+
-   rows.map(g=>'<tr><td>'+g.period+'</td><td>'+dimension(g.dimension)+'</td><td>'+g.students+'</td><td>'+Math.round(g.values.reduce((a,b)=>a+b,0)/g.values.length)+'%</td><td>'+esc(g.rubric||"غير محدد")+'</td></tr>').join("")+'</tbody></table></div>':
-   '<p class="notice">لا تتوافر خمس نتائج طلابية قابلة للمقارنة في فترة واحدة ومعيار واحد. لا يمكن احتساب متوسط جماعي موثوق بعد.</p>')+
-   '<h3>الأجزاء التي تستحق مراجعة طريقة شرحها</h3><p class="hint">عدد الطلبة الذين ظهر لديهم هذا الاحتياج، لا عدد مرات الخطأ. يُقترح تعديل الشرح عند تكراره لدى نسبة معتبرة.</p>'+
-   ([...missing.entries()].sort((a,b)=>b[1]-a[1]).slice(0,7).map(([k,v])=>'<span class="tag">'+esc(k)+' — '+v+' طلاب ('+Math.round(100*v/reports.length)+'%)'+'</span>').join(" ")||
-   '<p>لا توجد بيانات كافية عن العناصر الناقصة حاليًا.</p>')+
-   '<p class="hint">يمكن الاستفادة من هذه القائمة عند تطوير المحاضرات، لكن لا تعتمد وحدها لتغيير الكتاب الجامعي دون مراجعة أكاديمية ومقارنة اختبارات متكافئة.</p>'+policy();
+  }
+  const average=v=>Math.round(v.reduce((a,b)=>a+b,0)/v.length)+"%";
+  const baseline=dim=>means[dim].length>=5?average(means[dim]):"بيانات غير كافية";
+  const points=[...groups.values()].filter(x=>x.students>=5).sort((a,b)=>a.period-b.period);
+  node.innerHTML='<div class="grid three">'+
+   '<div class="metric"><span>الطلاب المشمولون</span><strong>'+reports.length+'</strong><small>من '+students.length+' طالبًا ضمن المادة</small></div>'+
+   '<div class="metric"><span>متوسط الحفظ عند التشخيص</span><strong>'+baseline("recall")+'</strong><small>عدد القياسات: '+means.recall.length+'</small></div>'+
+   '<div class="metric"><span>متوسط الفهم عند التشخيص</span><strong>'+baseline("understanding")+'</strong><small>عدد القياسات: '+means.understanding.length+'</small></div></div>'+
+   '<p class="hint">إجمالي الجلسات المكتملة لهؤلاء الطلاب: '+completed+'. هذه تقديرات أولية وليست درجات جامعية.</p>'+
+   '<h3>تطور المجموعة بعد كل خمس جلسات</h3>'+
+   (points.length?'<div class="tableScroll"><table class="dataTable"><thead><tr><th>الفترة</th><th>المهارة</th><th>الطلاب المقاسون</th><th>متوسط التقدير</th></tr></thead><tbody>'+
+   points.map(x=>'<tr><td>الفترة '+x.period+'</td><td>'+esc(dimension(x.dimension))+'</td><td>'+x.students+'</td><td>'+average(x.values)+'</td></tr>').join("")+'</tbody></table></div>':
+   '<p class="notice">لم تتوفر خمسة قياسات متكافئة في فترة متابعة واحدة بعد.</p>')+
+   '<p class="hint">للمقارنة العلمية، تُجمع النتائج فقط عند توحيد فترة القياس ومعيار التصحيح؛ ولا يتم عرض الأسئلة أو الإجابات أو بنود التصحيح الفردية.</p>'+policy();
  }catch(_){node.innerHTML='<p class="danger">تعذر إتمام التحليل الجماعي.</p>';}
 }
 async function reload(){
