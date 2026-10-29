@@ -110,7 +110,7 @@ function progressModel(rows,session){
 function examSummary(rows,session){
  var entries=(rows||[]).filter(function(r){return r.session_number===session&&r.dimension==="exam_execution";});
  if(!entries.length)return "";
- var values=entries.filter(function(r){return confirmedGrade(r.evaluation);}).map(function(r){return r.evaluation.provisional_percent;}).filter(function(v){return typeof v==="number"&&Number.isFinite(v)&&v>=0&&v<=100;});
+ var values=entries.filter(function(r){return confirmedGrade(r.evaluation)||deterministicZero(r.evaluation);}).map(function(r){return r.evaluation.provisional_percent;}).filter(function(v){return typeof v==="number"&&Number.isFinite(v)&&v>=0&&v<=100;});
  return "<p class='examSummary'><b>"+t("بناء الإجابة والتطبيق في هذه الجلسة: ","Answer structure and application in this session: ")+(values.length?noHtmlScore(values.reduce(function(a,b){return a+b;},0)/values.length):t("التصحيح غير مكتمل","Assessment incomplete"))+"</b><br><small>"+t("هذه نتيجة سؤال التطبيق، وتُعرض منفصلة عن الحفظ والفهم.","This is the application question result, shown separately from recall and understanding.")+"</small></p>";
 }
 function progressHtml(rows,session,historyAvailable){
@@ -121,7 +121,7 @@ function progressHtml(rows,session,historyAvailable){
  (root.LEX_SESSION_MOMENTS?root.LEX_SESSION_MOMENTS.render(session,lang(),card):"")+
  "<p class='completionState'>✓ "+t("أكملت مهام هذه الجلسة وحُفظت إجاباتك.","You completed this session and your answers were saved.")+"</p>"+
  "<div class='progressSkills'>"+m.skills.map(function(x){
-   var aiRows=(rows||[]).filter(function(r){return r.dimension===x.dimension&&r.session_number===session&&r.evaluation&&confirmedGrade(r.evaluation);});
+   var aiRows=(rows||[]).filter(function(r){return r.dimension===x.dimension&&r.session_number===session&&r.evaluation&&(confirmedGrade(r.evaluation)||deterministicZero(r.evaluation));});
    var values=aiRows.map(function(r){return r.evaluation.provisional_percent;}).filter(function(v){return typeof v==="number"&&Number.isFinite(v)&&v>=0&&v<=100;});
    var shown=values.length?noHtmlScore(values.reduce(function(a,b){return a+b;},0)/values.length):t("التصحيح غير مكتمل","Assessment incomplete");
    return "<article class='progressSkill'><h3>"+esc(weakName(x.dimension))+"</h3>"+(visual&&values.length?visual.ring(card[x.dimension],x.dimension):"")+"<strong class='"+(values.length?"":"assessmentMissing")+"'>"+esc(values.length?shown:t("التصحيح غير مكتمل","Assessment incomplete"))+"</strong>"+
@@ -132,7 +132,7 @@ function progressHtml(rows,session,historyAvailable){
 }
 function momentData(rows,session){
  var data={kind:session%5===0?"level":"session",level:Math.ceil(session/5),session:session};
- ["recall","understanding"].forEach(function(dim){var a=(rows||[]).filter(function(r){return r.session_number===session&&r.dimension===dim&&r.evaluation&&confirmedGrade(r.evaluation);}).map(function(r){return r.evaluation.provisional_percent;}).filter(function(v){return typeof v==="number"&&Number.isFinite(v)&&v>=0&&v<=100;});data[dim]=a.length?Math.round(a.reduce(function(x,y){return x+y;},0)/a.length):null;});
+ ["recall","understanding"].forEach(function(dim){var a=(rows||[]).filter(function(r){return r.session_number===session&&r.dimension===dim&&r.evaluation&&(confirmedGrade(r.evaluation)||deterministicZero(r.evaluation));}).map(function(r){return r.evaluation.provisional_percent;}).filter(function(v){return typeof v==="number"&&Number.isFinite(v)&&v>=0&&v<=100;});data[dim]=a.length?Math.round(a.reduce(function(x,y){return x+y;},0)/a.length):null;});
  return data;
 }
 
