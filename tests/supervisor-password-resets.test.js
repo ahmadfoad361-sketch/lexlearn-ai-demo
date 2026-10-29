@@ -12,7 +12,7 @@ assert.match(api,/admin\.auth\.admin\.updateUserById\(uid,\{/);
 assert.match(api,/password:temporary,user_metadata:\{must_change_password:true\}/);
 assert.match(api,/\.update\(\{must_change_password:true\}\)/);
 assert.match(api,/action:"RESET_INSTRUCTOR_PASSWORD"/);
-assert.match(api,/return json\(\{ok:true,email:academic\.data\.official_email,temporary_password:temporary\}\)/);
+assert.match(api,/return json\(\{ok:true,email:loginEmail,temporary_password:temporary,login_verified:true\}\)/);
 assert.doesNotMatch(api,/details:\{[^}]*temporary_password/,"Audit must not contain the secret");
 assert.match(instructorUi,/data-reset-teacher/);
 assert.match(instructorUi,/action:"reset-password",instructor_id:teacher\.instructor_id/);
