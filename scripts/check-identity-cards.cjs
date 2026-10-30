@@ -1,0 +1,38 @@
+/* No network, secrets or real accounts: verify identity cards and QR payloads. */
+const assert=require("node:assert/strict"),fs=require("node:fs"),vm=require("node:vm");
+const source=path=>fs.readFileSync(path,"utf8");
+const ctx={console,window:{},document:{documentElement:{lang:"ar"}}};ctx.window.window=ctx.window;
+ctx.window.qrcode=function(){return{addData(){},make(){},createSvgTag(){return "<svg></svg>";}};};
+ctx.window.qrcode.stringToBytesFuncs={"UTF-8":()=>[]};
+ctx.window.LEX_ACADEMIC={university:x=>x,faculty:x=>x};
+vm.runInNewContext(source("assets/card-branding.js"),ctx);
+vm.runInNewContext(source("assets/student-identity.js"),ctx);
+vm.runInNewContext(source("assets/instructor-card.js"),ctx);
+const student={lexlearn_number:52,display_name:"أحمد فؤاد",username:"student052",university:"جامعة عجمان",faculty:"كلية القانون",year_label:"الفرقة الأولى"};
+const sp=JSON.parse(ctx.window.LEX_IDENTITY.payload(student));
+assert.equal(sp.project,"LexLearn");assert.equal(sp.card_type,"student");
+assert.equal(sp.username,"student052");assert.equal(sp.university,"جامعة عجمان");
+assert.ok(!Object.keys(sp).some(k=>/password|secret|access_token/i.test(k)));
+const studentCard=ctx.window.LEX_IDENTITY.card(student);
+assert.match(studentCard,/cardWordmark/);assert.match(studentCard,/student052/);
+assert.doesNotMatch(studentCard,/ليكس ليرن|ليسك ليرن/);
+const roster={profile:{academic_title:"دكتور",name:"أحمد الفقي",official_email:"faculty@example.edu",specialization:"القانون المدني"},
+ assignments:[{university:"جامعة طنطا",faculty:"كلية الحقوق"},{university:"Qatar University",faculty:"College of Law"}]};
+const professor=ctx.window.LEX_INSTRUCTOR_CARD.details(roster,1);
+assert.equal(professor.university,"Qatar University");
+assert.equal(professor.username,"faculty@example.edu");
+assert.doesNotMatch(professor.university,/طنطا/);
+const fp=JSON.parse(ctx.window.LEX_INSTRUCTOR_CARD.payload(professor));
+assert.equal(fp.username,"faculty@example.edu");
+assert.equal(fp.card_type,"faculty");
+assert.ok(!Object.keys(fp).some(k=>/password|secret|access_token/i.test(k)));
+const facultyCard=ctx.window.LEX_INSTRUCTOR_CARD.card(professor);
+assert.match(facultyCard,/faculty@example.edu/);assert.match(facultyCard,/Qatar University/);
+assert.doesNotMatch(facultyCard,/جامعة طنطا|ليكس ليرن|ليسك ليرن/);
+const alreadyTitled=ctx.window.LEX_INSTRUCTOR_CARD.details({profile:{academic_title:"دكتور",name:"دكتور أحمد الفقي",official_email:"faculty@example.edu"},assignments:[]});
+assert.equal(alreadyTitled.display_name,"دكتور أحمد الفقي");
+const pdfSource=source("assets/student-card-pdf.js");
+assert.match(pdfSource,/api\.payload\(p\)/);assert.match(pdfSource,/p\.username/);
+assert.doesNotMatch(pdfSource,/ليكس ليرن|ليسك ليرن/);
+assert.match(source("assets/instructor-dashboard.js"),/name\.split\(\/\\s\+\/\)/);
+console.log("PASS branded student/faculty identity, selected university, QR username, no password, PDF payload");
