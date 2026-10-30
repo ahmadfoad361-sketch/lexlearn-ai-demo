@@ -52,13 +52,13 @@ function render(d){
  report.innerHTML='<section class="panel analyticsNotice"><p>بدأ تسجيل الزيارات في <b>'+esc(date(d.started_at))+'</b>. الفترة المعروضة تبدأ من '+esc(date(d.since))+'. جميع المواعيد بتوقيت القاهرة.</p>'+
  '<p class="hint">المدة المعروضة تقديرية من تتابع نبضات النشاط؛ لا يمكن احتساب مدة دقيقة من سجل دخول واحد أو من زيارات سابقة لتفعيل القياس. يتوقف التتبع عند إخفاء الصفحة أو تجاوز خمس دقائق دون تفاعل. يحترم إعدادات عدم التتبع.</p></section>'+
  '<section class="analyticsKpis" aria-label="مؤشرات الزيارات">'+metric('الزوار الفريدون',d.visitors,'متصفحات خلال الفترة')+
- metric('الزيارات',d.visits,'جلسات تصفح خلال الفترة')+metric('مشاهدات الصفحات',d.views,'تتضمن نبضات النشاط')+
+ metric('الزيارات',d.visits,'جلسات تصفح خلال الفترة')+metric('مشاهدات الصفحات',d.views,'لا تشمل نبضات النشاط')+
  metric('الزوار العائدون',d.returning_visitors,'أكثر من زيارة في الفترة')+
  metric('الطلاب المشتركون',d.registered_students,'حسابات مسجلة؛ '+number(d.active_students)+' مفعّل')+
  metric('الأساتذة المسجلون',d.registered_instructors,'كل حسابات الأساتذة')+
  metric('طلاب جدد',d.new_students,'حسابات أنشئت خلال الفترة')+
  metric('حسابات استخدمت الموقع',d.active_accounts,'نشاط مسجل أثناء الدخول')+'</section>'+
- '<p class="hint">الزوار الفريدون تقدير بحسب المتصفح، ومشاهدات الصفحات تشمل القياسات المتكررة ولا تمثل عدد مرات فتح الصفحة. الاشتراك هنا هو التسجيل لا الدفع.</p>'+
+ '<p class="hint">الزوار الفريدون تقدير بحسب المتصفح، ومشاهدات الصفحات تُحصي فتح الصفحات ولا تشمل نبضات قياس الوقت. الاشتراك هنا هو التسجيل لا الدفع.</p>'+
  '<section class="panel"><h2>النشاط يومًا بيوم</h2><div class="analyticsTrend">'+daily.map(x=>'<div class="analyticsDay"><time>'+esc(x.day)+'</time><div class="bar" aria-hidden="true"><span style="width:'+Math.round(Number(x.visits)/max*100)+'%"></span></div><b>'+number(x.visits)+' زيارة</b></div>').join("")+'</div></section>'+
  '<section class="panel"><h2>أكثر الصفحات نشاطًا</h2>'+(popular.length?'<div class="tableScroll"><table class="dataTable analyticsTable"><thead><tr><th>الصفحة</th><th>قياسات النشاط</th><th>المتصفحات</th></tr></thead><tbody>'+popular.map(x=>'<tr><td>'+esc(pages[x.page]||x.page)+'</td><td>'+number(x.views)+'</td><td>'+number(x.visitors)+'</td></tr>').join("")+'</tbody></table></div>':'<p>لا يوجد نشاط مسجل خلال الفترة.</p>')+'</section>'+
  '<section class="panel"><h2>سجل حضور الطلاب والأساتذة</h2>'+
