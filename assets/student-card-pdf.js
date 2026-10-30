@@ -57,26 +57,30 @@ async function create(p,cardApi){
  y=Math.max(635,y+12);
  // One primary institution per card; keep its mark beside the academic details.
  var panelTop=Math.max(650,y+12);
+ // A standalone university crest. Do not print a second university name beside it.
  c.fillStyle='#f5f0e9';c.strokeStyle='#ded4bf';c.lineWidth=2;
- c.beginPath();c.roundRect(95,panelTop,860,162,23);c.fill();c.stroke();
- c.fillStyle='#fff';c.strokeStyle='#c9b88e';
- c.beginPath();c.roundRect(754,panelTop+35,104,92,18);c.fill();c.stroke();
- var institutionLogo=brand&&brand.logo(p.university);
- var logoReady=false;
- if(institutionLogo){try{var universityLogo=await image(institutionLogo);c.drawImage(universityLogo,762,panelTop+40,88,80);logoReady=true;}catch(_){}}
- if(!logoReady){
-  c.direction='ltr';c.textAlign='center';c.fillStyle='#8a1f39';c.font='bold 30px Tahoma,Arial';
-  c.fillText(brand?brand.initials(p.university):'UNI',806,panelTop+92,92);
+ c.beginPath();c.roundRect(95,panelTop,860,170,23);c.fill();c.stroke();
+ var institutionLogo=brand&&brand.logo(p.university),logoReady=false;
+ if(institutionLogo){
+  try{
+   var universityLogo=await image(institutionLogo);
+   // Fit entire emblem inside a square, never stretch a landscape wordmark.
+   var naturalW=universityLogo.naturalWidth||universityLogo.width||1;
+   var naturalH=universityLogo.naturalHeight||universityLogo.height||1;
+   var logoScale=Math.min(146/naturalW,146/naturalH);
+   c.drawImage(universityLogo,525-naturalW*logoScale/2,panelTop+12+(146-naturalH*logoScale)/2,
+     naturalW*logoScale,naturalH*logoScale);
+   logoReady=true;
+  }catch(_){}
  }
- c.save();
- c.beginPath();c.rect(125,panelTop+12,600,138);c.clip();
- c.direction='rtl';c.textAlign='center';c.fillStyle='#172641';
- c.font='bold 33px Tahoma,Arial';
- c.fillText(String(p.university||''),425,panelTop+65,575);
- c.font='27px Tahoma,Arial';c.fillStyle='#536078';
- c.fillText(String(p.faculty||''),425,panelTop+118,575);
- c.restore();
- y=panelTop+182;
+ if(!logoReady){
+  c.fillStyle='#fff';c.strokeStyle='#c9b88e';
+  c.beginPath();c.roundRect(465,panelTop+15,120,120,20);c.fill();c.stroke();
+  c.direction='ltr';c.textAlign='center';c.fillStyle='#8a1f39';c.font='bold 31px Tahoma,Arial';
+  c.fillText(brand?brand.initials(p.university):'UNI',525,panelTop+92,112);
+ }
+ y=panelTop+185;
+ if(p.faculty)y=draw(p.faculty,y,26,900,1,'#536078')+8;
  if(p.academic_section)y=draw(p.academic_section,y,26,900,1,'#35415a')+12;
  if(p.year_label)y=draw(p.year_label,y,27,900,1,'#8a1f39')+12;
  var qr=root.qrcode(0,'M');root.qrcode.stringToBytes=root.qrcode.stringToBytesFuncs['UTF-8'];
