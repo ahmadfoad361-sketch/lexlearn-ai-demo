@@ -47,6 +47,21 @@ Deno.serve(async(req:Request)=>{
  if(identity.error||!user)return json({error:"unauthorized"},401);
  const db=admin();
  try{
+  // Queue rollout is database-gated. Until enabled, the existing grading path is unchanged.
+  // If the queue is enabled, NEVER fall back to inline paid grading on an error.
+  const mode=await db.from("lex_ai_queue_settings").select("enabled").eq("id",true).maybeSingle();
+  if(mode.error&&mode.error.code!=="42P01")return json({error:"queue_control_unavailable"},503);
+  if(mode.data?.enabled){
+   try{
+    const deferred=await fetch(Deno.env.get("SUPABASE_URL")+"/functions/v1/lexlearn-ai-enqueue",{
+     method:"POST",headers:{Authorization:bearer,apikey:Deno.env.get("SUPABASE_ANON_KEY")||"",
+       "Content-Type":"application/json"},
+     body:JSON.stringify({kind:"diagnostic"}),signal:AbortSignal.timeout(15000)});
+    return new Response(await deferred.text(),{status:deferred.status,
+      headers:{...CORS,"Content-Type":"application/json; charset=utf-8","Cache-Control":"no-store"}});
+   }catch{return json({error:"queue_endpoint_unavailable",saved_answer:true},503);}
+  }
+
   const [{data:profile},{data:enrollment},{data:consent},{data:run}]=await Promise.all([
    db.from("profiles").select("role,active").eq("id",user.id).maybeSingle(),
    db.from("enrollments").select("status").eq("user_id",user.id).eq("course_id",COURSE).maybeSingle(),
