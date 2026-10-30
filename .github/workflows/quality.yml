@@ -146,6 +146,8 @@ jobs:
           psql -v ON_ERROR_STOP=1 -f tests/sql/ai-queue-bootstrap.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261030_500_student_ai_queue_staging.sql
           psql -v ON_ERROR_STOP=1 -f tests/sql/ai-queue-acceptance.sql
+      - name: 500 concurrent admissions over 25 PostgreSQL clients (no LLM)
+        run: node tests/ai-queue-concurrent-500.cjs
 
   lifecycle-postgres:
     name: Server diagnostic PostgreSQL + RLS tests
