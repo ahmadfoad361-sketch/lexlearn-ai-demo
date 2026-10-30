@@ -60,7 +60,7 @@ function bindLogout(){
 function profile(){
  const p=state.roster.profile||{};
  return '<section class="panel" id="instructorProfile"><div class="facultyProfileHeading"><span class="eyebrow">بطاقة دكتور جامعة</span><button type="button" id="instructorLogout" class="facultyLogout">تسجيل الخروج</button></div><div class="profileHero"><div class="brand"><div class="avatar">د</div><div><h1>'+esc(p.academic_title||"دكتور")+' '+esc(p.name||"")+'</h1><p>'+esc(p.official_email||"")+'</p><small>'+esc(p.specialization||"التخصص غير مدخل")+'</small></div></div><div class="actions"><button class="primary" id="openInstructorCard">بطاقتي التعريفية</button><button class="secondary" id="editProfile">تعديل ملفي</button></div></div>'+
- '<div class="grid"><div><b>واتساب التواصل</b><p>'+esc(p.whatsapp||"—")+'</p></div><div><b>الساعات المكتبية</b><p>'+esc(p.office_hours||"—")+'</p></div></div>'+
+ (p.whatsapp?'<div class="grid"><div><b>واتساب التواصل</b><p>'+esc(p.whatsapp)+'</p></div></div>':'')+
  '<p>'+esc(p.bio||"")+'</p></section>';
 }
 function editForm(){
@@ -70,7 +70,7 @@ function editForm(){
  '<label>اللقب العلمي<input name="academic_title" maxlength="90" value="'+esc(p.academic_title||"دكتور")+'"></label>'+
  '<label>التخصص<input name="specialization" maxlength="160" value="'+esc(p.specialization)+'"></label>'+
  '<label>رقم واتساب دولي (اختياري)<input name="whatsapp" placeholder="+201000000000" value="'+esc(p.whatsapp)+'"></label>'+
- '<label>الساعات المكتبية<input name="office_hours" maxlength="160" value="'+esc(p.office_hours)+'"></label></div>'+
+ '</div>'+
  '<label>نبذة مختصرة<textarea name="bio" maxlength="600">'+esc(p.bio)+'</textarea></label>'+
  '<button class="primary" type="submit">حفظ البيانات</button><button id="cancelEdit" class="secondary" type="button">إلغاء</button><p id="profileStatus" role="status"></p></form>'+
  '<h3>تغيير كلمة المرور</h3><form id="changeProfessorPassword">'+passwordFields()+'<button type="submit" class="secondary">حفظ كلمة المرور الجديدة</button><p id="passwordStatus" role="status" aria-live="polite"></p></form></section>';
@@ -120,7 +120,7 @@ async function saveProfile(e){
  try{
   const name=String(f.get("name")||"").trim();if(name.length<5)throw Error("name");
   const patch={academic_title:f.get("academic_title"),specialization:f.get("specialization"),
-   office_hours:f.get("office_hours"),bio:f.get("bio"),whatsapp:f.get("whatsapp")};
+   bio:f.get("bio"),whatsapp:f.get("whatsapp")};
   const r=await C.rpc("lex_instructor_update_profile",{p_data:patch});
   if(r.error||!r.data?.ok)throw r.error||Error("save_failed");
   await LEX_CLOUD.updateOwnProfile({display_name:name});
