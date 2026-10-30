@@ -92,12 +92,6 @@ async function mount(host,opts){
   gradingBusy=false;render();
  }
  function wireReviewActions(){
-  var grant=host.querySelector("#levelOneConsent");
-  if(grant)grant.onclick=async function(){
-   grant.disabled=true;
-   try{await cloud.recordConsent("lexlearn-ai-grading-v1","external_ai_grading",true);consented=true;gradingMessage="";render();}
-   catch(e){gradingMessage=t("تعذر حفظ الموافقة، ولم تُرسل إجابتك إلى خدمة الذكاء الاصطناعي.","Consent was not saved; no answer was sent to the AI service.");render();}
-  };
   host.querySelectorAll("[data-level-grade]").forEach(function(btn){
    btn.onclick=function(){gradeSaved(btn.getAttribute("data-level-grade"));};
   });
@@ -119,8 +113,8 @@ async function mount(host,opts){
   var summary="<section class='stage'><div class='taskCard'><span class='kicker'>"+t("حساب الطالب • المستوى الأول • نظرية الحق","Student account • Level 1 • Theory of Rights")+"</span>"+
    "<h2>"+t("بداية الشخصية القانونية","Beginning of legal personality")+"</h2><p>"+esc(reason)+"</p>"+diagnosticMetric+
    "<p role='status'>"+t("تم حفظ ","Saved ")+completed+" / "+data.tasks.length+t(" مهام على الخادم"," tasks on the server")+"</p>"+
-   "<p>"+t("ترتيب المهام متكيف مع التشخيص. التصحيح الداخلي أولي، ويمكن الحصول على تصحيح دلالي تفصيلي بعد موافقتك.","Tasks adapt to the diagnostic. Internal grading is provisional; detailed semantic feedback is available with your consent.")+"</p>"+
-   (!consented?"<p>"+t("باختيار الموافقة، يُرسل نص إجابتك إلى مزود ذكاء اصطناعي خارجي بغرض التصحيح التدريبي فقط.","If you consent, your written answer is sent to an external AI provider for practice assessment only.")+"</p><button type='button' id='levelOneConsent'>"+t("أوافق على التصحيح باستخدام الذكاء الاصطناعي","I agree to AI-assisted grading")+"</button>":"")+
+   "<p>"+t("تصحيح الإجابات تلقائيًا وفق موافقتك المسجلة عند التسجيل، وتبقى النتائج تدريبية أولية قابلة للمراجعة.","Answers are assessed automatically under the agreement recorded at registration. Results remain provisional and reviewable.")+"</p>"+
+   (!consented?"<p role='status'>"+t("تعذر التحقق من موافقة التسجيل المحفوظة، لذلك لن تُرسل الإجابات إلى مزود التصحيح الخارجي. تواصل مع المشرف لمراجعة الحساب.","We could not confirm the registration consent on file. No answer will be sent for external AI grading. Contact your supervisor.")+"</p>":"")+
    (gradingMessage?"<p role='status'>"+esc(gradingMessage)+"</p>":"")+"</div></section>";
   var previousResults=data.tasks.filter(function(x){return !!byId(saved,x.id);}).map(function(x){
    var entry=byId(saved,x.id),pending=!confirmedAi(entry)&&entry.evaluation?.status!=="nonanswer_zero";
