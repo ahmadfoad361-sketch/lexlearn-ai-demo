@@ -35,6 +35,18 @@ create table if not exists public.lex_ai_queue_jobs (
  check ((kind='diagnostic' and session_number is null) or
         (kind='training' and session_number between 1 and 30))
 );
+create table if not exists public.lex_ai_queue_attempts (
+ id bigint generated always as identity primary key,
+ job_id uuid not null references public.lex_ai_queue_jobs(id) on delete cascade,
+ started_at timestamptz not null default now()
+);
+create index if not exists lex_ai_attempts_daily_idx
+ on public.lex_ai_queue_attempts (started_at desc);
+alter table public.lex_ai_queue_attempts enable row level security;
+revoke all on public.lex_ai_queue_attempts from public,anon,authenticated;
+grant all on public.lex_ai_queue_attempts to service_role;
+grant usage,select on sequence public.lex_ai_queue_attempts_id_seq to service_role;
+
 create index if not exists lex_ai_jobs_claim_idx
  on public.lex_ai_queue_jobs (state,available_at,created_at);
 create index if not exists lex_ai_jobs_user_idx
@@ -105,6 +117,9 @@ begin
    src=encode(sha256(convert_to(answer,'UTF8')),'hex');
    item=p_item;
  end if;
+ if (select count(*) from public.lex_ai_queue_jobs where user_id=p_user
+     and created_at>now()-interval '1 hour')>=20
+ then raise exception 'student_queue_hourly_limit'; end if;
  select * into old from public.lex_ai_queue_jobs
    where user_id=p_user and kind=p_kind and course_id=p_course
          and item_id=item and source_key=src;
@@ -129,8 +144,14 @@ begin
  perform pg_advisory_xact_lock(9148031);
  select * into cfg from public.lex_ai_queue_settings where id=true;
  if not found or not cfg.enabled then return; end if;
- select count(*) into started from public.lex_ai_queue_jobs
-  where first_started_at>=now()-interval '24 hours';
+ -- A crashed worker may never release its final lease. Stop retrying after
+ -- the configured number of attempts instead of charging forever.
+ update public.lex_ai_queue_jobs
+    set state='review_required',reason='lease_exhausted',
+        lease_token=null,leased_until=null,completed_at=now(),updated_at=now()
+  where state='processing' and leased_until<now() and attempts>=cfg.max_attempts;
+ select count(*) into started from public.lex_ai_queue_attempts
+  where started_at>=now()-interval '24 hours';
  if started>=cfg.max_daily_starts then return; end if;
  select greatest(0,cfg.max_active-count(*)::integer) into slots
    from public.lex_ai_queue_jobs
@@ -146,14 +167,20 @@ begin
     order by j.available_at,j.created_at
     for update skip locked limit slots
   )
+  ,leased as (
   update public.lex_ai_queue_jobs j
    set state='processing', attempts=j.attempts+1,
        lease_token=gen_random_uuid(),leased_until=now()+make_interval(secs=>greatest(60,least(p_lease_seconds,900))),
        first_started_at=coalesce(j.first_started_at,now()),
        last_started_at=now(),updated_at=now()
    from picked where j.id=picked.id
-   returning j.*;
-end $$;
+   returning j.*
+  ), metered as (
+   insert into public.lex_ai_queue_attempts(job_id)
+     select id from leased returning job_id
+  )
+  select leased.* from leased join metered on metered.job_id=leased.id;
+end $;
 
 -- Only the worker holding the current lease can atomically save a grade.
 -- No stale response may overwrite a student's later work.
