@@ -16,8 +16,8 @@ function markActivity(){
  if(idle&&document.visibilityState==="visible")record();
 }
 async function record(ending){
- var now=Date.now();
- if(inFlight||now-lastSample<MIN_GAP_MS||(!ending&&document.visibilityState!=="visible")||now-lastInteraction>IDLE_MS)return;
+ var now=Date.now(),firstSample=lastSample===0;
+ if(inFlight||(!ending&&now-lastSample<MIN_GAP_MS)||(!ending&&document.visibilityState!=="visible")||now-lastInteraction>IDLE_MS)return;
  lastSample=now;inFlight=true;
  try{
   var visitor=JSON.parse(localStorage.getItem("lex_activity_visitor")||"null");
@@ -33,9 +33,10 @@ async function record(ending){
    var current=await window.LEX_CLOUD.db().auth.getSession();
    if(current.data?.session?.access_token)headers.Authorization="Bearer "+current.data.session.access_token;
   }
+  var eventKind=ending?"end":firstSample?"page":"heartbeat";
   await fetch(cfg.supabaseUrl+"/functions/v1/site-activity",{
    method:"POST",headers:headers,
-   body:JSON.stringify({event_id:crypto.randomUUID(),visitor_id:visitor.id,session_id:session.id,page:page}),
+   body:JSON.stringify({event_id:crypto.randomUUID(),visitor_id:visitor.id,session_id:session.id,page:page,event_kind:eventKind}),
    keepalive:true,credentials:"omit",referrerPolicy:"no-referrer"
   });
  }catch(_){/* Measurement failures must not interrupt learning. */}
