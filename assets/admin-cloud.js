@@ -120,7 +120,7 @@ function shell(body){
  '<button data-tab="content" class="'+(state.tab==="content"?"active":"")+'">اعتماد المحتوى</button>'+
  '<a href="admin-progress.html">تدرّج الحفظ والفهم</a>'+
  '<a href="pilot-review.html">مراجعة التدريب</a>'+
- '<button type="button" id="openAnalytics">إحصاءات الزيارات</button>'+
+ '<button type="button" id="openAnalytics">حضور الطلاب والأساتذة</button>'+
  '<a href="demo-supervisor.html">نتائج الديمو</a></div></details>'+
  '<details class="adminNavGroup" '+(state.tab==="audit"?"open":"")+'><summary>إدارة المنصة</summary><div class="adminNavItems">'+
  '<button data-tab="audit" class="'+(state.tab==="audit"?"active":"")+'">سجل العمليات</button>'+
