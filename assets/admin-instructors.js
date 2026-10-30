@@ -2,6 +2,10 @@
 "use strict";
 const APP=document.getElementById("adminInstructorApp"),C=LEX_CLOUD.db();
 const esc=v=>String(v??"").replace(/[&<>"']/g,k=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[k]));
+function validDoctorName(value){
+ return String(value||"").trim().replace(/^(?:(?:دكتور|الدكتور|أستاذ|الاستاذ|الأستاذ|د\.|Dr\.?|Prof\.?)\s+)+/iu,"").split(/\s+/).filter(Boolean).length>=2;
+}
+
 let state={teachers:[],assignments:[],courses:[],credential:null,editing:new URLSearchParams(location.search).get("edit")||"",cohort:null,cohortId:new URLSearchParams(location.search).get("cohort")||""};
 async function readableError(error){
  let code=error?.message||"";
@@ -111,7 +115,7 @@ function page(){
  if(window.LEX_ACADEMIC_PICKER){LEX_ACADEMIC_PICKER.remember(state.assignments.concat(state.cohort?[state.cohort]:[]));LEX_ACADEMIC_PICKER.mountAll(APP);}
  document.getElementById("createInstructor").onsubmit=async e=>{
   e.preventDefault();const b=Object.fromEntries(new FormData(e.currentTarget));
-  const status=document.getElementById("createStatus"),submit=e.currentTarget.querySelector('[type="submit"]');submit.disabled=true;status.textContent="جارٍ إنشاء حساب الدكتور…";
+  const status=document.getElementById("createStatus"),submit=e.currentTarget.querySelector('[type="submit"]');if(!validDoctorName(b.name)){status.textContent="اسم الدكتور يجب أن يتكون من كلمتين على الأقل، بخلاف اللقب العلمي.";return;}submit.disabled=true;status.textContent="جارٍ إنشاء حساب الدكتور…";
   try{const x=await C.functions.invoke("admin-manage-instructors",{body:{action:"create",...b}});
    if(x.error||!x.data?.ok)throw x.error||Error(x.data?.error);
    state.credential=x.data;await reload();
@@ -156,6 +160,7 @@ function page(){
   const submit=form.querySelector('[type="submit"]');submit.disabled=true;status.textContent="جارٍ حفظ بيانات الدكتور…";
   try{
    const b=Object.fromEntries(new FormData(form).entries());
+   if(!validDoctorName(b.name)){status.textContent="اكتب اسم الدكتور من كلمتين على الأقل.";submit.disabled=false;return;}
    const reply=await C.functions.invoke("admin-manage-instructors",{body:{action:"update",instructor_id:form.dataset.updateTeacher,...b}});
    if(reply.error||!reply.data?.ok)throw reply.error||Error(reply.data?.error||"not_saved");
    await reload();
