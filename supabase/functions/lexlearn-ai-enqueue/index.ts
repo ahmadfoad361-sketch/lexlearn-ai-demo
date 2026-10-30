@@ -24,7 +24,7 @@ Deno.serve(async (req:Request)=>{
   if(!["training","diagnostic"].includes(kind))return json({error:"invalid_kind"},400);
   const session=kind==="training"?Number(body.session):null;
   const item=kind==="training"?String(body.item_id||""):null;
-  if(kind==="training"&&(!Number.isInteger(session)||session<1||session>30||
+  if(kind==="training"&&(!Number.isInteger(session)||(session as number)<1||(session as number)>30||
     !/^rights-v1-s\d+-(recall|understanding|exam)$/.test(item||"")))return json({error:"invalid_task"},400);
   const {data,error}=await admin.rpc("lex_ai_queue_admit",{
     p_user:user.id,p_kind:kind,p_course:COURSE,p_session:session,p_item:item
