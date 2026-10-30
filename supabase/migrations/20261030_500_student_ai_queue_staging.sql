@@ -117,13 +117,14 @@ begin
    src=encode(sha256(convert_to(answer,'UTF8')),'hex');
    item=p_item;
  end if;
- if (select count(*) from public.lex_ai_queue_jobs where user_id=p_user
-     and created_at>now()-interval '1 hour')>=20
- then raise exception 'student_queue_hourly_limit'; end if;
  select * into old from public.lex_ai_queue_jobs
    where user_id=p_user and kind=p_kind and course_id=p_course
          and item_id=item and source_key=src;
  if found then return old; end if;
+ -- Rechecking the SAME saved answer never consumes another admission slot.
+ if (select count(*) from public.lex_ai_queue_jobs where user_id=p_user
+     and created_at>now()-interval '1 hour')>=20
+ then raise exception 'student_queue_hourly_limit'; end if;
  if (select count(*) from public.lex_ai_queue_jobs
      where state in ('queued','processing'))>=cfg.max_pending
  then raise exception 'grading_queue_full'; end if;
