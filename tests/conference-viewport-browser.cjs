@@ -60,7 +60,9 @@ const chrome=[process.env.CHROME_BIN,"/usr/bin/google-chrome","/usr/bin/google-c
      });
      assert.deepEqual(failures,[],'dark flat-surface text contrast: '+JSON.stringify({width,lang,failures}));
    }
-   const entry=p.locator('header .homeStaffLink');
+   assert.equal(await p.locator('header a[href="admin-login.html"]').count(),0,'supervisor entry stays out of the header');
+   const entry=p.locator('footer a[href="admin-login.html"]');
+   await entry.scrollIntoViewIfNeeded();
    assert.ok(await entry.isVisible(),'staff entry remains visible at every width/theme');
    assert.equal(await entry.textContent(),lang==='ar'?'دخول المشرف':'Supervisor login');
    assert.equal(await entry.getAttribute('href'),'admin-login.html');

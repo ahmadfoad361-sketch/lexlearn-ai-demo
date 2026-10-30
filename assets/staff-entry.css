@@ -9,3 +9,5 @@ html[data-theme=dark] .homeStaffLink,html[data-theme=dark] .homeStaffLink--instr
 html[data-theme=dark] .homeStaffLink:focus-visible,html[data-theme=dark] .homeStaffLink--instructor:focus-visible,html[data-learner-theme=dark] .homeStaffLink:focus-visible,html[data-learner-theme=dark] .homeStaffLink--instructor:focus-visible{outline-color:#e6c4d0}
 @media(max-width:600px){.homeStaffEntry{padding:0 12px 10px}.homeStaffEntry .homeStaffLink,.homeStaffEntry .homeStaffLink--instructor{padding-inline:16px}}
 @media print{.homeStaffEntry{display:none}}
+
+.foot a{display:inline-flex;align-items:center;min-height:44px}
