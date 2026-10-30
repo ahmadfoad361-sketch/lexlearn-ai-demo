@@ -5,6 +5,8 @@ const ctx={console,window:{},document:{documentElement:{lang:"ar"}}};ctx.window.
 ctx.window.qrcode=function(){return{addData(){},make(){},createSvgTag(){return "<svg></svg>";}};};
 ctx.window.qrcode.stringToBytesFuncs={"UTF-8":()=>[]};
 ctx.window.LEX_ACADEMIC={university:x=>x,faculty:x=>x};
+ctx.window.LEX_CONFIG={supabaseUrl:"https://example.supabase.co"};
+vm.runInNewContext(source("assets/university-brands.js"),ctx);
 vm.runInNewContext(source("assets/card-branding.js"),ctx);
 vm.runInNewContext(source("assets/student-identity.js"),ctx);
 vm.runInNewContext(source("assets/instructor-card.js"),ctx);
@@ -36,4 +38,13 @@ assert.match(pdfSource,/api\.payload\(p\)/);assert.match(pdfSource,/p\.username/
 assert.doesNotMatch(pdfSource,/ليكس ليرن|ليسك ليرن/);
 assert.match(source("assets/instructor-dashboard.js"),/\.split\(\/\\s\+\/\)/);
 assert.match(source("assets/admin-instructors.js"),/validDoctorName/);
+assert.equal(ctx.window.LEX_UNIVERSITY_BRANDS.find("جامعة عجمان","ae").id,"ae-ajman");
+assert.match(ctx.window.LEX_UNIVERSITY_BRANDS.url("جامعة عجمان","ae"),/university-brand\?id=ae-ajman/);
+assert.equal(ctx.window.LEX_UNIVERSITY_BRANDS.find("جامعة لوسيل","qa").id,"qa-lusail");
+assert.equal(ctx.window.LEX_UNIVERSITY_BRANDS.find("جامعة طنطا","eg").id,"eg-tanta");
+assert.ok(ctx.window.LEX_CARD_BRAND.logo("جامعة قطر").includes("qa-qu"));
+assert.ok(ctx.window.LEX_CARD_BRAND.logo("جامعة عجمان").includes("ae-ajman"));
+assert.equal(ctx.window.LEX_CARD_BRAND.logo("غير محددة"),"");
+assert.match(source("assets/university-picker-decor.js"),/academicOptions/);
+assert.match(source("assets/student-card-pdf.js"),/crossOrigin/);
 console.log("PASS branded student/faculty identity, selected university, QR username, no password, PDF payload");

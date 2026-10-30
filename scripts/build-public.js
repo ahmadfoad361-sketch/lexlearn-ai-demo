@@ -12,7 +12,7 @@ const pages=[
 ];
 const assets=[
   "academic-picker.js","academic-picker.css",
-  "card-branding.js","student-identity.js","student-identity.css","student-profile.js","student-card-pdf.js","qrcode-generator.js","qrcode-generator-LICENSE.txt",
+  "university-brands.js","university-picker-decor.js","card-branding.js","student-identity.js","student-identity.css","student-profile.js","student-card-pdf.js","qrcode-generator.js","qrcode-generator-LICENSE.txt",
   "session-moments.js","session-moments.css","grading-wait.js","grading-wait.css","learning-keys.js","learning-keys.css",
   "brand-wordmark.js","brand-wordmark.css","learner-theme.js","learner-experience.css","staff-entry.css","learner-brand.js","legal-emphasis.js",
   "lexlearn-logo.svg","lexlearn-x-transparent.svg","lexlearn-og.jpg","lexlearn-public-pitch-en.pdf","lexlearn-go-qr.svg","conference.css","conference.js","conference-experience.css","conference-experience.js","conference-theme.css","conference-theme.js","conference-citations.js","conference-media/lexlearn-logo-hq.webp","conference-media/investor-men-v3.webp","conference-media/law-lecture-v3.webp","conference-media/student-law.webp","conference-media/logo-intro-navy.mp4","conference-pdf.js","lexlearn-navigation.css","lexlearn-navigation.js","lexlearn-learning-lines.js","lexlearn-investor-quotes.js","conference-promo.css","brand-intro.js","training-carousel.js",
@@ -34,6 +34,26 @@ function cp(src,dst){
 }
 for(const p of pages)cp(p,path.join(out,p));
 for(const p of assets)cp(path.join("assets",p),path.join(out,"assets",p));
+
+// Include the university logo registry wherever academic search or identity cards are displayed.
+// A plain <select> cannot render images in native dropdown options on all mobile browsers;
+// keep it accessible and add the country flags + pictured searchable university list.
+for(const page of pages){
+ if(!page.endsWith(".html"))continue;
+ const full=path.join(out,page);let html=fs.readFileSync(full,"utf8");
+ if(html.includes('assets/academic-picker.js')){
+  const match=html.match(/<script src="assets\/academic-picker\.js"[^>]*><\/script>/);
+  if(!match)throw new Error("Academic picker entry missing on "+page);
+  html=html.replace(match[0],'<script src="assets/university-brands.js"></script>'+match[0]+'<script src="assets/university-picker-decor.js" defer></script>');
+ }
+ if(html.includes('assets/card-branding.js')){
+  const match=html.match(/<script src="assets\/card-branding\.js"[^>]*><\/script>/);
+  if(!match)throw new Error("Card branding entry missing on "+page);
+  html=html.replace(match[0],'<script src="assets/university-brands.js"></script>'+match[0]);
+  if(page==="instructor.html")html=html.replace("</head>",'<link rel="stylesheet" href="assets/academic-picker.css"></head>');
+ }
+ fs.writeFileSync(full,html);
+}
 
 // Visible build identification is generated from the exact reviewed commit.
 const {execFileSync}=require("child_process");

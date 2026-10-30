@@ -38,3 +38,9 @@ html{--id-bg:#f7f3ee;--id-panel:#fffdfa;--id-ink:#18253b;--id-muted:#526077;--id
 .cardPrintPage .identityCard .cardWordmark{font-size:27px}
 @media(max-width:390px){.identityCard .cardWordmark{font-size:23px}.identityCard .cardTop .cardLogoX{width:30px}.identityCard .cardAffiliation{padding:8px}.identityCard .cardQr{width:166px}}
 @media print{.identityCard .cardTop,.identityCard .cardWordmark,.identityCard .cardAffiliation,.identityCard .cardUniversityMark{print-color-adjust:exact;-webkit-print-color-adjust:exact}}
+
+/* University-published emblems appear only in their own affiliation slot. */
+.identityCard .cardUniversityMark{position:relative;overflow:hidden}
+.identityCard .cardUniversityInitials{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:12px}
+.identityCard .cardUniversityMarkLogo{width:56px;height:56px;min-width:56px}
+.identityCard .universityOfficialLogo{position:absolute;inset:3px;width:calc(100% - 6px);height:calc(100% - 6px);object-fit:contain;background:#fff;border-radius:7px}
