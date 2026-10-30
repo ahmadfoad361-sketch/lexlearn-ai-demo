@@ -7,7 +7,7 @@ function icon(name,code){
  const src=brand()?.url(name,code);
  if(!src){const e=document.createElement("b");e.className="academicOptionBadge";e.textContent=brand()?.initials(name)||"UNI";return e;}
  const i=document.createElement("img");i.className="academicUniversityLogo";i.src=src;i.crossOrigin="anonymous";i.alt="";i.loading="lazy";
- i.onerror=()=>{if(i.isConnected){const b=document.createElement("b");b.className="academicOptionBadge";b.textContent=brand()?.initials(name)||"UNI";i.replaceWith(b);}};
+ i.onerror=()=>{if(i.isConnected){const b=document.createElement("b");b.className="academicOptionBadge "+i.className;b.textContent=brand()?.initials(name)||"UNI";i.replaceWith(b);}};
  return i;
 }
 function paint(){
