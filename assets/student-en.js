@@ -248,20 +248,11 @@ function countryGateView(){
   };
 }
 function consentGateView(){
-  APP.innerHTML="<main class='passwordGate'><section>"+
-    "<div class='mark'><img src='assets/lexlearn-logo.svg' alt='LexLearn'></div>"+
-    "<span class='eyebrow'>Privacy and learning data</span>"+
-    "<h1>Before you begin</h1>"+
-    "<p>LexLearn uses your answers, results, response time, and confidence level to personalize training and measure progress. These indicators are for learning and training and are not an official university grade.</p>"+
-    "<p><a href='privacy.html' target='_blank'>Privacy Policy</a> • <a href='terms.html' target='_blank'>Terms of Use</a></p>"+
-    "<div id='consentError'></div>"+
-    "<button class='btn primary' id='acceptConsent'>I agree and continue</button>"+
-  "</section></main>";
-  document.getElementById("acceptConsent").onclick=async function(){
-    var e=document.getElementById("consentError");
-    try{await LEX_CLOUD.recordConsent(CONSENT_VERSION,"learning_data",true);consentOk=true;render();}
-    catch(err){e.textContent="Could not save your consent. Please try again.";e.style.color="var(--red)";}
-  };
+  // Existing registration records the agreement once; no new consent button inside the course.
+  APP.innerHTML="<main class='passwordGate'><section><div class='mark'><img src='assets/lexlearn-logo.svg' alt='LexLearn'></div>"+
+    "<h1>Registration agreement could not be verified</h1>"+
+    "<p>Your account does not have a valid stored learning-data agreement. No learning data will be processed until your supervisor checks the original registration record. You will not be asked to accept new terms during training.</p>"+
+    "<p><a href='privacy-en.html'>Privacy policy</a> • <a href='terms-en.html'>Terms</a></p></section></main>";
 }
 function render(){
   if(!countrySetupDone||!student.country){
