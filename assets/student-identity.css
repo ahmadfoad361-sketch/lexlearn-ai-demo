@@ -3,3 +3,38 @@ html{--id-bg:#f7f3ee;--id-panel:#fffdfa;--id-ink:#18253b;--id-muted:#526077;--id
 @page identityCardPage{size:A6 portrait;margin:0}.cardPrintPage{page:identityCardPage}@media print{.cardPrintToolbar,.studentIdentityLink,.learnerThemeToggle{display:none!important}.cardPrintPage{background:#fff}.cardPrintPage .identityCard{margin:4mm auto 0;border-radius:6mm;break-inside:avoid;box-shadow:none}.identityCard{print-color-adjust:exact;-webkit-print-color-adjust:exact}}
 
 .identityCard .cardTop{padding:14px 20px 28px}.identityCard .cardTop img{width:36px}.identityCard .cardAvatar{width:80px;height:80px}.identityCard h2{font-size:22px}.identityCard .cardQr{width:140px;margin:10px auto 6px}.identityCard .cardTop b{font-size:24px}.cardPrintPage .cardQr{width:38mm}
+
+/* Unified LexLearn identity cards — responsive preview and A6 print. */
+.identityCard{display:flex;flex-direction:column;align-items:center;gap:0;min-height:565px;padding:0 18px 20px!important;background:#fffaf2!important;isolation:isolate}
+.identityCard .cardTop{align-self:stretch;width:auto;margin:0 -18px 0!important;padding:18px 14px 32px!important;display:flex!important;flex-direction:column;align-items:center;justify-content:center;gap:7px;background:linear-gradient(125deg,#111d31,#273959);color:#fff}
+.cardBrandLine{display:flex;direction:ltr;align-items:center;justify-content:center;gap:12px;max-width:100%}
+.identityCard .cardTop .cardLogoX{width:36px;height:42px;object-fit:contain;filter:drop-shadow(0 1px 4px #ffffff55);flex:none}
+.identityCard .cardWordmark{display:inline-flex;direction:ltr;unicode-bidi:isolate;background:#f9f4ef;padding:3px 12px 5px;border-radius:10px;white-space:nowrap;font:800 27px/1.25 Tahoma,Arial,sans-serif;letter-spacing:-.035em;box-shadow:0 2px 9px #0002}
+.identityCard .cardWordLex{color:#142b5f}.identityCard .cardWordLearn{color:#8a1f39}
+.identityCard .cardTop small{font:500 12px/1.6 Tahoma,Arial,sans-serif;color:#f0d5a2!important;letter-spacing:.01em}
+.identityCard .cardAvatar{flex:none;width:76px;height:76px;margin:-23px auto 9px!important;border:4px solid #fffaf2;box-shadow:0 0 0 1px #bda16a;background:#e8d6bd}
+.identityCard .cardName{box-sizing:border-box;max-width:100%;width:100%;font-size:23px;line-height:1.44;margin:4px 0 5px;min-height:34px;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden;overflow-wrap:break-word;word-break:normal}
+.identityCard .cardNameLong{font-size:19px}.identityCard .cardNameXL{font-size:16px}
+.identityCard .cardNumber{font:800 16px/1.5 system-ui,sans-serif;letter-spacing:.09em;color:#8a1f39;margin:0 0 5px}
+.identityCard .cardAffiliation{box-sizing:border-box;display:flex;direction:rtl;align-items:center;gap:10px;justify-content:center;text-align:right;align-self:stretch;margin:8px 0 5px;padding:10px 12px;border:1px solid #ded4bf;border-radius:14px;background:#f5f0e9;min-height:62px}
+.identityCard .cardUniversityMark{flex:none;display:inline-flex;align-items:center;justify-content:center;min-width:46px;width:46px;height:46px;padding:4px;box-sizing:border-box;background:#fff;border:1px solid #c9b88e;border-radius:12px;color:#8a1f39;font:800 14px/1.1 system-ui,Arial,sans-serif;letter-spacing:-.02em;direction:ltr}
+.identityCard .cardUniversityMarkLogo img{max-width:100%;max-height:100%;object-fit:contain}
+.identityCard .cardAffiliationText{display:flex;flex-direction:column;justify-content:center;min-width:0;gap:1px;overflow-wrap:break-word}
+.identityCard .cardUniversityName{font:800 13px/1.55 Tahoma,Arial,sans-serif;color:#172641}
+.identityCard .cardFacultyName{font:400 12px/1.55 Tahoma,Arial,sans-serif;color:#536078}
+.identityCard .cardMeta,.identityCard .cardYear{font:500 12px/1.6 Tahoma,Arial,sans-serif;color:#35415a!important;margin:3px 0}
+.identityCard .cardYear{color:#8a1f39!important;font-weight:700}
+.identityCard .cardQr{box-sizing:border-box;width:172px;max-width:80%;margin:10px auto 5px!important;padding:6px;background:#fff;border-radius:8px;flex:none;line-height:0}
+.identityCard .cardQr svg{display:block;width:100%;height:auto;image-rendering:pixelated}
+.identityCard .cardLogin{width:100%;margin:4px 0 9px!important;max-width:100%;font-size:11px;line-height:1.6;color:#35415a!important;overflow-wrap:anywhere}
+.identityCard .cardLogin b{display:inline-block;max-width:100%;font-weight:700;overflow-wrap:anywhere}
+.identityCard .cardFooter{display:block;margin-top:auto;color:#536078!important;font-size:10px;line-height:1.6;letter-spacing:0;overflow-wrap:break-word}
+.identityCard .cardFooter b{color:#8a1f39}
+.cardUniversityChooser{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:14px 0;padding:9px;background:#f7f3ee;border-radius:12px;font-weight:700;font-size:14px;color:#18253b}
+.cardUniversityChooser select{max-width:68%;min-width:0;padding:8px;border:1px solid #c7cbd3;border-radius:8px;font:inherit;color:#18253b;background:#fff}
+.cardPrintPage .identityCard{width:100mm!important;max-width:100mm!important;min-height:140mm!important;padding:0 7mm 6mm!important}
+.cardPrintPage .identityCard .cardTop{margin:0 -7mm!important}
+.cardPrintPage .identityCard .cardQr{width:43mm;max-width:43mm}
+.cardPrintPage .identityCard .cardWordmark{font-size:27px}
+@media(max-width:390px){.identityCard .cardWordmark{font-size:23px}.identityCard .cardTop .cardLogoX{width:30px}.identityCard .cardAffiliation{padding:8px}.identityCard .cardQr{width:166px}}
+@media print{.identityCard .cardTop,.identityCard .cardWordmark,.identityCard .cardAffiliation,.identityCard .cardUniversityMark{print-color-adjust:exact;-webkit-print-color-adjust:exact}}

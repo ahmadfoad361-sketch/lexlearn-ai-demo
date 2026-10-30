@@ -8,7 +8,7 @@ async function readableError(error){
  try{if(error?.context?.json){const body=await error.context.json();code=body.error||code;}}catch(_){}
  const messages={
   invalid_email:"صيغة البريد غير صحيحة. مثال: professor@gmail.com. يُقبل البريد الشخصي والجامعي.",
-  invalid_instructor_name:"أدخل اسم الدكتور كاملًا (خمسة أحرف على الأقل عند إنشاء الحساب).",
+  invalid_instructor_name:"أدخل اسم الدكتور من كلمتين على الأقل، مثل: أحمد الفقي.",
   invalid_whatsapp:"رقم واتساب غير صحيح. اكتبه بالصيغة الدولية، مثل +201000000000، أو اتركه فارغًا.",
   email_already_registered:"هذا البريد مسجل لحساب آخر. افتح الحساب الموجود لتعديله أو استخدم بريدًا آخر.",
   official_email_already_registered:"هذا البريد مسجل لحساب دكتور آخر. افتح حسابه من السجل أدناه.",
@@ -42,7 +42,7 @@ function scopeFields(prefix,showTeacher=false){
 }
 function form(){
  return '<section class="panel"><h1>تسجيل بيانات الأساتذة الجامعيين</h1><p>إضافة حساب أكاديمي من داخل لوحة المشرف فقط، وتحديد المقرر والفرقة والكلية والجامعة.</p>'+
- '<form id="createInstructor">'+scopeFields("new")+'<h3>بيانات الدكتور</h3><div class="grid"><label>اسم عضو هيئة التدريس<input name="name" required maxlength="160"></label>'+
+ '<form id="createInstructor">'+scopeFields("new")+'<h3>بيانات الدكتور</h3><div class="grid"><label>اسم عضو هيئة التدريس<input name="name" required maxlength="160" placeholder="أحمد الفقي"></label>'+
  '<label>البريد الإلكتروني للدكتور<input name="email" type="email" required maxlength="254" placeholder="professor@gmail.com" autocomplete="email" dir="ltr"></label>'+
  '<label>اللقب العلمي<select name="academic_title"><option>دكتور</option><option>أستاذ مساعد</option><option>أستاذ مشارك</option><option>أستاذ</option></select></label>'+
  '<label>التخصص<input name="specialization" maxlength="160" placeholder="القانون المدني"></label>'+
@@ -65,7 +65,6 @@ function editTeacher(t){
   field("اللقب العلمي","academic_title",t.academic_title,90)+
   field("التخصص","specialization",t.specialization,160)+
   field("الواتساب الدولي (اختياري)","whatsapp",t.whatsapp_e164,24)+
-  field("الساعات المكتبية","office_hours",t.office_hours,160)+
   '</div><label>نبذة عن الدكتور<textarea name="bio" maxlength="600">'+esc(t.bio||"")+'</textarea></label>'+
   '<button class="primary" type="submit">حفظ تعديلات الدكتور</button> '+
   '<button class="secondary" type="button" data-cancel-edit>إلغاء</button>'+

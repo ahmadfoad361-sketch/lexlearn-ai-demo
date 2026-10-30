@@ -32,7 +32,7 @@ try{
  const tracked=execFileSync('git',['ls-files','-z'],{encoding:'utf8'}).split('\0').filter(Boolean);
  const infrastructure=new Set([
   '.github/workflows/pages.yml','.github/workflows/public-release-security.yml',
-  'scripts/build-public.js','scripts/security-public-boundary.cjs','scripts/verify-public-links.cjs',
+  'scripts/build-public.js','scripts/security-public-boundary.cjs','scripts/verify-public-links.cjs','scripts/check-identity-cards.cjs',
   'README.md','AGENTS.md','.gitignore'
  ]);
  const published=new Set(files);
