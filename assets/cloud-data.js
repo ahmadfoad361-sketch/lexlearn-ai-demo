@@ -157,8 +157,11 @@ async function getDiagnosticAiAudit(attemptId){
 async function getConsent(noticeVersion,consentType){
   var c=db();if(!c)return null;
   var u=await c.auth.getUser();if(u.error||!u.data.user)return null;
-  var r=await c.from("consent_records").select("id,accepted,created_at").eq("user_id",u.data.user.id).eq("notice_version",noticeVersion).eq("consent_type",consentType||"learning_data").eq("accepted",true).order("created_at",{ascending:false}).limit(1).maybeSingle();
-  if(r.error)throw r.error;return r.data||null;
+  // Check the latest consent decision, including explicit revocation or a newer notice.
+  // A historical accepted record must not override a subsequent refusal.
+  var r=await c.from("consent_records").select("id,accepted,notice_version,created_at").eq("user_id",u.data.user.id).eq("consent_type",consentType||"learning_data").order("created_at",{ascending:false}).limit(1).maybeSingle();
+  if(r.error)throw r.error;
+  return r.data&&r.data.accepted===true&&r.data.notice_version===noticeVersion?r.data:null;
 }
 async function recordConsent(noticeVersion,consentType,accepted){
   var c=db();if(!c)return null;
