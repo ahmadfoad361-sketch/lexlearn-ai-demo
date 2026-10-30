@@ -18,7 +18,10 @@ const window={
   },
   LEX_CLOUD:{db(){return {functions:{async invoke(){return {data:window.__exportResponse}}}}}}
 };
-const context={window,globalThis:window,URL:{createObjectURL:()=> "blob:test",revokeObjectURL:()=>{}},Blob,console};
+class TestURL extends URL{}
+TestURL.createObjectURL=()=> "blob:test";
+TestURL.revokeObjectURL=()=>{};
+const context={window,globalThis:window,URL:TestURL,Blob,console};
 vm.runInNewContext(recordsSource,context,{filename:"student-records.js"});
 vm.runInNewContext(reportSource,context,{filename:"student-report.js"});
 const report=window.LEX_STUDENT_REPORT;
