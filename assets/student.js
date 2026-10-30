@@ -247,30 +247,11 @@ function countryGateView(){
   };
 }
 function consentGateView(){
-  APP.innerHTML="<main class='passwordGate'><section>"+
-    "<div class='mark'><img src='assets/lexlearn-logo.svg' alt='LexLearn'></div>"+
-    "<span class='eyebrow'>الخصوصية واستخدام بيانات التعلم</span>"+
-    "<h1>قبل بدء البرنامج</h1>"+
-    "<p>يستخدم LexLearn إجاباتك ونتائجك ووقت الاستجابة ومستوى الثقة لبناء تدريب شخصي وقياس التقدم. هذه المؤشرات للتعلم والتدريب وليست درجة جامعية رسمية.</p>"+
-    "<p><a href='privacy.html' target='_blank'>سياسة الخصوصية</a> • <a href='terms.html' target='_blank'>شروط الاستخدام</a></p>"+
-    "<div id='consentError'></div>"+
-    "<button class='btn primary' id='acceptConsent'>أوافق وأبدأ</button>"+
-  "</section></main>";
-  document.getElementById("acceptConsent").onclick=async function(){
-    var e=document.getElementById("consentError");
-    try{
-      var btn=document.getElementById("acceptConsent");btn.disabled=true;
-      await LEX_CLOUD.recordConsent(CONSENT_VERSION,"learning_data",true);
-      var saved=await LEX_CLOUD.getConsent(CONSENT_VERSION,"learning_data");
-      if(!saved)throw new Error("consent_not_confirmed");
-      consentOk=true;render();
-    }catch(err){
-      var detail=String(err&&err.message||"unknown_error");
-      e.textContent=detail==="not_authenticated"?"انتهت جلسة تسجيل الدخول. سجّل خروجًا ثم ادخل مجددًا.":detail==="consent_not_confirmed"?"لم نستطع التأكد من تسجيل الموافقة. حاول مرة أخرى.":"تعذر حفظ الموافقة: "+detail;
-      e.style.color="var(--red)";
-      var button=document.getElementById("acceptConsent");if(button)button.disabled=false;
-    }
-  };
+  // The agreement belongs to initial registration; never collect it during training.
+  APP.innerHTML="<main class='passwordGate'><section><div class='mark'><img src='assets/lexlearn-logo.svg' alt='LexLearn'></div>"+
+    "<h1>تعذر التحقق من موافقة التسجيل</h1>"+
+    "<p>لا تتوفر لهذا الحساب موافقة محفوظة على معالجة بيانات التعلم. لن يبدأ التدريب قبل مراجعة المشرف لسجل التسجيل الأصلي، ولن نطلب موافقة جديدة أثناء التدريب.</p>"+
+    "<p><a href='privacy.html'>سياسة الخصوصية</a> • <a href='terms.html'>شروط الاستخدام</a></p></section></main>";
 }
 function render(){
   if(!countrySetupDone||!student.country){
