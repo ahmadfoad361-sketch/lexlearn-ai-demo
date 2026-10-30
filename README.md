@@ -1,17 +1,17 @@
-# LexLearn
+# LexLearn public interface
 
-Working bilingual prototype for adaptive legal learning in Qatar's Theory of Rights (Civil Code Articles 39–63).
+This repository contains the public website and browser assets for LexLearn. Production authentication, student data, official assessment and training progression are enforced by the existing server APIs.
 
-The student completes an initial diagnostic, performs topic-specific tasks, and receives a changing training order based on measured evidence. The program has 24 teaching sessions and six weekly assessments, with sequential unlocking and a final completion screen. Authenticated student attempts, snapshots and learning plans use the existing central Supabase backend and faculty access policies.
+Backend implementation, database migrations, internal research, development fixtures and confidential integration tests are maintained separately in a private repository.
 
-The five displayed skills are recall, understanding, application to facts, legal precision and exam answer structure. Untested skills remain unscored. Essay element checks are provisional, prompt-specific lexical checks with visible evidence, not certified semantic judgments. Structured essay checks measure organisation separately from legal correctness. Instructor review and a controlled baseline/follow-up study are required to validate learning impact.
+Build and check the public release:
 
-The approved logo is preserved unchanged. Content and rubrics for the active program share one bilingual source in `assets/learning-quality.js`.
+```sh
+node scripts/build-public.js
+node scripts/security-public-boundary.cjs
+node scripts/verify-public-links.cjs
+```
 
-Validation: `node tests/adaptive-engine.test.js`, `node tests/production-boundaries.test.js`, `node tests/learning-quality.test.js`, `node tests/program-flow.test.js`, `node scripts/build-public.js`.
+The source boundary accepts only published website files and explicitly listed release infrastructure. Do not commit server source, database exports, credentials or internal validation material here.
 
-All 24 reference rules meet their own bilingual recall rubrics. Exam structure checks require separately populated sections rather than a list of headings. The instructor can inspect submitted essay history. These are software checks, not evidence of learning impact; see [the academic pilot protocol](docs/academic-pilot.md).
-
-Founder: Dr. Ahmed Feky.
-
-Live: https://ahmadfoad361-sketch.github.io/lexlearn-ai-demo/
+The public demo runs in the browser, so its visible code and materials remain public. Removing internal files from the current branch does not retract previously published Git history or third-party copies.
