@@ -40,7 +40,7 @@ function find(name,country){
 function url(name,country){
  const item=find(name,country),base=root.LEX_CONFIG?.supabaseUrl;
  if(!item||typeof base!=="string"||!/^https:\/\/[-a-z0-9.]+\.supabase\.co\/?$/i.test(base))return "";
- return base.replace(/\/$/,"")+"/functions/v1/university-brand?id="+encodeURIComponent(item.id);
+ return base.replace(/\/$/,"")+"/functions/v1/university-brand?id="+encodeURIComponent(item.id)+"&rev=crest-20261030";
 }
 function initials(value){
  const item=find(value),v=item?.id;

@@ -29,7 +29,7 @@ function logo(name){
 function mark(name){
  const url=logo(name),fallback='<span class="cardUniversityInitials">'+esc(initials(name))+'</span>';
  return '<span class="cardUniversityMark'+(url?' cardUniversityMarkLogo':'')+'" aria-label="'+esc(name)+'">'+fallback+
- (url?'<img class="universityOfficialLogo" src="'+esc(url)+'" alt="" crossorigin="anonymous" loading="lazy" decoding="async">':'')+'</span>';
+ (url?'<img class="universityOfficialLogo" src="'+esc(url)+'" alt="" crossorigin="anonymous" loading="eager" decoding="async">':'')+'</span>';
 }
 if(root.document){
  root.document.addEventListener("error",event=>{
@@ -45,9 +45,11 @@ function brandHeader(roleLabel){
 }
 function universityBlock(name,faculty){
  if(!name&&!faculty)return "";
- return '<div class="cardAffiliation">'+mark(name)+'<div class="cardAffiliationText">'+
- (name?'<strong class="cardUniversityName">'+esc(name)+'</strong>':'')+
- (faculty?'<span class="cardFacultyName">'+esc(faculty)+'</span>':'')+'</div></div>';
+ // University identity is communicated by its crest alone. The text
+ // remains available to screen readers and in the QR/profile, not duplicated
+ // alongside the emblem on the card.
+ return (name?'<div class="cardAffiliation cardAffiliationCrestOnly">'+mark(name)+'</div>':'')+
+ (faculty?'<p class="cardFacultyStandalone">'+esc(faculty)+'</p>':'');
 }
 function nameClass(value){
  const length=String(value||"").length;
