@@ -12,21 +12,30 @@ function entry(name){
  return aliases.find(x=>x.pattern.test(raw))||null;
 }
 function initials(name){
+ if(root.LEX_UNIVERSITY_BRANDS)return root.LEX_UNIVERSITY_BRANDS.initials(name);
  var item=entry(name);if(item)return item.short;
  var parts=String(name||"").trim().split(/\s+/).filter(Boolean).filter(x=>!["جامعة","جامعه","university","college","of"].includes(x.toLowerCase()));
  return parts.length>1?parts.slice(0,2).map(x=>x[0]).join("").toUpperCase():parts.length?parts[0].slice(0,2).toUpperCase():"UNI";
 }
 function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
 function logo(name){
+ const official=root.LEX_UNIVERSITY_BRANDS?.url(name);
+ if(official)return official;
  const item=entry(name),urls=root.LEX_UNIVERSITY_LOGOS||{};
  const path=item&&urls[item.key];
  // Only institution-approved copies hosted in the LexLearn site are accepted.
  return typeof path==="string"&&/^assets\/university-logos\/[a-z0-9-]+\.(?:svg|png|webp)$/.test(path)?path:"";
 }
 function mark(name){
- const url=logo(name);
- return url?'<span class="cardUniversityMark cardUniversityMarkLogo"><img src="'+esc(url)+'" alt=""></span>':
- '<span class="cardUniversityMark" aria-hidden="true">'+esc(initials(name))+'</span>';
+ const url=logo(name),fallback='<span class="cardUniversityInitials">'+esc(initials(name))+'</span>';
+ return '<span class="cardUniversityMark'+(url?' cardUniversityMarkLogo':'')+'" aria-label="'+esc(name)+'">'+fallback+
+ (url?'<img class="universityOfficialLogo" src="'+esc(url)+'" alt="" crossorigin="anonymous" loading="lazy" decoding="async">':'')+'</span>';
+}
+if(root.document){
+ root.document.addEventListener("error",event=>{
+  const element=event.target;
+  if(element?.classList?.contains("universityOfficialLogo"))element.remove();
+ },true);
 }
 function wordmark(){
  return '<span class="cardWordmark" dir="ltr" lang="en"><span class="cardWordLex">Lex</span><span class="cardWordLearn">Learn</span></span>';
