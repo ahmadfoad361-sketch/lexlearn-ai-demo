@@ -7,9 +7,6 @@ Deno.serve(async(req)=>{
  if(req.method!=="POST")return reply({error:"method_not_allowed"},405);
  try{
   const {admin,profile,user}=await requireStaff(req);
-  // A professor receives scoped progress summaries through their own endpoint,
-  // not student answer texts, diagnostic drafts or complete educational archives.
-  if(!["owner","admin"].includes(profile.role))return reply({error:"admin_export_forbidden"},403);
   const body=await req.json();
   if(body.action==="overview"){
     let people=admin.from("profiles").select("id").eq("role","student");
@@ -37,7 +34,17 @@ Deno.serve(async(req)=>{
           if(table==="student_training_answers")query=query.order("item_id",{ascending:true});
           const rows=await query.range(page*500,page*500+499);
           if(rows.error)throw Error(table+"_fetch_failed");
-          records[table].push(...(rows.data||[]).map((r:any)=>table==="student_training_answers"?{...r,evaluation:{status:r.evaluation?.status,rubric_version:r.evaluation?.rubric_version,provisional_percent:r.evaluation?.provisional_percent}}:r));
+          records[table].push(...(rows.data||[]).map((r:any)=>{
+            if(table==="student_training_answers")return {...r,evaluation:{status:r.evaluation?.status,rubric_version:r.evaluation?.rubric_version,provisional_percent:r.evaluation?.provisional_percent}};
+            if(table==="student_diagnostic_runs"&&profile.role==="instructor"){
+              const source=r.result||{},recall=source.measurements?.recall?.ai_grade||null;
+              return {...r,result:{
+                metrics:{understanding:source.metrics?.understanding??null,application:source.metrics?.application??null},
+                measurements:{recall:{ai_grade:recall?{status:recall.status,rubric_version:recall.rubric_version,provisional_percent:recall.provisional_percent}:null}}
+              }};
+            }
+            return r;
+          }));
           if((rows.data||[]).length<500)break;
           if(page===19)throw Error("overview_rows_exceeded");
         }
@@ -45,6 +52,9 @@ Deno.serve(async(req)=>{
     }
     return reply({ok:true,records,generated_at:new Date().toISOString()});
   }
+  // An instructor may request the aggregated overview for an assigned cohort;
+  // individual full archives are restricted to the owner and administrators.
+  if(!["owner","admin"].includes(profile.role))return reply({error:"admin_export_forbidden"},403);
   const uid=String(body.user_id||"");
   if(!/^[a-f0-9-]{36}$/i.test(uid))return reply({error:"invalid_student_id"},400);
   const prof=await admin.from("profiles").select("id,role,username,display_name,university,year_label,country_code,cohort_id,active,account_status,created_at").eq("id",uid).single();
