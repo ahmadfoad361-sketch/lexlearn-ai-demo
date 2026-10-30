@@ -55,24 +55,33 @@ async function create(p,cardApi){
  var number=api.number(p);
  if(number){c.direction='ltr';c.fillStyle='#8a1f39';c.font='bold 37px Tahoma,Arial';c.fillText(number,525,y+2);y+=52;}
  y=Math.max(635,y+12);
- // The affiliation panel uses one university, never a concatenated list.
+ // One primary institution per card; keep its mark beside the academic details.
+ var panelTop=Math.max(650,y+12);
  c.fillStyle='#f5f0e9';c.strokeStyle='#ded4bf';c.lineWidth=2;
- c.beginPath();c.roundRect(95,y,860,162,23);c.fill();c.stroke();
- c.fillStyle='#fff';c.strokeStyle='#c9b88e';c.beginPath();c.roundRect(760,y+38,98,85,18);c.fill();c.stroke();
- c.direction='ltr';c.textAlign='center';c.fillStyle='#8a1f39';c.font='bold 30px Tahoma,Arial';
- c.fillText(brand?brand.initials(p.university):'UNI',809,y+91,85);
- var univY=y+59;c.direction='rtl';c.textAlign='center';
- c.save();c.beginPath();c.rect(140,y+10,585,145);c.clip();
- c.translate(-100,0);
- draw(p.university||'',univY,35,575,2,'#172641');
- draw(p.faculty||'',univY+55,27,575,1,'#536078');
+ c.beginPath();c.roundRect(95,panelTop,860,162,23);c.fill();c.stroke();
+ c.fillStyle='#fff';c.strokeStyle='#c9b88e';
+ c.beginPath();c.roundRect(754,panelTop+35,104,92,18);c.fill();c.stroke();
+ var institutionLogo=brand&&brand.logo(p.university);
+ var logoReady=false;
+ if(institutionLogo){try{var universityLogo=await image(institutionLogo);c.drawImage(universityLogo,762,panelTop+40,88,80);logoReady=true;}catch(_){}}
+ if(!logoReady){
+  c.direction='ltr';c.textAlign='center';c.fillStyle='#8a1f39';c.font='bold 30px Tahoma,Arial';
+  c.fillText(brand?brand.initials(p.university):'UNI',806,panelTop+92,92);
+ }
+ c.save();
+ c.beginPath();c.rect(125,panelTop+12,600,138);c.clip();
+ c.direction='rtl';c.textAlign='center';c.fillStyle='#172641';
+ c.font='bold 33px Tahoma,Arial';
+ c.fillText(String(p.university||''),425,panelTop+65,575);
+ c.font='27px Tahoma,Arial';c.fillStyle='#536078';
+ c.fillText(String(p.faculty||''),425,panelTop+118,575);
  c.restore();
- y+=183;
+ y=panelTop+182;
  if(p.academic_section)y=draw(p.academic_section,y,26,900,1,'#35415a')+12;
  if(p.year_label)y=draw(p.year_label,y,27,900,1,'#8a1f39')+12;
  var qr=root.qrcode(0,'M');root.qrcode.stringToBytes=root.qrcode.stringToBytesFuncs['UTF-8'];
  qr.addData(api.payload(p),'Byte');qr.make();
- var n=qr.getModuleCount(),module=Math.floor(415/(n+8)),qrWidth=(n+8)*module,x=Math.round((1050-qrWidth)/2),top=Math.max(927,Math.min(y+20,970));
+ var n=qr.getModuleCount(),module=Math.max(2,Math.floor(365/(n+8))),qrWidth=(n+8)*module,x=Math.round((1050-qrWidth)/2),top=Math.max(892,Math.min(y+12,940));
  c.fillStyle='#fff';c.fillRect(x,top,qrWidth,qrWidth);c.fillStyle='#000';
  for(var row=0;row<n;row++)for(var col=0;col<n;col++){
   if(qr.isDark(row,col))c.fillRect(x+(col+4)*module,top+(row+4)*module,module,module);
@@ -80,14 +89,14 @@ async function create(p,cardApi){
  var login=String(p.username||'');
  if(login){
   c.direction='rtl';c.textAlign='center';c.fillStyle='#35415a';c.font='23px Tahoma,Arial';
-  c.fillText('اسم الدخول:',525,top+qrWidth+34);
+  c.fillText('اسم الدخول:',525,top+qrWidth+39);
   c.direction='ltr';c.font='bold 25px Tahoma,Arial';
-  c.fillText(login,525,top+qrWidth+67,900);
+  c.fillText(login,525,top+qrWidth+72,900);
  }
  c.direction='rtl';c.textAlign='center';c.fillStyle='#536078';c.font='24px Tahoma,Arial';
- c.fillText('بطاقة تعريف بمنصة',590,1434);
- c.direction='ltr';c.font='bold 24px Tahoma,Arial';c.fillStyle='#142b5f';c.fillText('Lex',358,1434);
- c.fillStyle='#8a1f39';c.fillText('Learn',396,1434);
+ c.fillText('بطاقة تعريف بمنصة',625,1440);
+ c.direction='ltr';c.font='bold 24px Tahoma,Arial';c.fillStyle='#142b5f';c.fillText('Lex',365,1440);
+ c.fillStyle='#8a1f39';c.fillText('Learn',410,1440);
  var bytes=Uint8Array.from(atob(canvas.toDataURL('image/jpeg',.95).split(',')[1]),function(v){return v.charCodeAt(0);});
  return pdf(bytes,1050,1480);
 }
