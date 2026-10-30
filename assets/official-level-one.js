@@ -8,6 +8,7 @@ var COURSE_ID="qa-qu-lawc101-rights";
 function esc(value){return String(value==null?"":value).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
 function phrase(lang,ar,en){return lang==="en"?en:ar;}
 function byId(arr,id){return arr.find(function(x){return x.item_id===id;});}
+function confirmedAi(entry){var ev=entry&&entry.evaluation||{};return ev.status==="preliminary_ai"&&ev.rubric_version==="lexlearn-training-ai-v4"&&typeof ev.provisional_percent==="number"&&Number.isFinite(ev.provisional_percent);}
 function feedbackHtml(entry,lang){
  if(!entry)return "";
  var ar=lang!=="en",ev=entry.evaluation||{},labels={
@@ -25,6 +26,19 @@ function feedbackHtml(entry,lang){
  direct_legal_conclusion:["النتيجة القانونية","The legal conclusion"]
  };
  function list(keys){return (Array.isArray(keys)?keys:[]).map(function(k){return "<li>"+esc((labels[k]||[k,k])[ar?0:1])+"</li>";}).join("");}
+ if(confirmedAi(entry)){
+  var detailed=(Array.isArray(ev.criteria)?ev.criteria:[]).map(function(c){
+   var credit=c.credit===1?(ar?"صحيح":"Correct"):c.credit===0.5?(ar?"صحيح جزئيًا":"Partly correct"):(ar?"غير متحقق":"Not met");
+   var name=lang==="en"?(c.label_en||c.label_ar||c.id):(c.label_ar||c.label_en||c.id);
+   var explanation=lang==="en"?c.explanation_en:c.explanation_ar;
+   return "<li><b>"+esc(name)+" — "+esc(credit)+"</b>"+(c.evidence?"<blockquote>"+esc(c.evidence)+"</blockquote>":"")+
+    (explanation?"<p>"+esc(explanation)+"</p>":"")+"</li>";
+  }).join("");
+  return "<section class='legalBox' role='status'><b>"+phrase(lang,"تصحيح دلالي مبدئي: ","Preliminary semantic assessment: ")+
+   esc(Math.round(ev.provisional_percent))+"%</b><p style='white-space:pre-wrap'>"+
+   esc(ar?ev.feedback_ar:ev.feedback_en)+"</p>"+(detailed?"<ul class='criterionFeedback'>"+detailed+"</ul>":"")+
+   "<small>"+phrase(lang,"تقييم تدريبي غير معتمد جامعيًا؛ يحق للمشرف مراجعته.","Non-certified practice feedback, subject to instructor oversight.")+"</small></section>";
+ }
  var hasScore=typeof ev.provisional_percent==="number"&&Number.isFinite(ev.provisional_percent);
  var score=hasScore?Math.round(Math.max(0,Math.min(100,ev.provisional_percent)))+"%":(ar?"التقييم الآلي غير مكتمل":"Automatic evaluation incomplete");
  return "<div class='legalBox' role='status'><b>"+(ar?"تقييم المحرك الداخلي المبدئي: ":"Preliminary internal assessment: ")+esc(score)+"</b>"+
@@ -57,14 +71,36 @@ async function mount(host,opts){
   return;
  }
  function t(ar,en){return phrase(lang,ar,en);}
- var data,lastFeedback=null;
+ var data,lastFeedback=null,consented=false,gradingBusy=false,gradingMessage="";
  host.innerHTML="<section class='stage'><div class='taskCard' role='status'>"+t("جارٍ تحميل المستوى الأول المعتمد…","Loading the approved first level…")+"</div></section>";
  try{
   data=await cloud.studentLifecycleRpc("firstLevel",{courseId:COURSE_ID});
+  if(cloud.getConsent)try{consented=!!await cloud.getConsent("lexlearn-ai-grading-v1","external_ai_grading");}catch(_){}
   if(!data||typeof data!=="object"||!Array.isArray(data.tasks)||!Array.isArray(data.saved))throw Error("level_one_invalid_server_response");
  }catch(e){
   host.innerHTML="<section class='stage'><div class='taskCard'><h2>"+t("تعذر تحميل المستوى الأول","Unable to load level one")+"</h2><p role='alert'>"+esc(e&&e.message||e)+"</p><a href='"+(lang==="en"?"student-en":"student")+".html'>"+t("حساب الطالب","Student portal")+"</a></div></section>";
   return;
+ }
+ async function gradeSaved(itemId){
+  if(gradingBusy||!consented||!cloud.gradeLevelOneAi)return;
+  gradingBusy=true;gradingMessage="";render();
+  try{
+   var result=await cloud.gradeLevelOneAi(itemId);
+   if(!result||!["preliminary_ai","nonanswer_zero"].includes(result.status))gradingMessage=t("الإجابة محفوظة، لكن التقييم الآلي لم يكتمل. يمكن إعادة المحاولة.","Answer saved, but automatic assessment did not finish. You may retry.");
+   data=await cloud.studentLifecycleRpc("firstLevel",{courseId:COURSE_ID});
+  }catch(e){gradingMessage=t("لم يكتمل التصحيح، لكن الإجابة محفوظة. حاول مرة أخرى لاحقًا.","Assessment could not complete; your answer remains saved. Retry later.");}
+  gradingBusy=false;render();
+ }
+ function wireReviewActions(){
+  var grant=host.querySelector("#levelOneConsent");
+  if(grant)grant.onclick=async function(){
+   grant.disabled=true;
+   try{await cloud.recordConsent("lexlearn-ai-grading-v1","external_ai_grading",true);consented=true;gradingMessage="";render();}
+   catch(e){gradingMessage=t("تعذر حفظ الموافقة، ولم تُرسل إجابتك إلى خدمة الذكاء الاصطناعي.","Consent was not saved; no answer was sent to the AI service.");render();}
+  };
+  host.querySelectorAll("[data-level-grade]").forEach(function(btn){
+   btn.onclick=function(){gradeSaved(btn.getAttribute("data-level-grade"));};
+  });
  }
  function render(){
   if(!data.allowed){
@@ -83,11 +119,18 @@ async function mount(host,opts){
   var summary="<section class='stage'><div class='taskCard'><span class='kicker'>"+t("حساب الطالب • المستوى الأول • نظرية الحق","Student account • Level 1 • Theory of Rights")+"</span>"+
    "<h2>"+t("بداية الشخصية القانونية","Beginning of legal personality")+"</h2><p>"+esc(reason)+"</p>"+diagnosticMetric+
    "<p role='status'>"+t("تم حفظ ","Saved ")+completed+" / "+data.tasks.length+t(" مهام على الخادم"," tasks on the server")+"</p>"+
-   "<p>"+t("ترتيب المهام متكيف مع التشخيص. يحلل المحرك الداخلي الإجابات الحرة ويعرض نسبة مبدئية لعناصر المعنى عند كفاية الأدلة، مع إمكانية مراجعة المشرف.","Task order adapts to the diagnostic. The internal engine shows a provisional free-answer percentage when evidence permits, subject to supervisor review.")+"</p></div></section>";
-  var previousResults=data.tasks.filter(function(x){return !!byId(saved,x.id);}).map(function(x){return feedbackHtml(byId(saved,x.id),lang);}).join("");
+   "<p>"+t("ترتيب المهام متكيف مع التشخيص. التصحيح الداخلي أولي، ويمكن الحصول على تصحيح دلالي تفصيلي بعد موافقتك.","Tasks adapt to the diagnostic. Internal grading is provisional; detailed semantic feedback is available with your consent.")+"</p>"+
+   (!consented?"<p>"+t("باختيار الموافقة، يُرسل نص إجابتك إلى مزود ذكاء اصطناعي خارجي بغرض التصحيح التدريبي فقط.","If you consent, your written answer is sent to an external AI provider for practice assessment only.")+"</p><button type='button' id='levelOneConsent'>"+t("أوافق على التصحيح باستخدام الذكاء الاصطناعي","I agree to AI-assisted grading")+"</button>":"")+
+   (gradingMessage?"<p role='status'>"+esc(gradingMessage)+"</p>":"")+"</div></section>";
+  var previousResults=data.tasks.filter(function(x){return !!byId(saved,x.id);}).map(function(x){
+   var entry=byId(saved,x.id),pending=!confirmedAi(entry)&&entry.evaluation?.status!=="nonanswer_zero";
+   return "<section class='taskCard' style='margin:1rem 0'><h3>"+esc(lang==="en"?x.title_en:x.title_ar)+"</h3>"+
+    feedbackHtml(entry,lang)+(pending&&consented?"<button type='button' data-level-grade='"+esc(x.id)+"' "+(gradingBusy?"disabled":"")+">"+
+    t("تصحيح الإجابة بالذكاء الاصطناعي","Assess this answer with AI")+"</button>":"")+"</section>";
+  }).join("");
   if(!next){
    host.innerHTML=summary+previousResults+"<section class='stage'><div class='taskCard'><span class='kicker'>"+t("اكتملت التمارين الثلاثة","All three tasks submitted")+"</span><h2>"+t("تم حفظ تدريب المستوى الأول","Level-one practice saved")+"</h2><p>"+t("كل الإجابات محفوظة، وبانتظار مراجعتها. لا يُفتح المستوى الثاني حتى يتحقق اعتماد التقدم من الخادم.","All answers are saved and pending review. Level two stays locked until server-verified completion.")+"</p><a class='secondary' href='"+(lang==="en"?"student-en":"student")+".html'>"+t("العودة إلى حساب الطالب","Back to student account")+"</a></div></section>";
-   return;
+   wireReviewActions();return;
   }
   var n=completed+1,dim=next.dimension;
   var q=lang==="en"?next.prompt_en:next.prompt_ar;
@@ -101,6 +144,7 @@ async function mount(host,opts){
    "<textarea id='officialEssayAnswer' class='textarea' rows='8' maxlength='12000' placeholder='"+t("اكتب إجابتك بأسلوبك…","Write in your own words…")+"' aria-label='"+t("إجابة قانونية حرة","Free legal answer")+"'></textarea>"+
    "<div class='choiceRow'><button type='button' id='officialSaveAnswer' class='primary'>"+t("حفظ الإجابة والانتقال","Save answer and continue")+"</button></div>"+
    "<p id='officialSaveMessage' role='alert'></p></div></section>";
+  wireReviewActions();
   var button=host.querySelector("#officialSaveAnswer");
   button.onclick=async function(){
    var v=host.querySelector("#officialEssayAnswer").value.trim();
@@ -112,6 +156,7 @@ async function mount(host,opts){
     var readback=await cloud.studentLifecycleRpc("firstLevel",{courseId:COURSE_ID});
     if(!readback||!readback.allowed||!Array.isArray(readback.saved)||!byId(readback.saved,next.id))throw Error("level_one_readback_failed");
     lastFeedback=byId(readback.saved,next.id);data=readback;render();
+    if(consented)await gradeSaved(next.id);
    }catch(e){
     var msg=host.querySelector("#officialSaveMessage");if(msg)msg.textContent=t("لم يتم تأكيد الحفظ: ","Save not confirmed: ")+String(e&&e.message||e);
     button.disabled=false;
