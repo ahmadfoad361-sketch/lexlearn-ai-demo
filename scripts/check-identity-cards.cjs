@@ -34,5 +34,6 @@ assert.equal(alreadyTitled.display_name,"دكتور أحمد الفقي");
 const pdfSource=source("assets/student-card-pdf.js");
 assert.match(pdfSource,/api\.payload\(p\)/);assert.match(pdfSource,/p\.username/);
 assert.doesNotMatch(pdfSource,/ليكس ليرن|ليسك ليرن/);
-assert.match(source("assets/instructor-dashboard.js"),/name\.split\(\/\\s\+\/\)/);
+assert.match(source("assets/instructor-dashboard.js"),/\.split\(\/\\s\+\/\)/);
+assert.match(source("assets/admin-instructors.js"),/validDoctorName/);
 console.log("PASS branded student/faculty identity, selected university, QR username, no password, PDF payload");
