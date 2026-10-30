@@ -59,7 +59,7 @@ alter table public.lex_ai_queue_settings enable row level security;
 alter table public.lex_ai_queue_jobs enable row level security;
 revoke all on public.lex_ai_queue_settings from public,anon,authenticated;
 revoke all on public.lex_ai_queue_jobs from public,anon,authenticated;
-grant select on public.lex_ai_queue_jobs to authenticated;
+grant select (id,user_id,course_id,kind,item_id,session_number,state,attempts,available_at,created_at,updated_at,completed_at,reason) on public.lex_ai_queue_jobs to authenticated;
 grant all on public.lex_ai_queue_settings to service_role;
 grant all on public.lex_ai_queue_jobs to service_role;
 drop policy if exists lex_ai_jobs_own_read on public.lex_ai_queue_jobs;
