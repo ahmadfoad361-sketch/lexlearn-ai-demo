@@ -74,8 +74,9 @@ for(const page of pages){
 }
 
 
-// First-party measurement on public and student pages only; staff work is excluded.
-const measuredPages=pages.filter(p=>p.endsWith('.html')&&!/^(admin|instructor|reset-password|references|lexlearn-grading|demo-supervisor|pilot-|go\/)/.test(p));
+// First-party measurements on public/student pages and authenticated faculty dashboard.
+// Never collect supervisor activity as learner attendance.
+const measuredPages=pages.filter(p=>p.endsWith('.html')&&(!/^(admin|instructor|reset-password|references|lexlearn-grading|demo-supervisor|pilot-|go\/)/.test(p)||p==='instructor.html'));
 for(const page of measuredPages){
  const full=path.join(out,page);let html=fs.readFileSync(full,'utf8');
  if(!html.includes('assets/lexlearn-config.js'))html=html.replace('</body>','<script src="assets/lexlearn-config.js"></script></body>');
