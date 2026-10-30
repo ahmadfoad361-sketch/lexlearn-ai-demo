@@ -16,9 +16,15 @@ const registry=[
  ["ae-zayed","ae",["Zayed University","جامعة زايد"]],
  ["ae-alain","ae",["Al Ain University","جامعة العين"]],
  ["ae-dubai","ae",["University of Dubai","جامعة دبي"]],
+ ["ae-city","ae",["City University Ajman","جامعة المدينة عجمان","جامعة المدينة - عجمان"]],
+ ["ae-alwasl","ae",["Al Wasl University","جامعة الوصل"]],
+ ["ae-alqasimia","ae",["Al Qasimia University","جامعة القاسمية"]],
  ["eg-tanta","eg",["Tanta University","جامعة طنطا","جامعه طنطا"]],
  ["eg-ainshams","eg",["Ain Shams University","جامعة عين شمس"]],
- ["eg-cairo","eg",["Cairo University","جامعة القاهرة","جامعة القاهره"]]
+ ["eg-cairo","eg",["Cairo University","جامعة القاهرة","جامعة القاهره"]],
+ ["eg-mansoura","eg",["Mansoura University","جامعة المنصورة"]],
+ ["eg-zagazig","eg",["Zagazig University","جامعة الزقازيق"]],
+ ["eg-benha","eg",["Benha University","جامعة بنها"]]
 ];
 const flag={qa:"🇶🇦",eg:"🇪🇬",ae:"🇦🇪",sa:"🇸🇦"};
 const map=new Map();
@@ -40,8 +46,8 @@ function initials(value){
  const item=find(value),v=item?.id;
  if(v){
   const known={"qa-qu":"QU","qa-lusail":"LU","qa-hbku":"HBKU","qa-udst":"UDST","qa-doha":"DI",
-  "ae-ajman":"AU","ae-sharjah":"UOS","ae-uaeu":"UAEU","ae-adu":"ADU","ae-zayed":"ZU","ae-alain":"AAU","ae-dubai":"UD",
-  "eg-tanta":"TU","eg-ainshams":"ASU","eg-cairo":"CU"};
+  "ae-ajman":"AU","ae-sharjah":"UOS","ae-uaeu":"UAEU","ae-adu":"ADU","ae-zayed":"ZU","ae-alain":"AAU","ae-dubai":"UD","ae-city":"CUA","ae-alwasl":"AWU","ae-alqasimia":"AQU",
+  "eg-tanta":"TU","eg-ainshams":"ASU","eg-cairo":"CU","eg-mansoura":"MU","eg-zagazig":"ZU","eg-benha":"BU"};
   return known[v]||"UNI";
  }
  const words=String(value||"").trim().split(/\s+/).filter(Boolean);
