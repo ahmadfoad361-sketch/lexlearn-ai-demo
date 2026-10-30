@@ -36,7 +36,9 @@ Deno.serve(async(req)=>{
           if(rows.error)throw Error(table+"_fetch_failed");
           records[table].push(...(rows.data||[]).map((r:any)=>{
             if(table==="student_training_answers")return {...r,evaluation:{status:r.evaluation?.status,rubric_version:r.evaluation?.rubric_version,provisional_percent:r.evaluation?.provisional_percent}};
-            if(table==="student_diagnostic_runs"&&profile.role==="instructor"){
+            if(table==="student_diagnostic_runs"){
+              // The overview is a lightweight metrics-only projection for all staff.
+              // The detailed answers remain available only through the admin archive.
               const source=r.result||{},recall=source.measurements?.recall?.ai_grade||null;
               return {...r,result:{
                 metrics:{understanding:source.metrics?.understanding??null,application:source.metrics?.application??null},
