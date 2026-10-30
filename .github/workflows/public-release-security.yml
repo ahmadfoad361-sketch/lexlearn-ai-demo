@@ -1,0 +1,23 @@
+name: Public release security boundary
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  public-boundary:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Syntax check
+        run: node --check scripts/security-public-boundary.cjs
+      - name: Build Pages release
+        run: node scripts/build-public.js
+      - name: Verify release safety
+        run: node scripts/security-public-boundary.cjs
