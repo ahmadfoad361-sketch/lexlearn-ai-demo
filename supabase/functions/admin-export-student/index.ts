@@ -34,7 +34,19 @@ Deno.serve(async(req)=>{
           if(table==="student_training_answers")query=query.order("item_id",{ascending:true});
           const rows=await query.range(page*500,page*500+499);
           if(rows.error)throw Error(table+"_fetch_failed");
-          records[table].push(...(rows.data||[]).map((r:any)=>table==="student_training_answers"?{...r,evaluation:{status:r.evaluation?.status,rubric_version:r.evaluation?.rubric_version,provisional_percent:r.evaluation?.provisional_percent}}:r));
+          records[table].push(...(rows.data||[]).map((r:any)=>{
+            if(table==="student_training_answers")return {...r,evaluation:{status:r.evaluation?.status,rubric_version:r.evaluation?.rubric_version,provisional_percent:r.evaluation?.provisional_percent}};
+            if(table==="student_diagnostic_runs"){
+              // The overview is a lightweight metrics-only projection for all staff.
+              // The detailed answers remain available only through the admin archive.
+              const source=r.result||{},recall=source.measurements?.recall?.ai_grade||null;
+              return {...r,result:{
+                metrics:{understanding:source.metrics?.understanding??null,application:source.metrics?.application??null},
+                measurements:{recall:{ai_grade:recall?{status:recall.status,rubric_version:recall.rubric_version,provisional_percent:recall.provisional_percent}:null}}
+              }};
+            }
+            return r;
+          }));
           if((rows.data||[]).length<500)break;
           if(page===19)throw Error("overview_rows_exceeded");
         }
@@ -42,6 +54,9 @@ Deno.serve(async(req)=>{
     }
     return reply({ok:true,records,generated_at:new Date().toISOString()});
   }
+  // An instructor may request the aggregated overview for an assigned cohort;
+  // individual full archives are restricted to the owner and administrators.
+  if(!["owner","admin"].includes(profile.role))return reply({error:"admin_export_forbidden"},403);
   const uid=String(body.user_id||"");
   if(!/^[a-f0-9-]{36}$/i.test(uid))return reply({error:"invalid_student_id"},400);
   const prof=await admin.from("profiles").select("id,role,username,display_name,university,year_label,country_code,cohort_id,active,account_status,created_at").eq("id",uid).single();
@@ -72,6 +87,10 @@ Deno.serve(async(req)=>{
   const data:Record<string,unknown>={};
   const truncated:string[]=[];
   tables.forEach((t,i)=>{data[t]=result[i].rows;if(result[i].truncated)truncated.push(t);});
+  // An incomplete archive must never be advertised as a successful export.
+  // The administrator can use a paginated archival job if any table exceeds
+  // the protective export cap. No existing student data is changed here.
+  if(truncated.length)return reply({ok:false,error:"export_incomplete",tables:truncated},409);
   const ids=(data.attempts as Array<{id:string}>).map(a=>a.id);
   const human:unknown[]=[];
   for(let i=0;i<ids.length;i+=100){
@@ -101,7 +120,8 @@ Deno.serve(async(req)=>{
   const sourceRows:any[]=[];
   for(let i=0;i<sourceIds.length;i+=100){const found=await admin.from("content_sources").select("id,excerpt,status").in("id",sourceIds.slice(i,i+100));if(found.error)throw Error("legal_sources_fetch_failed");sourceRows.push(...(found.data||[]));}
   data.legal_sources=sourceRows.map(s=>/^qa-civil-2004-art(?:39|[4-5][0-9]|6[0-3])$/.test(s.id)?legalSources([s])[0]:s);
-  return reply({ok:true,student:prof.data,records:data,truncated,generated_at:new Date().toISOString()});
+  const exportedCounts=Object.fromEntries(Object.entries(data).filter(([,rows])=>Array.isArray(rows)).map(([table,rows])=>[table,(rows as unknown[]).length]));
+  return reply({ok:true,student:prof.data,records:data,truncated:[],export_counts:exportedCounts,generated_at:new Date().toISOString()});
  }catch(e){
   const m=e instanceof Error?e.message:String(e);
   return reply({error:m},m==="UNAUTHORIZED"?401:m==="FORBIDDEN"?403:503);
