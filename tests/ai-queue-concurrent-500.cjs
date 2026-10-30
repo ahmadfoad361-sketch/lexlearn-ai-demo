@@ -11,8 +11,8 @@ function runOne(i){
   let stderr="",stdout="";
   child.stderr.on("data",x=>stderr+=x);child.stdout.on("data",x=>stdout+=x);
   child.on("error",reject);
-  child.on("exit",code=>{
-   if(code!==0||!/[a-f0-9]{8}-[a-f0-9-]{27}/i.test(stdout))return reject(new Error("Student "+i+" SQL operation failed: "+stderr.slice(0,300)));
+  child.on("close",code=>{
+   if(code!==0||!/[a-f0-9]{8}-[a-f0-9-]{27}/i.test(stdout))return reject(new Error("Student "+i+" SQL operation failed: "+stderr.slice(0,300)+" output: "+stdout.slice(0,200)));
    resolve(performance.now()-t);
   });
  });
