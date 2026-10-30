@@ -1,98 +1,32 @@
-name: Deploy LexLearn AI demo to GitHub Pages
-
+name: Deploy LexLearn public interface
 on:
   push:
-    branches: ["main"]
+    branches: [main]
   pull_request:
-    branches: ["main"]
+    branches: [main]
   workflow_dispatch:
-
 permissions:
   contents: read
-
 concurrency:
-  group: "pages-${{ github.event_name }}-${{ github.ref }}"
+  group: pages-${{ github.event_name }}-${{ github.ref }}
   cancel-in-progress: true
-
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: "20"
-      - name: Syntax check all shipped JavaScript
+          node-version: '24'
+      - name: Check public scripts
         run: |
-          for f in assets/*.js namaa/assets/*.js; do
-            echo "Checking $f"
-            node --check "$f"
-          done
-      - name: Production guardrails
-        run: |
-          ! grep -R "async async" assets
-          test -f privacy.html
-          test -f terms.html
-          test -f supabase/migrations/20261006_001_production_core.sql
-          test -f supabase/migrations/20261006_002_hardening_and_qatar_curriculum.sql
-          test -f supabase/functions/grade-answer/index.ts
-          test -f supabase/functions/pilot-grade/index.ts
-      - name: Adaptive engine tests
-        run: |
-          node tests/adaptive-engine.test.js
-          node tests/learning-quality.test.js
-          node tests/semantic-service.test.js
-          node tests/review-bank.test.js
-          node tests/pilot-learning.test.js
-          node tests/pilot-grade-service.test.js
-          node tests/pilot-readiness.test.js
-          node tests/pilot-supervisor-audit.test.js
-          node scripts/validate-pilot-grading.js
-          node tests/program-flow.test.js
-          node tests/official-diagnostic.test.js
-          node tests/official-diagnostic-dom-flow.test.js
-          node tests/server-diagnostic-ui.test.js
-          node tests/diagnostic-ai-v2.test.mjs
-          node tests/consent-once.test.js
-          node tests/diagnostic-layout.test.js
-          node tests/student-provisional-flow.test.js
-          node tests/founder-pilot-release.test.js
-          node tests/student-full-path.test.js
-          node tests/student-learning-ux.test.js
-          node tests/session-moments.test.js
-          node tests/learning-moments.test.js
-          node tests/legal-case-guide.test.js
-          node tests/student-gate-source.test.js
-          node tests/public-showcase.test.js
-          node tests/showcase-revision.test.js
-          node tests/showcase-learning-cycle.test.js
-          node tests/showcase-recall.test.js
-          node tests/showcase-delivery.test.js
-          node tests/showcase-semantic.test.mjs
-      - name: Supervisor tree and academic identity checks
-        run: |
-          node tests/academic-picker.test.js
-          node tests/supervisor-password-resets.test.js
-          node tests/admin-navigation-login-help.test.js
-          node tests/instructor-password-session.test.js
-          node tests/instructor-summary-privacy.test.js
-          node tests/instructor-card.test.js
-          node tests/professor-entry-links.test.js
-          node tests/supervisor-country-tree.test.js
-          node tests/supervisor-cohort-management.test.js
-          node tests/student-academic-profile-update.test.js
-      - name: Conference registration smoke tests
-        run: node tests/conference-signup.test.js
-      - name: Conference landing release checks
-        run: node tests/conference-landing.test.js
-      - name: Production boundary tests
-        run: node tests/production-boundaries.test.js
-      - name: Live conference intake readiness (no data submitted)
-        continue-on-error: true
-        run: node scripts/verify-conference-endpoint.mjs
-
+          for f in assets/*.js scripts/*.js scripts/*.cjs; do node --check "$f"; done
+      - name: Build public interface
+        run: node scripts/build-public.js
+      - name: Enforce public source and release boundary
+        run: node scripts/security-public-boundary.cjs
+      - name: Verify local dependencies and navigation
+        run: node scripts/verify-public-links.cjs
   deploy:
     needs: test
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
@@ -105,51 +39,36 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Build public artifact
-        run: node scripts/build-public.js
-      - name: Verify public artifact before upload
-        run: node scripts/security-public-boundary.cjs
-      - name: Configure Pages
-        uses: actions/configure-pages@v5
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Build and enforce release boundary before upload
+        run: |
+          node scripts/build-public.js
+          node scripts/security-public-boundary.cjs
+          node scripts/verify-public-links.cjs
+      - uses: actions/configure-pages@v5
         with:
           enablement: true
-      - name: Upload site
-        uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v3
         with:
-          path: "dist-site"
-      - name: Let artifact metadata become available
-        run: sleep 12
+          path: dist-site
       - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v4
-      - name: Setup Node for deployed-site smoke
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-      - name: Install pinned Playwright driver and matching video helper
-        run: |
-          npm install --no-save --no-package-lock playwright-core@1.56.1
-          node node_modules/playwright-core/cli.js install ffmpeg
-      - name: Confirm actual published build and public learning routes
+      - name: Verify published commit and required routes
         env:
-          BASE_URL: ${{ steps.deployment.outputs.page_url }}
-          EXPECTED_BUILD_SHA: ${{ github.sha }}
-          LEX_VIDEO_DIR: published-browser-evidence
+          SITE_URL: ${{ steps.deployment.outputs.page_url }}
+          EXPECTED_SHA: ${{ github.sha }}
         run: |
-          mkdir -p published-browser-evidence
-          for i in 1 2 3 4 5 6; do
-            echo "Checking deployed page URL, round $i"
-            if node tests/student-path-browser.cjs && node tests/supervisor-published-browser.cjs; then exit 0; fi
-            sleep 15
+          for attempt in $(seq 1 12); do
+            if curl --fail --silent "${SITE_URL}build-manifest.json" -o /tmp/manifest.json && node -e 'if(require("/tmp/manifest.json").commit!==process.env.EXPECTED_SHA)process.exit(1)'; then
+              for route in index.html diagnostic.html student-path.html instructor.html student-login.html; do
+                curl --fail --silent --output /dev/null "${SITE_URL}${route}" || exit 1
+              done
+              exit 0
+            fi
+            sleep 10
           done
           exit 1
-      - name: Keep published public-browser recordings
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: lexlearn-live-public-browser-${{ github.sha }}
-          path: published-browser-evidence/
-          if-no-files-found: ignore
-          retention-days: 14

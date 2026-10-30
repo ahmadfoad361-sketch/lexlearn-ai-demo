@@ -30,6 +30,14 @@ try{
 }catch(e){errors.push('Invalid manifest: '+e.message)}
 try{
  const tracked=execFileSync('git',['ls-files','-z'],{encoding:'utf8'}).split('\0').filter(Boolean);
+ const infrastructure=new Set([
+  '.github/workflows/pages.yml','.github/workflows/public-release-security.yml',
+  'scripts/build-public.js','scripts/security-public-boundary.cjs','scripts/verify-public-links.cjs',
+  'README.md','AGENTS.md','.gitignore'
+ ]);
+ const published=new Set(files);
+ for(const file of tracked)if(!published.has(file)&&!infrastructure.has(file))
+  errors.push('Internal file tracked in public source: '+file);
  for(const file of tracked)if(/(^|\/)\.env(?:\.(?!example\b|sample\b)[^/]*)?$/.test(file)||/\.(?:pem|p12|pfx)$/.test(file))errors.push('Potential committed credentials: '+file);
 }catch(e){errors.push('Could not inspect tracked files')}
 if(errors.length){for(const e of errors)console.error('SECURITY BLOCK:',e);process.exitCode=1}
