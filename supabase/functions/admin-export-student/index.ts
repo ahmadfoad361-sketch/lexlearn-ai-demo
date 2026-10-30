@@ -7,6 +7,9 @@ Deno.serve(async(req)=>{
  if(req.method!=="POST")return reply({error:"method_not_allowed"},405);
  try{
   const {admin,profile,user}=await requireStaff(req);
+  // A professor receives scoped progress summaries through their own endpoint,
+  // not student answer texts, diagnostic drafts or complete educational archives.
+  if(!["owner","admin"].includes(profile.role))return reply({error:"admin_export_forbidden"},403);
   const body=await req.json();
   if(body.action==="overview"){
     let people=admin.from("profiles").select("id").eq("role","student");
@@ -72,6 +75,10 @@ Deno.serve(async(req)=>{
   const data:Record<string,unknown>={};
   const truncated:string[]=[];
   tables.forEach((t,i)=>{data[t]=result[i].rows;if(result[i].truncated)truncated.push(t);});
+  // An incomplete archive must never be advertised as a successful export.
+  // The administrator can use a paginated archival job if any table exceeds
+  // the protective export cap. No existing student data is changed here.
+  if(truncated.length)return reply({ok:false,error:"export_incomplete",tables:truncated},409);
   const ids=(data.attempts as Array<{id:string}>).map(a=>a.id);
   const human:unknown[]=[];
   for(let i=0;i<ids.length;i+=100){
@@ -101,7 +108,8 @@ Deno.serve(async(req)=>{
   const sourceRows:any[]=[];
   for(let i=0;i<sourceIds.length;i+=100){const found=await admin.from("content_sources").select("id,excerpt,status").in("id",sourceIds.slice(i,i+100));if(found.error)throw Error("legal_sources_fetch_failed");sourceRows.push(...(found.data||[]));}
   data.legal_sources=sourceRows.map(s=>/^qa-civil-2004-art(?:39|[4-5][0-9]|6[0-3])$/.test(s.id)?legalSources([s])[0]:s);
-  return reply({ok:true,student:prof.data,records:data,truncated,generated_at:new Date().toISOString()});
+  const exportedCounts=Object.fromEntries(Object.entries(data).filter(([,rows])=>Array.isArray(rows)).map(([table,rows])=>[table,(rows as unknown[]).length]));
+  return reply({ok:true,student:prof.data,records:data,truncated:[],export_counts:exportedCounts,generated_at:new Date().toISOString()});
  }catch(e){
   const m=e instanceof Error?e.message:String(e);
   return reply({error:m},m==="UNAUTHORIZED"?401:m==="FORBIDDEN"?403:503);
