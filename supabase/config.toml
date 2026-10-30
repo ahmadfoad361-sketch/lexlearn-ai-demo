@@ -31,3 +31,8 @@ enabled = false
 verify_jwt = false
 [functions.admin-site-stats]
 verify_jwt = true
+
+[functions.lexlearn-ai-enqueue]
+verify_jwt = true
+[functions.lexlearn-ai-worker]
+verify_jwt = false
