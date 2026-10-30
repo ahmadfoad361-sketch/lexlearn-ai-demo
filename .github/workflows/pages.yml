@@ -109,6 +109,8 @@ jobs:
         uses: actions/checkout@v4
       - name: Build public artifact
         run: node scripts/build-public.js
+      - name: Verify public artifact before upload
+        run: node scripts/security-public-boundary.cjs
       - name: Configure Pages
         uses: actions/configure-pages@v5
         with:
