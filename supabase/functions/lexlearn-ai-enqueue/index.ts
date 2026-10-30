@@ -33,6 +33,7 @@ Deno.serve(async (req:Request)=>{
    const m=String(error.message||"");
    if(/queue_disabled/i.test(m))return json({error:"queue_disabled"},503);
    if(/grading_queue_full/i.test(m))return json({error:"queue_capacity_reached",saved_answer:true},429);
+   if(/student_queue_hourly_limit/i.test(m))return json({error:"student_hourly_limit",saved_answer:true},429);
    if(/approval_required|consent_required/i.test(m))return json({error:"approval_or_consent_required"},403);
    if(/already_graded|nonanswer_already_scored/i.test(m))return json({status:"already_handled",saved_answer:true});
    if(/invalid_task|unsupported_course_or_kind/i.test(m))return json({error:"invalid_task"},400);
