@@ -180,7 +180,7 @@ begin
      select id from leased returning job_id
   )
   select leased.* from leased join metered on metered.job_id=leased.id;
-end $;
+end $$;
 
 -- Only the worker holding the current lease can atomically save a grade.
 -- No stale response may overwrite a student's later work.
