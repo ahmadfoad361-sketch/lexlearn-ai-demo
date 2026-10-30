@@ -142,10 +142,16 @@ async function mount(host,opts){
   var button=host.querySelector("#officialSaveAnswer");
   button.onclick=async function(){
    var v=host.querySelector("#officialEssayAnswer").value.trim();
-   if(v.length<4){host.querySelector("#officialSaveMessage").textContent=t("اكتب إجابة مكونة من أربع حروف على الأقل.","Write at least four characters.");return;}
+   if(v.length<3){host.querySelector("#officialSaveMessage").textContent=t("اكتب إجابة مفهومة أو وضّح أنك لا تعرف.","Write a meaningful answer, or say that you do not know.");return;}
    button.disabled=true;
    try{
     var reply=await cloud.studentLifecycleRpc("submitLevelOne",{courseId:COURSE_ID,itemId:next.id,answer:v});
+    if(reply&&reply.status==="hint_required"){
+     var hint=host.querySelector("#officialSaveMessage");
+     if(hint)hint.textContent=String((lang==="en"?reply.hint_en:reply.hint_ar)||t("راجع عنصرًا من القاعدة ثم حاول الإجابة بطريقتك.","Think about an element of the rule and try again."));
+     button.disabled=false;
+     return;
+    }
     if(!reply||!reply.allowed||!Array.isArray(reply.saved)||!byId(reply.saved,next.id))throw Error("level_one_answer_not_confirmed");
     var readback=await cloud.studentLifecycleRpc("firstLevel",{courseId:COURSE_ID});
     if(!readback||!readback.allowed||!Array.isArray(readback.saved)||!byId(readback.saved,next.id))throw Error("level_one_readback_failed");
