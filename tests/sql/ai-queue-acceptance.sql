@@ -81,4 +81,22 @@ do $$begin
  then raise exception 'remaining jobs were lost'; end if;
 end $$;
 reset role;
-select 'PASS 500 queued students / 4 leased / 1 audited / no data crossover' as result;
+-- No student can retrieve a worker lease token even for their own job.
+do $begin
+ if has_column_privilege('authenticated','public.lex_ai_queue_jobs','lease_token','select') then
+   raise exception 'student has permission to read sensitive queue lease token';
+ end if;
+ if has_column_privilege('authenticated','public.lex_ai_queue_jobs','result','select') then
+   raise exception 'student must not download raw worker result';
+ end if;
+end $;
+set role authenticated;
+select set_config('request.jwt.claim.sub','00000000-0000-4000-8000-000000000001',false);
+do $
+declare n int;
+begin
+ select count(*) into n from public.lex_ai_queue_jobs;
+ if n<>1 then raise exception 'RLS scope violation: expected 1 own job, got %',n; end if;
+end $;
+reset role;
+select 'PASS 500 queued students / 4 leased / 1 audited / no data crossover / RLS' as result;
