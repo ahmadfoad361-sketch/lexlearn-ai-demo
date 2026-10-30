@@ -1,0 +1,42 @@
+const fs=require("node:fs"),vm=require("node:vm"),assert=require("node:assert/strict");
+const root={LEX_ACADEMIC:{university:x=>x,faculty:x=>x}};
+let scanned="";
+function qr(){return {addData(text){scanned=text;},make(){},createSvgTag(){return "<svg viewBox='0 0 8 8'></svg>";}};}
+qr.stringToBytesFuncs={"UTF-8":v=>v};
+root.qrcode=qr;
+const context=vm.createContext({window:root,document:{documentElement:{lang:"ar"}},console,Image:function(){}});
+function load(name){vm.runInContext(fs.readFileSync("assets/"+name,"utf8"),context,{filename:name});}
+load("card-branding.js");load("student-identity.js");load("instructor-card.js");
+const brand=root.LEX_CARD_BRAND;
+assert.ok(brand.wordmark().includes("cardWordLex")&&brand.wordmark().includes("cardWordLearn"));
+assert.ok(brand.universityBlock("جامعة عجمان","كلية القانون").includes("AU"),"unverified logos use neutral monogram");
+assert.equal(brand.entry("Qatar University").key,"qu");
+assert.equal(brand.nameClass("احمد"),"cardName");
+const professor={profile:{name:"أحمد فؤاد الفقي",academic_title:"دكتور",official_email:"faculty@example.edu",specialization:"القانون المدني"},
+ assignments:[{university:"جامعة لوسيل",faculty:"كلية القانون"},{university:"Qatar University",faculty:"College of Law"}]};
+let p=root.LEX_INSTRUCTOR_CARD.details(professor);
+assert.equal(p.university,"جامعة لوسيل");
+assert.equal(p.faculty,"كلية القانون");
+assert.equal(p.username,"faculty@example.edu");
+assert.equal(root.LEX_INSTRUCTOR_CARD.details(professor,1).university,"Qatar University");
+let code=JSON.parse(root.LEX_INSTRUCTOR_CARD.payload(p));
+assert.equal(code.username,p.username);assert.equal(code.card_type,"faculty");
+assert.ok(!JSON.stringify(code).match(/password|secret|token/));
+let card=root.LEX_INSTRUCTOR_CARD.card(p);
+assert.ok(card.includes("Lex")&&card.includes("Learn"));
+assert.ok(card.includes("جامعة لوسيل"));assert.ok(!card.includes("Qatar University"));
+assert.ok(card.includes("faculty@example.edu"));assert.ok(!card.includes("ليكس ليرن"));
+let student={display_name:"أحمد خالد",username:"student27",university:"جامعة عجمان",faculty:"كلية القانون",year_label:"الفرقة الأولى",lexlearn_number:27,country_code:"ae"};
+code=JSON.parse(root.LEX_IDENTITY.payload(student));
+assert.equal(code.username,"student27");assert.equal(code.card_id,"LL-000027");assert.equal(code.card_type,"student");assert.ok(!JSON.stringify(code).match(/password|secret|token/));
+card=root.LEX_IDENTITY.card(student);
+assert.ok(card.includes("student27")&&card.includes("جامعة عجمان")&&card.includes("LL-000027"));
+assert.ok(!card.includes("ليكس ليرن"));
+const pdf=fs.readFileSync("assets/student-card-pdf.js","utf8");
+assert.ok(pdf.includes("Lex")&&pdf.includes("Learn")&&pdf.includes("api.payload(p)"));
+assert.ok(!/ليكس\s*ليرن|ليسك\s*ليرن/.test(pdf));
+const faculty=fs.readFileSync("assets/instructor-dashboard.js","utf8");
+assert.ok(faculty.includes("split(/\\s+/)"));
+const instructorUI=fs.readFileSync("assets/admin-instructors.js","utf8");
+assert.ok(instructorUI.includes("validDoctorName"));
+console.log("PASS faculty/student card brand, one university, QR username without password, name editing, PDF branding");

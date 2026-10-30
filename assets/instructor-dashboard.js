@@ -118,7 +118,7 @@ async function saveProfile(e){
  e.preventDefault();const f=new FormData(e.currentTarget);
  el("profileStatus").textContent="جارٍ الحفظ…";
  try{
-  const name=String(f.get("name")||"").trim();if(name.split(/\s+/).filter(Boolean).length<2)throw Error("name");
+  const name=String(f.get("name")||"").trim();if(name.replace(/^(?:(?:دكتور|الدكتور|أستاذ|الاستاذ|الأستاذ|د\.|Dr\.?|Prof\.?)\s+)+/iu,"").split(/\s+/).filter(Boolean).length<2)throw Error("name");
   const patch={academic_title:f.get("academic_title"),specialization:f.get("specialization"),
    bio:f.get("bio"),whatsapp:f.get("whatsapp")};
   const r=await C.rpc("lex_instructor_update_profile",{p_data:patch});
