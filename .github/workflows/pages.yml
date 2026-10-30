@@ -71,6 +71,8 @@ jobs:
           node tests/showcase-recall.test.js
           node tests/showcase-delivery.test.js
           node tests/showcase-semantic.test.mjs
+      - name: Student archive integrity and privacy (500 synthetic students)
+        run: node tests/student-archive-integrity-500.test.js
       - name: Supervisor tree and academic identity checks
         run: |
           node tests/academic-picker.test.js
