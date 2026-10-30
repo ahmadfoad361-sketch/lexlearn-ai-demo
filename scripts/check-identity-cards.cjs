@@ -47,4 +47,13 @@ assert.ok(ctx.window.LEX_CARD_BRAND.logo("جامعة عجمان").includes("ae-a
 assert.equal(ctx.window.LEX_CARD_BRAND.logo("غير محددة"),"");
 assert.match(source("assets/university-picker-decor.js"),/academicOptions/);
 assert.match(source("assets/student-card-pdf.js"),/crossOrigin/);
+assert.match(studentCard,/cardAffiliationCrestOnly/);
+assert.doesNotMatch(studentCard,/<strong class="cardUniversityName"/);
+assert.match(facultyCard,/cardAffiliationCrestOnly/);
+assert.doesNotMatch(facultyCard,/<strong class="cardUniversityName"/);
+assert.match(ctx.window.LEX_CARD_BRAND.universityBlock("جامعة طنطا","كلية الحقوق"),/cardFacultyStandalone/);
+assert.match(ctx.window.LEX_CARD_BRAND.logo("جامعة طنطا"),/eg-tanta.*crest-20261030/);
+assert.doesNotMatch(pdfSource,/fillText\(String\(p\.university/);
+assert.match(pdfSource,/standalone university crest/i);
+
 console.log("PASS branded student/faculty identity, selected university, QR username, no password, PDF payload");
