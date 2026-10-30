@@ -83,6 +83,16 @@ for(const page of measuredPages){
  html=html.replace('</body>','<script src="assets/site-analytics.js" defer></script></body>');fs.writeFileSync(full,html);
 }
 
+// Attendance should never be visible to students or professors outside the staff report.
+for(const required of ["student.html","student-path.html","student-practice.html","instructor.html"]){
+ if(!fs.readFileSync(path.join(out,required),"utf8").includes('assets/site-analytics.js'))
+  throw new Error("Account presence tracker missing from "+required);
+}
+if(!fs.readFileSync(path.join(out,"assets/admin-analytics.js"),"utf8").includes('accountSessions'))
+ throw new Error("Supervisor attendance detail link missing");
+if(fs.readFileSync(path.join(out,"assets/instructor-dashboard.js"),"utf8").includes("الساعات المكتبية"))
+ throw new Error("Unused instructor office hours still exposed");
+
 // A shared brand wordmark also covers dashboards whose headers render after login.
 for(const page of pages){
  if(!page.endsWith('.html')||page==='go/index.html')continue;
