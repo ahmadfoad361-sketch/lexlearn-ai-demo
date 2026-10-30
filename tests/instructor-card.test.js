@@ -13,5 +13,6 @@ assert.equal(p.university,'جامعة عجمان');assert.equal(p.faculty,'كل�
 const html=api.card(p);assert.match(html,/أستاذ جامعي · FACULTY/);assert.match(html,/&lt;script&gt;/);assert.doesNotMatch(html,/<script>|TRAINEE|SECRET|private/);
 const payload=JSON.parse(api.payload(p));assert.equal(payload.role,'faculty');assert.doesNotMatch(JSON.stringify(payload),/private|SECRET|password|students/);
 api.open(roster,()=>{});assert.equal(elements.instructorCardDialog.open,true);
+assert.match(elements.instructorCardDialog.innerHTML,/aria-label="إغلاق البطاقة"[^>]*>×<\/button>/);
 elements.printFacultyCard.onclick();assert.match(elements.facultyCardStatus.textContent,/اسمح/);
 (async()=>{await elements.downloadFacultyCard.onclick();assert.equal(elements.downloadFacultyCard.disabled,false);assert.match(elements.facultyCardStatus.textContent,/تم تجهيز/);elements.closeFacultyCard.onclick();assert.equal(elements.instructorCardDialog.open,false);console.log('PASS: faculty card identity, private QR, escaping, modal, blocked-popup feedback and PDF download');})().catch(e=>{console.error(e);process.exitCode=1;});

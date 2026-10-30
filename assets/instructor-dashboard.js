@@ -53,9 +53,13 @@ function updateProfileBadge(){
  badge.innerHTML='<span class="instructorIdentityAvatar" aria-hidden="true">'+esc((p.name||"د").trim().slice(0,1))+'</span><span><b>'+esc(p.academic_title||"دكتور")+' '+esc(p.name||"")+'</b><small>ملفي الشخصي · عضو هيئة التدريس</small></span>';
  badge.onclick=e=>{e.preventDefault();window.LEX_INSTRUCTOR_CARD.open(state.roster,()=>render(true));};
 }
+function bindLogout(){
+ const button=el("instructorLogout");
+ if(button)button.onclick=async()=>{await LEX_CLOUD.signOut();location.replace("instructor-login.html");};
+}
 function profile(){
  const p=state.roster.profile||{};
- return '<section class="panel" id="instructorProfile"><div class="profileHero"><div class="brand"><div class="avatar">د</div><div><span class="eyebrow">بطاقة دكتور جامعة</span><h1>'+esc(p.academic_title||"دكتور")+' '+esc(p.name||"")+'</h1><p>'+esc(p.official_email||"")+'</p><small>'+esc(p.specialization||"التخصص غير مدخل")+'</small></div></div><div class="actions"><button class="primary" id="openInstructorCard">بطاقتي التعريفية</button><button class="secondary" id="editProfile">تعديل ملفي</button></div></div>'+
+ return '<section class="panel" id="instructorProfile"><div class="facultyProfileHeading"><span class="eyebrow">بطاقة دكتور جامعة</span><button type="button" id="instructorLogout" class="facultyLogout">تسجيل الخروج</button></div><div class="profileHero"><div class="brand"><div class="avatar">د</div><div><h1>'+esc(p.academic_title||"دكتور")+' '+esc(p.name||"")+'</h1><p>'+esc(p.official_email||"")+'</p><small>'+esc(p.specialization||"التخصص غير مدخل")+'</small></div></div><div class="actions"><button class="primary" id="openInstructorCard">بطاقتي التعريفية</button><button class="secondary" id="editProfile">تعديل ملفي</button></div></div>'+
  '<div class="grid"><div><b>واتساب التواصل</b><p>'+esc(p.whatsapp||"—")+'</p></div><div><b>الساعات المكتبية</b><p>'+esc(p.office_hours||"—")+'</p></div></div>'+
  '<p>'+esc(p.bio||"")+'</p></section>';
 }
@@ -100,6 +104,7 @@ function groupIntro(){return '<section class="panel"><div class="toolbar"><div><
 function render(showEdit=false){
  updateProfileBadge();
  APP.innerHTML=profile()+(showEdit?editForm():"")+assignments()+roster()+groupIntro();
+ bindLogout();
  el("editProfile").onclick=()=>render(true);
  el("openInstructorCard").onclick=()=>window.LEX_INSTRUCTOR_CARD.open(state.roster,()=>render(true));
  if(el("profileEdit")){el("cancelEdit").onclick=()=>render(false);el("profileEdit").onsubmit=saveProfile;
@@ -178,9 +183,10 @@ async function reload(){
  const c=await LEX_CLOUD.profile();
  if(!c||c.role!=="instructor"||c.active!==true)throw Error("FORBIDDEN");
  if(c.must_change_password){
-  APP.innerHTML='<section class="panel"><h1>تعيين كلمة مرور دائمة للدكتور</h1><p>لأمان بيانات الطلاب، يجب تغيير كلمة المرور المؤقتة قبل عرض أي سجل تعليمي.</p>'+
+  APP.innerHTML='<section class="panel"><div class="facultyProfileHeading"><span class="eyebrow">حساب الأستاذ الجامعي</span><button type="button" id="instructorLogout" class="facultyLogout">تسجيل الخروج</button></div><h1>تعيين كلمة مرور دائمة للدكتور</h1><p>لأمان بيانات الطلاب، يجب تغيير كلمة المرور المؤقتة قبل عرض أي سجل تعليمي.</p>'+
    '<form id="firstProfessorPassword">'+passwordFields()+
    '<button type="submit" class="primary">حفظ كلمة المرور الجديدة</button><p id="activateMessage" role="status" aria-live="polite"></p></form></section>';
+  bindLogout();
   document.getElementById("firstProfessorPassword").onsubmit=async e=>{
    e.preventDefault();await savePasswordAndRelogin(e.currentTarget,"activateMessage");
   };
@@ -192,6 +198,5 @@ async function reload(){
  state.assignment=state.assignment||(r.data.assignments||[])[0]?.id||"";
  render();
 }
-el("instructorLogout").onclick=async()=>{await LEX_CLOUD.signOut();location.replace("instructor-login.html");};
 reload().catch(()=>APP.innerHTML='<section class="panel danger"><h2>تعذر فتح حساب الدكتور</h2><p>لا توجد صلاحية تدريس نشطة للحساب، أو لا توجد بيانات أكاديمية مكتملة. تواصل مع المشرف.</p><a href="instructor-login.html">العودة لتسجيل الدخول</a></section>');
 })();

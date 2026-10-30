@@ -18,6 +18,7 @@ const CHROME=[process.env.CHROME_BIN,"/usr/bin/google-chrome","/usr/bin/google-c
     assert.equal(await p.locator('header a[href="admin-login.html"]').count(),0,'supervisor entry is absent from the header');
     const professor=p.locator((en?'.en-hero':'.qualityHero')+' a[href="instructor-login.html"]');
     await professor.waitFor();assert.ok(await professor.isVisible(),'professor login is with student actions');
+    if(mobile){const demo=await p.locator('.qualityDemoAction').boundingBox(),faculty=await professor.boundingBox();assert.ok(faculty.y>=demo.y+demo.height,'professor entry follows the demo on phones');}
     const entry=p.locator(en?'footer .homeStaffLink':'.qualityMethod a[href="admin-login.html"]');await entry.waitFor();
     assert.equal(await entry.textContent(),en?'Supervisor login':'دخول المشرف');
     for(const theme of ['light','dark']){

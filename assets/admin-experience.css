@@ -289,3 +289,5 @@ html[data-learner-theme="dark"] .adminNavGroup[open]>summary,html[data-learner-t
 .cohortProfessorList{margin-top:12px;border-top:1px solid var(--ad-line,#ded5cb);padding-top:11px;font-size:15px}
 .cohortProfessorList p{color:var(--ad-muted,#536176);margin:4px 0;line-height:1.8}
 @media(max-width:720px){.cohortGridManagement{grid-template-columns:1fr}.cohortManaged{padding:16px!important}.cohortButtons .btn{flex:1 1 45%}.cohortStudentButton{font-size:16px}}
+
+html[data-learner-theme] .topLink#logout{width:auto;min-height:44px;padding:6px 10px;border:0;border-radius:0;background:transparent;color:var(--ad-ink);box-shadow:none;white-space:nowrap}
