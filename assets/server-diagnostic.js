@@ -171,10 +171,40 @@ async function startUI(){
        try{await cloud.studentLifecycleRpc("reviewDiagnostic",{courseId:COURSE_ID});}
        catch(e){if(root.console&&root.console.warn)root.console.warn("Provisional diagnostic review pending:",String(e&&e.message||e));}
       }
-      if(aiRequested){try{await cloud.gradeDiagnosticAi();}catch(_){}}
+      var queuedDiagnostic=null;
+      if(aiRequested)try{
+       var queued=await cloud.gradeDiagnosticAi();
+       if(queued&&["queued","processing"].includes(queued.status))queuedDiagnostic=queued.job_id;
+      }catch(_){}
       var check=await cloud.studentLifecycleRpc("status",{courseId:COURSE_ID});
       if(check.status!=="completed"||check.attempt_id!==reply.attempt_id)throw new Error("completion_readback_failed");
       saving=false;await showCompleted(check);
+      if(queuedDiagnostic&&cloud.gradeQueueStatus){
+       var note=root.document.createElement("p");
+       note.setAttribute("role","status");
+       note.textContent=tr("إجابتك محفوظة وفي طابور التصحيح؛ سيظهر تقدير الحفظ عند اكتماله.","Your answer is saved and queued; your recall estimate will appear when ready.");
+       area.appendChild(note);
+       (function followDiagnostic(jobId,tryNumber){
+        if(tryNumber>=20)return;
+        root.setTimeout(async function(){
+         if(root.document.hidden){followDiagnostic(jobId,tryNumber+1);return;}
+         try{
+          var current=await cloud.gradeQueueStatus(jobId);
+          if(current.status==="completed"){
+           var refreshed=await cloud.studentLifecycleRpc("status",{courseId:COURSE_ID});
+           if(refreshed.status==="completed"&&refreshed.attempt_id===reply.attempt_id)
+            await showCompleted(refreshed);
+           return;
+          }
+          if(current.status==="review_required"){
+           note.textContent=tr("الإجابة محفوظة لكن تصحيح الحفظ يحتاج مراجعة؛ لن تُحتسب صفرًا تلقائيًا.","Answer saved; recall assessment needs review and is not scored zero.");
+           return;
+          }
+         }catch(_){}
+         followDiagnostic(jobId,tryNumber+1);
+        },18000+Math.floor(Math.random()*8000));
+       })(queuedDiagnostic,0);
+      }
      }
     }catch(e){error.textContent=tr("تعذّر حفظ هذه الخطوة. إجابتك ما زالت موجودة؛ حاول مرة أخرى، وإذا استمرت المشكلة تواصل مع المشرف.","Could not save this step. Your answer is still here; retry or contact the supervisor.");saving=false;var btn=root.document.getElementById("serverNext");if(btn)btn.disabled=false;}
    };

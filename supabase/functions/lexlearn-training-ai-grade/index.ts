@@ -27,6 +27,20 @@ Deno.serve(async(req:Request)=>{
    if(history.error||diagnostic.error)return json({error:"summary_unavailable"},503);
    return json(summarize(history.data||[],diagnostic.data?.result));
   }
+  // Queue rollout is database-gated. Until enabled, the existing grading path is unchanged.
+  // If the queue is enabled, NEVER fall back to inline paid grading on an error.
+  const mode=await admin.from("lex_ai_queue_settings").select("enabled").eq("id",true).maybeSingle();
+  if(mode.error&&mode.error.code!=="42P01")return json({error:"queue_control_unavailable"},503);
+  if(mode.data?.enabled){
+   try{
+    const deferred=await fetch(Deno.env.get("SUPABASE_URL")+"/functions/v1/lexlearn-ai-enqueue",{
+     method:"POST",headers:{Authorization:req.headers.get("Authorization")||"",apikey:Deno.env.get("SUPABASE_ANON_KEY")||"",
+       "Content-Type":"application/json"},
+     body:JSON.stringify({kind:"training",session:body.session,item_id:body.item_id}),signal:AbortSignal.timeout(15000)});
+    return new Response(await deferred.text(),{status:deferred.status,
+      headers:{...corsHeaders,"Content-Type":"application/json; charset=utf-8","Cache-Control":"no-store"}});
+   }catch{return json({error:"queue_endpoint_unavailable",saved_answer:true},503);}
+  }
   const consent=await admin.from("consent_records").select("accepted,notice_version").eq("user_id",user.id).eq("consent_type","external_ai_grading").order("created_at",{ascending:false}).limit(1).maybeSingle();
   if(consent.error||consent.data?.accepted!==true||consent.data?.notice_version!=="lexlearn-ai-grading-v1")return json({error:"external_ai_consent_required"},403);
   const session=body.session,itemId=String(body.item_id||"");

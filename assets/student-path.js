@@ -156,14 +156,41 @@ async function boot(){
   var data=null,busy=false,progressRows=[],historyAvailable=false,adaptation=null,acceptedAi=false,aiUnavailable=false,gradingIssue="",studyRead=false;
   try{if(cloud.getConsent)acceptedAi=!!await cloud.getConsent("lexlearn-ai-grading-v1","external_ai_grading");}catch(_){}
   function gradingMessage(){
+   if(gradingIssue==='queued')return t("إجابتك محفوظة وفي طابور التصحيح. ستظهر النتيجة تلقائيًا عند اكتمالها، دون احتساب صفر أثناء الانتظار.","Your answer is saved and queued for assessment. The result appears after processing; waiting is not a zero.");
    if(gradingIssue==='approved_rubric_required'||gradingIssue==='approved_sources_required')return t("لم تتمكن الخدمة من تحميل معايير السؤال ومصادره. إجابتك محفوظة؛ أعد التصحيح من الزر أدناه.","The question criteria or sources could not load. Your answer is saved; retry below.");
    if(gradingIssue==='answer_retry_limit')return t("لم نحصل على نتيجة مؤكدة بعد المحاولات المتاحة لهذه الإجابة. إجابتك محفوظة ولم تُحتسب صفرًا.","No confirmed result was obtained within this answer’s retry allowance. Your answer is saved and has not been scored zero.");
    if(gradingIssue==='provider_timeout')return t("استغرق التصحيح وقتًا أطول من المتاح. إجابتك محفوظة؛ أعد التصحيح من الزر أدناه.","Assessment took longer than the available time. Your answer is saved; retry below.");
    return t("لم يكتمل التصحيح الآلي. إجابتك محفوظة؛ أعد التصحيح من الزر أدناه لتظهر النتيجة والملاحظات.","Automatic assessment did not complete. Your answer is saved; retry below to see the result and feedback.");
   }
+  // Poll only the current student's queued job with jitter, not all 500 students' data.
+  function followQueue(jobId,attempt){
+   if(!jobId||!cloud.gradeQueueStatus||attempt>=20)return;
+   root.setTimeout(async function(){
+    if(root.document.hidden){followQueue(jobId,attempt+1);return;}
+    try{
+     var status=await cloud.gradeQueueStatus(jobId);
+     if(status.status==="completed"||status.status==="review_required"){
+      if(busy){followQueue(jobId,attempt+1);return;}
+      var fresh=await cloud.studentLifecycleRpc("trainingOpen",{courseId:COURSE,session:selected});
+      if(!fresh||!fresh.allowed||!Array.isArray(fresh.saved))return;
+      data=fresh;aiUnavailable=status.status!=="completed";
+      gradingIssue=status.status==="completed"?"":"assessment_unconfirmed";
+      await refreshAdaptation();if(data.completed)await loadProgress();render();return;
+     }
+    }catch(_){}
+    followQueue(jobId,attempt+1);
+   },18000+Math.floor(Math.random()*8000));
+  }
   async function requestAssessment(itemId){
-   try{var result=await cloud.gradeTrainingAi(selected,itemId);if(!result||!(result.status==="preliminary_ai"||result.status==="nonanswer_zero"))gradingIssue=result&&result.reason||"assessment_unconfirmed";return result;}
-   catch(error){gradingIssue=error&&error.code||error&&error.message||"assessment_unavailable";throw error;}
+   try{
+    var result=await cloud.gradeTrainingAi(selected,itemId);
+    if(result&&["queued","processing"].includes(result.status)){
+     gradingIssue="queued";followQueue(result.job_id,0);return result;
+    }
+    if(!result||!(result.status==="preliminary_ai"||result.status==="nonanswer_zero"))
+      gradingIssue=result&&result.reason||"assessment_unconfirmed";
+    return result;
+   }catch(error){gradingIssue=error&&error.code||error&&error.message||"assessment_unavailable";throw error;}
   }
   async function refreshAdaptation(){
    if(cloud.trainingAiSummary)try{adaptation=await cloud.trainingAiSummary();}catch(_){adaptation=null;}

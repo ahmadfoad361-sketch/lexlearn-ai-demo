@@ -41,6 +41,7 @@ function environment({consent=true,providerFailure=false}={}){
   const q={select(){return q;},eq(k,v){filters.push([k,v]);return q;},gte(){return q;},order(){return q;},limit(){return q;},in(){return q;},
    update(v){operation="update";payload=v;return q;},insert(v){operation="insert";payload=v;return q;},single(){return Promise.resolve(result());},maybeSingle(){return Promise.resolve(result());},then(ok,bad){return Promise.resolve(result()).then(ok,bad);}};
   function result(){
+   if(table==="lex_ai_queue_settings")return {data:{enabled:false}};
    if(table==="enrollments")return {data:{status:"active"}};
    if(table==="consent_records")return {data:{accepted:consent,notice_version:"lexlearn-ai-grading-v1"}};
    if(table==="content_items"){
