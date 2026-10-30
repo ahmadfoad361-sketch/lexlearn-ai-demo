@@ -39,10 +39,10 @@ function feedbackHtml(entry,lang){
    esc(ar?ev.feedback_ar:ev.feedback_en)+"</p>"+(detailed?"<ul class='criterionFeedback'>"+detailed+"</ul>":"")+
    "<small>"+phrase(lang,"تقييم تدريبي غير معتمد جامعيًا؛ يحق للمشرف مراجعته.","Non-certified practice feedback, subject to instructor oversight.")+"</small></section>";
  }
- var hasScore=typeof ev.provisional_percent==="number"&&Number.isFinite(ev.provisional_percent);
- var score=hasScore?Math.round(Math.max(0,Math.min(100,ev.provisional_percent)))+"%":(ar?"التقييم الآلي غير مكتمل":"Automatic evaluation incomplete");
- return "<div class='legalBox' role='status'><b>"+(ar?"تقييم المحرك الداخلي المبدئي: ":"Preliminary internal assessment: ")+esc(score)+"</b>"+
-  "<p>"+(ar?"النسبة أولية وليست درجة نهائية؛ يفحص المحرك العناصر القانونية والعلاقات ولا يعتمد على طول الإجابة وحده. المشرف يستطيع مراجعتها.":"This provisional percentage checks identifiable legal elements and relationships, not answer length. Supervisors may review it; it is not a final grade.")+"</p>"+
+ // Keyword matching alone is not a legal grade. Hide its numeric percentage until semantic validation.
+ var nonanswer=ev.status==="nonanswer_zero";
+ return "<div class='legalBox' role='status'><b>"+(nonanswer?phrase(lang,"درجة السؤال: 0%","Task score: 0%"):phrase(lang,"الإجابة محفوظة — التصحيح الدلالي قيد الاستكمال","Answer saved — semantic assessment pending"))+"</b>"+
+  "<p>"+(nonanswer?phrase(lang,"الإجابة غير قابلة للتقييم لغياب معنى قانوني واضح.","The answer has no assessable legal meaning."):phrase(lang,"التحليل الداخلي يقيس مؤشرات نصية فقط ولا يثبت صحة الإجابة. تظهر الدرجة بعد اكتمال التصحيح الدلالي وفق المعايير.","Internal analysis detects textual indicators only; it is not a verified legal grade. A score appears after rubric-based semantic assessment."))+"</p>"+
   (list(ev.criteria_met)?"<p>"+(ar?"عناصر متحققة مبدئيًا:":"Elements found:")+"</p><ul>"+list(ev.criteria_met)+"</ul>":"")+
   (list(ev.criteria_missing)?"<p>"+(ar?"عناصر تحتاج استكمالًا:":"Elements needing work:")+"</p><ul>"+list(ev.criteria_missing)+"</ul>":"")+
   (ev.reason?"<p>"+esc(ev.reason)+"</p>":"")+"</div>";
