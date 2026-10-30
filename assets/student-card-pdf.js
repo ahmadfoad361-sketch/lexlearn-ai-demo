@@ -1,7 +1,7 @@
 /* A6 card PDF. Rasterized Arabic preserves shaping in PDF viewers and at print time. */
 (function(root){'use strict';
 function pdf(jpeg,width,height){var encoder=new TextEncoder(),parts=[],offsets=[0],size=0;function add(v){var bytes=typeof v==='string'?encoder.encode(v):v;parts.push(bytes);size+=bytes.length;}function obj(n,body){offsets[n]=size;add(n+' 0 obj\n');add(body);add('\nendobj\n');}add('%PDF-1.4\n');obj(1,'<< /Type /Catalog /Pages 2 0 R >>');obj(2,'<< /Type /Pages /Kids [3 0 R] /Count 1 >>');obj(3,'<< /Type /Page /Parent 2 0 R /MediaBox [0 0 297.6378 419.5276] /Resources << /XObject << /Card 5 0 R >> >> /Contents 4 0 R >>');var stream='q\n297.6378 0 0 419.5276 0 0 cm\n/Card Do\nQ\n';obj(4,'<< /Length '+encoder.encode(stream).length+' >>\nstream\n'+stream+'endstream');offsets[5]=size;add('5 0 obj\n<< /Type /XObject /Subtype /Image /Width '+width+' /Height '+height+' /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length '+jpeg.length+' >>\nstream\n');add(jpeg);add('\nendstream\nendobj\n');var xref=size;add('xref\n0 6\n0000000000 65535 f \n');for(var i=1;i<=5;i++)add(String(offsets[i]).padStart(10,'0')+' 00000 n \n');add('trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n'+xref+'\n%%EOF');return new Blob(parts,{type:'application/pdf'});}
-async function image(src){var img=new Image();img.src=src;await img.decode();return img;}
+async function image(src){var img=new Image();img.crossOrigin='anonymous';img.src=src;await img.decode();return img;}
 async function create(p,cardApi){
  var api=cardApi||root.LEX_IDENTITY,brand=root.LEX_CARD_BRAND;
  if(!api.allowUnnumbered&&!api.number(p))throw Error('missing_number');
