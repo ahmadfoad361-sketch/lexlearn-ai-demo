@@ -78,6 +78,8 @@ jobs:
           node tests/admin-navigation-login-help.test.js
           node tests/instructor-password-session.test.js
           node tests/instructor-summary-privacy.test.js
+          node tests/instructor-card.test.js
+          node tests/professor-entry-links.test.js
           node tests/supervisor-country-tree.test.js
           node tests/supervisor-cohort-management.test.js
           node tests/student-academic-profile-update.test.js

@@ -51,11 +51,11 @@ function updateProfileBadge(){
  if(!badge){badge=document.createElement("a");badge.id="instructorIdentityLink";badge.className="instructorIdentityLink";document.body.appendChild(badge);}
  badge.href="#instructorProfile";badge.setAttribute("aria-label","فتح ملفي الشخصي");
  badge.innerHTML='<span class="instructorIdentityAvatar" aria-hidden="true">'+esc((p.name||"د").trim().slice(0,1))+'</span><span><b>'+esc(p.academic_title||"دكتور")+' '+esc(p.name||"")+'</b><small>ملفي الشخصي · عضو هيئة التدريس</small></span>';
- badge.onclick=e=>{e.preventDefault();render(true);const section=el("instructorProfile");section.scrollIntoView({block:"start",behavior:window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches?"instant":"smooth"});const input=document.querySelector('#profileEdit input');if(input)input.focus({preventScroll:true});};
+ badge.onclick=e=>{e.preventDefault();window.LEX_INSTRUCTOR_CARD.open(state.roster,()=>render(true));};
 }
 function profile(){
  const p=state.roster.profile||{};
- return '<section class="panel" id="instructorProfile"><div class="profileHero"><div class="brand"><div class="avatar">د</div><div><span class="eyebrow">بطاقة دكتور جامعة</span><h1>'+esc(p.academic_title||"دكتور")+' '+esc(p.name||"")+'</h1><p>'+esc(p.official_email||"")+'</p><small>'+esc(p.specialization||"التخصص غير مدخل")+'</small></div></div><button class="secondary" id="editProfile">تعديل ملفي</button></div>'+
+ return '<section class="panel" id="instructorProfile"><div class="profileHero"><div class="brand"><div class="avatar">د</div><div><span class="eyebrow">بطاقة دكتور جامعة</span><h1>'+esc(p.academic_title||"دكتور")+' '+esc(p.name||"")+'</h1><p>'+esc(p.official_email||"")+'</p><small>'+esc(p.specialization||"التخصص غير مدخل")+'</small></div></div><div class="actions"><button class="primary" id="openInstructorCard">بطاقتي التعريفية</button><button class="secondary" id="editProfile">تعديل ملفي</button></div></div>'+
  '<div class="grid"><div><b>واتساب التواصل</b><p>'+esc(p.whatsapp||"—")+'</p></div><div><b>الساعات المكتبية</b><p>'+esc(p.office_hours||"—")+'</p></div></div>'+
  '<p>'+esc(p.bio||"")+'</p></section>';
 }
@@ -101,6 +101,7 @@ function render(showEdit=false){
  updateProfileBadge();
  APP.innerHTML=profile()+(showEdit?editForm():"")+assignments()+roster()+groupIntro();
  el("editProfile").onclick=()=>render(true);
+ el("openInstructorCard").onclick=()=>window.LEX_INSTRUCTOR_CARD.open(state.roster,()=>render(true));
  if(el("profileEdit")){el("cancelEdit").onclick=()=>render(false);el("profileEdit").onsubmit=saveProfile;
  el("changeProfessorPassword").onsubmit=e=>{e.preventDefault();return savePasswordAndRelogin(e.currentTarget,"passwordStatus");};}
  el("scopeSelect").onchange=e=>{state.assignment=e.target.value;state.report=null;state.selected="";render();};
