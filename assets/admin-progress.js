@@ -31,6 +31,37 @@ function conceptMap(learning){
    '<p>التدريب المقترح: '+esc(message(c.next_step))+'</p></article>';
  }).join("")+'</div>';
 }
+
+function gradedStageHistory(report){
+ const ordered=(Array.isArray(report?.answers)?report.answers:[]).filter(a=>{
+  const e=a.evaluation||{};
+  return (e.status==="preliminary_ai"&&e.rubric_version==="lexlearn-training-ai-v4"&&
+   num(e.provisional_percent)!==null&&e.provisional_percent>=0&&e.provisional_percent<=100)||
+   (e.status==="nonanswer_zero"&&e.provisional_percent===0);
+ }).sort((a,b)=>Number(a.session||0)-Number(b.session||0)||
+  String(a.submitted_at||"").localeCompare(String(b.submitted_at||""))||
+  String(a.item_id||"").localeCompare(String(b.item_id||"")));
+ const state={recall:[],understanding:[]},history=[];
+ ordered.forEach(a=>{
+  const dimKey=a.dimension;if(!Object.hasOwn(state,dimKey))return;
+  state[dimKey].push(a.evaluation.provisional_percent);
+  if(state[dimKey].length>3)state[dimKey].shift();
+  const avg=k=>state[k].length?Math.round(state[k].reduce((s,n)=>s+n,0)/state[k].length):null;
+  history.push({session:Number(a.session)||0,item_id:String(a.item_id||""),updated:dimKey,
+   recall:avg("recall"),understanding:avg("understanding")});
+ });
+ return history;
+}
+function gradedStageHistoryHtml(report){
+ const h=gradedStageHistory(report);
+ if(!h.length)return '<p class="notice">لم يكتمل بعد تصحيح إجابة قابلة للقياس.</p>';
+ return '<div class="tableScroll"><table class="dataTable"><thead><tr><th>مرحلة التصحيح</th><th>الحفظ</th><th>الفهم</th><th>المهارة المصححة</th></tr></thead><tbody>'+
+ h.map((v,i)=>'<tr><td>الجلسة '+v.session+' · التصحيح '+(i+1)+'</td><td><strong>'+score(v.recall)+'</strong></td>'+
+  '<td><strong>'+score(v.understanding)+'</strong></td><td>'+esc(dim(v.updated))+'</td></tr>').join("")+
+ '</tbody></table></div>'+
+ '<p class="notice">يُعاد بناء ترتيب المراحل من إجابات الطالب المحفوظة. النسب متوسط آخر ثلاث إجابات مصححة لكل مهارة حتى تلك المرحلة؛ وقد يختلف توقيت التصحيح عن تاريخ إرسال الإجابة. «لم يُقَس» تعني غياب دليل، وليس صفرًا.</p>';
+}
+
 function timeline(trends){
  const body=["recall","understanding"].map(k=>{
   const points=Array.isArray(trends?.[k])?trends[k]:[];
@@ -71,6 +102,7 @@ function renderStudent(r){
  '<div class="metric"><span>إجابات تنتظر تقييمًا</span><strong>'+Number(r.ungraded_answers||0)+'</strong></div></div>'+
  '<h3>خريطة الحفظ والفهم بحسب المفهوم</h3>'+conceptMap(l)+
  '<h3>تاريخ التقييم في الجلسات</h3>'+timeline(r.skill_trends)+
+ '<h3>نسب الحفظ والفهم بعد كل عملية تصحيح</h3>'+gradedStageHistoryHtml(r)+
  '<h3>سجل الإجابات والتصحيح والمعايير</h3>'+
  '<p>تظهر الإجابات والتعليلات كاملة للمشرف المفوض فقط، ولا تُعرض ضمن اللوحة الجماعية.</p>'+
  evidenceRows(r.answers)+

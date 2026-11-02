@@ -47,6 +47,34 @@ function feedbackHtml(entry,lang){
   (list(ev.criteria_missing)?"<p>"+(ar?"عناصر تحتاج استكمالًا:":"Elements needing work:")+"</p><ul>"+list(ev.criteria_missing)+"</ul>":"")+
   (ev.reason?"<p>"+esc(ev.reason)+"</p>":"")+"</div>";
 }
+
+function levelSkillScorecard(saved,lang,diagnostic){
+ var dims=["recall","understanding"],scores={};
+ dims.forEach(function(dim){
+  var matching=(saved||[]).filter(function(a){return a&&a.dimension===dim&&
+   (confirmedAi(a)||(a.evaluation?.status==="nonanswer_zero"&&a.evaluation?.provisional_percent===0));})
+   .map(function(a){return a.evaluation.provisional_percent;})
+   .filter(function(x){return typeof x==="number"&&Number.isFinite(x)&&x>=0&&x<=100;}).slice(-3);
+  var baseline=dim==="recall"?diagnostic?.measurements?.recall?.ai_grade:diagnostic?.metrics?.understanding;
+  var initial=dim==="recall"?(baseline?.status==="preliminary_ai"?baseline.provisional_percent:null):baseline;
+  if(matching.length)scores[dim]={percent:Math.round(matching.reduce(function(x,y){return x+y;},0)/matching.length),source:"level"};
+  else if(typeof initial==="number"&&Number.isFinite(initial)&&initial>=0&&initial<=100)scores[dim]={percent:Math.round(initial),source:"diagnostic"};
+  else scores[dim]={percent:null,source:"pending"};
+ });
+ return "<section class='levelSkillScorecard' role='status' aria-live='polite'><h3>"+
+  phrase(lang,"نسبتا الحفظ والفهم بعد التصحيح","Recall and understanding after assessment")+"</h3>"+
+  "<div class='levelScoreGrid'>"+dims.map(function(dim){
+   var item=scores[dim],name=dim==="recall"?phrase(lang,"الحفظ","Recall"):phrase(lang,"الفهم","Understanding");
+   var status=item.source==="level"?phrase(lang,"من إجابات هذا المستوى","From this level's graded answers"):
+    item.source==="diagnostic"?phrase(lang,"آخر قياس من التشخيص","Latest diagnostic measurement"):
+    phrase(lang,"لم يُقَس بعد — لا نضع صفرًا افتراضيًا","Not measured yet — no invented zero");
+   return "<div class='levelScoreTile'><b>"+name+"</b><strong>"+(item.percent===null?phrase(lang,"لم يُقَس بعد","Not measured yet"):item.percent+"%")+
+     "</strong><small>"+status+"</small></div>";
+  }).join("")+"</div><small>"+
+   phrase(lang,"مؤشرات تدريبية تُحدَّث عند اكتمال تصحيح كل إجابة. اختبار الحفظ والفهم ليس هو نفسه إثبات التحسن العلمي.","Practice indicators updated when each answer is graded. The two scores do not by themselves establish validated learning gains.")+
+   "</small></section>";
+}
+
 function adaptiveHint(lang,mode,dim){
  var hints={
   "recall-led":{recall:["استرجع العناصر دون الرجوع إلى النص.","Recall the elements without looking back."],
@@ -122,6 +150,7 @@ async function mount(host,opts){
     feedbackHtml(entry,lang)+(pending&&consented?"<button type='button' data-level-grade='"+esc(x.id)+"' "+(gradingBusy?"disabled":"")+">"+
     t("تصحيح الإجابة بالذكاء الاصطناعي","Assess this answer with AI")+"</button>":"")+"</section>";
   }).join("");
+  if(saved.length)previousResults+=levelSkillScorecard(saved,lang,opts&&opts.diagnostic);
   if(!next){
    host.innerHTML=summary+previousResults+"<section class='stage'><div class='taskCard'><span class='kicker'>"+t("اكتملت التمارين الثلاثة","All three tasks submitted")+"</span><h2>"+t("تم حفظ تدريب المستوى الأول","Level-one practice saved")+"</h2><p>"+t("كل الإجابات محفوظة، وبانتظار مراجعتها. لا يُفتح المستوى الثاني حتى يتحقق اعتماد التقدم من الخادم.","All answers are saved and pending review. Level two stays locked until server-verified completion.")+"</p><a class='secondary' href='"+(lang==="en"?"student-en":"student")+".html'>"+t("العودة إلى حساب الطالب","Back to student account")+"</a></div></section>";
    wireReviewActions();return;
