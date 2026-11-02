@@ -108,6 +108,37 @@ function confirmedGrade(ev){return !!(ev&&ev.status==="preliminary_ai"&&ev.rubri
  typeof ev.provisional_percent==="number"&&Number.isFinite(ev.provisional_percent)&&ev.provisional_percent>=0&&ev.provisional_percent<=100);}
 function deterministicZero(ev){return !!(ev&&ev.status==="nonanswer_zero"&&ev.provisional_percent===0);}
 function needsAssessment(v){return !confirmedGrade(v&&v.evaluation)&&!deterministicZero(v&&v.evaluation);}
+function stageSkillSnapshot(rows,session){
+ var output={recall:{percent:null,count:0,fresh:false},understanding:{percent:null,count:0,fresh:false}};
+ Object.keys(output).forEach(function(dim){
+  var matches=(rows||[]).filter(function(r){return r&&r.dimension===dim&&Number.isInteger(r.session_number)&&r.session_number<=session&&r.session_number>=1&&(confirmedGrade(r.evaluation)||deterministicZero(r.evaluation));})
+   .sort(function(a,b){return b.session_number-a.session_number||String(b.submitted_at||"").localeCompare(String(a.submitted_at||""));});
+  var latest=matches.slice(0,3);
+  if(latest.length){
+   output[dim].percent=Math.round(latest.reduce(function(sum,r){return sum+r.evaluation.provisional_percent;},0)/latest.length);
+   output[dim].count=latest.length;
+   output[dim].fresh=matches.some(function(r){return r.session_number===session;});
+  }
+ });
+ return output;
+}
+function stageSkillScorecard(rows,session){
+ var scores=stageSkillSnapshot(rows,session);
+ return "<section class='skillStageScorecard' role='status' aria-live='polite'><h3>"+
+   t("مقياس الحفظ والفهم بعد التصحيح","Recall and understanding after assessment")+"</h3>"+
+   "<div class='progressSkills'>"+["recall","understanding"].map(function(dim){
+    var v=scores[dim],has=v.percent!==null;
+    return "<article class='progressSkill'><h4>"+esc(weakName(dim))+"</h4><strong>"+
+      esc(has?noHtmlScore(v.percent):t("لم يُقَس بعد","Not measured yet"))+"</strong>"+
+      "<small>"+(has?(v.fresh?t("مُحدّث بتصحيح هذه الجلسة","Updated by this session"):
+      t("آخر قياس محفوظ سابقًا","Latest saved earlier measurement"))+
+      " · "+t("إجابات محسوبة: ","Scores used: ")+v.count:
+      t("في انتظار إجابة مصححة لهذه المهارة","Waiting for an assessed answer in this skill"))+"</small></article>";
+   }).join("")+"</div><p class='scope'>"+
+   t("كل نسبة متوسط آخر ثلاث إجابات مصححة لهذه المهارة حتى هذه الجلسة. إذا لم يُختبر أحد الجانبين، نظهر آخر قياس سابق له لا صفرًا افتراضيًا. النتائج تدريبية أولية.","Each percentage averages up to three accepted assessments in that skill through this session. Where a skill was not tested now, we show its last recorded measurement, never an invented zero. Results are preliminary practice indicators.")+
+   "</p></section>";
+}
+
 function feedback(item){
  var ev=item&&item.evaluation||{};
  if(deterministicZero(ev)){
@@ -207,7 +238,7 @@ async function boot(){
   async function loadProgress(){
    progressRows=(data.saved||[]).map(function(x){return Object.assign({},x,{session_number:selected});});historyAvailable=false;
    try{
-    var client=cloud.db(),from=Math.floor((selected-1)/5)*5+1;
+    var client=cloud.db(),from=1;
     var response=await client.from("student_training_answers").select("session_number,item_id,dimension,evaluation").eq("user_id",uid).eq("course_id",COURSE).gte("session_number",from).lte("session_number",selected).order("session_number",{ascending:true}).limit(250);
     if(response.error||!Array.isArray(response.data))return;
     var prior=response.data.filter(function(x){return x.session_number<selected;});
@@ -238,7 +269,7 @@ async function boot(){
     if(!result||!result.allowed||!Array.isArray(result.tasks)||!Array.isArray(result.saved))throw Error(result&&result.reason||"invalid_session");
     selected=n;data=result;studyRead=false;
     // Do not silently regrade saved work on navigation; use explicit retry controls.
-    await refreshAdaptation();if(data.completed)await loadProgress();busy=false;render();
+    await refreshAdaptation();await loadProgress();busy=false;render();
    }catch(e){reportError(e);}
   }
   function render(){
@@ -272,7 +303,7 @@ async function boot(){
    var resume=next?"<section class='learnerWelcome'><div><h2>"+t("تدريبك التالي جاهز","Your next practice is ready")+"</h2><p>"+t("إجاباتك السابقة محفوظة؛ أكمل خطوة واحدة الآن.","Your previous answers are saved. Continue one step at a time.")+"</p></div><a href='#currentPractice'>"+t("أكمل تدريبك","Continue practice")+"</a></section>":"";
    var main=resume+"<section class='stage'>"+lawNumberRail(data.tasks,lang())+"<h1>"+esc(name)+"</h1>"+why+
     "<p>"+t("أُرسلت ","Saved ")+saved.length+" / "+data.tasks.length+t(" إجابات محفوظة في حسابك."," answers to your account.")+"</p>"+
-    completedFeedback;
+    completedFeedback+(saved.length?stageSkillScorecard(progressRows,selected):"");
    if(completed){
     main+=progressHtml(progressRows,selected,historyAvailable);
     if(saved.some(needsAssessment)&&acceptedAi&&cloud.gradeTrainingAi)main+="<div class='assessmentRecovery' role='status'><p>"+gradingMessage()+"</p><button type='button' id='retrySessionGrades'>"+t("أعد تصحيح إجابات الجلسة","Retry session assessment")+"</button><p id='sessionGradeStatus' aria-live='polite'></p></div>";
@@ -312,7 +343,7 @@ async function boot(){
     try{var graded=await requestAssessment(v.item_id);aiUnavailable=!graded||!(graded.status==="preliminary_ai"||graded.status==="nonanswer_zero");
      var reread=await cloud.studentLifecycleRpc("trainingOpen",{courseId:COURSE,session:selected});
      if(!reread||!reread.allowed||!Array.isArray(reread.saved))throw Error("grade_readback_failed");
-     data=reread;await refreshAdaptation();if(data.completed)await loadProgress();busy=false;render();
+     data=reread;await refreshAdaptation();await loadProgress();busy=false;render();
     }catch(_){busy=false;retry.disabled=false;retry.textContent=t("التصحيح غير متاح الآن؛ حاول لاحقًا","Assessment unavailable; retry later");}
     finally{if(wait)wait.finish();}
    };});
@@ -362,11 +393,10 @@ async function boot(){
      }
      var checked=await cloud.studentLifecycleRpc("trainingOpen",{courseId:COURSE,session:selected});
      if(!checked||!checked.allowed||!byId(checked.saved,next.id))throw Error("answer_readback_failed");
-     data=checked;await refreshAdaptation();
+     data=checked;await refreshAdaptation();await loadProgress();
      if(data.completed){
       var fresh=await cloud.studentLifecycleRpc("trainingOverview",{courseId:COURSE});
       if(fresh&&fresh.allowed)overview=fresh;
-      await loadProgress();
      }
      busy=false;render();
      if(data.completed&&root.LEX_SESSION_MOMENTS)root.LEX_SESSION_MOMENTS.show(selected,lang(),uid+":"+COURSE+":"+selected,momentData(progressRows,selected));
