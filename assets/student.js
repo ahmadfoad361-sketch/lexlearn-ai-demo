@@ -40,10 +40,8 @@ if(params.get("demo")==="1"){
   location.replace("showcase.html");return;
 }
 
-if(!session||!session.cloud){
-  location.replace("student-login.html");
-  return;
-}
+// Initialize placeholders only; boot replaces them with the verified Auth identity.
+session=session&&session.cloud?session:{cloud:true};
 
 var student=students.find(function(x){return x.id===session.studentId;});
 if(!student){
@@ -345,14 +343,13 @@ async function boot(){
   if(session.cloud&&(!window.LEX_CLOUD||!LEX_CLOUD.isConfigured||!LEX_CLOUD.isConfigured())){APP.textContent="تعذر التحقق من الحساب السحابي؛ لن يُعرض تقدّم محلي باعتباره معتمدًا.";return;}
   if(session.cloud&&window.LEX_CLOUD&&LEX_CLOUD.isConfigured&&LEX_CLOUD.isConfigured()){
     try{
-      var cloudProfile=await LEX_CLOUD.profile();
-      if(!cloudProfile||cloudProfile.role!=="student"||cloudProfile.active!==true){
-        localStorage.removeItem(SESSION_KEY);
-        location.replace("student-login.html");
-        return;
-      }
-      var who=await LEX_CLOUD.db().auth.getUser();
-      if(who.error||!who.data||!who.data.user||who.data.user.id!==student.id)throw new Error("student_session_mismatch");
+      var cloudProfile=await LEX_CLOUD.requireStudent();
+      // Never compare Auth to a stale locally cached account or reuse another student's state.
+      student={id:cloudProfile.id,cloud:true,active:true};
+      session={studentId:cloudProfile.id,name:cloudProfile.display_name,username:cloudProfile.username,country:cloudProfile.country_code,cloud:true,at:Date.now()};
+      write(SESSION_KEY,session);
+      COUNTRY_SETUP_KEY="lexlearn_country_setup_v2_rights_"+student.id;
+      countrySetupDone=read(COUNTRY_SETUP_KEY,false)===true;
       var consent=await LEX_CLOUD.getConsent(CONSENT_VERSION,"learning_data");
       consentOk=!!consent;
       if(cloudProfile){
@@ -368,6 +365,7 @@ async function boot(){
       PROFILE_KEY="lexlearn_v9_profile_"+student.id;
       COURSE_KEY="lexlearn_course_v2_"+country+"_"+(country==="qa"?"rights":"sources")+"_"+student.id;
       // Authoritative state comes ONLY from the server lifecycle RPC.
+      if(!consentOk){consentGateView();return;}
       var status=await LEX_CLOUD.studentLifecycleRpc("status",{courseId:"qa-qu-lawc101-rights"});
       result=status.status==="completed"&&status.result&&status.result.source==="server_finalized_diagnostic"&&status.result.student_id===student.id?status.result:null;
       if(result)result.trainingPlan=status.training_plan;
@@ -396,17 +394,27 @@ async function boot(){
 
     }catch(e){
       var reason=String(e&&e.message||"");
+      if(LEX_CLOUD.sessionFailure(e)||reason==='student_account_not_active'){
+        await LEX_CLOUD.clearStudentSession().catch(function(){});
+        location.replace('student-login.html?reason=session');return;
+      }
+
       APP.innerHTML=/not_enrolled|enrollment|course_not_assigned/i.test(reason)
         ?"<section role='alert' class='empty studentEmpty'><h2>حسابك نشط لكنك غير مسجّل في مقرر نظرية الحق</h2><p>تواصل مع مشرف LexLearn لإضافتك إلى مجموعة الاختبار. تسجيل الدخول مرة أخرى لن يحل مشكلة إسناد المقرر.</p><a href='student-login.html'>العودة لتسجيل الدخول</a></section>"
         : /learning_data_consent_required|consent_required/i.test(reason)
         ?"<section role='alert' class='empty studentEmpty'><h2>يلزم قبول إشعار خصوصية بيانات التدريب</h2><p>راجع الموافقة المطلوبة في حسابك قبل بدء الاختبار.</p><a href='privacy.html'>سياسة الخصوصية</a></section>"
-        :"تعذر التحقق من الجلسة. <a href='student-login.html'>سجّل الدخول من جديد</a>.";
+        : /student_approval_required/i.test(reason)
+        ?"<section role='alert' class='empty studentEmpty'><h2>حسابك نشط، لكن التدريب غير متاح لحسابك بعد</h2><p>تواصل مع مشرف LexLearn لمراجعة إتاحة المقرر ومدة التجربة الجامعية. تسجيل الدخول مجددًا لن يغيّر صلاحية التدريب.</p><a href='student-profile.html'>ملفي الشخصي</a></section>"
+        :"<section role='alert' class='empty studentEmpty'><h2>تعذر تحميل حسابك</h2><p>تحقق من الاتصال ثم حاول مجددًا. تقدمك المحفوظ لم يتغير.</p><button class='btn primary' onclick='location.reload()'>إعادة المحاولة</button><a href='student-login.html'>تسجيل الدخول</a></section>";
       return;
     }
   }
   if(session.cloud&&!result){course={session:1,completed:[],weekResults:{},achievements:[],adminOverrideWeeks:{},repairRequired:false,completedProgram:false};}
   render();
 }
+if(window.LEX_CLOUD&&LEX_CLOUD.db())LEX_CLOUD.db().auth.onAuthStateChange(function(event){
+  if(event==='SIGNED_OUT'){localStorage.removeItem(SESSION_KEY);location.replace('student-login.html?reason=session');}
+});
 boot();
 window.addEventListener("pageshow",function(e){
   if(e.persisted){location.reload();}
