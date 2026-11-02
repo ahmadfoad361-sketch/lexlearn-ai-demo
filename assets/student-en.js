@@ -117,40 +117,33 @@ function status(value){
   if(value>=40)return "Needs focus";
   return "Training priority";
 }
-function profileTitle(){
-  if(result&&result.trainingPlan)return result.trainingPlan.reason_en;
-  var model=course&&course.adaptiveModel;
-  if(model&&model.bridge&&model.bridge.label)return model.bridge.label;
-  if(!result)return "Start with the diagnostic";
-  if(result.profileType==="recall-led")return "Recall is stronger than understanding — we will turn what you remember into usable understanding";
-  if(result.profileType==="understanding-led")return "Understanding is stronger than recall — we will turn meaning into faster retrieval";
-  return "Balanced performance — we will focus on the weakest skill now";
-}
-function studentInsight(){
-  var items=[
-    {key:"recall",label:"Recall",icon:"🧠",value:adaptiveValue("recall")},
-    {key:"understanding",label:"Understanding",icon:"💡",value:adaptiveValue("understanding")},
-    {key:"application",label:"Application",icon:"⚖️",value:adaptiveValue("application")}
-  ].filter(function(x){return x.value!=null;});
-  if(!items.length)return {best:null,focus:null,tip:"Start the short diagnostic and we will build your training."};
-  var sorted=items.slice().sort(function(a,b){return a.value-b.value;});
-  var focus=sorted[0],best=sorted[sorted.length-1];
-  var tips={
-    recall:"Retrieve the rule from memory before reopening the text.",
-    understanding:"Ask yourself: why does this rule work this way?",
-    application:"Apply the rule to a short fact pattern and identify the decisive fact first."
-  };
-  return {best:best,focus:focus,tip:tips[focus.key]};
+function profileTitle(){return "Build your skills, one step at a time";}
+function studentInsight(){return {best:null,focus:null,tip:"Keep practising both skills. We will review the indicators as more evidence is saved."};}
+function diagnosticSkillPercent(key){
+ if(!result||!result.measurements)return null;
+ function valid(x){return typeof x==="number"&&Number.isFinite(x)&&x>=0&&x<=100?Math.round(x):null;}
+ if(key==="understanding")return valid(result.metrics&&result.metrics.understanding);
+ if(key!=="recall")return null;
+ var rec=result.measurements.recall||{},ai=rec.ai_grade||{},fix=rec.corrected_internal_grade||{},internal=rec.internal_grade||{};
+ if(ai.status==="preliminary_ai"&&valid(ai.provisional_percent)!==null)return valid(ai.provisional_percent);
+ if(fix.status==="preliminary_internal"&&valid(fix.provisional_percent)!==null)return valid(fix.provisional_percent);
+ var criteria=(Array.isArray(internal.criteria_met)?internal.criteria_met:[]).concat(Array.isArray(internal.criteria_missing)?internal.criteria_missing:[]);
+ if(internal.status==="preliminary_internal"&&["live_birth","death_end","prenatal_conditional_rights"].every(function(x){return criteria.includes(x);}))
+  return valid(internal.provisional_percent);
+ return null;
 }
 function simpleSkillCard(item){
-  var value=adaptiveValue(item.key),level=status(value),pct=value==null?0:Math.round(value);
-  return "<div class='simpleSkill "+item.key+"'>"+
-    "<div class='simpleIcon'>"+icon(item.icon)+"</div>"+
-    "<b>"+item.label+"</b>"+
-    "<strong>"+(value==null?"—":pct+"%")+"</strong>"+
-    "<span>"+level+"</span>"+
-    "<div class='miniBar'><i style='width:"+(value==null?5:Math.max(5,Math.min(100,value)))+"%'></i></div>"+
-  "</div>";
+ var value=diagnosticSkillPercent(item.key),known=value!==null;
+ var valueText=known?value+"%":"Not measured yet";
+ var recall=item.key==="recall";
+ var cue=recall?"Remember the rule":"Explain the meaning";
+ var practice=recall?"Recall the rule before opening the text.":"Explain why the rule applies, using your own example.";
+ return "<article class='simpleSkill "+item.key+(known?"":" unmeasured")+"'>"+
+ "<div class='skillCardHeading'><span class='skillSymbol' aria-hidden='true'>"+icon(item.icon)+"</span><div><b>"+esc(item.label)+"</b><span class='skillCue'>"+cue+"</span></div><span class='skillEstimate'>Preliminary estimate</span></div>"+
+ "<div class='skillMeter' role='img' aria-label='"+esc(item.label+": "+valueText+" · Preliminary estimate")+"'>"+
+ "<svg viewBox='0 0 120 120' aria-hidden='true' focusable='false'><circle class='skillRingTrack' cx='60' cy='60' r='51'/><circle class='skillRingValue' cx='60' cy='60' r='51' pathLength='100' stroke-dasharray='100' stroke-dashoffset='"+(known?100-value:100)+"'/></svg>"+
+ "<div class='skillMeterValue' aria-hidden='true'><strong dir='ltr'>"+(known?value+"<small>%</small>":"—")+"</strong><span>"+(known?"Your starting point":"Not measured yet")+"</span></div></div>"+
+ "<p class='skillPractice'>"+practice+"</p></article>";
 }
 function skillCard(title,key,ic){
   var value=adaptiveValue(key);
@@ -287,20 +280,16 @@ function render(){
 
   var insight=studentInsight();
   var learningProfile=result
-    ? "<section class='simpleProfile'>"+
-        "<div class='simpleIntro'><div><span class='eyebrow'>Your current level</span><h3>"+esc(profileTitle())+"</h3></div></div>"+
+    ? "<section class='simpleProfile' aria-labelledby='skillProfileTitle'>"+
+        "<div class='simpleIntro'><div><span class='eyebrow'>YOUR LEARNING SNAPSHOT</span><h3 id='skillProfileTitle'>Build your skills, one step at a time</h3><p class='skillProfileLead'>A starting point for your practice. We review these indicators as new evidence is saved.</p></div><span class='skillJourneyMark' aria-hidden='true'>✦</span></div>"+
         "<div class='simpleSkillGrid'>"+
           simpleSkillCard({key:"recall",label:"Recall",icon:"brain"})+
           simpleSkillCard({key:"understanding",label:"Understanding",icon:"bulb"})+
-          simpleSkillCard({key:"application",label:"Application",icon:"scale"})+
         "</div>"+
-        "<div class='studentTipGrid'>"+
-          "<div class='tipCard good'><span>"+icon("chart")+"</span><div><small>Strongest area</small><b>"+esc(insight.best?insight.best.label:"—")+"</b></div></div>"+
-          "<div class='tipCard focus'><span>"+icon("target")+"</span><div><small>Focus now on</small><b>"+esc(insight.focus?insight.focus.label:"—")+"</b></div></div>"+
-          "<div class='tipCard today'><span>"+icon("book")+"</span><div><small>Today's tip</small><b>"+esc(insight.tip)+"</b></div></div>"+
-        "</div>"+
+        "<div class='skillNextStep'><span class='skillNextIcon' aria-hidden='true'>↗</span><div><b>Keep the momentum</b><p>Practise recalling a rule, then explain it in your own words.</p></div><a class='btn primary' href='student-path.html?lang=en'>Continue training <span aria-hidden='true'>→</span></a></div>"+
+        "<p class='skillEstimateNote'>Preliminary estimates from your assessment. They are not a passing grade or a final measure of mastery.</p>"+
       "</section>"
-    : "<div class='empty studentEmpty'>Start the short diagnostic. Then you will see three simple indicators: recall, understanding, and application.</div>";
+    : "<div class='empty studentEmpty'>Start the short diagnostic to see your initial recall and understanding estimates.</div>";
 
   var achievements=course.achievements.length
     ? course.achievements.map(function(a){
