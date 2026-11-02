@@ -39,7 +39,7 @@ const e=x=>String(x??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt
 const box={
  esc:e,num:x=>typeof x==="number"&&Number.isFinite(x)?x:null,score:x=>typeof x==="number"&&Number.isFinite(x)?Math.round(x)+"%":"لم يُقَس",
  tdate:x=>x||"—",dim:x=>({recall:"الحفظ",understanding:"الفهم",exam_execution:"الامتحان"})[x]||x||"—",
- message:()=> "تدريب مناسب"
+ message:()=> "تدريب مناسب",signal:()=> "مؤشر تدريب أولي"
 };
 vm.createContext(box);
 vm.runInContext(adminSource.slice(adminStart,adminEnd),box);
