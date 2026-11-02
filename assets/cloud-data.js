@@ -14,6 +14,7 @@ function authStorage(){
 }
 function setRememberMe(keep){
  var current=rememberMe(),from=current?root.localStorage:root.sessionStorage,to=keep?root.localStorage:root.sessionStorage;
+ if(current===!!keep)return;
  try{
   var keys=[storageKey(),storageKey()+"-code-verifier"];
   keys.forEach(function(k){var value=from.getItem(k);if(value)to.setItem(k,value);from.removeItem(k);});
@@ -32,6 +33,29 @@ async function profile(){
   var p=await c.from("profiles").select("id,role,username,display_name,active,account_status,whatsapp_e164,must_change_password,university,year_label,cohort_id,locale,country_code").eq("id",u.data.user.id).single();
   if(p.error)throw p.error;return p.data;
 }
+// The local student card is a display cache, never an Auth credential.
+function sessionFailure(error){
+ var code=String(error&&error.code||''),message=String(error&&error.message||'');
+ return /^(session_not_found|refresh_token_not_found|refresh_token_already_used|bad_jwt|user_not_found|session_expired|PGRST301|PGRST303)$/.test(code)||/^(not_authenticated|student_session_missing|JWT expired)$/.test(message)||Number(error&&error.status)===401;
+}
+async function requireStudent(){
+ var c=db();if(!c)throw new Error('cloud_not_configured');
+ // getSession waits for stored-session initialization and refreshes expired tokens.
+ var current=await c.auth.getSession();
+ if(current.error)throw current.error;
+ if(!current.data||!current.data.session)throw new Error('student_session_missing');
+ var who=await c.auth.getUser();
+ if(who.error)throw who.error;
+ if(!who.data||!who.data.user)throw new Error('not_authenticated');
+ var p=await c.from('profiles').select('id,role,username,display_name,active,account_status,must_change_password,university,year_label,country_code').eq('id',who.data.user.id).single();
+ if(p.error)throw p.error;
+ if(!p.data||p.data.id!==who.data.user.id||p.data.role!=='student'||p.data.active!==true||p.data.account_status!=='active')throw new Error('student_account_not_active');
+ return p.data;
+}
+async function clearStudentSession(){
+ try{root.localStorage.removeItem('lexlearn_student_session');root.sessionStorage.removeItem('lexlearn_student_session');}catch(_){}
+ var c=db();if(c)await c.auth.signOut({scope:'local'});
+}
 async function signInStudent(username,password){
   var c=db();if(!c)throw new Error("cloud_not_configured");
   var identifier=String(username||"").trim().toLowerCase();
@@ -42,9 +66,10 @@ async function signInStudent(username,password){
    {email:identifier.includes("@")?identifier:studentEmail(identifier),password:password};
   var r=await c.auth.signInWithPassword(options);
   if(r.error)throw r.error;
+  if(!r.data||!r.data.session||!r.data.user)throw new Error('student_session_missing');
   var p=await profile();
-  if(!p||p.role!=="student"||p.active===false){
-   await c.auth.signOut();
+  if(!p||p.id!==r.data.user.id||p.role!=="student"||p.active!==true||p.account_status!=="active"){
+   await clearStudentSession();
    throw new Error(p&&p.account_status==="pending"?"student_pending_approval":"student_account_not_active");
   }
   return {user:r.data.user,profile:p};
@@ -218,7 +243,7 @@ async function studentLifecycleRpc(action,params){
   if(action==="trainingOpen"||action==="trainingSubmit")args.p_session=params.session;
   if(action==="trainingSubmit"){args.p_item_id=params.itemId;args.p_answer=params.answer;}
  var r=await c.rpc(calls[action],args);
- if(r.error)throw new Error(r.error.message||"lifecycle_server_unavailable");
+ if(r.error)throw r.error;
  if(!r.data||typeof r.data!=="object")throw new Error("unverified_lifecycle_response");
  return r.data;
 }
@@ -228,7 +253,7 @@ async function saveLearningPlan(row){
   row=Object.assign({},row,{user_id:u.data.user.id,updated_at:new Date().toISOString()});
   var r=await c.from("learning_plans").upsert(row,{onConflict:"user_id,course_id"}).select().single();if(r.error)throw r.error;return r.data;
 }
-root.LEX_CLOUD={isConfigured:isConfigured,db:db,rememberMe:rememberMe,setRememberMe:setRememberMe,studentEmail:studentEmail,profile:profile,signInStudent:signInStudent,signInAdmin:signInAdmin,signOut:signOut,requestPasswordReset:requestPasswordReset,loadSnapshot:loadSnapshot,saveSnapshot:saveSnapshot,listStudents:listStudents,listCohorts:listCohorts,listAudit:listAudit,listContentItems:listContentItems,reviewContent:reviewContent,createStudent:createStudent,manageStudent:manageStudent,createCohort:createCohort,updateCohortDefaults:updateCohortDefaults,setOwnPassword:setOwnPassword,updateOwnProfile:updateOwnProfile,studentLifecycleRpc:studentLifecycleRpc,gradeAnswer:gradeAnswer,gradePilot:gradePilot,gradeDiagnosticAi:gradeDiagnosticAi,gradeTrainingAi:gradeTrainingAi,gradeLevelOneAi:gradeLevelOneAi,trainingAiSummary:trainingAiSummary,getDiagnosticAiAudit:getDiagnosticAiAudit,getConsent:getConsent,recordConsent:recordConsent,logEvent:logEvent,recordAttempt:recordAttempt,saveLearningPlan:saveLearningPlan};
+root.LEX_CLOUD={requireStudent:requireStudent,sessionFailure:sessionFailure,clearStudentSession:clearStudentSession,isConfigured:isConfigured,db:db,rememberMe:rememberMe,setRememberMe:setRememberMe,studentEmail:studentEmail,profile:profile,signInStudent:signInStudent,signInAdmin:signInAdmin,signOut:signOut,requestPasswordReset:requestPasswordReset,loadSnapshot:loadSnapshot,saveSnapshot:saveSnapshot,listStudents:listStudents,listCohorts:listCohorts,listAudit:listAudit,listContentItems:listContentItems,reviewContent:reviewContent,createStudent:createStudent,manageStudent:manageStudent,createCohort:createCohort,updateCohortDefaults:updateCohortDefaults,setOwnPassword:setOwnPassword,updateOwnProfile:updateOwnProfile,studentLifecycleRpc:studentLifecycleRpc,gradeAnswer:gradeAnswer,gradePilot:gradePilot,gradeDiagnosticAi:gradeDiagnosticAi,gradeTrainingAi:gradeTrainingAi,gradeLevelOneAi:gradeLevelOneAi,trainingAiSummary:trainingAiSummary,getDiagnosticAiAudit:getDiagnosticAiAudit,getConsent:getConsent,recordConsent:recordConsent,logEvent:logEvent,recordAttempt:recordAttempt,saveLearningPlan:saveLearningPlan};
 if(typeof window!=="undefined"){
   window.addEventListener("error",function(ev){
     if(!isConfigured())return;

@@ -185,7 +185,7 @@ function studentTree(list){
   return '<button type="button" class="studentBtn '+(s.id===state.selected?"active":"")+'" data-student="'+esc(s.id)+'">'+
     '<div><b>'+esc(s.name||s.username)+'</b><small>@'+esc(s.username)+' • '+v.completed+'/30</small></div>'+
     '<span class="risk '+(s.active===false?"none":rr)+'">'+
-    (s.active===false?(s.accountStatus==="pending"?"التسجيل لم يكتمل":s.accountStatus==="paused"?"موقوف مؤقتًا":"معطّل"):rlabel(rr,v))+
+    (s.active===false?(s.accountStatus==="pending"?"بانتظار الاعتماد":s.accountStatus==="paused"?"موقوف مؤقتًا":"معطّل"):rlabel(rr,v))+
     '</span></button>';
  }
 
@@ -285,7 +285,7 @@ function detail(v){
  (advice.essay&&advice.essay.answer?'<details class="recommend"><summary>إجابة الطالب وأدلة المعيار</summary><p style="white-space:pre-wrap">'+esc(advice.essay.answer)+'</p><ul>'+(advice.essay.checks||[]).map(function(c){return '<li>'+esc(c.label)+' — '+(c.matched?'ظهر مؤشر: '+esc(c.evidence):'يحتاج مراجعة')+'</li>';}).join('')+'</ul><small>فحص أولي؛ اعتماد صحة الإجابة للمشرف. راجع النفي والاستثناء وصحة ربط القاعدة بالوقائع، حتى لو ظهرت جميع الكلمات المطلوبة.</small></details>':'')+
  '</section></div></details>'+officialSteps(v)+essayAttempts(v)+
  '<section class="twoCols"><div class="panel"><h3>التقدم</h3><div class="progressWrap"><div class="progressLine"><i style="width:'+Math.round(v.completed/30*100)+'%"></i></div><b>'+v.completed+'/30</b></div><p>الجلسة الحالية: '+v.session+' • '+(v.course.completedProgram?"البرنامج مكتمل":"البرنامج مستمر")+'</p><div class="recommend"><b>التدخل المقترح</b><span>'+esc(modelText(v))+'</span></div></div>'+
- '<div class="panel studentManagement"><h3>إدارة حساب الطالب</h3><p class="managementHint">إيقاف مؤقت أو تعطيل دون حذف نتائج التدريب. يمكنك استخراج ملف PDF أو نص كامل للتوثيق قبل أي حذف نهائي.</p><div class="accountState '+(s.accountStatus||"active")+'">حالة الحساب: '+({"active":"نشط","paused":"موقوف مؤقتًا","disabled":"معطّل","pending":"التسجيل لم يكتمل"}[s.accountStatus||"active"]||"غير محددة")+'</div><div class="adminActions"><button class="reportBtn" data-report="'+s.id+'">'+ico("audit")+' تصدير ملف الطالب / PDF</button><button data-reset="'+s.id+'">'+ico("key")+' إصدار كلمة مرور بديلة</button>'+(s.accountStatus!=="paused"&&s.active!==false?'<button data-set-status="paused" data-user="'+s.id+'">إيقاف مؤقت</button>':'')+(s.accountStatus!=="disabled"?'<button data-set-status="disabled" data-user="'+s.id+'">تعطيل الحساب</button>':'')+(s.active===false?'<button data-set-status="active" data-user="'+s.id+'">'+(s.accountStatus==="pending"?"تفعيل حساب الطالب":"إعادة التفعيل")+'</button>':'')+'<button data-unlock="'+s.id+'">فتح الأسبوع التالي</button><button data-repair="'+s.id+'">جلسة تثبيت</button>'+(["owner","admin"].indexOf(state.staffRole)>=0?'<button class="deleteStudentButton" data-delete-student="'+s.id+'">حذف الحساب نهائيًا</button>':'')+'</div></div></section>'+
+ '<div class="panel studentManagement"><h3>إدارة حساب الطالب</h3><p class="managementHint">إيقاف مؤقت أو تعطيل دون حذف نتائج التدريب. يمكنك استخراج ملف PDF أو نص كامل للتوثيق قبل أي حذف نهائي.</p><div class="accountState '+(s.accountStatus||"active")+'">حالة الحساب: '+({"active":"نشط","paused":"موقوف مؤقتًا","disabled":"معطّل","pending":"بانتظار الاعتماد"}[s.accountStatus||"active"]||"غير محددة")+'</div><div class="adminActions"><button class="reportBtn" data-report="'+s.id+'">'+ico("audit")+' تصدير ملف الطالب / PDF</button><button data-reset="'+s.id+'">'+ico("key")+' إصدار كلمة مرور بديلة</button>'+(s.accountStatus!=="paused"&&s.active!==false?'<button data-set-status="paused" data-user="'+s.id+'">إيقاف مؤقت</button>':'')+(s.accountStatus!=="disabled"?'<button data-set-status="disabled" data-user="'+s.id+'">تعطيل الحساب</button>':'')+(s.active===false?'<button data-set-status="active" data-user="'+s.id+'">'+(s.accountStatus==="pending"?"اعتماد الطالب وتفعيل حسابه":"إعادة التفعيل")+'</button>':'')+'<button data-unlock="'+s.id+'">فتح الأسبوع التالي</button><button data-repair="'+s.id+'">جلسة تثبيت</button>'+(["owner","admin"].indexOf(state.staffRole)>=0?'<button class="deleteStudentButton" data-delete-student="'+s.id+'">حذف الحساب نهائيًا</button>':'')+'</div></div></section>'+
  '<section class="panel evidence"><h3>لماذا اتخذ النظام هذا القرار؟</h3><div class="evidenceGrid">'+["recall","understanding","application","legal_precision","retention","exam"].map(function(k){var a=axes[k];return '<div><b>'+label(k)+'</b><span>'+(a?("تقدير "+a.value+"% • عدم يقين ±"+a.uncertainty+" • اتجاه "+(a.trend>0?"+":"")+a.trend):v.official&&v.m[k]!==null?"مؤشر مسجل: "+Math.round(v.m[k])+"% — من التشخيص أو التصحيح المحفوظ":"لا توجد أدلة كافية بعد")+'</span></div>';}).join("")+'</div></section>';
 }
 function officialSteps(v){
@@ -307,7 +307,7 @@ function dashboard(){
 }
 function studentsTab(){
  var a=studentList(),pending=state.students.filter(function(x){return x.accountStatus==="pending";}).length;
- return '<section class="pageTitle"><div><span class="overline">Central Accounts</span><h1>الطلاب</h1><p>'+(pending?'حسابات قديمة تحتاج استكمال التفعيل: '+pending+' • ':'')+'حسابات مركزية، والمجموعة والأستاذ اختياريان. يمكن للمشرف مساعدة أي طالب تعثر في التسجيل.</p></div><div class="pageActions"><button class="btn primary" id="add">'+ico("plus")+' إضافة طالب</button><button class="btn secondary" id="export">تصدير CSV</button></div></section><section class="panel"><input class="search" id="ssearch" value="'+esc(state.q)+'" placeholder="بحث..."><div class="studentTable"><div class="tr head"><span>الطالب</span><span>المجموعة</span><span>التقدم</span><span>الأولوية</span><span>الحالة</span></div>'+a.map(function(s){var v=view(s),r=risk(v);return '<button class="tr" data-open="'+s.id+'"><span><b>'+esc(s.name||s.username)+'</b><small>@'+esc(s.username)+'</small></span><span>'+esc(s.cohort||"—")+'</span><span>'+v.completed+'/30</span><span>'+esc(v.model.weakest?label(v.model.weakest):"—")+'</span><span class="risk '+(s.active===false?"none":r)+'">'+(s.active===false?(s.accountStatus==="pending"?"التسجيل لم يكتمل":s.accountStatus==="paused"?"موقوف مؤقتًا":"معطّل"):rlabel(r,v))+'</span></button>';}).join("")+'</div></section>';
+ return '<section class="pageTitle"><div><span class="overline">Central Accounts</span><h1>الطلاب</h1><p>'+(pending?'طلبات تسجيل بانتظار الاعتماد: '+pending+' • ':'')+'حسابات مركزية، والمجموعة والأستاذ اختياريان. يمكن للمشرف مساعدة أي طالب تعثر في التسجيل.</p></div><div class="pageActions"><button class="btn primary" id="add">'+ico("plus")+' إضافة طالب</button><button class="btn secondary" id="export">تصدير CSV</button></div></section><section class="panel"><input class="search" id="ssearch" value="'+esc(state.q)+'" placeholder="بحث..."><div class="studentTable"><div class="tr head"><span>الطالب</span><span>المجموعة</span><span>التقدم</span><span>الأولوية</span><span>الحالة</span></div>'+a.map(function(s){var v=view(s),r=risk(v);return '<button class="tr" data-open="'+s.id+'"><span><b>'+esc(s.name||s.username)+'</b><small>@'+esc(s.username)+'</small></span><span>'+esc(s.cohort||"—")+'</span><span>'+v.completed+'/30</span><span>'+esc(v.model.weakest?label(v.model.weakest):"—")+'</span><span class="risk '+(s.active===false?"none":r)+'">'+(s.active===false?(s.accountStatus==="pending"?"بانتظار الاعتماد":s.accountStatus==="paused"?"موقوف مؤقتًا":"معطّل"):rlabel(r,v))+'</span></button>';}).join("")+'</div></section>';
 }
 function cohortDefaults(c){
  var first=state.students.find(function(s){return s.cohortId===c.id;})||{};
@@ -556,12 +556,18 @@ function bind(){
    var student=state.students.find(function(x){return x.id===button.dataset.user;});
    if(!student)return;
    var status=button.dataset.setStatus,term={paused:"إيقاف مؤقت",disabled:"تعطيل",active:"إعادة تفعيل"}[status];
-   var msg="هل تؤكد "+(status==="active"&&student.accountStatus==="pending"?"تفعيل":term)+" حساب "+(student.name||student.username)+"؟"+(status==="active"?"": "\nستظل كل الاختبارات والدرجات محفوظة.");
+   var msg="هل تؤكد "+(status==="active"&&student.accountStatus==="pending"?"اعتماد وتفعيل":term)+" حساب "+(student.name||student.username)+"؟"+(status==="active"?"": "\nستظل كل الاختبارات والدرجات محفوظة.");
    if(!confirm(msg))return;
    var reason="";
    if(status!=="active"){var entered=prompt("سبب الإجراء (اختياري، يظهر في سجل الإدارة):","");if(entered===null)return;reason=entered.trim();}
-   // Optional WhatsApp contact is never proof of the student's identity.
    var verifyManually=false;
+   if(status==="active"&&student.accountStatus==="pending"&&student.whatsapp&&!student.whatsappVerified){
+     var typed=prompt("اكتب رقم الواتساب كاملًا بعد التحقق من ملكية الطالب: "+student.whatsapp,"");
+     if(typed===null)return;
+     if(typed.trim()!==student.whatsapp){alert("الرقم غير مطابق؛ لم يُفعّل الحساب.");return;}
+     if(!confirm("أؤكد أنني تحققت من ملكية رقم الواتساب لهذا الطالب قبل الاعتماد."))return;
+     verifyManually=true;
+   }
    button.disabled=true;
    try{
     var response=await LEX_CLOUD.manageStudent({action:"set_status",user_id:student.id,status:status,reason:reason,whatsapp_verified_manually:verifyManually});

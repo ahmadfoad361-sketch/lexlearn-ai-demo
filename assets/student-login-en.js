@@ -3,6 +3,7 @@
 var KEY="lexlearn_students_v2",SESSION="lexlearn_student_session";
 var params=new URLSearchParams(location.search),ENTRY_COUNTRY=(params.get("country")||"").toLowerCase();
 var err=document.getElementById("studentError");
+if(params.get('reason')==='session'){err.textContent="Your session has ended. Please sign in again.";err.style.display='block';}
 try{var lastUsername=localStorage.getItem("lexlearn_last_student_username");if(lastUsername)document.getElementById("studentUser").value=lastUsername;}catch(_){}
 async function login(u,p){
   err.style.display="none";
