@@ -291,3 +291,31 @@ html[data-learner-theme="dark"] .adminNavGroup[open]>summary,html[data-learner-t
 @media(max-width:720px){.cohortGridManagement{grid-template-columns:1fr}.cohortManaged{padding:16px!important}.cohortButtons .btn{flex:1 1 45%}.cohortStudentButton{font-size:16px}}
 
 html[data-learner-theme] .topLink#logout{width:auto;min-height:44px;padding:6px 10px;border:0;border-radius:0;background:transparent;color:var(--ad-ink);box-shadow:none;white-space:nowrap}
+
+
+/* LexLearn administrator-only evidence and cohort outcomes */
+.adminAcademicPage .impactTabs{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+.adminAcademicPage .impactTabs button{min-height:44px;border:1px solid #77849a;border-radius:12px;padding:8px 18px;background:transparent;color:inherit;cursor:pointer}
+.adminAcademicPage .impactTabs button.active{background:#8a1f39;color:#fff;border-color:#8a1f39}
+.adminAcademicPage .impactFilters{display:flex;align-items:end;flex-wrap:wrap;gap:14px}
+.adminAcademicPage .impactFilters label{flex:1;min-width:200px}
+.adminAcademicPage .impactFilters select{width:100%;min-height:44px}
+.adminAcademicPage .impactConcepts{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:12px;margin:16px 0}
+.adminAcademicPage .impactConcept{padding:14px;border:1px solid var(--lx-border,#c8c4c7);border-radius:12px;min-width:0;overflow-wrap:anywhere;background:var(--lx-surface,#fff)}
+.adminAcademicPage .impactConcept small{display:block;margin:8px 0;color:var(--lx-muted,#596579)}
+.adminAcademicPage .impactConcept p{margin-bottom:0;font-size:.94rem}
+.adminAcademicPage .impactMeter{display:flex;gap:10px;align-items:center;margin-top:9px}
+.adminAcademicPage .impactMeter progress{flex:1;min-width:25px;height:12px;accent-color:#8a1f39}
+.adminAcademicPage .impactMeter strong{min-width:42px}
+.adminAcademicPage .impactEvidence{border:1px solid var(--lx-border,#c8c4c7);border-radius:10px;padding:10px 14px;margin:10px 0}
+.adminAcademicPage .impactEvidence summary{cursor:pointer;font-weight:700}
+.adminAcademicPage .impactEvidence pre{white-space:pre-wrap;overflow-wrap:anywhere;max-height:450px;overflow:auto;border-radius:10px;padding:12px;background:var(--lx-raised,#f5f0eb)}
+.adminAcademicPage .impactEvidence blockquote{border-inline-start:3px solid #8a1f39;padding-inline-start:10px;white-space:pre-wrap}
+.adminAcademicPage .impactEvidence li{margin:12px 0}
+.adminAcademicPage .impactConcept progress{max-width:100%}
+.adminAcademicPage #impactResult .metric{min-width:0}
+.adminAcademicPage .impactEvidence :is(b,th),.adminAcademicPage .impactConcept b{overflow-wrap:anywhere}
+@media print{
+ .adminAcademicPage header,.adminAcademicPage .impactTabs,.adminAcademicPage .impactFilters,.adminAcademicPage #reloadGroup{display:none!important}
+ .adminAcademicPage .impactEvidence{break-inside:avoid}
+}

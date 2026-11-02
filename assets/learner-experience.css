@@ -296,3 +296,20 @@ html[data-learner-theme] :is(.diagCard,.stageCard,.resultCard,.caseAnswerStep) :
 
 /* Compact text actions retain a comfortable touch target. */
 html[data-learner-theme] button#logout{width:auto;min-height:44px;padding:6px 10px;border:0;border-radius:0;background:transparent;color:var(--lx-accent);box-shadow:none;white-space:nowrap}html[data-learner-theme] button#logout:hover{text-decoration:underline}
+
+
+/* Provisional student-only concept map; brand-aware and keyboard friendly. */
+html[data-learner-theme] .learningIntelligence{margin:20px 0;padding:clamp(15px,2vw,24px);border:1px solid var(--lx-border);border-radius:18px;background:var(--lx-surface);color:var(--lx-ink)}
+html[data-learner-theme] .learningIntelligence :is(h2,h3,b,strong){color:var(--lx-ink)}
+html[data-learner-theme] .learningIntelligence :is(p,small){color:var(--lx-muted)}
+html[data-learner-theme] .learningConceptList{list-style:none;padding:0;margin:12px 0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:12px}
+html[data-learner-theme] .learningConcept{min-width:0;padding:14px;border:1px solid var(--lx-border);border-radius:12px;background:var(--lx-raised)}
+html[data-learner-theme] .learningConcept small{display:block;font-size:.86rem;margin-top:4px}
+html[data-learner-theme] .learningConcept p{font-size:.92rem;margin:8px 0 0}
+html[data-learner-theme] .learningMeter{display:flex;align-items:center;gap:12px;margin-top:9px}
+html[data-learner-theme] .learningMeter progress{width:100%;height:12px;min-width:40px}
+html[data-learner-theme] .learningMeter strong{font-variant-numeric:tabular-nums}
+html[data-learner-theme] .learningTrend{width:100%;border-collapse:collapse;margin:12px 0;line-height:1.9}
+html[data-learner-theme] .learningTrend :is(th,td){border-bottom:1px solid var(--lx-border);padding:8px;text-align:start;vertical-align:top;overflow-wrap:anywhere}
+html[data-learner-theme] .learningTrend th{white-space:nowrap}
+@media(max-width:600px){html[data-learner-theme] .learningTrend th{white-space:normal}}

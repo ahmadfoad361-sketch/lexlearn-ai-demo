@@ -15,6 +15,42 @@ function url(n){return "student-path.html?lang="+lang()+(n?"&session="+n:"")+"&a
 function noHtmlScore(value){return typeof value==="number"&&isFinite(value)?Math.round(Math.max(0,Math.min(100,value)))+"%":t("غير قابل للتقدير","Not reliably measurable");}
 function weakName(s){return {recall:t("الحفظ","Recall"),understanding:t("الفهم","Understanding"),exam_execution:t("بناء الإجابة","Exam answer structure")}[s]||t("التأسيس","Foundations");}
 function byId(a,id){return (a||[]).find(function(x){return x.item_id===id;});}
+// Student-only learning insights derived from verified saved answers. No claims of certified mastery.
+function learningOverview(adaptation){
+ if(!adaptation||!adaptation.learning||adaptation.learning.status!=="provisional_learning_map")return "";
+ var items=Array.isArray(adaptation.learning.concepts)?adaptation.learning.concepts.slice(0,6):[];
+ if(!items.length)return "";
+ var advice={
+  rebuild_memory_cues:t("كوّن مفاتيح للقاعدة ثم استرجع عناصرها دون الرجوع إلى النص.","Build memory cues and recall the legal elements unaided."),
+  contrast_one_condition:t("قارن واقعتين تختلفان في شرط واحد وفسّر اختلاف النتيجة.","Compare two cases that differ in one legal condition."),
+  practice_exam_structure:t("اكتب المسألة والقاعدة والتطبيق والنتيجة.","Practice issue, rule, application and conclusion."),
+  reconstruct_from_memory:t("أغلق النص واكتب العناصر القانونية من ذاكرتك.","Close the text and reconstruct the legal elements from memory."),
+  explain_then_vary_case:t("اشرح سبب القاعدة ثم غيّر شرطًا واحدًا في الواقعة.","Explain the rule, then change one fact in the case.")
+ };
+ var entries=items.map(function(c){
+  if(!c||typeof c.rolling_percent!=="number"||!Number.isFinite(c.rolling_percent))return "";
+  var n=Math.max(0,Math.min(100,Math.round(c.rolling_percent))),label=lang()==="en"?c.label_en:c.label_ar;
+  var hint=advice[c.next_step]||advice.explain_then_vary_case;
+  return "<li class='learningConcept'><div><b>"+esc(label)+"</b><small>"+esc(weakName(c.dimension))+
+    " · "+t("دليل تقييم: ","Assessment observations: ")+Math.max(0,Number(c.evidence_count)||0)+
+    "</small></div><div class='learningMeter'><progress max='100' value='"+n+"' aria-label='"+esc(label)+"'></progress><strong>"+n+"%</strong></div>"+
+    "<p>"+esc(hint)+"</p></li>";
+ }).join("");
+ var trends=adaptation.trends||{},history=["recall","understanding"].map(function(dim){
+  var points=Array.isArray(trends[dim])?trends[dim].slice(-5):[];
+  if(!points.length)return "";
+  return "<tr><th scope='row'>"+esc(weakName(dim))+"</th><td>"+points.map(function(p){
+   return esc(t("جلسة ","Session ")+p.session+": "+noHtmlScore(p.percent));
+  }).join(" · ")+"</td></tr>";
+ }).join("");
+ return "<section class='learningIntelligence' aria-label='"+t("خريطة تعلمك","Your learning map")+"'>"+
+  "<h2>"+t("خريطة حفظك وفهمك","Your recall and understanding map")+"</h2>"+
+  "<p>"+t("هذه مؤشرات من عناصر الإجابات التي صُححت بالفعل، وليست حكمًا نهائيًا على مستواك.","These are indicators from assessed answer criteria, not a final judgement of your ability.")+"</p>"+
+  "<ul class='learningConceptList'>"+entries+"</ul>"+
+  (history?"<h3>"+t("سجل نتائج الجلسات","Session evidence history")+"</h3><table class='learningTrend'><tbody>"+history+"</tbody></table>":"")+
+  "<small>"+t("اختلاف السؤال أو المعيار قد يغيّر النسبة. لا نعتبر الفرق بين الجلسات إثباتًا للتحسن حتى تتم مقارنات عادلة.","Different questions or rubrics may change the score. Differences alone do not establish measured learning gains.")+"</small></section>";
+}
+
 function previousAnswerTitle(item,task){
   var dimension=(task&&task.dimension)||(item&&item.dimension);
   var localizedTitle=task&&(lang()==="en"?task.title_en:task.title_ar);
@@ -227,7 +263,8 @@ async function boot(){
       adaptation.priority==="understanding"?t("الأولوية الآن للفهم: اشرح سبب القاعدة، ثم غيّر شرطًا واحدًا وفسّر أثره على النتيجة.","Understanding priority: explain why the rule works, then change one condition and explain the result."):
       t("نحتاج إجابات أكثر لتحديد الأولوية؛ ابدأ بشرح القاعدة ثم استرجاعها.","More evidence is needed; start by explaining and retrieving the rule."))+"</p>";
    }
-   if(aiUnavailable)why+="<p role='status'>"+t("تم حفظ الإجابة، لكن التصحيح لم يكتمل. يمكنك إعادة المحاولة.","Your answer was saved, but assessment is incomplete. You can retry.")+"</p>";
+   why+=learningOverview(adaptation);
+    if(aiUnavailable)why+="<p role='status'>"+t("تم حفظ الإجابة، لكن التصحيح لم يكتمل. يمكنك إعادة المحاولة.","Your answer was saved, but assessment is incomplete. You can retry.")+"</p>";
    var completedFeedback=saved.map(function(v,index){
     var task=(data.tasks||[]).find(function(q){return q.id===v.item_id;});
     return "<details class='past'"+(v===saved[saved.length-1]?" open":"")+"><summary>"+esc(previousAnswerTitle(v,task))+"</summary>"+lawContext(task&&task.sources)+"<p style='white-space:pre-wrap'>"+esc(v.answer_text)+"</p>"+feedback(v)+(needsAssessment(v)&&acceptedAi&&cloud.gradeTrainingAi?"<button type='button' id='retryGrade"+index+"'>"+t("أعد تصحيح هذه الإجابة","Retry assessment of this answer")+"</button>":"")+"</details>";
