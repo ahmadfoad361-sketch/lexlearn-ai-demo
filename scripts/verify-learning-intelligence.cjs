@@ -67,7 +67,7 @@ console.log("Admin detailed and aggregate evidence dashboard: PASS");
 
 
 {
- const chunk=text.slice(text.indexOf("function stageSkillSnapshot("),text.indexOf("\nfunction previousAnswerTitle("));
+ const chunk=text.slice(text.indexOf("function stageSkillSnapshot("),text.indexOf("\nfunction feedback(item)",text.indexOf("function stageSkillSnapshot(")));
  assert.ok(chunk.includes("function stageSkillScorecard"),"scorecard is attached after each stage");
  const sc={t:a=>a,weakName:x=>x==="recall"?"الحفظ":"الفهم",esc:x=>String(x),noHtmlScore:x=>Math.round(x)+"%",
   confirmedGrade:e=>e?.status==="preliminary_ai"&&e?.rubric_version==="lexlearn-training-ai-v4"&&Number.isFinite(e.provisional_percent),
