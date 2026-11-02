@@ -313,3 +313,22 @@ html[data-learner-theme] .learningTrend{width:100%;border-collapse:collapse;marg
 html[data-learner-theme] .learningTrend :is(th,td){border-bottom:1px solid var(--lx-border);padding:8px;text-align:start;vertical-align:top;overflow-wrap:anywhere}
 html[data-learner-theme] .learningTrend th{white-space:nowrap}
 @media(max-width:600px){html[data-learner-theme] .learningTrend th{white-space:normal}}
+
+
+/* Always-visible, two-axis assessed stage scorecard; unmeasured values stay explicit. */
+.skillStageScorecard,.levelSkillScorecard{margin:1.25rem 0;padding:clamp(14px,2.5vw,22px);border:1px solid #b8becd;border-radius:16px;background:#fff;color:#111d31}
+.skillStageScorecard h3,.levelSkillScorecard h3{margin:0 0 1rem;font-size:1.17rem}
+.skillStageScorecard .progressSkills{grid-template-columns:repeat(2,minmax(0,1fr))}
+.skillStageScorecard .progressSkill{border:1px solid #d9dce4}
+.skillStageScorecard .progressSkill h4{margin:0 0 .5rem}
+.skillStageScorecard .progressSkill strong,.levelSkillScoreTile strong{display:block;font-size:1.75rem;line-height:1.4;font-variant-numeric:tabular-nums}
+.skillStageScorecard .progressSkill small{display:block;margin-top:.3rem;font-size:.83rem}
+.skillStageScorecard .scope{margin:.8rem 0 0;font-size:.85rem;color:#415064}
+.levelSkillScorecard .levelScoreGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:12px 0}
+.levelSkillScorecard .levelScoreTile{padding:15px;border:1px solid #d9dce4;border-radius:12px;background:#f9f4ef}
+.levelSkillScorecard .levelScoreTile strong{display:block;margin:.35rem 0;font-size:1.75rem}
+.levelSkillScorecard .levelScoreTile small{display:block;font-size:.83rem;color:#415064}
+@media(max-width:540px){.skillStageScorecard .progressSkills,.levelSkillScorecard .levelScoreGrid{grid-template-columns:1fr}}
+html[data-learner-theme="dark"] .skillStageScorecard,html[data-learner-theme="dark"] .levelSkillScorecard{background:#19273c;color:#f9f4ef;border-color:#586578}
+html[data-learner-theme="dark"] .skillStageScorecard .progressSkill,html[data-learner-theme="dark"] .levelSkillScorecard .levelScoreTile{background:#23354a;color:#f9f4ef;border-color:#586578}
+html[data-learner-theme="dark"] .skillStageScorecard :is(.scope,small),html[data-learner-theme="dark"] .levelSkillScorecard small{color:#e0e7ed}
