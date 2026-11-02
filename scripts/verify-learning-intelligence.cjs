@@ -30,3 +30,37 @@ assert.ok(page.includes("progress max='100' value='50'"));
 assert.ok(page.includes("جلسة 1: 70%"));
 assert.ok(page.includes("أجوبة")===false);
 console.log("Learning intelligence panel: PASS");
+
+
+const adminSource=fs.readFileSync("assets/admin-progress.js","utf8");
+const adminStart=adminSource.indexOf("function badges(stats){"),adminEnd=adminSource.indexOf("\nfunction shell(){",adminStart);
+assert.ok(adminStart>0&&adminEnd>adminStart);
+const e=x=>String(x??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const box={
+ esc:e,num:x=>typeof x==="number"&&Number.isFinite(x)?x:null,score:x=>typeof x==="number"&&Number.isFinite(x)?Math.round(x)+"%":"لم يُقَس",
+ tdate:x=>x||"—",dim:x=>({recall:"الحفظ",understanding:"الفهم",exam_execution:"الامتحان"})[x]||x||"—",
+ message:()=> "تدريب مناسب"
+};
+vm.createContext(box);
+vm.runInContext(adminSource.slice(adminStart,adminEnd),box);
+const studentView=box.renderStudent({student:{name:"<img src=x onerror=alert(1)>",university:"جامعة اختبار"},
+ diagnostic:{},completed_sessions:1,submitted_answers:1,ai_graded_answers:1,ungraded_answers:0,
+ current_task_coverage:{recall:60,understanding:35},
+ skill_trends:{recall:[{session:1,percent:60}],understanding:[]},
+ learning:{concepts:[{label_ar:"مفهوم <b>خطر</b>",dimension:"recall",rolling_percent:60,evidence_count:1}]},
+ answers:[{session:1,dimension:"recall",question_ar:"<script>bad</script>",answer_text:"<img src=x>",
+  evaluation:{status:"preliminary_ai",rubric_version:"lexlearn-training-ai-v4",provisional_percent:60,
+   criteria:[{label_ar:"عنصر",credit:.5,evidence:"إجابة"}]}}]
+});
+assert.ok(studentView.includes("&lt;img"));
+assert.ok(studentView.includes("&lt;script&gt;bad&lt;/script&gt;"));
+assert.ok(!studentView.includes("<script>"));
+assert.ok(studentView.includes("مفهوم &lt;b&gt;خطر&lt;/b&gt;"));
+const groupView=box.renderGroup({students_enrolled:2,students_with_training:1,engagement_percent:50,
+ completed_sessions:3,answers_submitted:4,ai_graded_answers:2,pending_or_ungraded_answers:2,
+ grading_coverage_percent:50,skills:{recall:{students_measured:1,mean_provisional_coverage:60}},
+ groups:[],academic_effect:{status:"not_established"}});
+assert.ok(groupView.includes("لم يُثبت بعد"));
+assert.ok(groupView.includes("50%"));
+assert.ok(!groupView.includes("<script>"));
+console.log("Admin detailed and aggregate evidence dashboard: PASS");
