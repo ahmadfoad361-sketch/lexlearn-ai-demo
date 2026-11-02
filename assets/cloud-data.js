@@ -99,7 +99,30 @@ async function invoke(name,body){
   if(r.error)throw r.error;return r.data;
 }
 async function createStudent(data){return invoke("admin-create-student",data);}
-async function manageStudent(data){return invoke("admin-manage-student",data);}
+async function manageStudent(data){
+  var c=db();if(!c)throw new Error("cloud_not_configured");
+  var response=await c.functions.invoke("admin-manage-student",{body:data||{}});
+  if(response.error){
+   var reason="";
+   try{
+    if(response.error.context&&typeof response.error.context.json==="function"){
+     var payload=await response.error.context.json();
+     reason=String(payload&&payload.error||"");
+    }
+   }catch(_){}
+   var messages={
+    activation_requires_admin:"تفعيل حسابات الطلاب متاح لمدير المنصة فقط.",
+    registration_consent_required:"يلزم استكمال موافقة الطالب على شروط التسجيل قبل تفعيل الحساب.",
+    account_identity_not_verified:"بيانات حساب الدخول غير مؤكدة؛ راجع حالة التسجيل.",
+    student_auth_account_unavailable:"تعذر العثور على حساب الطالب في نظام تسجيل الدخول.",
+    student_activation_not_saved:"تعذر حفظ التفعيل. حاول مجددًا أو راجع سجل المشرف.",
+    student_account_required:"هذا ليس حساب طالب صالحًا.",
+    use_university_trials:"حاول التحديث؛ نسخة الخادم القديمة لا تسمح بالتفعيل من هنا."
+   };
+   throw new Error(messages[reason]||reason||response.error.message||"تعذر تغيير حالة الحساب");
+  }
+  return response.data;
+}
 async function listContentItems(courseId){
   var c=db();if(!c)return[];
   var q=c.from("content_items").select("id,course_id,unit_id,concept_id,dimension,difficulty,item_type,prompt_ar,source_ids,status,version,reviewed_at,metadata").order("updated_at",{ascending:false});
