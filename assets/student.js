@@ -146,12 +146,17 @@ function diagnosticSkillPercent(key){
  return null;
 }
 function simpleSkillCard(item){
- var value=diagnosticSkillPercent(item.key);
- var text=value===null?"لم يتوفر تقدير بعد":value+"%";
- return "<div class='simpleSkill "+item.key+"'>"+
- "<div class='simpleIcon'>"+icon(item.icon)+"</div>"+
- "<b>تقدير "+item.label+"</b><strong>"+text+"</strong>"+
- "<span>تقدير مبدئي للتدريب</span><div class='miniBar'><i style='width:"+(value===null?0:value)+"%'></i></div></div>";
+ var value=diagnosticSkillPercent(item.key),known=value!==null;
+ var valueText=known?value+"%":"لم يُقَس بعد";
+ var recall=item.key==="recall";
+ var cue=recall?"تذكّر القاعدة":"اشرح المعنى";
+ var practice=recall?"حاول تذكّر القاعدة قبل فتح النص.":"اشرح سبب القاعدة بمثال من عندك.";
+ return "<article class='simpleSkill "+item.key+(known?"":" unmeasured")+"'>"+
+ "<div class='skillCardHeading'><span class='skillSymbol' aria-hidden='true'>"+icon(item.icon)+"</span><div><b>"+esc(item.label)+"</b><span class='skillCue'>"+cue+"</span></div><span class='skillEstimate'>تقدير أولي</span></div>"+
+ "<div class='skillMeter' role='img' aria-label='"+esc(item.label+": "+valueText+" · تقدير أولي")+"'>"+
+ "<svg viewBox='0 0 120 120' aria-hidden='true' focusable='false'><circle class='skillRingTrack' cx='60' cy='60' r='51'/><circle class='skillRingValue' cx='60' cy='60' r='51' pathLength='100' stroke-dasharray='100' stroke-dashoffset='"+(known?100-value:100)+"'/></svg>"+
+ "<div class='skillMeterValue' aria-hidden='true'><strong dir='ltr'>"+(known?value+"<small>%</small>":"—")+"</strong><span>"+(known?"نقطة بدايتك":"لم يُقَس بعد")+"</span></div></div>"+
+ "<p class='skillPractice'>"+practice+"</p></article>";
 }
 function skillCard(title,key,ic){
  return "<div class='skill'><div class='skillHead'><span class='skillIcon'>"+icon(ic)+"</span>"+
@@ -286,19 +291,16 @@ function render(){
 
   var insight=studentInsight();
   var learningProfile=result
-    ? "<section class='simpleProfile'>"+
-        "<div class='simpleIntro'><div><span class='eyebrow'>مستواك الآن</span><h3>"+esc(profileTitle())+"</h3></div></div>"+
+    ? "<section class='simpleProfile' aria-labelledby='skillProfileTitle'>"+
+        "<div class='simpleIntro'><div><span class='eyebrow'>مؤشرات رحلتك</span><h3 id='skillProfileTitle'>خطوة بخطوة، ابنِ مهاراتك</h3><p class='skillProfileLead'>دي نقطة بداية لتدريبك. نراجع المؤشرات مع كل قياس جديد محفوظ.</p></div><span class='skillJourneyMark' aria-hidden='true'>✦</span></div>"+
         "<div class='simpleSkillGrid'>"+
           simpleSkillCard({key:"recall",label:"الحفظ",icon:"brain"})+
           simpleSkillCard({key:"understanding",label:"الفهم",icon:"bulb"})+
         "</div>"+
-        "<div class='studentTipGrid'>"+
-          "<div class='tipCard good'><span>"+icon("chart")+"</span><div><small>أقوى مهارة — غير محددة بعد</small><b>"+esc(insight.best?insight.best.label:"—")+"</b></div></div>"+
-          "<div class='tipCard focus'><span>"+icon("target")+"</span><div><small>تدريبات متوازنة</small><b>"+esc(insight.focus?insight.focus.label:"—")+"</b></div></div>"+
-          "<div class='tipCard today'><span>"+icon("book")+"</span><div><small>نصيحة اليوم</small><b>"+esc(insight.tip)+"</b></div></div>"+
-        "</div>"+
+        "<div class='skillNextStep'><span class='skillNextIcon' aria-hidden='true'>↗</span><div><b>كمّل رحلتك، خطوة واحدة في كل مرة</b><p>تدرّب على تذكّر القاعدة، ثم شرحها بأسلوبك.</p></div><a class='btn primary' href='student-path.html?lang=ar'>أكمل التدريب <span aria-hidden='true'>←</span></a></div>"+
+        "<p class='skillEstimateNote'>النسب تقديرات أولية من التقييم، وليست درجة نجاح أو حكمًا نهائيًا على إتقانك.</p>"+
       "</section>"
-    : "<div class='empty studentEmpty'>ابدأ التقييم القصير، وبعده سترى تقديرين مبدئيين فقط: الحفظ والفهم.</div>";
+    : "<div class='empty studentEmpty'>ابدأ التقييم القصير، وبعده سترى تقديرين مبدئيين للحفظ والفهم.</div>";
 
   var achievements=course.achievements.length
     ? course.achievements.map(function(a){
