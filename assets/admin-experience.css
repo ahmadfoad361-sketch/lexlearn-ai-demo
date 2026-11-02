@@ -319,3 +319,9 @@ html[data-learner-theme] .topLink#logout{width:auto;min-height:44px;padding:6px 
  .adminAcademicPage header,.adminAcademicPage .impactTabs,.adminAcademicPage .impactFilters,.adminAcademicPage #reloadGroup{display:none!important}
  .adminAcademicPage .impactEvidence{break-inside:avoid}
 }
+
+.studentTransferDialog{color:var(--ink,#111d31);background:var(--panel,#fff);border:1px solid #c4a773;max-width:min(620px,92vw);max-height:90vh;overflow:auto;padding:28px;border-radius:20px;position:fixed;inset:0;margin:auto;direction:rtl}
+.studentTransferDialog::backdrop{background:rgba(8,16,30,.75)}
+.studentTransferDialog [hidden]{display:none!important}
+.studentTransferDialog [data-status]{grid-column:1/-1}
+html[data-theme="dark"] .studentTransferDialog,body.dark .studentTransferDialog{background:#111d31;color:#f9f4ef}

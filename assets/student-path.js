@@ -133,7 +133,7 @@ function stageSkillScorecard(rows,session){
       "<small>"+(has?(v.fresh?t("مُحدّث بتصحيح هذه الجلسة","Updated by this session"):
       t("آخر قياس محفوظ سابقًا","Latest saved earlier measurement"))+
       " · "+t("إجابات محسوبة: ","Scores used: ")+v.count:
-      t("في انتظار إجابة مصححة لهذه المهارة","Waiting for an assessed answer in this skill"))+"</small></article>";
+      t("لم يكتمل قياس هذه المهارة؛ أعد تصحيح الإجابة المحفوظة عند توفرها","This skill has no completed assessment; retry its saved answer when available"))+"</small></article>";
    }).join("")+"</div><p class='scope'>"+
    t("كل نسبة متوسط آخر ثلاث إجابات مصححة لهذه المهارة حتى هذه الجلسة. إذا لم يُختبر أحد الجانبين، نظهر آخر قياس سابق له لا صفرًا افتراضيًا. النتائج تدريبية أولية.","Each percentage averages up to three accepted assessments in that skill through this session. Where a skill was not tested now, we show its last recorded measurement, never an invented zero. Results are preliminary practice indicators.")+
    "</p></section>";
@@ -241,8 +241,11 @@ async function boot(){
     var client=cloud.db(),from=1;
     var response=await client.from("student_training_answers").select("session_number,item_id,dimension,evaluation").eq("user_id",uid).eq("course_id",COURSE).gte("session_number",from).lte("session_number",selected).order("session_number",{ascending:true}).limit(250);
     if(response.error||!Array.isArray(response.data))return;
-    var prior=response.data.filter(function(x){return x.session_number<selected;});
-    progressRows=prior.concat(progressRows);historyAvailable=true;
+    var rowsByTask=new Map();
+    progressRows.forEach(function(x){rowsByTask.set(x.session_number+":"+x.item_id,x);});
+    response.data.forEach(function(x){rowsByTask.set(x.session_number+":"+x.item_id,x);});
+    progressRows=Array.from(rowsByTask.values());historyAvailable=true;
+    data.saved=(data.saved||[]).map(function(x){var fresh=rowsByTask.get(selected+":"+x.item_id);return fresh?Object.assign({},x,{evaluation:fresh.evaluation,dimension:fresh.dimension}):x;});
    }catch(_){}
   }
   var programLabels=Array.from({length:30},function(_,i){return (i+1)%5===0?
