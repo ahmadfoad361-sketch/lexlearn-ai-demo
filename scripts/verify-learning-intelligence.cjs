@@ -125,3 +125,15 @@ console.log("Admin detailed and aggregate evidence dashboard: PASS");
  assert.ok(sc.gradedStageHistoryHtml({answers:[]}).includes("لم يكتمل"));
  console.log("Administrator stage-by-stage skill history: PASS");
 }
+
+
+{
+ const admin=fs.readFileSync("assets/admin-cloud.js","utf8");
+ const cloud=fs.readFileSync("assets/cloud-data.js","utf8");
+ assert.ok(admin.includes("تفعيل حساب الطالب"),"a legacy pending account can be activated");
+ assert.ok(!admin.includes("اكتب رقم الواتساب كاملًا بعد التحقق"),"optional WhatsApp is not an identity approval requirement");
+ assert.ok(!admin.includes("طلبات تسجيل بانتظار الاعتماد"),"new registrations should not enter a mandatory approval queue");
+ assert.ok(cloud.includes("registration_consent_required"),"HTTP rejection must give a useful reason");
+ assert.ok(cloud.includes("error.context.json"),"function error body is surfaced instead of a generic non-2xx");
+ console.log("Supervisor activation screen and error feedback: PASS");
+}
