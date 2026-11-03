@@ -1,0 +1,23 @@
+<!doctype html><html lang="ar" dir="rtl">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow"><title>LexLearn — أرشيف حسابات الطلاب</title>
+<link rel="icon" type="image/svg+xml" href="assets/lexlearn-logo.svg">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/admin-bulk.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/lexlearn-config.js"></script><script src="assets/cloud-data.js"></script>
+<script src="assets/admin-archive.js" defer></script>
+</head>
+<body><header class="bulkTop"><a class="bulkBrand" href="admin.html#cohorts"><img src="assets/lexlearn-logo.svg" alt=""><span><b>LexLearn</b><small>أرشيف طلاب المقررات</small></span></a><nav><a href="admin.html#cohorts">المجموعات</a><a href="admin-bulk.html">تسجيل جماعي</a><a href="admin.html">لوحة الإشراف</a></nav></header>
+<main class="bulkWrap">
+<section class="bulkPanel"><h1>أرشفة حسابات الطلاب</h1>
+<p>الأرشفة توقف دخول الطالب وتُخرجه من القوائم النشطة، مع الاحتفاظ بحسابه ومجموعته ودرجاته وكل سجل التدريب. يمكن استعادة الحساب لاحقًا دون حذف بياناته.</p>
+<label>اختيار المجموعة <select id="archiveCohort"><option value="">اختر مجموعة</option></select></label>
+<div class="bulkActions"><button class="btnPrimary" id="archiveGroup" disabled>أرشفة طلاب المجموعة بعد نهاية المقرر</button><span id="archiveCount" role="status"></span></div>
+<p class="bulkDanger">الأرشفة لا تعني الحذف. يُسجل السبب وهوية المشرف في سجل العمليات. الاستعادة تعيد حالة الحساب السابقة، بما فيها الإيقاف إذا كان موقوفًا من قبل.</p>
+</section>
+<section class="bulkPanel"><h2>طلاب المجموعة غير المؤرشفين</h2><div class="tableScroll"><table class="bulkTable"><thead><tr><th>الطالب</th><th>اسم الدخول</th><th>الحالة</th><th>الإجراء</th></tr></thead><tbody id="activeArchiveRows"><tr><td colspan="4">اختر المجموعة</td></tr></tbody></table></div></section>
+<section class="bulkPanel"><h2>الأرشيف — قابل للاستعادة</h2><p>الطلاب في الأرشيف لا يفقدون بياناتهم أو سجلاتهم الدراسية.</p>
+<div class="tableScroll"><table class="bulkTable"><thead><tr><th>الطالب</th><th>المجموعة الأصلية</th><th>اسم الدخول</th><th>الإجراء</th></tr></thead><tbody id="archivedRows"><tr><td colspan="4">جارٍ التحميل…</td></tr></tbody></table></div></section>
+</main><footer class="bulkFooter">LexLearn · نفهم طريقة تفكيرك، ونبني طريقك.</footer>
+</body></html>
