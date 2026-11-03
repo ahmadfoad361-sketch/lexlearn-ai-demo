@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>LexLearn — الإنشاء الجماعي للطلاب</title>
+<link rel="icon" type="image/svg+xml" href="assets/lexlearn-logo.svg">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/admin-bulk.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/lexlearn-config.js"></script><script src="assets/cloud-data.js"></script>
+<script src="assets/admin-bulk-core.js" defer></script><script src="assets/admin-bulk.js" defer></script>
+</head>
+<body>
+<header class="bulkTop"><a href="admin.html#cohorts" class="bulkBrand"><img src="assets/lexlearn-logo.svg" alt=""><span><b>LexLearn</b><small>إنشاء حسابات الطلاب الجماعي</small></span></a><nav><a href="admin.html#cohorts">المجموعات</a><a href="admin-archive.html">الأرشيف</a><a href="admin.html">لوحة الإشراف</a></nav></header>
+<main class="bulkWrap" id="bulkApp">
+<section class="bulkPanel"><h1>إنشاء حسابات مجموعة كاملة</h1><p>تسجيل الطلاب من ملف أو إدخال يدوي، مع مراجعة كل اسم قبل التنفيذ وتسليم بيانات الدخول في ملفات PDF منفصلة.</p>
+<label>المجموعة <select id="bulkCohort" required><option value="">جارٍ تحميل المجموعات…</option></select></label><div id="bulkScope" class="bulkNote"></div></section>
+<section class="bulkPanel">
+<h2>1. إدخال الأسماء</h2><p>ألصق أسماء الطلاب، كل اسم في سطر، أو ملف CSV يتضمن الأعمدة name وusername. يمكن أيضًا اختيار PDF أو صورة؛ راجع نتائج القراءة قبل إنشاء أي حساب.</p>
+<textarea id="bulkManual" rows="7" placeholder="أحمد محمد علي&#10;مريم محمود عبدالله&#10;يوسف حسن إبراهيم" aria-label="أسماء الطلاب"></textarea>
+<div class="bulkActions"><button id="bulkParse" class="btnPrimary">مراجعة الأسماء المكتوبة</button><label class="fileButton">استيراد PDF / صورة / CSV / TXT <input type="file" id="bulkFile" accept=".pdf,.csv,.txt,image/png,image/jpeg,image/webp" aria-label="استيراد ملف الطلاب"></label></div>
+<p id="bulkParseStatus" role="status" class="bulkInfo">الملفات تُقرأ داخل المتصفح، ولا تُرسل صور الأسماء إلى قاعدة بيانات LexLearn. تتطلب قراءة الصور تحميل مكتبة OCR، وقد تتطلب اتصالًا بالإنترنت.</p>
+</section>
+<section class="bulkPanel">
+<h2>2. مراجعة وإقرار البيانات</h2><p>يمكنك تعديل الأسماء وأسماء الدخول قبل الإنشاء. تُورَّث الجامعة والكلية والفرقة والمادة والأستاذ من المجموعة المختارة.</p>
+<div class="tableScroll"><table class="bulkTable"><thead><tr><th>م</th><th>اسم الطالب</th><th>اسم الدخول</th><th>حالة الحساب</th><th>الإجراء</th></tr></thead><tbody id="bulkRows"><tr><td colspan="5">أدخل الأسماء أولًا</td></tr></tbody></table></div>
+<label class="bulkConsent"><input type="checkbox" id="bulkTerms">أؤكد أن لدي موافقة صريحة سابقة من **كل طالب** على <a href="terms.html" target="_blank" rel="noopener">الشروط</a> و<a href="privacy.html" target="_blank" rel="noopener">الخصوصية</a> ومعالجة بيانات التعلم والتصحيح الخارجي. لن تُنشأ حسابات دون هذا الإقرار.</label>
+<div class="bulkActions"><button class="btnPrimary" id="bulkCreate" disabled>إنشاء الحسابات المعروضة دفعة واحدة</button><span id="bulkProgress" role="status" aria-live="polite"></span></div>
+</section>
+<section class="bulkPanel">
+<h2>3. تسليم ملفات المجموعة</h2><p>كل طالب يحصل على PDF خاص باسمه واسم الدخول وكلمة المرور الأولى وشعار LexLearn. تُنشأ أيضًا قائمة عامة بالأسماء والمجموعة والأستاذ <strong>دون كلمات مرور</strong>.</p>
+<div class="bulkActions"><button id="bulkDownload" class="btnPrimary" disabled>تحميل ZIP به ملفات الطلاب وPDF الكشف</button><button id="bulkRoster" disabled>تحميل كشف المجموعة PDF فقط</button></div>
+<p class="bulkDanger">تنبيه: ملف ZIP يحتوي كلمات مرور أولية صريحة. احتفظ به في مكان آمن، ولا ترسله في مجموعة واتساب أو بريد جماعي. تظهر كلمات المرور بعد الإنشاء في هذه الجلسة فقط ولا تُحفظ في المتصفح أو سجلات LexLearn.</p>
+</section>
+</main>
+<footer class="bulkFooter">LexLearn · نفهم طريقة تفكيرك، ونبني طريقك.</footer>
+</body>
+</html>
