@@ -15,7 +15,15 @@
 <header class="bulkTop"><a href="admin.html#cohorts" class="bulkBrand"><img src="assets/lexlearn-logo.svg" alt=""><span><b>LexLearn</b><small>إنشاء حسابات الطلاب الجماعي</small></span></a><nav><a href="admin.html#cohorts">المجموعات</a><a href="admin-archive.html">الأرشيف</a><a href="admin.html">لوحة الإشراف</a></nav></header>
 <main class="bulkWrap" id="bulkApp">
 <section class="bulkPanel"><h1>إنشاء حسابات مجموعة كاملة</h1><p>تسجيل الطلاب من ملف أو إدخال يدوي، مع مراجعة كل اسم قبل التنفيذ وتسليم بيانات الدخول في ملفات PDF منفصلة.</p>
-<label>المجموعة <select id="bulkCohort" required><option value="">جارٍ تحميل المجموعات…</option></select></label><div id="bulkScope" class="bulkNote"></div></section>
+<label>المجموعة <select id="bulkCohort" required><option value="">جارٍ تحميل المجموعات…</option></select></label>
+<p>راجع بيانات المجموعة الأكاديمية قبل إنشاء الحسابات. لا تُملأ القيم الناقصة بافتراضات تلقائية.</p>
+<div class="bulkAcademic">
+<label>الدولة <select id="bulkCountry" required><option value="">اختر الدولة</option><option value="qa">قطر</option><option value="eg">مصر</option><option value="sa">السعودية</option><option value="ae">الإمارات</option></select></label>
+<label>الجامعة <input id="bulkUniversity" maxlength="160" placeholder="اسم الجامعة" required></label>
+<label>الكلية <input id="bulkFaculty" maxlength="160" placeholder="اسم الكلية" required></label>
+<label>الفرقة <input id="bulkYear" maxlength="80" placeholder="السنة الأولى" required></label>
+<label>المادة <select id="bulkCourse" required><option value="">اختر المقرر المدعوم</option><option value="qa-qu-lawc101-rights">نظرية الحق — النسخة التجريبية الحالية</option></select></label>
+</div><div id="bulkScope" class="bulkNote"></div></section>
 <section class="bulkPanel">
 <h2>1. إدخال الأسماء</h2><p>ألصق أسماء الطلاب، كل اسم في سطر، أو ملف CSV يتضمن الأعمدة name وusername. يمكن أيضًا اختيار PDF أو صورة؛ راجع نتائج القراءة قبل إنشاء أي حساب.</p>
 <textarea id="bulkManual" rows="7" placeholder="أحمد محمد علي&#10;مريم محمود عبدالله&#10;يوسف حسن إبراهيم" aria-label="أسماء الطلاب"></textarea>
@@ -23,7 +31,7 @@
 <p id="bulkParseStatus" role="status" class="bulkInfo">الملفات تُقرأ داخل المتصفح، ولا تُرسل صور الأسماء إلى قاعدة بيانات LexLearn. تتطلب قراءة الصور تحميل مكتبة OCR، وقد تتطلب اتصالًا بالإنترنت.</p>
 </section>
 <section class="bulkPanel">
-<h2>2. مراجعة وإقرار البيانات</h2><p>يمكنك تعديل الأسماء وأسماء الدخول قبل الإنشاء. تُورَّث الجامعة والكلية والفرقة والمادة والأستاذ من المجموعة المختارة.</p>
+<h2>2. مراجعة وإقرار البيانات</h2><p>يمكنك تعديل الأسماء وأسماء الدخول قبل الإنشاء. تظهر بيانات المجموعة الأكاديمية للمراجعة ويمكن استكمال الناقص منها يدويًا. لا تعتمد معلومات غير صحيحة.</p>
 <div class="tableScroll"><table class="bulkTable"><thead><tr><th>م</th><th>اسم الطالب</th><th>اسم الدخول</th><th>حالة الحساب</th><th>الإجراء</th></tr></thead><tbody id="bulkRows"><tr><td colspan="5">أدخل الأسماء أولًا</td></tr></tbody></table></div>
 <label class="bulkConsent"><input type="checkbox" id="bulkTerms">أؤكد أن لدي موافقة صريحة سابقة من كل طالب على <a href="terms.html" target="_blank" rel="noopener">الشروط</a> و<a href="privacy.html" target="_blank" rel="noopener">الخصوصية</a> ومعالجة بيانات التعلم والتصحيح الخارجي. لن تُنشأ حسابات دون هذا الإقرار.</label>
 <div class="bulkActions"><button class="btnPrimary" id="bulkCreate" disabled>إنشاء الحسابات المعروضة دفعة واحدة</button><span id="bulkProgress" role="status" aria-live="polite"></span></div>
