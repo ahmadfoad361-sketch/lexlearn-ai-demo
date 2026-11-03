@@ -136,6 +136,13 @@ async function manageStudent(data){
     }
    }catch(_){}
    var messages={
+    transfer_requires_admin:"نقل الطلاب متاح لمدير المنصة فقط.",
+    transfer_confirmation_required:"يلزم تأكيد النقل قبل الحفظ.",
+    invalid_transfer_destination:"اختر وجهة صحيحة للنقل.",
+    student_group_changed:"تغيرت مجموعة الطالب منذ فتح النافذة. أغلقها وافتحها مجددًا.",
+    student_group_unchanged:"الطالب موجود بالفعل في هذه الوجهة.",
+    group_not_available:"المجموعة لم تعد متاحة. حدّث القائمة.",
+    group_incompatible:"المجموعة غير متوافقة مع بيانات الطالب أو المقرر. حدّث القائمة.",
     activation_requires_admin:"تفعيل حسابات الطلاب متاح لمدير المنصة فقط.",
     registration_consent_required:"يلزم استكمال موافقة الطالب على شروط التسجيل قبل تفعيل الحساب.",
     account_identity_not_verified:"بيانات حساب الدخول غير مؤكدة؛ راجع حالة التسجيل.",
@@ -180,7 +187,32 @@ async function gradeAnswer(data){return invoke("grade-answer",data);}
 async function gradePilot(data){return invoke("pilot-grade",data);}
 async function gradeDiagnosticAi(){return invoke("lexlearn-diagnostic-ai-grade",{});}
 async function gradeTrainingAi(session,itemId,options){
- try{return await invoke("lexlearn-training-ai-grade",{session:session,item_id:itemId,level_one:!!(options&&options.level_one)});}
+ try{
+  var body={session:session,item_id:itemId,level_one:!!(options&&options.level_one)},result;
+  try{result=await invoke("lexlearn-training-ai-grade",body);}
+  catch(firstError){
+   // A disconnected response can still have completed on the server. Read before retrying.
+   try{result=await invoke("lexlearn-training-ai-grade",Object.assign({},body,{action:"status"}));}
+   catch(_){throw firstError;}
+   if(!result||["ai_pending","ai_verification_pending","preliminary_ai","nonanswer_zero"].indexOf(result.status)<0)throw firstError;
+  }
+  var verificationStarted=false;
+  for(var poll=0;poll<45;poll++){
+   if(result&&result.status==="ai_verification_pending"&&!verificationStarted){
+    verificationStarted=true;
+    try{result=await invoke("lexlearn-training-ai-grade",body);}
+    catch(verificationError){
+     try{result=await invoke("lexlearn-training-ai-grade",Object.assign({},body,{action:"status"}));}
+     catch(_){throw verificationError;}
+    }
+   }
+   if(!result||result.status!=="ai_pending")return result;
+   // Polling is read-only: it never creates a second paid grading job.
+   await new Promise(function(resolve){setTimeout(resolve,3000);});
+   result=await invoke("lexlearn-training-ai-grade",Object.assign({},body,{action:"status"}));
+  }
+  return result;
+ }
  catch(error){
   var code='assessment_unavailable';
   if(error&&error.context&&typeof error.context.json==='function')try{var detail=await error.context.json();if(detail&&typeof detail.error==='string')code=detail.error;}catch(_){}

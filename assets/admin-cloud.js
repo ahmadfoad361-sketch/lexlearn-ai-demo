@@ -269,6 +269,7 @@ function recordSection(key,number,title,description){
 function detail(v){
  var s=v.s,r=risk(v),axes=v.model.axes||{},advice=adminAdvice(v),lastUpdate=v.courseUpdated||v.profileUpdated;
  return '<section class="panel studentHero"><div><span class="overline">'+esc(s.cohort||"طالب مستقل · دون مجموعة")+'</span><h2>'+esc(s.name||s.username)+'</h2><p>@'+esc(s.username)+' • '+countryName(s.country)+' • '+esc(universityLabel(s.university||"—"))+' • '+esc(displayYear(s.year||"—"))+'</p>'+
+ '<p><button type="button" class="btn secondary" data-transfer-student="'+esc(s.id)+'">نقل الطالب</button></p>'+
  '<p>الكلية: '+esc(academic.faculty(s.faculty||"—",s.university))+' • الشعبة/القسم: '+esc(s.section||"—")+'</p>'+
  (s.studentRegistrationNumber?'<p>رقم القيد الجامعي: <b>'+esc(s.studentRegistrationNumber)+'</b></p>':'')+
  (s.groupEmail?'<p>بريد المجموعة: <b dir="ltr">'+esc(s.groupEmail)+'</b></p>':'')+
@@ -367,7 +368,7 @@ function contentTab(){
  '</div><div class="warn" style="margin-top:14px">أسئلة s1 وs22 الستة: اعتماد واحد من المشرف المخول بعد فحص القاعدة والسؤال والمصدر. بقية بنك الأسئلة يحتفظ بمسار المراجعة الأصلي.</div></section>';
 }
 function auditTab(){
- return '<section class="pageTitle"><div><span class="overline">Audit Log</span><h1>السجل المركزي</h1><p>أثر تدقيقي لتدخلات الإدارة.</p></div></section><section class="panel"><div class="auditList">'+(state.audit.length?state.audit.map(function(x){return '<div class="auditRow"><span class="auditIcon">'+ico("audit")+'</span><div><b>'+esc(x.action)+'</b><small>'+esc(JSON.stringify(x.details||{}))+'</small></div><time>'+new Date(x.created_at).toLocaleString("ar-EG")+'</time></div>';}).join(""):'<div class="empty">لا توجد إجراءات بعد.</div>')+'</div></section>';
+ return '<section class="pageTitle"><div><span class="overline">Audit Log</span><h1>السجل المركزي</h1><p>أثر تدقيقي لتدخلات الإدارة.</p></div></section><section class="panel"><div class="auditList">'+(state.audit.length?state.audit.map(function(x){return '<div class="auditRow"><span class="auditIcon">'+ico("audit")+'</span><div><b>'+(x.action==="TRANSFER_STUDENT"?"نقل الطالب":esc(x.action))+'</b><small>'+esc(JSON.stringify(x.details||{}))+'</small></div><time>'+new Date(x.created_at).toLocaleString("ar-EG")+'</time></div>';}).join(""):'<div class="empty">لا توجد إجراءات بعد.</div>')+'</div></section>';
 }
 function gradingTab(){
  var manual=new Map(state.pilotGrades.map(function(x){return [x.attempt_id,x];})),ai=new Map(state.pilotAi.map(function(x){return [x.attempt_id,x];}));
@@ -489,6 +490,10 @@ function bind(){
  document.querySelectorAll("[data-open]").forEach(function(b){b.onclick=function(){state.selected=b.dataset.open;state.tab="dashboard";render();};});
  var q=document.getElementById("search")||document.getElementById("ssearch");if(q)q.oninput=function(){var pos=q.selectionStart;state.q=q.value;render();var again=document.getElementById(q.id);if(again){again.focus();try{again.setSelectionRange(pos,pos);}catch(_){}}};
  document.querySelectorAll("#add,#quickAdd,#quickAddHome").forEach(function(add){add.onclick=function(){state.cohortContext=null;state.modal="add";render();};});
+ document.querySelectorAll("[data-transfer-student]").forEach(function(button){button.onclick=function(){
+  var student=state.students.find(function(s){return s.id===button.dataset.transferStudent;});
+  if(student&&window.LEX_ADMIN_TRANSFER)LEX_ADMIN_TRANSFER.open(student,async function(){await load();});
+ };});
  document.querySelectorAll("[data-close]").forEach(function(b){b.onclick=function(){state.modal=null;render();};});
  var ref=document.getElementById("refresh");if(ref)ref.onclick=load;
  var chooseCohort=document.getElementById("coh");
