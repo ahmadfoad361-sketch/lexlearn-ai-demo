@@ -154,7 +154,17 @@ async function parsePdf(file){
  for(let i=1;i<=doc.numPages;i++){
   show("bulkParseStatus","قراءة PDF — صفحة "+i+" من "+doc.numPages);
   const page=await doc.getPage(i),blocks=await page.getTextContent();
-  let value=(blocks.items||[]).map(x=>x.str||"").join("\n").trim();
+  // PDF.js may split one Arabic name into many positioned fragments.
+  // Rebuild visual text lines by their vertical baseline before review.
+  const groups=new Map();
+  for(const item of blocks.items||[]){
+   const baseline=Math.round(Number(item.transform?.[5]||0)/3)*3;
+   if(!groups.has(baseline))groups.set(baseline,[]);
+   groups.get(baseline).push({x:Number(item.transform?.[4]||0),str:String(item.str||"")});
+  }
+  let value=Array.from(groups.entries()).sort((a,b)=>b[0]-a[0])
+   .map(([_,chunks])=>chunks.sort((a,b)=>b.x-a.x).map(x=>x.str).join(" "))
+   .join("\n").trim();
   if(value.length<12){
    show("bulkParseStatus","فحص صورة الصفحة "+i+" محليًا…");
    const view=page.getViewport({scale:1.5}),canvas=document.createElement("canvas");
@@ -284,6 +294,9 @@ async function start(){
    if(state.rows.some(r=>r.status==="created")&&!state.downloaded&&
       !confirm("تم إنشاء حسابات ولم تُنزّل كلمات مرورها بعد. هل تريد تغيير المجموعة؟")){
     select.value=state.cohortId;return;
+   }
+   if(state.cohortId!==select.value&&state.rows.some(r=>r.status==="created")){
+     state.rows=[];state.downloaded=false;render();
    }
    state.cohortId=select.value;updateScope();
   });
