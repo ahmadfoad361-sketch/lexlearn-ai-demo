@@ -49,3 +49,38 @@ test("syntax of admin files",()=>{
   const s=fs.readFileSync(p,"utf8");assert.doesNotThrow(()=>new Function(s),p);
  }
 });
+
+test("browser-canvas smoke test: individual A4 and multi-page roster PDFs generated in memory",async()=>{
+ const originalDocument=global.document,originalImage=global.Image;
+ try{
+  global.Image=class{async decode(){}};
+  global.document={
+   fonts:{ready:Promise.resolve()},
+   createElement(kind){
+    assert.equal(kind,"canvas");
+    const canvas={width:1240,height:1754};
+    const g=new Proxy({canvas,measureText(x){return {width:String(x).length*18};}},{
+     get(obj,key){return key in obj?obj[key]:(()=>{});},
+     set(obj,key,value){obj[key]=value;return true;}
+    });
+    canvas.getContext=()=>g;
+    // A mock JPEG byte stream verifies PDF structure; real browser uses canvas.toDataURL.
+    canvas.toDataURL=()=>"data:image/jpeg;base64,"+Buffer.from("simulated-jpeg").toString("base64");
+    return canvas;
+   }
+  };
+  const person={name:"أحمد محمد علي",username:"lex000001",temporary_password:"sample-ONLY-NotReal999"};
+  const one=await core.credentialPdf(person,"المجموعة الثانية","د. أستاذ تجريبي");
+  const txt=Buffer.from(await one.arrayBuffer()).toString("latin1");
+  assert.match(txt,/^%PDF-1\.4/);
+  assert.match(txt,/\/Count 1/);
+  const people=Array.from({length:60},(_,i)=>({name:"طالب تجريبي "+i,username:"lex"+String(i).padStart(6,"0")}));
+  const roster=await core.rosterPdf(people,"المجموعة الثانية","د. أستاذ تجريبي");
+  const rosterText=Buffer.from(await roster.arrayBuffer()).toString("latin1");
+  assert.match(rosterText,/^%PDF-1\.4/);
+  assert.match(rosterText,/\/Count 3/);
+  assert.ok(!rosterText.includes(person.temporary_password));
+ }finally{
+  global.document=originalDocument;global.Image=originalImage;
+ }
+});
