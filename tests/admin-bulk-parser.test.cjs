@@ -84,3 +84,12 @@ test("browser-canvas smoke test: individual A4 and multi-page roster PDFs genera
   global.document=originalDocument;global.Image=originalImage;
  }
 });
+
+test("bulk enrollment must not invent missing academic placement",()=>{
+ const s=fs.readFileSync("assets/admin-bulk.js","utf8");
+ const part=s.slice(s.indexOf("function scope(g)"),s.indexOf("function professor(g)"));
+ assert.ok(!part.includes('first.country||"qa"'));
+ assert.ok(!part.includes('first.faculty||"كلية الحقوق"'));
+ assert.ok(!part.includes('g.course_id||"qa-qu-lawc101-rights"'));
+ assert.ok(s.includes('!d.year'));
+});
