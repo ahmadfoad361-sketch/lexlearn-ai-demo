@@ -111,7 +111,7 @@ function shell(body){
  '<button data-tab="dashboard" class="'+(state.tab==="dashboard"?"active":"")+'"><span>الرئيسية</span></button>'+
  '<details class="adminNavGroup" '+(["students","cohorts"].includes(state.tab)?"open":"")+'><summary>الطلاب والمجموعات</summary><div class="adminNavItems">'+
  '<button data-tab="students" class="'+(state.tab==="students"?"active":"")+'">الطلاب</button>'+
- '<button data-tab="cohorts" class="'+(state.tab==="cohorts"?"active":"")+'">المجموعات</button></div></details>'+
+ '<button data-tab="cohorts" class="'+(state.tab==="cohorts"?"active":"")+'">المجموعات</button>'+'<a href="admin-bulk.html">إنشاء حسابات جماعية</a><a href="admin-archive.html">الأرشيف</a></div></details>'+
  '<details class="adminNavGroup"><summary>الأساتذة والجامعات</summary><div class="adminNavItems">'+
  '<a href="admin-instructors.html">حسابات أساتذة الجامعات</a>'+
  '<a href="references.html">الجامعات والمراجع الأكاديمية</a></div></details>'+
@@ -140,7 +140,7 @@ function kpis(){
 }
 function studentList(){
  var q=state.q.trim().toLowerCase();
- return state.students.filter(function(s){return !q||String([s.name,s.username,s.cohort,countryName(s.country),s.university,universityLabel(s.university),s.faculty,s.year,displayYear(s.year)].join(" ")).toLowerCase().indexOf(q)>=0;});
+ return state.students.filter(function(s){return s.accountStatus!=="archived"&&(!q||String([s.name,s.username,s.cohort,countryName(s.country),s.university,universityLabel(s.university),s.faculty,s.year,displayYear(s.year)].join(" ")).toLowerCase().indexOf(q)>=0));});
 }
 
 function studentTree(list){
@@ -337,13 +337,13 @@ function cohortsTab(){
  '<p>افتح المجموعة لإضافة الطلاب والأساتذة ومراجعة بياناتها. بيانات المادة والجامعة والفرقة تُورّث تلقائيًا.</p></div>'+
  '<button class="btn primary" id="newCohort">+ مجموعة جديدة</button></section>'+
  '<section class="cohortGrid cohortGridManagement">'+state.cohorts.map(function(c){
-  var defaults=cohortDefaults(c),students=state.students.filter(function(s){return s.cohortId===c.id;}),
+  var defaults=cohortDefaults(c),students=state.students.filter(function(s){return s.cohortId===c.id&&s.accountStatus!=="archived";}),
   professors=cohortProfessors(c);
   return '<article class="panel cohortCard cohortManaged"><div class="cohortHead"><div><span class="cohortIcon">'+ico("group")+
   '</span><h2>'+esc(c.name)+'</h2></div><span class="cohortCount">'+students.length+' طالب</span></div>'+
   '<p class="cohortScope">'+esc(defaults.university||"الجامعة غير محددة")+' · '+esc(defaults.faculty)+
   ' · '+esc(displayYear(defaults.year))+' · '+esc(defaults.subject)+'</p>'+
-  '<div class="cohortButtons"><button type="button" class="btn primary" data-cohort-add="'+esc(c.id)+'">+ طالب</button>'+
+  '<div class="cohortButtons"><button type="button" class="btn primary" data-cohort-add="'+esc(c.id)+'">+ طالب</button>'+'<button type="button" class="btn secondary" data-cohort-bulk="'+esc(c.id)+'">إنشاء جماعي + ملفات PDF</button>'+'<button type="button" class="btn secondary" data-cohort-archive="'+esc(c.id)+'">أرشفة الطلاب</button>'+
   '<button type="button" class="btn secondary" data-cohort-professor="'+esc(c.id)+'">+ أستاذ جامعي</button>'+
   '<button type="button" class="btn secondary" data-cohort-edit="'+esc(c.id)+'">تعديل بيانات المجموعة</button></div>'+
   '<details class="cohortMembers" open><summary>الطلاب ('+students.length+')</summary><div class="cohortMemberList">'+
@@ -526,6 +526,8 @@ function bind(){
  document.querySelectorAll("[data-cohort-add]").forEach(function(button){button.onclick=function(){
   state.cohortContext=button.dataset.cohortAdd;state.modal="add";render();
  };});
+ document.querySelectorAll("[data-cohort-bulk]").forEach(function(button){button.onclick=function(){location.href="admin-bulk.html?cohort="+encodeURIComponent(button.dataset.cohortBulk);};});
+ document.querySelectorAll("[data-cohort-archive]").forEach(function(button){button.onclick=function(){location.href="admin-archive.html?cohort="+encodeURIComponent(button.dataset.cohortArchive);};});
  document.querySelectorAll("[data-cohort-edit]").forEach(function(button){button.onclick=function(){
   state.cohortDraft=button.dataset.cohortEdit;state.modal="cohort";render();
  };});
