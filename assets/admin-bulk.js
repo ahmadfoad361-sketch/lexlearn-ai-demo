@@ -17,10 +17,10 @@ function group(){return state.cohorts.find(x=>x.id===state.cohortId);}
 function scope(g){
  const first=state.students.find(s=>s.cohortId===g.id)||{};
  return {name:g.name,university:g.institution||first.university||"",
-  faculty:g.faculty||first.faculty||"كلية الحقوق",
-  year:g.academic_year||first.year||"السنة الأولى",
-  country:g.country_code||first.country||"qa",
-  course:g.course_id||"qa-qu-lawc101-rights",subject:g.subject_name||"نظرية الحق"};
+  faculty:g.faculty||first.faculty||"",
+  year:g.academic_year||first.year||"",
+  country:g.country_code||first.country||"",
+  course:g.course_id||first.course_id||"",subject:g.subject_name||""};
 }
 function professor(g){
  if(!g)return "لم يُعيَّن أستاذ جامعي";
@@ -52,7 +52,7 @@ function updateButtons(){
  const bad=state.rows.some(r=>r.errors?.length);
  const consent=$("bulkTerms")?.checked===true;
  const d=group()?scope(group()):null;
- $("bulkCreate").disabled=state.running||!d||!d.university||!d.faculty||
+ $("bulkCreate").disabled=state.running||!d||!d.university||!d.faculty||!d.year||!["qa","eg","sa","ae"].includes(d.country)||
   d.course!=="qa-qu-lawc101-rights"||!state.batchId||!consent||!some||bad;
  $("bulkDownload").disabled=state.running||!state.rows.some(r=>r.status==="created");
  $("bulkRoster").disabled=state.running||!state.rows.some(r=>r.status==="created");
@@ -212,9 +212,9 @@ async function submit(){
  if(!confirm("إنشاء "+todo.length+" حسابًا داخل "+group().name+"؟ بعد الإنشاء ستُعرض كلمات المرور الأولية لهذه الجلسة فقط."))return;
  state.running=true;state.downloaded=false;updateButtons();
  const g=group(),d=scope(g);let done=0;
- if(d.course!=="qa-qu-lawc101-rights"||!d.university||!d.faculty){
+ if(d.course!=="qa-qu-lawc101-rights"||!d.university||!d.faculty||!d.year||!["qa","eg","sa","ae"].includes(d.country)){
   state.running=false;updateButtons();
-  alert("المجموعة غير مهيأة لمقرر نظرية الحق المدعوم حاليًا؛ راجع الجامعة والكلية والمقرر.");
+  alert("المجموعة تفتقد بيانات أكاديمية موثقة (الدولة والجامعة والكلية والفرقة والمقرر) أو تستخدم مقررًا غير مدعوم؛ استكمل البيانات قبل الإنشاء.");
   return;
  }
  const pool=async()=>{
