@@ -33,7 +33,8 @@ try{
  const infrastructure=new Set([
   '.github/workflows/pages.yml','.github/workflows/public-release-security.yml',
   'scripts/build-public.js','scripts/security-public-boundary.cjs','scripts/verify-public-links.cjs','scripts/check-identity-cards.cjs','scripts/verify-learning-intelligence.cjs','scripts/verify-student-session.cjs',
-  'README.md','AGENTS.md','.gitignore'
+  'README.md','AGENTS.md','.gitignore',
+  '.github/workflows/cohort-bulk-archive.yml','tests/admin-bulk-parser.test.cjs'
  ]);
  const published=new Set(files);
  for(const file of tracked)if(!published.has(file)&&!infrastructure.has(file))
