@@ -81,10 +81,14 @@ function report(status,uid){
 
 async function startUI(){
  var area=root.document.getElementById("officialDiagnostic");if(!area)return;
- var cloud=root.LEX_CLOUD;
+ var cloud=root.LEX_CLOUD,stopQueueWatch=null;
  function render(html){area.innerHTML=html;}
  async function showCompleted(status){
-  render(report(status,student));
+  var queued=status.result&&status.result.measurements&&status.result.measurements.recall&&status.result.measurements.recall.ai_grade;
+  var waiting=queued&&queued.status==="ai_queued"&&queued.queue_job_id;
+  render((waiting?"<p role='status'>"+tr("إجابتك محفوظة وتنتظر التصحيح الآلي. يستمر التصحيح حتى لو أغلقت الصفحة، وتُحدَّث النتيجة بعد المراجعة.","Your answer is saved and waiting for AI assessment. Assessment continues if you close this page; the result updates after verification.")+"</p>":"")+report(status,student));
+  if(stopQueueWatch)stopQueueWatch();
+  if(waiting&&cloud.watchGradeJobs)stopQueueWatch=cloud.watchGradeJobs([queued.queue_job_id],async function(){await showCompleted(await cloud.studentLifecycleRpc("status",{courseId:COURSE_ID}));});
   if(root.LEX_MOMENTS)root.LEX_MOMENTS.bindDownload(area,exportData,lang());
  }
  function fail(err){

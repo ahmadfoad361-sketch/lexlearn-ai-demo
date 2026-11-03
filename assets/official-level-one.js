@@ -10,6 +10,7 @@ function phrase(lang,ar,en){return lang==="en"?en:ar;}
 function byId(arr,id){return arr.find(function(x){return x.item_id===id;});}
 function confirmedAi(entry){var ev=entry&&entry.evaluation||{};return ev.status==="preliminary_ai"&&ev.rubric_version==="lexlearn-training-ai-v4"&&typeof ev.provisional_percent==="number"&&Number.isFinite(ev.provisional_percent);}
 function feedbackHtml(entry,lang){
+ if(entry&&entry.evaluation?.status==="ai_queued")return "<p role='status'>"+phrase(lang,"إجابتك محفوظة وتنتظر التصحيح. يستمر التصحيح تلقائيًا حتى لو أغلقت الصفحة.","Your answer is saved and waiting for assessment. Assessment continues if you close this page.")+"</p>";
  if(!entry)return "";
  var ar=lang!=="en",ev=entry.evaluation||{},labels={
  live_birth:["الولادة الحية وبداية الشخصية","Live birth and legal personality"],
@@ -99,7 +100,7 @@ async function mount(host,opts){
   return;
  }
  function t(ar,en){return phrase(lang,ar,en);}
- var data,lastFeedback=null,consented=false,gradingBusy=false,gradingMessage="";
+ var data,lastFeedback=null,consented=false,gradingBusy=false,gradingMessage="",stopQueueWatch=null;
  host.innerHTML="<section class='stage'><div class='taskCard' role='status'>"+t("جارٍ تحميل المستوى الأول المعتمد…","Loading the approved first level…")+"</div></section>";
  try{
   data=await cloud.studentLifecycleRpc("firstLevel",{courseId:COURSE_ID});
@@ -114,7 +115,8 @@ async function mount(host,opts){
   gradingBusy=true;gradingMessage="";render();
   try{
    var result=await cloud.gradeLevelOneAi(itemId);
-   if(!result||!["preliminary_ai","nonanswer_zero"].includes(result.status))gradingMessage=t("الإجابة محفوظة، لكن التقييم الآلي لم يكتمل. يمكن إعادة المحاولة.","Answer saved, but automatic assessment did not finish. You may retry.");
+   if(result&&["queued","processing"].includes(result.status))gradingMessage=t("الإجابة محفوظة والتصحيح مستمر تلقائيًا. يمكنك العودة لاحقًا.","Your answer is saved and assessment continues automatically. You can return later.");
+   else if(!result||!["preliminary_ai","nonanswer_zero"].includes(result.status))gradingMessage=t("الإجابة محفوظة، لكن التقييم الآلي لم يكتمل. يمكن إعادة المحاولة.","Answer saved, but automatic assessment did not finish. You may retry.");
    data=await cloud.studentLifecycleRpc("firstLevel",{courseId:COURSE_ID});
   }catch(e){gradingMessage=t("لم يكتمل التصحيح، لكن الإجابة محفوظة. حاول مرة أخرى لاحقًا.","Assessment could not complete; your answer remains saved. Retry later.");}
   gradingBusy=false;render();
@@ -125,6 +127,13 @@ async function mount(host,opts){
   });
  }
  function render(){
+  if(stopQueueWatch)stopQueueWatch();
+  if(cloud.watchGradeJobs)stopQueueWatch=cloud.watchGradeJobs((data.saved||[]).filter(function(v){return v.evaluation?.status==="ai_queued";}).map(function(v){return v.evaluation.queue_job_id;}),async function refreshQueue(){
+   if(gradingBusy||(host.querySelector("textarea")&&host.querySelector("textarea").value.trim())){
+    stopQueueWatch=cloud.watchGradeJobs((data.saved||[]).filter(function(v){return v.evaluation?.status==="ai_queued";}).map(function(v){return v.evaluation.queue_job_id;}),refreshQueue);return;
+   }
+   data=await cloud.studentLifecycleRpc("firstLevel",{courseId:COURSE_ID});render();
+  });
   if(!data.allowed){
    host.innerHTML="<section class='stage'><div class='taskCard'><h2>"+t("المستوى الأول بانتظار الاعتماد","Level one is awaiting approval")+"</h2><p>"+t("تم حفظ التشخيص والخطة. لا يمكن عرض أسئلة قانونية غير معتمدة.","Your diagnostic and plan are saved. Unapproved academic questions cannot be released.")+"</p><p role='status'>"+esc(data.reason||"academic_release_pending")+"</p><a href='"+(lang==="en"?"student-en":"student")+".html'>"+t("حساب الطالب","Student portal")+"</a></div></section>";
    return;
@@ -145,7 +154,7 @@ async function mount(host,opts){
    (!consented?"<p role='status'>"+t("تعذر التحقق من موافقة التسجيل المحفوظة، لذلك لن تُرسل الإجابات إلى مزود التصحيح الخارجي. تواصل مع المشرف لمراجعة الحساب.","We could not confirm the registration consent on file. No answer will be sent for external AI grading. Contact your supervisor.")+"</p>":"")+
    (gradingMessage?"<p role='status'>"+esc(gradingMessage)+"</p>":"")+"</div></section>";
   var previousResults=data.tasks.filter(function(x){return !!byId(saved,x.id);}).map(function(x){
-   var entry=byId(saved,x.id),pending=!confirmedAi(entry)&&entry.evaluation?.status!=="nonanswer_zero";
+   var entry=byId(saved,x.id),pending=!confirmedAi(entry)&&entry.evaluation?.status!=="nonanswer_zero"&&entry.evaluation?.status!=="ai_queued";
    return "<section class='taskCard' style='margin:1rem 0'><h3>"+esc(lang==="en"?x.title_en:x.title_ar)+"</h3>"+
     feedbackHtml(entry,lang)+(pending&&consented?"<button type='button' data-level-grade='"+esc(x.id)+"' "+(gradingBusy?"disabled":"")+">"+
     t("تصحيح الإجابة بالذكاء الاصطناعي","Assess this answer with AI")+"</button>":"")+"</section>";

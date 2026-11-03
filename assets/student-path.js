@@ -107,7 +107,8 @@ function startGradingWait(settings){
 function confirmedGrade(ev){return !!(ev&&ev.status==="preliminary_ai"&&ev.rubric_version==="lexlearn-training-ai-v4"&&
  typeof ev.provisional_percent==="number"&&Number.isFinite(ev.provisional_percent)&&ev.provisional_percent>=0&&ev.provisional_percent<=100);}
 function deterministicZero(ev){return !!(ev&&ev.status==="nonanswer_zero"&&ev.provisional_percent===0);}
-function needsAssessment(v){return !confirmedGrade(v&&v.evaluation)&&!deterministicZero(v&&v.evaluation);}
+function queuedGrade(v){return !!(v&&v.evaluation&&v.evaluation.status==="ai_queued"&&v.evaluation.queue_job_id);}
+function needsAssessment(v){return !queuedGrade(v)&&!confirmedGrade(v&&v.evaluation)&&!deterministicZero(v&&v.evaluation);}
 function stageSkillSnapshot(rows,session){
  var output={recall:{percent:null,count:0,fresh:false},understanding:{percent:null,count:0,fresh:false}};
  Object.keys(output).forEach(function(dim){
@@ -141,6 +142,7 @@ function stageSkillScorecard(rows,session){
 
 function feedback(item){
  var ev=item&&item.evaluation||{};
+ if(queuedGrade(item))return "<div class='feedback' role='status'><b>"+t("إجابتك محفوظة وتنتظر التصحيح","Your answer is saved and waiting for assessment")+"</b><p>"+t("يستمر التصحيح تلقائيًا حتى لو أغلقت الصفحة. ستظهر النتيجة بعد اكتمال المراجعة؛ لا تحتاج إلى إعادة الإرسال.","Assessment continues if you close this page. Your result appears after verification; you do not need to submit again.")+"</p></div>";
  if(deterministicZero(ev)){
   return "<div class='feedback' role='status'><b>"+t("درجة السؤال: 0%","Task score: 0%")+"</b><p>"+
     t("الإجابة المكتوبة لا تحمل معنى يمكن تصحيحه. هذه درجة السؤال فقط؛ راجع القاعدة وأجب بوضوح في التدريب التالي.",
@@ -220,16 +222,17 @@ async function boot(){
   }
   var selected=Number(new URLSearchParams(root.location.search).get("session"));
   if(!Number.isInteger(selected)||selected<1||selected>30||selected>overview.unlocked)selected=overview.unlocked;
-  var data=null,busy=false,progressRows=[],historyAvailable=false,adaptation=null,acceptedAi=false,aiUnavailable=false,gradingIssue="",studyRead=false;
+  var data=null,busy=false,progressRows=[],historyAvailable=false,adaptation=null,acceptedAi=false,aiUnavailable=false,gradingIssue="",studyRead=false,stopQueueWatch=null;
   try{if(cloud.getConsent)acceptedAi=!!await cloud.getConsent("lexlearn-ai-grading-v1","external_ai_grading");}catch(_){}
   function gradingMessage(){
+   if(gradingIssue==='queued')return t("إجابتك محفوظة، والتصحيح مستمر تلقائيًا. يمكنك متابعة التدريب أو العودة لاحقًا.","Your answer is saved and assessment continues automatically. You can continue practising or return later.");
    if(gradingIssue==='approved_rubric_required'||gradingIssue==='approved_sources_required')return t("لم تتمكن الخدمة من تحميل معايير السؤال ومصادره. إجابتك محفوظة؛ أعد التصحيح من الزر أدناه.","The question criteria or sources could not load. Your answer is saved; retry below.");
    if(gradingIssue==='answer_retry_limit')return t("لم نحصل على نتيجة مؤكدة بعد المحاولات المتاحة لهذه الإجابة. إجابتك محفوظة ولم تُحتسب صفرًا.","No confirmed result was obtained within this answer’s retry allowance. Your answer is saved and has not been scored zero.");
    if(gradingIssue==='provider_timeout')return t("استغرق التصحيح وقتًا أطول من المتاح. إجابتك محفوظة؛ أعد التصحيح من الزر أدناه.","Assessment took longer than the available time. Your answer is saved; retry below.");
    return t("لم يكتمل التصحيح الآلي. إجابتك محفوظة؛ أعد التصحيح من الزر أدناه لتظهر النتيجة والملاحظات.","Automatic assessment did not complete. Your answer is saved; retry below to see the result and feedback.");
   }
   async function requestAssessment(itemId){
-   try{var result=await cloud.gradeTrainingAi(selected,itemId);if(!result||!(result.status==="preliminary_ai"||result.status==="nonanswer_zero"))gradingIssue=result&&result.reason||"assessment_unconfirmed";return result;}
+   try{var result=await cloud.gradeTrainingAi(selected,itemId);if(!result||!(result.status==="preliminary_ai"||result.status==="nonanswer_zero"))gradingIssue=result&&["queued","processing"].includes(result.status)?"queued":result&&result.reason||"assessment_unconfirmed";return result;}
    catch(error){gradingIssue=error&&error.code||error&&error.message||"assessment_unavailable";throw error;}
   }
   async function refreshAdaptation(){
@@ -277,6 +280,14 @@ async function boot(){
   }
   function render(){
    if(!data)return;
+   if(stopQueueWatch)stopQueueWatch();
+   if(cloud.watchGradeJobs)stopQueueWatch=cloud.watchGradeJobs((data.saved||[]).filter(queuedGrade).map(function(v){return v.evaluation.queue_job_id;}),async function refreshQueue(){
+    if(busy||(host.querySelector("textarea")&&host.querySelector("textarea").value.trim())){
+     stopQueueWatch=cloud.watchGradeJobs((data.saved||[]).filter(queuedGrade).map(function(v){return v.evaluation.queue_job_id;}),refreshQueue);return;
+    }
+    var updated=await cloud.studentLifecycleRpc("trainingOpen",{courseId:COURSE,session:selected});
+    if(updated&&updated.allowed&&Array.isArray(updated.saved)){data=updated;await refreshAdaptation();await loadProgress();render();}
+   });
    if(!studyRead&&!(data.saved||[]).length&&!data.completed&&root.LEX_LEGAL_STUDY){
     var sourceIds=[];(data.tasks||[]).forEach(function(q){sourceIds=sourceIds.concat(q.sources||[]);});
     var reading=root.LEX_LEGAL_STUDY.render(sourceIds,lang());
@@ -343,7 +354,7 @@ async function boot(){
     if(busy)return;busy=true;retry.disabled=true;retry.textContent=t("نصحح إجابتك…","Assessing your answer…");
     var wait=startGradingWait({name:learnerDisplayName,language:lang(),dimension:v.dimension,stage:"grading"});
     if(wait)wait.setPhase("grading");
-    try{var graded=await requestAssessment(v.item_id);aiUnavailable=!graded||!(graded.status==="preliminary_ai"||graded.status==="nonanswer_zero");
+    try{var graded=await requestAssessment(v.item_id);aiUnavailable=!graded||!(graded.status==="preliminary_ai"||graded.status==="nonanswer_zero"||graded.status==="queued"||graded.status==="processing");
      var reread=await cloud.studentLifecycleRpc("trainingOpen",{courseId:COURSE,session:selected});
      if(!reread||!reread.allowed||!Array.isArray(reread.saved))throw Error("grade_readback_failed");
      data=reread;await refreshAdaptation();await loadProgress();busy=false;render();
@@ -359,7 +370,7 @@ async function boot(){
     for(var i=0;i<missing.length;i++){
      if(note)note.textContent=t("نصحح الإجابة ","Assessing answer ")+(i+1)+" / "+missing.length;
      if(wait)wait.setStep(i+1,missing.length);
-     try{var outcome=await requestAssessment(missing[i].item_id);aiUnavailable=!outcome||!(outcome.status==="preliminary_ai"||outcome.status==="nonanswer_zero");}catch(_){aiUnavailable=true;}
+     try{var outcome=await requestAssessment(missing[i].item_id);aiUnavailable=!outcome||!(outcome.status==="preliminary_ai"||outcome.status==="nonanswer_zero"||outcome.status==="queued"||outcome.status==="processing");}catch(_){aiUnavailable=true;}
     }
     try{var updated=await cloud.studentLifecycleRpc("trainingOpen",{courseId:COURSE,session:selected});if(!updated||!updated.allowed||!Array.isArray(updated.saved))throw Error();data=updated;await refreshAdaptation();await loadProgress();busy=false;render();}
     catch(_){busy=false;allRetry.disabled=false;if(note)note.textContent=t("تعذر تحديث النتيجة الآن. أعد المحاولة.","Results could not refresh. Retry.");}
@@ -391,7 +402,7 @@ async function boot(){
      if(wait&&acceptedAi&&cloud.gradeTrainingAi)wait.setPhase("grading");
      aiUnavailable=false;
      if(acceptedAi&&cloud.gradeTrainingAi){
-      try{var ai=await requestAssessment(next.id);aiUnavailable=!ai||!(ai.status==="preliminary_ai"||ai.status==="nonanswer_zero");}
+      try{var ai=await requestAssessment(next.id);aiUnavailable=!ai||!(ai.status==="preliminary_ai"||ai.status==="nonanswer_zero"||ai.status==="queued"||ai.status==="processing");}
       catch(_){aiUnavailable=true;}
      }
      var checked=await cloud.studentLifecycleRpc("trainingOpen",{courseId:COURSE,session:selected});
