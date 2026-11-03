@@ -154,8 +154,23 @@ function shell(){
 }
 async function call(body){
  const res=await db.functions.invoke("lexlearn-admin-learning-impact",{body});
- if(res.error||!res.data?.ok)throw Error(res.data?.error||res.error?.message||"report_unavailable");
+ if(res.error||!res.data?.ok){
+  let failure=res.data;
+  try{if(res.error?.context?.json)failure=await res.error.context.json();}catch(_){}
+  const error=Error(failure?.error||"report_unavailable");
+  error.status=res.error?.context?.status;
+  error.network=res.error?.name==="FunctionsFetchError";
+  throw error;
+ }
  return res.data;
+}
+function reportFailure(error,kind){
+ if(error.status===401||error.message==="UNAUTHORIZED")return "انتهت جلسة الدخول أو تعذر التحقق منها. سجّل دخول المشرف مجددًا ثم افتح التقرير.";
+ if(error.status===403||error.message==="FORBIDDEN")return "هذا التقرير متاح لمشرف المنصة المفوض فقط.";
+ if(error.message==="student_not_in_active_course")return "الطالب غير مسجل حاليًا بحساب وتسجيل نشطين في هذا المقرر.";
+ if(error.message==="cohort_exceeds_500_student_report_limit")return "عدد الطلاب يتجاوز سعة التقرير الحالي. يلزم تقسيم التقرير قبل حساب المؤشرات.";
+ if(error.network)return "تعذر الاتصال بخدمة التقارير. تحقق من الإنترنت ثم أعد المحاولة.";
+ return "تعذر تحميل "+(kind==="cohort"?"مؤشرات المجموعة":"سجل الطالب")+" بسبب خطأ في خدمة التقارير. أعد المحاولة، وإذا استمرت المشكلة تواصل مع الدعم.";
 }
 async function loadStudent(uid){
  if(loading)return;
@@ -165,7 +180,7 @@ async function loadStudent(uid){
   if(!students.some(s=>s.id===uid))throw Error("غير مسموح بعرض هذا الطالب.");
   const res=await call({action:"student",student_id:uid});
   if(selected===uid){report=res.report;shell();}
- }catch(e){studentError="تعذر تحميل سجل الطالب. تحقق من الاتصال والصلاحيات ثم أعد المحاولة.";shell();}
+ }catch(e){studentError=reportFailure(e,"student");shell();}
  finally{loading=false;}
 }
 async function loadGroup(){
@@ -173,7 +188,7 @@ async function loadGroup(){
  group=null;groupError="";loading=true;
  document.getElementById("impactResult").innerHTML='<section class="panel">جارٍ تجميع نتائج طلاب المقرر من قاعدة البيانات…</section>';
  try{const res=await call({action:"cohort"});group=res.impact;shell();}
- catch(e){groupError="تعذر حساب مؤشرات المجموعة دون بيانات مكتملة. يرجى إعادة المحاولة.";shell();}
+ catch(e){groupError=reportFailure(e,"cohort");shell();}
  finally{loading=false;}
 }
 async function boot(){
