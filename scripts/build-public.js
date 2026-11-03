@@ -7,7 +7,7 @@ const pages=[
   "index.html","conference.html","go/index.html","showcase.html","showcase-level1.html","program.html","diagnostic.html","student-practice.html","student-path.html","student-profile.html",
   "index-en.html","showcase-en.html","showcase-level1-en.html","program-en.html",
   "student-login.html","student-register.html","student.html","student-login-en.html","student-register-en.html","student-en.html",
-  "admin-login.html","admin.html","admin-instructors.html","admin-analytics.html","admin-progress.html","instructor-login.html","instructor.html","references.html","lexlearn-grading-console.html","demo-supervisor.html","pilot-review.html","pilot-qa.html",
+  "admin-login.html","admin.html","admin-bulk.html","admin-archive.html","admin-instructors.html","admin-analytics.html","admin-progress.html","instructor-login.html","instructor.html","references.html","lexlearn-grading-console.html","demo-supervisor.html","pilot-review.html","pilot-qa.html",
   "privacy.html","privacy-en.html","terms.html","terms-en.html","reset-password.html",".nojekyll"
 ];
 const assets=[
@@ -23,7 +23,7 @@ const assets=[
   "portal.css","register.css","auth-controls.js","student-register.js","student-login.js","student-login-en.js","admin-login-v2.js",
   "student.css","student.js","student-en.js",
   "english.css",
-  "site-analytics.js","admin-analytics.js","admin-analytics.css","academic-display.js","flags/qa.svg","flags/eg.svg","flags/sa.svg","flags/ae.svg","flags/LICENSE","admin.css","admin-experience.css","admin-appearance.js","admin-entry.js","admin-cloud.js","admin-transfer.js","instructor.css","instructor-card.js","instructor-card.css","instructor-login.js","instructor-dashboard.js","admin-instructors.js","admin-progress.js","lex-references.js","student-records.js","student-report.js","admin.js",
+  "site-analytics.js","admin-analytics.js","admin-analytics.css","academic-display.js","flags/qa.svg","flags/eg.svg","flags/sa.svg","flags/ae.svg","flags/LICENSE","admin.css","admin-experience.css","admin-appearance.js","admin-entry.js","admin-cloud.js","admin-transfer.js","admin-bulk-core.js","admin-bulk.js","admin-bulk.css","admin-archive.js","instructor.css","instructor-card.js","instructor-card.css","instructor-login.js","instructor-dashboard.js","admin-instructors.js","admin-progress.js","lex-references.js","student-records.js","student-report.js","admin.js",
   "lexlearn-config.js","cloud-data.js","lexlearn-grading-console.js","reset-password.js",
   "legal-pages.css"
 ];
