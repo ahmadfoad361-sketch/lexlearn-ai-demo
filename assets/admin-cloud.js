@@ -140,7 +140,7 @@ function kpis(){
 }
 function studentList(){
  var q=state.q.trim().toLowerCase();
- return state.students.filter(function(s){return s.accountStatus!=="archived"&&(!q||String([s.name,s.username,s.cohort,countryName(s.country),s.university,universityLabel(s.university),s.faculty,s.year,displayYear(s.year)].join(" ")).toLowerCase().indexOf(q)>=0));});
+ return state.students.filter(function(s){return s.accountStatus!=="archived"&&(!q||String([s.name,s.username,s.cohort,countryName(s.country),s.university,universityLabel(s.university),s.faculty,s.year,displayYear(s.year)].join(" ")).toLowerCase().indexOf(q)>=0);});
 }
 
 function studentTree(list){
