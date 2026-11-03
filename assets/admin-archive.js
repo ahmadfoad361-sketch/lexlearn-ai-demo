@@ -70,7 +70,12 @@ async function archiveOne(s){
 async function restoreOne(s){
  if(!confirm("استعادة حساب "+(s.name||s.username)+" إلى حالته السابقة، دون فقد سجل التدريب؟"))return;
  state.busy=true;render();
- try{await call("restore_student",s,"استعادة بناءً على طلب الإدارة");await load();}
+ try{
+  const result=await call("restore_student",s,"استعادة بناءً على طلب الإدارة");
+  await load();
+  if(result.original_auth_ban_retained===true)
+   alert("تمت الاستعادة مع الإبقاء على حظر الدخول القديم؛ راجع قرار الحظر السابق قبل تفعيل الدخول.");
+ }
  catch(e){alert("تعذرت الاستعادة: "+String(e?.message||e));}
  finally{state.busy=false;render();}
 }
