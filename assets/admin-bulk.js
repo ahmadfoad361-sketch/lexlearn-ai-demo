@@ -15,12 +15,19 @@ const $=id=>document.getElementById(id);
 function show(id,text){const el=$(id);if(el)el.textContent=text;}
 function group(){return state.cohorts.find(x=>x.id===state.cohortId);}
 function scope(g){
- const first=state.students.find(s=>s.cohortId===g.id)||{};
- return {name:g.name,university:g.institution||first.university||"",
-  faculty:g.faculty||first.faculty||"",
-  year:g.academic_year||first.year||"",
-  country:g.country_code||first.country||"",
-  course:g.course_id||first.course_id||"",subject:g.subject_name||""};
+ return {name:g.name,university:$("bulkUniversity").value.trim(),
+  faculty:$("bulkFaculty").value.trim(),
+  year:$("bulkYear").value.trim(),
+  country:$("bulkCountry").value,
+  course:$("bulkCourse").value,subject:$("bulkCourse").selectedOptions[0]?.textContent||""};
+}
+function fillAcademicFields(){
+ const g=group(),first=g?(state.students.find(s=>s.cohortId===g.id)||{}):{};
+ $("bulkCountry").value=g?.country_code||first.country||"";
+ $("bulkUniversity").value=g?.institution||first.university||"";
+ $("bulkFaculty").value=g?.faculty||first.faculty||"";
+ $("bulkYear").value=g?.academic_year||first.year||"";
+ $("bulkCourse").value=g?.course_id||"";
 }
 function professor(g){
  if(!g)return "لم يُعيَّن أستاذ جامعي";
@@ -301,7 +308,11 @@ async function start(){
   });
   const requested=new URLSearchParams(location.search).get("cohort");
   if(state.cohorts.some(c=>c.id===requested))select.value=requested;
-  state.cohortId=select.value;updateScope();render();
+  state.cohortId=select.value;fillAcademicFields();updateScope();render();
+  ["bulkCountry","bulkUniversity","bulkFaculty","bulkYear","bulkCourse"].forEach(id=>{
+   $(id).addEventListener("input",updateScope);
+   $(id).addEventListener("change",updateScope);
+  });
   select.addEventListener("change",()=>{
    if(state.rows.some(r=>r.status==="created")&&!state.downloaded&&
       !confirm("تم إنشاء حسابات ولم تُنزّل كلمات مرورها بعد. هل تريد تغيير المجموعة؟")){
@@ -310,7 +321,7 @@ async function start(){
    if(state.cohortId!==select.value&&state.rows.some(r=>r.status==="created")){
      state.rows=[];state.downloaded=false;render();
    }
-   state.cohortId=select.value;updateScope();
+   state.cohortId=select.value;fillAcademicFields();updateScope();
   });
   $("bulkParse").onclick=()=>applyParsed(core.parseText($("bulkManual").value),"الإدخال اليدوي");
   $("bulkFile").onchange=async()=>{
