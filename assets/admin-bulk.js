@@ -9,15 +9,19 @@ if(!api||!core||!api.isConfigured()||!app){
   return;
 }
 const state={cohorts:[],students:[],instructors:[],assignments:[],rows:[],
-  cohortId:"",running:false,downloaded:false,outputCount:0,abort:false};
+  cohortId:"",running:false,downloaded:false,outputCount:0,abort:false,
+  batchId:(root.crypto&&root.crypto.randomUUID?root.crypto.randomUUID():null)};
 const $=id=>document.getElementById(id);
 function show(id,text){const el=$(id);if(el)el.textContent=text;}
 function group(){return state.cohorts.find(x=>x.id===state.cohortId);}
-function scope(g){return {
-  name:g.name,university:g.institution||"",faculty:g.faculty||"كلية الحقوق",
-  year:g.academic_year||"السنة الأولى",country:g.country_code||"qa",
-  course:g.course_id||"qa-qu-lawc101-rights",subject:g.subject_name||"نظرية الحق"
-};}
+function scope(g){
+ const first=state.students.find(s=>s.cohortId===g.id)||{};
+ return {name:g.name,university:g.institution||first.university||"",
+  faculty:g.faculty||first.faculty||"كلية الحقوق",
+  year:g.academic_year||first.year||"السنة الأولى",
+  country:g.country_code||first.country||"qa",
+  course:g.course_id||"qa-qu-lawc101-rights",subject:g.subject_name||"نظرية الحق"};
+}
 function professor(g){
  if(!g)return "لم يُعيَّن أستاذ جامعي";
  const d=scope(g),names=[];
@@ -47,7 +51,9 @@ function updateButtons(){
  const some=state.rows.some(r=>r.status==="ready"||r.status==="failed");
  const bad=state.rows.some(r=>r.errors?.length);
  const consent=$("bulkTerms")?.checked===true;
- $("bulkCreate").disabled=state.running||!group()||!consent||!some||bad;
+ const d=group()?scope(group()):null;
+ $("bulkCreate").disabled=state.running||!d||!d.university||!d.faculty||
+  d.course!=="qa-qu-lawc101-rights"||!state.batchId||!consent||!some||bad;
  $("bulkDownload").disabled=state.running||!state.rows.some(r=>r.status==="created");
  $("bulkRoster").disabled=state.running||!state.rows.some(r=>r.status==="created");
  $("bulkCohort").disabled=state.running;
@@ -206,6 +212,11 @@ async function submit(){
  if(!confirm("إنشاء "+todo.length+" حسابًا داخل "+group().name+"؟ بعد الإنشاء ستُعرض كلمات المرور الأولية لهذه الجلسة فقط."))return;
  state.running=true;state.downloaded=false;updateButtons();
  const g=group(),d=scope(g);let done=0;
+ if(d.course!=="qa-qu-lawc101-rights"||!d.university||!d.faculty){
+  state.running=false;updateButtons();
+  alert("المجموعة غير مهيأة لمقرر نظرية الحق المدعوم حاليًا؛ راجع الجامعة والكلية والمقرر.");
+  return;
+ }
  const pool=async()=>{
   while(todo.length){
    const row=todo.shift();if(!row)break;
@@ -213,6 +224,7 @@ async function submit(){
    try{
     const result=await api.createStudent({
      name:row.name,username:row.username,cohort_id:g.id,
+     bulk_import:true,batch_id:state.batchId,
      country_code:d.country,university:d.university,faculty:d.faculty,
      year:d.year,course_id:d.course,
      accepted_registration_terms:true,accepted_terms_version:"2026-10-23-v6"
