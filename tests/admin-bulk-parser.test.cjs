@@ -52,20 +52,22 @@ test("syntax of admin files",()=>{
 
 test("browser-canvas smoke test: individual A4 and multi-page roster PDFs generated in memory",async()=>{
  const originalDocument=global.document,originalImage=global.Image;
+ const canvases=[];let failEncoding=false,logoDecodes=0;
  try{
-  global.Image=class{async decode(){}};
+  global.Image=class{async decode(){logoDecodes++;}};
   global.document={
    fonts:{ready:Promise.resolve()},
    createElement(kind){
     assert.equal(kind,"canvas");
     const canvas={width:1240,height:1754};
+    canvases.push(canvas);
     const g=new Proxy({canvas,measureText(x){return {width:String(x).length*18};}},{
      get(obj,key){return key in obj?obj[key]:(()=>{});},
      set(obj,key,value){obj[key]=value;return true;}
     });
     canvas.getContext=()=>g;
     // A mock JPEG byte stream verifies PDF structure; real browser uses canvas.toDataURL.
-    canvas.toDataURL=()=>"data:image/jpeg;base64,"+Buffer.from("simulated-jpeg").toString("base64");
+    canvas.toDataURL=()=>{if(failEncoding)throw Error('encoding_failed');return "data:image/jpeg;base64,"+Buffer.from("simulated-jpeg").toString("base64");};
     return canvas;
    }
   };
@@ -74,12 +76,20 @@ test("browser-canvas smoke test: individual A4 and multi-page roster PDFs genera
   const txt=Buffer.from(await one.arrayBuffer()).toString("latin1");
   assert.match(txt,/^%PDF-1\.4/);
   assert.match(txt,/\/Count 1/);
+  assert.match(txt,/\/Width 1240 \/Height 1754/,'PDF retains original raster dimensions');
+  assert.ok(canvases.every(c=>c.width===1&&c.height===1),'completed individual image memory is released immediately');
   const people=Array.from({length:60},(_,i)=>({name:"طالب تجريبي "+i,username:"lex"+String(i).padStart(6,"0")}));
   const roster=await core.rosterPdf(people,"المجموعة الثانية","د. أستاذ تجريبي");
   const rosterText=Buffer.from(await roster.arrayBuffer()).toString("latin1");
   assert.match(rosterText,/^%PDF-1\.4/);
   assert.match(rosterText,/\/Count 3/);
   assert.ok(!rosterText.includes(person.temporary_password));
+  assert.equal(canvases.length,4);
+  assert.ok(canvases.every(c=>c.width===1&&c.height===1),'each roster image is released after encoding');
+  failEncoding=true;
+  await assert.rejects(core.credentialPdf(person,'Synthetic','Synthetic'),/encoding_failed/);
+  assert.ok(canvases.every(c=>c.width===1&&c.height===1),'encoding failure also releases its raster');
+  assert.equal(logoDecodes,1,'a batch shares one decoded logo instead of retaining hundreds');
  }finally{
   global.document=originalDocument;global.Image=originalImage;
  }
