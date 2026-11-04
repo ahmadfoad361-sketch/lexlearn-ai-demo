@@ -95,12 +95,23 @@ function binaryPdf(pages){
  return new Blob(parts,{type:"application/pdf"});
 }
 function jpeg(c){
+ try{
+ var width=c.width,height=c.height;
  var b64=c.toDataURL("image/jpeg",.88).split(",")[1],s=atob(b64),bytes=new Uint8Array(s.length);
  for(var i=0;i<s.length;i++)bytes[i]=s.charCodeAt(i);
- return {jpeg:bytes,w:c.width,h:c.height,paperW:595,paperH:842};
+ return {jpeg:bytes,w:width,h:height,paperW:595,paperH:842};
+ }finally{
+  // The PDF owns the encoded bytes now. Release the large raster immediately,
+  // including on encoding failure, instead of waiting for browser collection.
+  c.width=1;c.height=1;
+ }
 }
-async function logoImage(){
- try{var im=new Image();im.src="assets/lexlearn-logo.svg";await im.decode();return im;}catch(_){return null;}
+var logoPromise=null;
+function logoImage(){
+ if(!logoPromise)logoPromise=(async function(){
+  try{var im=new Image();im.src="assets/lexlearn-logo.svg";await im.decode();return im;}catch(_){return null;}
+ })();
+ return logoPromise;
 }
 function canvas(){var c=document.createElement("canvas");c.width=1240;c.height=1754;return c;}
 function head(g,title,sub,logo){
