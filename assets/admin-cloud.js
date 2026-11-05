@@ -124,7 +124,8 @@ function shell(body){
  '<a href="demo-supervisor.html">نتائج الديمو</a></div></details>'+
  '<details class="adminNavGroup" '+(state.tab==="audit"?"open":"")+'><summary>إدارة المنصة</summary><div class="adminNavItems">'+
  '<button data-tab="audit" class="'+(state.tab==="audit"?"active":"")+'">سجل العمليات</button>'+
- '<a href="references.html">تغذية الذكاء الاصطناعي</a></div></details></nav>'+
+ '<a href="references.html">تغذية الذكاء الاصطناعي</a>'+
+ '<a href="admin-research.html">مختبر الأبحاث والأسئلة التكيفية</a></div></details></nav>'+
  '<div class="topActions"><span class="topLink">● لوحة مركزية</span><a class="topLink" href="admin-instructors.html">الأساتذة الجامعيون</a>'+
  '<a class="topLink" href="index.html">عرض الموقع</a>'+
  '<button class="topLink" id="logout">تسجيل الخروج</button></div></div></header><main class="wrap">'+body+'</main>'+modal();
