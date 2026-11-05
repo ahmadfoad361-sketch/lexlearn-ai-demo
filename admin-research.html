@@ -26,6 +26,12 @@ button:disabled{opacity:.55;cursor:not-allowed}.ghost{background:#edf0f4;color:v
 .refList h3{font-size:15px;margin:0 0 3px}.refList small{display:block;color:var(--quiet);font-size:12px}
 .refList p{font-size:14px;margin:4px 0}.refList a{color:var(--maroon);font-size:13px}
 .actions{display:flex;gap:8px;align-items:center;margin-top:16px;flex-wrap:wrap}.full{grid-column:1/-1}
+.shadowGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.shadowItem{border:1px solid var(--line);padding:16px;border-radius:12px;background:#fff}
+.shadowItem h3{margin:0 0 8px;font-size:17px}.shadowItem p{white-space:pre-line}
+.shadowTag{font-size:12px;color:var(--quiet);margin-bottom:12px}.shadowCheck{display:flex;gap:8px;align-items:baseline;margin:7px 0}
+.shadowCheck input{width:auto}.shadowActions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+@media(max-width:820px){.shadowGrid{grid-template-columns:1fr}}
 [hidden]{display:none!important} :focus-visible{outline:3px solid #c79130;outline-offset:3px}
 @media(max-width:820px){.columns{grid-template-columns:1fr}.panel{padding:15px}header{padding:17px}}
 </style>
@@ -53,6 +59,15 @@ button:disabled{opacity:.55;cursor:not-allowed}.ghost{background:#edf0f4;color:v
 <section class="panel"><h2>فهرس الأبحاث المعتمدة كمرجع للتصميم</h2><p class="muted">ملخصات تفسيرية مع حدود الاستفادة؛ لا تمثل مراجعة للنص الكامل لكل دراسة.</p>
 <label for="search">البحث عن عنوان أو باحث أو سنة</label><input id="search" type="search" placeholder="مثلاً: Retrieval أو 2013 أو Karpicke">
 <div id="refList" class="refList"></div>
+</section>
+<section class="panel full" id="shadowPanel">
+<h2>مقارنة تجريبية: القديم مقابل المقترح</h2>
+<p class="muted">عرض للمشرف فقط يقرأ سؤالًا معتمدًا كما هو من قاعدة المحتوى، ويعرض بجواره مسودة أكثر تعليلًا. لا يكتب أي شيء في حسابات الطلاب أو بنك الأسئلة.</p>
+<label for="shadowItemId">اختر سؤالًا معتمدًا</label>
+<div class="shadowActions"><select id="shadowItemId" style="max-width:630px"><option value="lexdiag-v2-q39u">بداية الشخصية القانونية — المادة 39 (سؤال فهم)</option><option value="lexdiag-v2-q63a">استعمال الحق — المادة 63 (سؤال تطبيق)</option></select>
+<button id="shadowLoad" type="button">عرض المقارنة</button></div>
+<p id="shadowMessage" class="muted" role="status"></p>
+<div id="shadowCompare" aria-live="polite"></div>
 </section></div>
-</main><script src="assets/admin-research.js?v=20261105.1"></script>
+</main><script src="assets/admin-research.js?v=20261105.1"></script><script src="assets/admin-research-shadow.js?v=20261105.1"></script>
 </body></html>
