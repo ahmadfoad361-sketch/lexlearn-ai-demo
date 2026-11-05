@@ -25,6 +25,7 @@ provider when corresponding configuration variables are empty.
 Configure **GitHub → Settings → Secrets and variables → Actions → Variables**
 (not Secrets, because browser DSNs/project tokens are public browser configuration):
 
+- \`LEX_OBSERVABILITY_ENABLED\`: set to \`1\` only **after** staging tests and privacy review. Leave empty for a fully inert production build.
 - \`LEX_POSTHOG_PROJECT_KEY\`: the **PostHog project token** (\`phc_...\`) from the
   approved PostHog project. Ingestion uses \`https://eu.i.posthog.com\`.
 - \`LEX_SENTRY_DSN\`: the **public Sentry DSN** from the selected browser project.
