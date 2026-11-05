@@ -23,7 +23,7 @@ const assets=[
   "portal.css","register.css","auth-controls.js","student-register.js","student-login.js","student-login-en.js","admin-login-v2.js",
   "student.css","student.js","student-en.js",
   "english.css",
-  "site-analytics.js","admin-analytics.js","admin-analytics.css","academic-display.js","flags/qa.svg","flags/eg.svg","flags/sa.svg","flags/ae.svg","flags/LICENSE","admin.css","admin-experience.css","admin-appearance.js","admin-entry.js","admin-cloud.js","admin-transfer.js","admin-bulk-core.js","admin-bulk.js","admin-bulk.css","admin-archive.js","instructor.css","instructor-card.js","instructor-card.css","instructor-login.js","instructor-dashboard.js","admin-instructors.js","admin-progress.js","lex-references.js","student-records.js","student-report.js","admin.js",
+  "site-analytics.js","lexlearn-observability.js","admin-analytics.js","admin-analytics.css","academic-display.js","flags/qa.svg","flags/eg.svg","flags/sa.svg","flags/ae.svg","flags/LICENSE","admin.css","admin-experience.css","admin-appearance.js","admin-entry.js","admin-cloud.js","admin-transfer.js","admin-bulk-core.js","admin-bulk.js","admin-bulk.css","admin-archive.js","instructor.css","instructor-card.js","instructor-card.css","instructor-login.js","instructor-dashboard.js","admin-instructors.js","admin-progress.js","lex-references.js","student-records.js","student-report.js","admin.js",
   "lexlearn-config.js","cloud-data.js","lexlearn-grading-console.js","reset-password.js",
   "legal-pages.css"
 ];
@@ -101,6 +101,30 @@ for(const page of measuredPages){
  const full=path.join(out,page);let html=fs.readFileSync(full,'utf8');
  if(!html.includes('assets/lexlearn-config.js'))html=html.replace('</body>','<script src="assets/lexlearn-config.js"></script></body>');
  html=html.replace('</body>','<script src="assets/site-analytics.js" defer></script></body>');fs.writeFileSync(full,html);
+}
+
+// Privacy-first optional external analytics/error monitoring. GitHub Actions variables
+// are public browser configuration (never put API secrets in either variable).
+const posthogKey=process.env.LEX_POSTHOG_PROJECT_KEY||"";
+const sentryDsn=process.env.LEX_SENTRY_DSN||"";
+if(posthogKey&&!/^phc_[A-Za-z0-9_]+$/.test(posthogKey))
+ throw new Error("Invalid LEX_POSTHOG_PROJECT_KEY format");
+if(sentryDsn){
+ const parsed=new URL(sentryDsn);
+ if(parsed.protocol!=="https:"||!/(^|\.)sentry\.io$/i.test(parsed.hostname)||!/^\d+$/.test(parsed.pathname.slice(1)))
+  throw new Error("Invalid LEX_SENTRY_DSN host or project path");
+}
+const monitorConfig={
+ posthogKey, posthogHost:"https://eu.i.posthog.com", sentryDsn
+};
+fs.writeFileSync(path.join(out,"assets/lexlearn-observability-config.js"),
+ "window.LEX_OBSERVABILITY_CONFIG="+JSON.stringify(monitorConfig)+";\n");
+for(const page of pages){
+ if(!page.endsWith(".html")||page==="go/index.html")continue;
+ const full=path.join(out,page);
+ let html=fs.readFileSync(full,"utf8");
+ html=html.replace("</head>",'<script src="assets/lexlearn-observability-config.js" defer></script><script src="assets/lexlearn-observability.js" defer></script></head>');
+ fs.writeFileSync(full,html);
 }
 
 // Attendance should never be visible to students or professors outside the staff report.
