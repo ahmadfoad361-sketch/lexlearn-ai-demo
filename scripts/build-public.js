@@ -124,7 +124,7 @@ if(sentryDsn){
  }
 }
 // Zero instrumentation overhead and zero extra network requests in an unconfigured release.
-if(posthogKey||sentryDsn){
+if(process.env.LEX_OBSERVABILITY_ENABLED==="1" && (posthogKey||sentryDsn)){
  const monitorConfig={posthogKey,posthogHost:"https://eu.i.posthog.com",sentryDsn};
  fs.writeFileSync(path.join(out,"assets/lexlearn-observability-config.js"),
   "window.LEX_OBSERVABILITY_CONFIG="+JSON.stringify(monitorConfig)+";\n");
