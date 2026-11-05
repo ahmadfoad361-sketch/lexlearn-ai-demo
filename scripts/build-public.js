@@ -105,26 +105,38 @@ for(const page of measuredPages){
 
 // Privacy-first optional external analytics/error monitoring. GitHub Actions variables
 // are public browser configuration (never put API secrets in either variable).
-const posthogKey=process.env.LEX_POSTHOG_PROJECT_KEY||"";
-const sentryDsn=process.env.LEX_SENTRY_DSN||"";
-if(posthogKey&&!/^phc_[A-Za-z0-9_]+$/.test(posthogKey))
- throw new Error("Invalid LEX_POSTHOG_PROJECT_KEY format");
-if(sentryDsn){
- const parsed=new URL(sentryDsn);
- if(parsed.protocol!=="https:"||!/(^|\.)sentry\.io$/i.test(parsed.hostname)||!/^\d+$/.test(parsed.pathname.slice(1)))
-  throw new Error("Invalid LEX_SENTRY_DSN host or project path");
+let posthogKey=process.env.LEX_POSTHOG_PROJECT_KEY||"";
+let sentryDsn=process.env.LEX_SENTRY_DSN||"";
+// Never let an invalid optional analytics setting fail the LexLearn release.
+if(posthogKey&&!/^phc_[A-Za-z0-9_]+$/.test(posthogKey)){
+ console.warn("Monitoring: invalid PostHog project key ignored (value not logged).");
+ posthogKey="";
 }
-const monitorConfig={
- posthogKey, posthogHost:"https://eu.i.posthog.com", sentryDsn
-};
-fs.writeFileSync(path.join(out,"assets/lexlearn-observability-config.js"),
- "window.LEX_OBSERVABILITY_CONFIG="+JSON.stringify(monitorConfig)+";\n");
-for(const page of pages){
- if(!page.endsWith(".html")||page==="go/index.html")continue;
- const full=path.join(out,page);
- let html=fs.readFileSync(full,"utf8");
- html=html.replace("</head>",'<script src="assets/lexlearn-observability-config.js" defer></script><script src="assets/lexlearn-observability.js" defer></script></head>');
- fs.writeFileSync(full,html);
+if(sentryDsn){
+ try{
+  const parsed=new URL(sentryDsn);
+  if(parsed.protocol!=="https:"||!/(^|\.)sentry\.io$/i.test(parsed.hostname)||
+      !/^\d+$/.test(parsed.pathname.slice(1))||!parsed.username)
+   throw new Error("Unapproved DSN shape");
+ }catch(_){
+  console.warn("Monitoring: invalid Sentry DSN ignored (value not logged).");
+  sentryDsn="";
+ }
+}
+// Zero instrumentation overhead and zero extra network requests in an unconfigured release.
+if(posthogKey||sentryDsn){
+ const monitorConfig={posthogKey,posthogHost:"https://eu.i.posthog.com",sentryDsn};
+ fs.writeFileSync(path.join(out,"assets/lexlearn-observability-config.js"),
+  "window.LEX_OBSERVABILITY_CONFIG="+JSON.stringify(monitorConfig)+";\n");
+ for(const page of pages){
+  if(!page.endsWith(".html")||page==="go/index.html")continue;
+  const full=path.join(out,page);
+  let html=fs.readFileSync(full,"utf8");
+  html=html.replace("</head>",
+   '<script src="assets/lexlearn-observability-config.js" defer></script>'+
+   '<script src="assets/lexlearn-observability.js" defer></script></head>');
+  fs.writeFileSync(full,html);
+ }
 }
 
 // Attendance should never be visible to students or professors outside the staff report.
