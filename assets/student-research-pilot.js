@@ -89,5 +89,6 @@ async function boot(){try{
  if(r.consented===false){render({eligible:true,consent_required:true,non_credit:true});return;}
  await load();
  }catch(e){msg("التجربة غير متاحة الآن: "+e.message,true);}}
-boot();
+window.LEX_RESEARCH_PILOT={mount:boot};
+if(!document.getElementById("researchPilotWorkspace"))boot();
 })();
