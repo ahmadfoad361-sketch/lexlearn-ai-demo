@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#111D31"><title>LexLearn — تجربة التدريب المبني على الأبحاث</title>
+<link rel="icon" href="assets/lexlearn-logo.svg" type="image/svg+xml">
+<style>
+:root{color-scheme:light;--navy:#111d31;--wine:#8a1f39;--light:#f9f4ef;--line:#d7dbe0}
+*{box-sizing:border-box}body{margin:0;background:var(--light);color:var(--navy);font:17px/1.85 system-ui,Tahoma,Arial,sans-serif}
+main{max-width:860px;margin:28px auto;background:white;padding:clamp(18px,4vw,40px);border-radius:22px;box-shadow:0 8px 30px #111d3110}
+header{display:flex;align-items:center;justify-content:space-between;gap:15px;flex-wrap:wrap}
+header img{width:115px}a{color:var(--wine)}h1{font-size:clamp(24px,4vw,33px);line-height:1.5}h2{font-size:21px}
+.intro{padding:14px 18px;border-inline-start:4px solid var(--wine);background:var(--light);border-radius:12px}
+.muted{color:#566074;font-size:15px}.card{border:1px solid var(--line);border-radius:16px;padding:clamp(15px,3vw,25px);margin:17px 0;background:white}
+button{background:var(--navy);color:white;border:0;border-radius:12px;padding:13px 22px;font:inherit;cursor:pointer;margin-top:12px}
+button:disabled{opacity:.55;cursor:progress}.outline{background:white;color:var(--navy);border:1px solid var(--line)}
+.choice{border:1px solid var(--line);border-radius:12px;display:block;padding:12px 15px;margin:9px 0;cursor:pointer}
+.choice:has(input:checked){background:#faf0f3;border-color:var(--wine)}
+.choice input{margin-left:12px;accent-color:var(--wine)}textarea{display:block;resize:vertical;width:100%;min-height:180px;padding:15px;border:1px solid #9ba3b0;border-radius:12px;font:inherit}
+.error{color:#941e31}fieldset{border:0;padding:0;margin:0}legend{font-weight:700}
+.feedback{background:#f2f5f2;border-inline-start:4px solid #326b4e;padding:15px;border-radius:12px}
+progress{width:100%;height:10px;accent-color:var(--wine)}
+footer{margin:30px 0 0;border-top:1px solid var(--line);padding-top:14px;font-size:14px}
+@media(max-width:650px){main{margin:0;min-height:100dvh;border-radius:0}}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/lexlearn-config.js?v=1.3"></script>
+<script src="assets/cloud-data.js?v=20261103.queue1"></script>
+<link rel="stylesheet" href="assets/lexlearn-navigation.css">
+<script src="assets/learner-theme.js"></script><script src="assets/learner-brand.js" defer></script>
+</head>
+<body><main>
+<header><img src="assets/lexlearn-logo.svg" alt="LexLearn"><a href="student.html">العودة لحساب الطالب</a></header>
+<h1>تجربة التدريب التكيفي المبني على الأبحاث</h1>
+<div class="intro"><strong>تجربة اختيارية ومحدودة لطالب واحد.</strong> تعتمد على استرجاع المعرفة، أمثلة داعمة عند الخطأ، تغيير الوقائع للتطبيق، ومراجعات مؤجلة. لا تغير اختباراتك الرسمية أو درجاتك أو ترتيب جلساتك المعتاد.</div>
+<div id="researchPilotApp" role="region" aria-label="تجربة LexLearn البحثية" aria-live="polite"><p>جارٍ التحقق من إتاحة التجربة...</p></div>
+<footer>مصادر القانون المدني القطري المعتمدة في المشروع — المواد 39 و40 و63. جميع إجابات التعليل داخل هذه التجربة تحتاج مراجعة مستقلة، ولا تُعد درجات معتمدة.</footer>
+</main><script src="assets/student-research-pilot.js?v=20261105.1"></script>
+<script src="assets/lexlearn-navigation.js" defer></script>
+</body></html>
