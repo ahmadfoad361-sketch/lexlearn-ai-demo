@@ -137,3 +137,38 @@ console.log("Admin detailed and aggregate evidence dashboard: PASS");
  assert.ok(cloud.includes("error.context.json"),"function error body is surfaced instead of a generic non-2xx");
  console.log("Supervisor activation screen and error feedback: PASS");
 }
+
+
+{
+ // Regression: an async queue must never look like a missing grade, and a genuine
+ // 0% assessment must remain distinct from "not assessed yet".
+ const ctx={document:{getElementById:()=>null},location:{search:"?lang=ar"},URLSearchParams};
+ ctx.window=ctx;vm.createContext(ctx);vm.runInContext(fs.readFileSync("assets/student-path.js","utf8"),ctx);
+ const source=fs.readFileSync("assets/student-path.js","utf8");
+ const guards=source.slice(source.indexOf("function confirmedGrade("),source.indexOf("function stageSkillSnapshot("));
+ const g={};vm.createContext(g);vm.runInContext(guards,g);
+ const graded=percent=>({status:"preliminary_ai",rubric_version:"lexlearn-training-ai-v4",provisional_percent:percent});
+ assert.ok(g.pendingGrade({evaluation:{status:"ai_queued",queue_job_id:"synthetic-job"}}));
+ assert.ok(g.pendingGrade({evaluation:{status:"ai_pending"}}));
+ assert.ok(g.pendingGrade({evaluation:{status:"ai_verification_pending"}}));
+ assert.ok(!g.needsAssessment({evaluation:{status:"ai_queued",queue_job_id:"synthetic-job"}}),"queued work should never trigger a second paid grade");
+ assert.ok(g.confirmedGrade(graded(0)),"0% is a valid final score");
+ assert.ok(!g.pendingGrade({evaluation:graded(0)}));
+ const pending=[
+  {session_number:6,dimension:"recall",item_id:"r",evaluation:graded(0)},
+  {session_number:6,dimension:"understanding",item_id:"u",evaluation:{status:"ai_queued",queue_job_id:"synthetic-job"}},
+  {session_number:6,dimension:"exam_execution",item_id:"e",evaluation:graded(17)}
+ ];
+ const html=ctx.LEX_STUDENT_PATH.progressHtml(pending,6,false);
+ assert.ok(html.includes("0%")&&html.includes("17%"));
+ assert.ok(html.includes("جارٍ التصحيح"),"pending skills must show an in-progress label");
+ const verified=pending.map(x=>x.dimension==="understanding"?{...x,evaluation:graded(0)}:x);
+ const final=ctx.LEX_STUDENT_PATH.progressHtml(verified,6,false);
+ assert.ok(!final.includes("جارٍ التصحيح"));
+ assert.ok(!final.includes("التصحيح غير مكتمل"));
+ const watcher=source.slice(source.indexOf("if(stopQueueWatch)stopQueueWatch();"),source.indexOf("if(!studyRead",source.indexOf("if(stopQueueWatch)stopQueueWatch();")));
+ assert.ok(watcher.includes('studentLifecycleRpc("trainingOpen"'),"background watcher reads saved results");
+ assert.ok(!watcher.includes("gradeTrainingAi(")&&!watcher.includes('studentLifecycleRpc("trainingSubmit"'),"background watcher must not incur paid grading or overwrite answers");
+ assert.ok(source.includes('id=\'refreshGradesNow\''),"read-only manual refresh is available");
+ console.log("Pending grading, true zero percent, read-only automatic refresh: PASS");
+}
