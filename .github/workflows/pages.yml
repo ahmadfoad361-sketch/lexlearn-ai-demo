@@ -27,6 +27,8 @@ jobs:
         run: node scripts/verify-student-session.cjs
       - name: Verify anonymized monitoring and opt-out
         run: node scripts/verify-observability.cjs
+      - name: Verify monitoring build is inert without explicit enablement
+        run: node scripts/verify-observability-build.cjs
       - name: Build public interface
         env:
           LEX_POSTHOG_PROJECT_KEY: ${{ vars.LEX_POSTHOG_PROJECT_KEY }}
