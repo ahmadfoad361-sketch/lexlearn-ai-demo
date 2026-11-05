@@ -69,7 +69,8 @@
   var script = document.createElement("script");
   script.async = true;
   script.crossOrigin = "anonymous";
-  script.src = "https://browser.sentry-cdn.com/latest/bundle.min.js";
+  script.referrerPolicy = "no-referrer";
+  script.src = "https://browser.sentry-cdn.com/11.0.0/bundle.min.js";
   script.onload = function () {
     if (!root.Sentry || !root.Sentry.init) return;
     root.Sentry.init({
