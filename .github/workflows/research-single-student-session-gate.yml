@@ -1,0 +1,37 @@
+name: Research single learner session overlay safety
+on:
+  push:
+    branches:
+      - feature/research-single-student-pilot-20261105
+  pull_request:
+    paths:
+      - 'student-path.html'
+      - 'student.html'
+      - 'student-research-pilot.html'
+      - 'assets/student-research-*.js'
+      - 'assets/admin-research-pilot.js'
+      - 'scripts/build-public.js'
+      - 'scripts/test-single-student-session-gate.cjs'
+  workflow_dispatch:
+jobs:
+  session-gate-safety:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Syntax
+        run: |
+          node --check assets/student-research-entry.js
+          node --check assets/student-research-pilot.js
+          node --check assets/admin-research-pilot.js
+      - name: Ensure single learner guard, unchanged original sessions and opt-in
+        run: node scripts/test-single-student-session-gate.cjs
+      - name: Build public allowlisted release candidate
+        run: |
+          node scripts/build-public.js
+          node scripts/security-public-boundary.cjs
+          node scripts/verify-public-links.cjs
