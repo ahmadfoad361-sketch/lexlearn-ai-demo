@@ -31,6 +31,7 @@ jobs:
         env:
           LEX_POSTHOG_PROJECT_KEY: ${{ vars.LEX_POSTHOG_PROJECT_KEY }}
           LEX_SENTRY_DSN: ${{ vars.LEX_SENTRY_DSN }}
+          LEX_OBSERVABILITY_ENABLED: ${{ vars.LEX_OBSERVABILITY_ENABLED }}
         run: node scripts/build-public.js
       - name: Enforce public source and release boundary
         run: node scripts/security-public-boundary.cjs
@@ -56,6 +57,7 @@ jobs:
         env:
           LEX_POSTHOG_PROJECT_KEY: ${{ vars.LEX_POSTHOG_PROJECT_KEY }}
           LEX_SENTRY_DSN: ${{ vars.LEX_SENTRY_DSN }}
+          LEX_OBSERVABILITY_ENABLED: ${{ vars.LEX_OBSERVABILITY_ENABLED }}
         run: |
           node scripts/build-public.js
           node scripts/security-public-boundary.cjs
