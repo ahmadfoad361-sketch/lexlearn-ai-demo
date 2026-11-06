@@ -36,3 +36,12 @@ Source media (realistic legal-study hero with official LexLearn X on laptop, fiv
 - The timer still relies on the browser remaining alive; browsers may throttle background tabs or block audio, and a closed website cannot guarantee an alert. No push notifications and no native app audio are implemented.
 - Automated review tested completion with three scheduled oscillator notes, no repeat on subsequent timer ticks, muted completion with zero additional notes, no JavaScript errors, and all controls visible at 390×844.
 - This does not change the feature flag, server-grade timing, student consent or production release requirements.
+
+## 2026-11-06: Requested simplified mobile experience
+
+- The standalone review HTML now opens **directly on the realistic student rest image and modal**, rather than a simulation control screen.
+- No sound icon, checkbox, or test-sound button in the student-facing popup. Sound is primed on **Start break** user interaction; when the timer ends a gentle original chime repeats briefly (max 12 seconds), and touching or pressing a key in the popup stops it without displaying any new sound UI. If the popup is closed before the timer finishes, the pending alert is cancelled.
+- The close X is a plain unframed white × placed over the photo; the 'This activity does not suit me' row was removed.
+- Preview checks: 390x844 viewport renders the photo, five activity cards, timer and actions; sound mocked with WebAudio shows 3 notes at the deadline and no more notes after a screen tap; zero JavaScript page errors.
+- Note that TikTok and other in-app browsers add their **own** top navigation bar and close button, outside the webpage's control. Mobile background audio may be suppressed by the platform; only an open active page is supported.
+- Media images still need to be added to the feature branch before a hosted preview; the embedded-image standalone HTML includes these assets. No production deployment is authorized.
