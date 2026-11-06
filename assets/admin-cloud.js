@@ -628,7 +628,7 @@ setInterval(async function(){
  var focus=document.activeElement;
  if(focus&&focus.matches&&focus.matches("input,textarea,select,[contenteditable]"))return;
  var current=window.LEX_STUDENT_RECORDS&&window.LEX_STUDENT_RECORDS.summary(state.officialRecords,state.selected);
- if(!current||current.pending<1)return;
+ if(!current||current.queued<1)return;
  gradeRefreshBusy=true;
  try{
   var response=await LEX_CLOUD.db().functions.invoke("admin-export-student",{body:{action:"overview"}});
