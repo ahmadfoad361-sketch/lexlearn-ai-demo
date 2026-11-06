@@ -14,7 +14,7 @@ function summary(r,uid){
  m.application=number(result.metrics&&result.metrics.application);
  var next=1;while(done.indexOf(next)>=0&&next<30)next++;
  var dates=ds.map(function(d){return d.updated_at;}).concat(aa.map(function(a){return a.submitted_at;})).filter(Boolean).sort();
- return {hasRecords:!!(ds.length||ss.length||aa.length),started:!!(ds.length||ss.length),metrics:m,completed:done.length,completedSessions:done,session:next,complete:done.length===30,answers:aa.length,pending:aa.filter(function(a){return !confirmed(a.evaluation);}).length,updated:dates[dates.length-1]||null};
+ return {hasRecords:!!(ds.length||ss.length||aa.length),started:!!(ds.length||ss.length),metrics:m,completed:done.length,completedSessions:done,session:next,complete:done.length===30,answers:aa.length,pending:aa.filter(function(a){return !confirmed(a.evaluation);}).length,queued:aa.filter(function(a){return a.evaluation&&['ai_queued','ai_pending','ai_verification_pending','queued','processing'].includes(a.evaluation.status);}).length,updated:dates[dates.length-1]||null};
 }
 function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
 function date(v){return v?new Date(v).toLocaleString('ar-EG'):'—';}
