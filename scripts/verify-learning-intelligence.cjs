@@ -172,3 +172,76 @@ console.log("Admin detailed and aggregate evidence dashboard: PASS");
  assert.ok(source.includes('id=\'refreshGradesNow\''),"read-only manual refresh is available");
  console.log("Pending grading, true zero percent, read-only automatic refresh: PASS");
 }
+
+
+{
+ // Regression: visitor guided-practice completion belongs to the current attempt.
+ const demo=fs.readFileSync("assets/showcase.js","utf8");
+ const begin=demo.indexOf("function completedGuidedPractice(){");
+ const end=demo.indexOf("\nfunction diagnosticMistakeReview(){",begin);
+ assert.ok(begin>=0&&end>begin,"scoped completion function exists");
+ const memory=new Map();
+ const sample={requestId:"new-attempt",lang:"ar",
+  sessionStorage:{getItem:k=>memory.get(k)||null,setItem:(k,v)=>memory.set(k,v),removeItem:k=>memory.delete(k)}};
+ vm.createContext(sample);vm.runInContext(demo.slice(begin,end),sample);
+ const key="lexlearn-showcase-first-session-v1";
+ memory.set(key,JSON.stringify({completed:true,lang:"ar",attemptId:"old-attempt",at:Date.now()}));
+ assert.equal(sample.completedGuidedPractice(),false,"a prior attempt must not complete a new attempt");
+ memory.set(key,JSON.stringify({completed:true,lang:"ar",attemptId:"new-attempt",at:Date.now()}));
+ assert.equal(sample.completedGuidedPractice(),true,"the current attempt may be completed");
+ assert.ok(demo.includes("sessionStorage.removeItem(\"lexlearn-showcase-first-session-v1\")"),"new test clears the marker");
+ assert.ok(demo.includes("showcase-level1.html")&&demo.includes("showcase-level1-en.html"),"public preview links use correct routes");
+ assert.ok(!demo.includes("(ar?'program.html':'program-en.html')+'?demo=1&start=1&preview=stage1"),"do not route previews to authenticated programs");
+
+ const reviewStart=demo.indexOf("function diagnosticMistakeReview(){");
+ const reviewEnd=demo.indexOf("\nfunction resultScreen(){",reviewStart);
+ assert.ok(reviewStart>=0&&reviewEnd>reviewStart,"post-diagnostic review exists");
+ const review={questions:[{q:"What begins personality?",opts:["Born alive","Born adult"],a:0}],answers:[{correct:false,selected:1}],
+  tr:(ar)=>ar,esc:x=>String(x).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")};
+ vm.createContext(review);vm.runInContext(demo.slice(reviewStart,reviewEnd),review);
+ const mistakes=review.diagnosticMistakeReview();
+ assert.ok(mistakes.includes("Born adult")&&mistakes.includes("Born alive")&&mistakes.includes("المادة 39"));
+ review.answers=[{correct:true,selected:0}];
+ assert.ok(review.diagnosticMistakeReview().includes("لم تظهر أخطاء"));
+ console.log("Showcase attempt isolation, public preview, and wrong-answer review: PASS");
+}
+{
+ // Guided practice remains a genuine retrieval exercise and explains its errors.
+ const source=fs.readFileSync("assets/showcase-learning-cycle.js","utf8");
+ const nodes=new Map(), stored=new Map();
+ let markup="",buttons=[];
+ const el=id=>{
+  if(!nodes.has(id))nodes.set(id,{value:"previous-should-never-appear",disabled:false,innerHTML:"",textContent:"",
+   focus(){},classList:{add(){}}});
+  return nodes.get(id);
+ };
+ const root={sessionStorage:{getItem:k=>stored.get(k)||null,setItem:(k,v)=>stored.set(k,v),removeItem:k=>stored.delete(k)}};
+ const doc={getElementById:el,querySelectorAll:selector=>selector==="[data-cycle-choice]"?buttons:[]};
+ const sandbox={window:root,document:doc};
+ vm.createContext(sandbox);vm.runInContext(source,sandbox);
+ assert.ok(root.LEX_SHOWCASE_CYCLE,"guided-practice module initializes");
+ root.LEX_SHOWCASE_CYCLE.run({lang:"ar",weak:"understanding",attemptId:"new-attempt",previousAnswer:"PRIOR_DIAGNOSTIC_ANSWER",
+  goBack(){},stage(_percent,html){
+   markup=html;nodes.clear();
+   buttons=html.includes("data-cycle-choice=")?[2,0,1].map(i=>({
+    disabled:false,onclick:null,classList:{add(){}},
+    getAttribute:key=>key==="data-cycle-choice"?String(i):null
+   })):[];
+  }});
+ assert.ok(!markup.includes("PRIOR_DIAGNOSTIC_ANSWER"),"prior diagnostic must not appear during intro");
+ el("cycleStart").onclick();
+ assert.ok(markup.includes("من ذاكرتك"),"retrieval exercise starts");
+ assert.equal(el("cycleAnswer").value,"","textarea is cleared despite browser restoration");
+ assert.ok(markup.includes("اعرض النموذج للمقارنة الذاتية"));
+ assert.ok(!markup.includes("PRIOR_DIAGNOSTIC_ANSWER"),"no answer leak before attempt");
+ el("cycleAnswer").value="my fresh response";
+ el("cycleCompare").onclick();
+ assert.ok(el("cycleFeedback").innerHTML.includes("PRIOR_DIAGNOSTIC_ANSWER"),"earlier answer appears after own attempt");
+ el("cycleNext").onclick();
+ assert.equal(buttons.length,3,"next question offers choices");
+ buttons[2].onclick(); // choice index 1: wrong (specific Article 40 misconception)
+ const response=el("cycleFeedback").innerHTML;
+ assert.ok(response.includes("الإجابة الصحيحة")&&response.includes("المادة 40"),"specific correction is visible");
+ assert.ok(!response.includes("راجع الفرق بين الشرط والنتيجة"),"generic wrong-answer message removed");
+ console.log("Fresh recall, delayed prior answer, self-comparison, and specific legal correction: PASS");
+}
