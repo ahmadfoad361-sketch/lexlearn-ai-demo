@@ -119,6 +119,53 @@ function plan(weak, lang) {
     correct:0,
     feedback:pick(ar,"نلاحظ الشرط أولًا، ثم نربطه بالأثر القانوني. هذه خطوة دعم تدريبي، وليست دليلًا على الإتقان.","Identify the condition, then its legal consequence. This is guided instruction, not proof of mastery.")
   };
+
+ // Explanations identify the selected misconception, with statutory references.
+ meaning.wrongExplanations=ar?[
+  '',
+  'المادة 40 تتناول حقوقًا محددة للحمل مشروطة بالولادة الحية، ولا تجعل كل الحقوق ثابتة بلا شرط.',
+  'المادة 39 تحدد بداية الشخصية القانونية بالولادة الحية لا بمجرد الحمل.'
+ ]:[
+  '',
+  'Article 40 recognizes specific prenatal rights conditional on live birth, not every right without conditions.',
+  'Article 39 begins legal personality at live birth, not at conception.'
+ ];
+ capacity.wrongExplanations=ar?[
+  '',
+  'المادة 39 تثبت الشخصية بالولادة الحية؛ أما المادة 49 فتشترط لتمام أهلية الأداء بلوغ 18 سنة كاملة وعدم استمرار ولاية أو وصاية أو حجر.',
+  'المادة 39 تثبت الشخصية منذ الولادة حية، فلا تنتظر سن الرشد. أهلية الأداء أمر منفصل تحكمه المواد 49–51.'
+ ]:[
+  '',
+  'Article 39 establishes personality at live birth. Article 49 separately requires majority (18 full years) and no continuing legal restriction for full capacity to act.',
+  'Article 39 establishes personality at live birth, not adulthood. Capacity to act is governed separately by Articles 49–51.'
+ ];
+ transfer.wrongExplanations=ar?[
+  '',
+  'المادة 39: الولادة الحية تكفي لبدء الشخصية، ولا يشترط استمرار الحياة حتى سن الرشد.',
+  'المادة 39: تبدأ الشخصية بالولادة الحية وتنتهي بالوفاة، وليس العكس.'
+ ]:[
+  '',
+  'Article 39: personality begins at live birth; surviving to adulthood is not required.',
+  'Article 39: personality begins at live birth and ends at death, not the reverse.'
+ ];
+ noBirth.wrongExplanations=ar?[
+  '',
+  'المادة 40: عدم اشتراط القبول في سبب الحق لا يسقط شرط تمام الولادة حية.',
+  'المادتان 39 و40: الحمل ليس بدءًا للشخصية، والحق المحدد يظل مشروطًا بالولادة الحية.'
+ ]:[
+  '',
+  'Article 40: no acceptance requirement does not remove the live-birth condition.',
+  'Articles 39–40: conception does not begin personality, and the stated right depends on live birth.'
+ ];
+ worked.wrongExplanations=ar?[
+  '',
+  'المادة 39 لا تشترط حياة طويلة؛ تبدأ الشخصية بالولادة الحية وتنتهي بالوفاة.',
+  'المادة 39 تجعل الوفاة نهاية الشخصية لا بدايتها.'
+ ]:[
+  '',
+  'Article 39 does not require long survival; personality begins at live birth and ends at death.',
+  'Article 39 makes death the end of personality, not its beginning.'
+ ];
   if(mode === "foundation") return [worked,capacity,reconstruct,noBirth];
   if(mode === "recall") return [capacity,memoryCues,reconstruct,transfer];
   if(mode === "understanding") return [recall,meaning,explain,noBirth];
