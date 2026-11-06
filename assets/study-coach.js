@@ -4,6 +4,40 @@ var enabled=new URLSearchParams(root.location.search).get('coach_preview')==='1'
 var learner='',language='ar',inited=false,overlay=null,onContinue=null,clockId=0,dialogWasOpen=false,lastFocus=null;
 var TAB='coach-'+Math.random().toString(36).slice(2),STORAGE='lexlearn:study-coach-preview:v1:';
 var lastInteraction=Date.now(),lastTick=Date.now();
+var soundContext=null,soundWasPrimed=false;
+function soundPreferenceKey(){return STORAGE+learner+':sound-enabled';}
+function soundEnabled(){return read(soundPreferenceKey())!==false;}
+function setSoundEnabled(yes){write(soundPreferenceKey(),!!yes);}
+function primeSound(){
+ if(!soundEnabled())return;
+ try{
+  var AudioCtor=root.AudioContext||root.webkitAudioContext;
+  if(!AudioCtor)return;
+  if(!soundContext)soundContext=new AudioCtor();
+  soundWasPrimed=true;
+  if(soundContext.state==='suspended')soundContext.resume().catch(function(){});
+ }catch(_){}
+}
+function playFinishedSound(){
+ if(!soundEnabled()||!soundWasPrimed||!soundContext)return;
+ try{
+  var resume=soundContext.state==='suspended'?soundContext.resume():Promise.resolve();
+  Promise.resolve(resume).then(function(){
+   if(!soundEnabled()||soundContext.state!=='running')return;
+   var start=soundContext.currentTime+0.02;
+   [523.25,659.25,783.99].forEach(function(freq,i){
+    var osc=soundContext.createOscillator(),gain=soundContext.createGain();
+    var at=start+i*0.18;
+    osc.type='sine';osc.frequency.setValueAtTime(freq,at);
+    gain.gain.setValueAtTime(0.0001,at);
+    gain.gain.exponentialRampToValueAtTime(0.065,at+0.025);
+    gain.gain.exponentialRampToValueAtTime(0.0001,at+0.29);
+    osc.connect(gain);gain.connect(soundContext.destination);osc.start(at);osc.stop(at+0.32);
+   });
+  }).catch(function(){});
+ }catch(_){}
+}
+
 var rules={breakAfterSeconds:1800,breakAfterSessions:3,breakSessionMinSeconds:900,stopAfterSeconds:4500,stopAfterSessions:5,stopSessionMinSeconds:2700,maxDailyMessages:2,continueSilenceMs:1800000,idleGraceMs:180000};
 function now(){return Date.now();}
 var tz=(function(){try{return Intl.DateTimeFormat().resolvedOptions().timeZone||'Africa/Cairo';}catch(e){return 'Africa/Cairo';}})();
@@ -21,11 +55,11 @@ var leaseKey=key()+':lease',lease=read(leaseKey);if(lease&&lease.until>t&&lease.
 write(leaseKey,{tab:TAB,until:t+22000});var s=state();s.activeSeconds=Math.min(86400,s.activeSeconds+delta);save(s);}
 function init(o){if(!enabled||!o||!o.learnerId)return;var id=String(o.learnerId);if(learner===id&&inited)return;learner=id;language=o.language==='en'?'en':'ar';inited=true;lastInteraction=now();lastTick=now();
 ['pointerdown','keydown','scroll','touchstart'].forEach(function(ev){root.document.addEventListener(ev,markInteraction,{passive:true});});
-root.document.addEventListener('visibilitychange',function(){lastTick=now();markInteraction();});
+root.document.addEventListener('visibilitychange',function(){lastTick=now();markInteraction();if(!root.document.hidden&&overlay&&state().breakEnds>0)updateClock();});
 root.addEventListener('focus',function(){lastTick=now();markInteraction();});root.addEventListener('pagehide',tick);root.setInterval(tick,15000);}
 function recordCompleted(id,n){if(!enabled||!inited||id!==learner)return;n=Number(n);if(!Number.isInteger(n)||n<1||n>30)return;var s=state();if(s.completed.indexOf(n)<0){s.completed.push(n);save(s);}}
 function threshold(){if(!enabled||!inited||!learner||dialogWasOpen||root.document.hidden)return null;
-var s=state();if(s.muted||s.closed>=2||s.shown>=rules.maxDailyMessages||s.silentUntil>now())return null;
+var s=state();if(s.muted||s.closed>=2||s.shown>=rules.maxDailyMessages||s.silentUntil>now()||s.breakEnds>now())return null;
 if(s.activeSeconds>=rules.stopAfterSeconds||(s.completed.length>=rules.stopAfterSessions&&s.activeSeconds>=rules.stopSessionMinSeconds))return 'stop';
 if(s.activeSeconds>=rules.breakAfterSeconds||(s.completed.length>=rules.breakAfterSessions&&s.activeSeconds>=rules.breakSessionMinSeconds))return 'break';
 return null;}
@@ -40,9 +74,12 @@ overlay.innerHTML='<section class="ll-coach-dialog" role="dialog" aria-modal="tr
 [tr('انظر بعيدًا عن الشاشة','Look away from the screen'),tr('اشرب بعض الماء','Have some water'),tr('تمشَّ قليلًا إن أمكن','Take a short walk if possible'),tr('اجلس بهدوء للحظات','Sit quietly for a moment'),tr('تمدّد برفق','Stretch gently')].map(function(s,i){return '<button type="button" class="ll-coach-activity" data-activity="'+i+'" aria-pressed="'+(i===0?'true':'false')+'"><img loading="lazy" src="assets/study-coach/activity-'+(i+1)+'.webp" alt=""/><span>'+s+'</span></button>';}).join('')+'</div>'+
 '<button class="ll-coach-unsuitable" data-action="unsuitable" type="button">'+tr('هذا النشاط غير مناسب لي','This activity does not suit me')+'</button>'+
 '<div class="ll-coach-duration"><strong>'+tr('مدة الاستراحة','Break duration')+'</strong><div role="group" aria-label="'+tr('مدة الاستراحة','Break duration')+'">'+[5,10,15].map(function(m){return '<button type="button" data-minutes="'+m+'" aria-pressed="'+(m===10?'true':'false')+'">'+m+' '+tr('دقائق','min')+'</button>';}).join('')+'</div></div>'+
+'<label class="ll-coach-sound"><input id="llCoachSound" type="checkbox" checked/><span>'+tr('نغمة لطيفة عند انتهاء الاستراحة','Gentle sound when the break ends')+'</span></label>'+ 
 '<p id="llCoachClock" role="timer" aria-live="off" hidden></p><p id="llCoachAnnouncement" class="ll-coach-sr" role="status" aria-live="polite"></p>'+
 '<div class="ll-coach-actions"><button type="button" data-action="start" class="ll-coach-primary"></button><button type="button" data-action="continue" class="ll-coach-secondary">'+tr('سأكمل الآن','Continue now')+'</button><button type="button" data-action="mute" class="ll-coach-quiet">'+tr('لا تذكّرني اليوم','Do not remind me today')+'</button></div></div></section>';
 root.document.body.appendChild(overlay);var dlg=overlay.querySelector('.ll-coach-dialog');dlg.setAttribute('dir',language==='ar'?'rtl':'ltr');
+overlay.querySelector('#llCoachSound').checked=soundEnabled();
+overlay.querySelector('#llCoachSound').addEventListener('change',function(e){setSoundEnabled(e.target.checked);if(e.target.checked)primeSound();});
 overlay.addEventListener('click',function(e){var el=e.target.closest('button');if(!el)return;
 if(el.hasAttribute('data-activity')){overlay.querySelectorAll('[data-activity]').forEach(function(b){b.setAttribute('aria-pressed',String(el===b));});return;}
 if(el.hasAttribute('data-minutes')){overlay.querySelectorAll('[data-minutes]').forEach(function(b){b.setAttribute('aria-pressed',String(el===b));});updateStart();return;}
@@ -56,12 +93,12 @@ function show(kind,go){mount();var s=state();s.shown++;s.silentUntil=now()+rules
 overlay.querySelector('#llCoachTitle').textContent=kind==='stop'?tr('قد يكون هذا وقتًا مناسبًا للاكتفاء اليوم','Consider ending your study for today'):tr('وقت مناسب لاستراحة قصيرة','A good time for a short break');
 overlay.querySelector('#llCoachDesc').textContent=kind==='stop'?tr('يمكنك المتابعة إن أحببت، أو العودة إلى التدريب لاحقًا.','You can continue if you wish, or return to your training later.'):tr('خُذ استراحة قصيرة، ثم عُد عندما تكون مستعدًا.','Take a short break, then return when you are ready.');
 overlay.hidden=false;root.document.body.classList.add('ll-coach-open');updateStart();overlay.querySelector('.ll-coach-dialog').focus();}
-function hide(){if(!overlay)return;dialogWasOpen=false;overlay.hidden=true;root.document.body.classList.remove('ll-coach-open');if(clockId)root.clearInterval(clockId);clockId=0;if(lastFocus&&lastFocus.isConnected)lastFocus.focus();onContinue=null;}
+function hide(){if(!overlay)return;dialogWasOpen=false;overlay.hidden=true;root.document.body.classList.remove('ll-coach-open');if(clockId&&state().breakEnds<=now()){root.clearInterval(clockId);clockId=0;}if(lastFocus&&lastFocus.isConnected)lastFocus.focus();onContinue=null;}
 function dismiss(navigate){var s=state();if(navigate)s.silentUntil=now()+rules.continueSilenceMs;else{s.closed++;if(s.closed>=2)s.muted=true;}save(s);var fn=onContinue;hide();if(navigate&&typeof fn==='function')fn();}
-function startBreak(){var s=state();s.breakEnds=now()+mins()*60000;save(s);overlay.querySelector('[data-action=start]').disabled=true;overlay.querySelector('#llCoachClock').hidden=false;
-overlay.querySelector('#llCoachAnnouncement').textContent=tr('بدأت الاستراحة','Your break has started');updateClock();clockId=root.setInterval(updateClock,1000);}
+function startBreak(){primeSound();var s=state();s.breakEnds=now()+mins()*60000;save(s);overlay.querySelector('[data-action=start]').disabled=true;overlay.querySelector('#llCoachClock').hidden=false;
+overlay.querySelector('#llCoachAnnouncement').textContent=tr('بدأت الاستراحة','Your break has started');if(clockId)root.clearInterval(clockId);updateClock();clockId=root.setInterval(updateClock,1000);}
 function updateClock(){var s=state(),rem=Math.max(0,Math.ceil((s.breakEnds-now())/1000));var el=overlay.querySelector('#llCoachClock');el.textContent=String(Math.floor(rem/60)).padStart(2,'0')+':'+String(rem%60).padStart(2,'0');
-if(rem<=0){root.clearInterval(clockId);clockId=0;overlay.querySelector('#llCoachAnnouncement').textContent=tr('انتهت الاستراحة. يمكنك المتابعة عندما تكون مستعدًا.','Break finished. Continue when you are ready.');overlay.querySelector('[data-action=start]').disabled=false;overlay.querySelector('[data-action=start]').textContent=tr('ابدأ استراحة أخرى','Start another break');s.breakEnds=0;save(s);}}
+if(rem<=0&&s.breakEnds>0){s.breakEnds=0;save(s);root.clearInterval(clockId);clockId=0;playFinishedSound();overlay.querySelector('#llCoachAnnouncement').textContent=tr('انتهت الاستراحة. يمكنك المتابعة عندما تكون مستعدًا.','Break finished. Continue when you are ready.');overlay.querySelector('[data-action=start]').disabled=false;overlay.querySelector('[data-action=start]').textContent=tr('ابدأ استراحة أخرى','Start another break');overlay.querySelector('[data-action=continue]').textContent=tr('العودة للتدريب','Return to training');}}
 function offerAtBoundary(o){if(!enabled||!inited||!o||o.learnerId!==learner)return false;var k=threshold();if(!k)return false;show(k,o.go);return true;}
 root.LEX_STUDY_COACH={init:init,recordCompleted:recordCompleted,offerAtBoundary:offerAtBoundary,enabled:enabled,getDebugSummary:function(){if(!enabled)return null;var s=state();return {activeSeconds:Math.round(s.activeSeconds),sessions:s.completed.length,shown:s.shown,closed:s.closed,muted:s.muted};}};
 })(window);
