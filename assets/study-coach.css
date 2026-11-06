@@ -31,7 +31,7 @@ body.ll-coach-open{overflow:hidden}
 @media(max-width:760px){
 
 
-.ll-coach-layer{padding:5px}.ll-coach-dialog{max-height:99dvh;border-radius:17px}.ll-coach-top{grid-template-columns:1fr}.ll-coach-hero{min-height:0;height:190px;background-position:center 43%}
+.ll-coach-layer{padding:5px}.ll-coach-dialog{max-height:99dvh;border-radius:17px}.ll-coach-top{grid-template-columns:1fr}.ll-coach-hero{min-height:0;height:230px;background-position:center 60%}
 .ll-coach-intro{padding:4px 12px}.ll-coach-brand{font-size:22px}.ll-coach-brand img{width:35px;height:30px}.ll-coach-intro h2{font-size:17px;padding:8px 12px}
 .ll-coach-intro p{font-size:12px;line-height:1.55;margin:0}.ll-coach-intro small{font-size:10px}.ll-coach-content{padding:0 9px 7px}
 .ll-coach-content h3{font-size:14px;padding:7px 12px;margin:7px 0}.ll-coach-activities{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:6px;scrollbar-width:thin;padding-bottom:4px}
@@ -42,3 +42,6 @@ body.ll-coach-open{overflow:hidden}
 }
 @media(max-height:630px) and (max-width:760px){.ll-coach-hero{height:102px}.ll-coach-activity img{height:50px}}
 @media(prefers-reduced-motion:reduce){.ll-coach-activity[aria-pressed=true] img{animation:none}}
+
+/* Plain, high-contrast X over the photo — no circular background. */
+.ll-coach-layer .ll-coach-x{font:800 34px/1 Arial,sans-serif;color:#fff;text-shadow:0 2px 6px #111d31;background:transparent;border:0;border-radius:0;display:flex;align-items:center;justify-content:center}
