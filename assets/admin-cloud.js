@@ -274,7 +274,7 @@ function detail(v){
  '<p>الكلية: '+esc(academic.faculty(s.faculty||"—",s.university))+' • الشعبة/القسم: '+esc(s.section||"—")+'</p>'+
  (s.studentRegistrationNumber?'<p>رقم القيد الجامعي: <b>'+esc(s.studentRegistrationNumber)+'</b></p>':'')+
  (s.groupEmail?'<p>بريد المجموعة: <b dir="ltr">'+esc(s.groupEmail)+'</b></p>':'')+
- (s.whatsapp?'<p class="studentPhone">واتساب: <b dir="ltr">'+esc(s.whatsapp)+'</b> • '+(s.whatsappVerified?'تم التحقق':'لم يتم التحقق بعد')+'</p>':'')+'</div><span class="risk big '+r+'">'+(v.official&&r==="none"?"التصحيح غير مكتمل":rlabel(r,v))+'</span></section>'+
+ (s.whatsapp?'<p class="studentPhone">واتساب: <b dir="ltr">'+esc(s.whatsapp)+'</b> • '+(s.whatsappVerified?'تم التحقق':'لم يتم التحقق بعد')+'</p>':'')+'</div><span class="risk big '+r+'">'+(v.official&&r==="none"?(v.official.pending>0?"التصحيح جارٍ أو ينتظر المراجعة":"لا توجد مؤشرات مؤكدة بعد"):rlabel(r,v))+'</span></section>'+
  recordSection("identity","01","البيانات الأكاديمية","الجامعة والكلية والفرقة وبيانات التواصل")+academicEditor(s)+'</div></details>'+recordSection("training","02","التدريب والتقييم","المؤشرات المسجلة والمهارات التي تحتاج متابعة")+'<section class="panel metricsPanel"><div class="panelHead"><div><h3>الملف التكيفي</h3><p>'+esc(modelText(v))+'</p></div><span class="realTag">Central DB</span></div><div class="metricGrid">'+
  ["recall","understanding","application","legal_precision","retention","exam"].map(function(k){return metric(k,v.m[k],axes[k]);}).join("")+'</div>'+(lastUpdate?'<p style="margin:14px 0 0">آخر بيانات مستلمة: '+new Date(lastUpdate).toLocaleString("ar-EG")+'</p>':'')+'</section></div></details>'+
  recordSection("notes","03","ملاحظات المشرف","قراءة الأداء والتوصيات والخطوة التالية")+'<section class="panel"><div class="panelHead"><div><h3>ملاحظات ونصائح للمشرف</h3><p>قراءة تلقائية مبنية على تجربة الطالب الفعلية، وليست درجة جامعية.</p></div><span class="realTag">Supervisor Note</span></div>'+
@@ -619,6 +619,25 @@ function exportCsv(){
  var csv=rows.map(function(row){return row.map(function(v){return '"'+String(v==null?"":v).replace(/"/g,'""')+'"';}).join(",");}).join("\n");
  var blob=new Blob(["\ufeff"+csv],{type:"text/csv"}),u=URL.createObjectURL(blob),a=document.createElement("a");a.href=u;a.download="lexlearn-central-students.csv";a.click();URL.revokeObjectURL(u);
 }
+// Refresh read-only grading records while a selected student's results are pending.
+// Do not discard edits, modal state, or an open detailed record.
+var gradeRefreshBusy=false;
+setInterval(async function(){
+ if(gradeRefreshBusy||state.busy||state.modal||state.recordDetail||
+    document.hidden||state.tab!=="dashboard"||!state.selected)return;
+ var focus=document.activeElement;
+ if(focus&&focus.matches&&focus.matches("input,textarea,select,[contenteditable]"))return;
+ var current=window.LEX_STUDENT_RECORDS&&window.LEX_STUDENT_RECORDS.summary(state.officialRecords,state.selected);
+ if(!current||current.pending<1)return;
+ gradeRefreshBusy=true;
+ try{
+  var response=await LEX_CLOUD.db().functions.invoke("admin-export-student",{body:{action:"overview"}});
+  if(response.error||!response.data||response.data.ok!==true)return;
+  if(state.modal||state.busy||document.hidden||state.tab!=="dashboard")return;
+  state.officialRecords=response.data.records||{};
+  render();
+ }catch(_){}finally{gradeRefreshBusy=false;}
+},30000);
 load();
 })();
 
