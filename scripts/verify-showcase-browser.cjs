@@ -28,7 +28,7 @@ async function main(){
 
    // Test corrected Back link on public visitor demo.
    const back=await page.locator(".demoBack").getAttribute("href");
-   assert.equal(back,"index.html",lang+" visitor Back must route to home");
+   assert.equal(back,lang==="ar"?"index.html":"index-en.html",lang+" visitor Back must route to home");
    assert.equal(await page.locator("#startDemo").count(),1,"intro start exists");
 
    await page.locator("#startDemo").click();
