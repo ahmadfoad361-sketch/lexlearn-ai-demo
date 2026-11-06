@@ -227,7 +227,8 @@ function run(options) {
         var field=document.getElementById("cycleAnswer"),value=field.value.trim();
         if(!value){document.getElementById("cycleFeedback").textContent=pick(ar,"اكتب محاولتك أولًا، حتى لو كانت غير مكتملة.","Write an attempt first, even if incomplete.");field.focus();return;}
         field.disabled=true;this.disabled=true;
-        feedback('<span class="cycleLabel">'+pick(ar,"نموذج للمقارنة الذاتية","Reference for self-comparison")+'</span><p>'+esc(task.comparison)+'</p><small>'+esc(task.lesson)+'</small><small>'+pick(ar,"هذه مقارنة ذاتية؛ لم يُمنح نصك درجة آلية.","This is self-comparison; your text has not received an automated score.")+'</small>',true);
+        feedback('<span class="cycleLabel">'+pick(ar,"نموذج للمقارنة الذاتية","Reference for self-comparison")+'</span><p>'+esc(task.comparison)+'</p><small>'+esc(task.lesson)+'</small><small>'+pick(ar,"هذه مقارنة ذاتية؛ لم يُمنح نصك درجة آلية.","This is self-comparison; your text has not received an automated score.")+'</small>'+
+         (previousAnswer?'<details class="cyclePreviousAnswer"><summary>'+pick(ar,"راجع إجابتك السابقة في التشخيص","Review your earlier diagnostic answer")+'</summary><p>'+esc(previousAnswer)+'</p></details>':''),true);
       };
     } else {
       document.querySelectorAll("[data-cycle-choice]").forEach(function(btn){
@@ -239,7 +240,11 @@ function run(options) {
             if(Number(b.getAttribute("data-cycle-choice"))===task.correct)b.classList.add("good");
           });
           if(!correct)this.classList.add("bad");
-          feedback('<span class="cycleLabel">'+(correct?pick(ar,"إجابة صحيحة","Correct answer"):pick(ar,"راجع الفرق بين الشرط والنتيجة","Review the condition and outcome"))+'</span><p>'+esc(task.feedback)+'</p>',correct);
+          var detail=correct?'<p>'+esc(task.feedback)+'</p>':
+            '<p><b>'+pick(ar,"اختيارك: ","Your choice: ")+'</b>'+esc(task.options[selected])+'</p>'+
+            '<p><b>'+pick(ar,"الإجابة الصحيحة: ","Correct choice: ")+'</b>'+esc(task.options[task.correct])+'</p>'+
+            '<p><b>'+pick(ar,"السبب القانوني: ","Legal reason: ")+'</b>'+esc((task.wrongExplanations||[])[selected]||task.feedback)+'</p>';
+           feedback('<span class="cycleLabel">'+(correct?pick(ar,"إجابة صحيحة","Correct answer"):pick(ar,"مراجعة الإجابة","Answer review"))+'</span>'+detail,correct);
         };
       });
     }
