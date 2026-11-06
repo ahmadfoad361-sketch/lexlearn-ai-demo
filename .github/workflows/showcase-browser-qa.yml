@@ -1,0 +1,39 @@
+name: Showcase browser QA (isolated, zero student data)
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'assets/showcase*.js'
+      - 'assets/showcase*.css'
+      - 'scripts/verify-showcase-browser.cjs'
+      - '.github/workflows/showcase-browser-qa.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  visitor-demo-chromium:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install temporary Playwright browser dependencies (test only)
+        run: |
+          npm install --no-save --no-package-lock --ignore-scripts playwright@1.58.2
+          npx playwright install --with-deps chromium
+      - name: Build the safe public artifact (no deploy)
+        run: |
+          node scripts/build-public.js
+          node scripts/security-public-boundary.cjs
+          node scripts/verify-public-links.cjs
+      - name: Test public Arabic/English diagnostic, feedback, sessions and route in real Chromium
+        env:
+          SHOWCASE_QA_URL: http://127.0.0.1:8765
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 --directory dist-site >/tmp/lexlearn-demo-qa-http.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" || true' EXIT
+          for attempt in $(seq 1 20); do curl -fsS -o /dev/null http://127.0.0.1:8765/showcase.html && break || sleep 1; done
+          node scripts/verify-showcase-browser.cjs
