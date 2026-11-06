@@ -14,13 +14,22 @@ function summary(r,uid){
  m.application=number(result.metrics&&result.metrics.application);
  var next=1;while(done.indexOf(next)>=0&&next<30)next++;
  var dates=ds.map(function(d){return d.updated_at;}).concat(aa.map(function(a){return a.submitted_at;})).filter(Boolean).sort();
- return {hasRecords:!!(ds.length||ss.length||aa.length),started:!!(ds.length||ss.length),metrics:m,completed:done.length,completedSessions:done,session:next,complete:done.length===30,answers:aa.length,pending:aa.filter(function(a){return !confirmed(a.evaluation);}).length,updated:dates[dates.length-1]||null};
+ return {hasRecords:!!(ds.length||ss.length||aa.length),started:!!(ds.length||ss.length),metrics:m,completed:done.length,completedSessions:done,session:next,complete:done.length===30,answers:aa.length,pending:aa.filter(function(a){return !confirmed(a.evaluation);}).length,queued:aa.filter(function(a){return a.evaluation&&['ai_queued','ai_pending','ai_verification_pending','queued','processing'].includes(a.evaluation.status);}).length,updated:dates[dates.length-1]||null};
 }
 function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
 function date(v){return v?new Date(v).toLocaleString('ar-EG'):'—';}
 function label(v){return {recall:'الحفظ',understanding:'الفهم',exam_execution:'بناء الإجابة',application:'التطبيق'}[v]||v||'—';}
 function evaluation(e){
- if(!confirmed(e))return '<p><b>التصحيح غير مكتمل</b> — الإجابة محفوظة ولم تُحتسب صفرًا.</p>';
+ if(!confirmed(e)){
+  var status=e&&e.status||'';
+  if(['ai_queued','ai_pending','ai_verification_pending','queued','processing'].includes(status))
+   return '<p role="status"><b>التصحيح جارٍ</b> — الإجابة محفوظة وتنتظر نتيجة الذكاء الاصطناعي. لم تُحتسب صفرًا.</p>';
+  if(['review_required','human_review_required','needs_review'].includes(status))
+   return '<p role="status"><b>تنتظر المراجعة</b> — الإجابة محفوظة ولم تصدر لها درجة مؤكدة بعد.</p>';
+  if(['nonanswer_zero'].includes(status)&&e.provisional_percent===0)
+   return '<p><b>درجة السؤال: 0%</b> — الإجابة لا تحمل مضمونًا قابلًا للتصحيح.</p>';
+  return '<p><b>لم تصدر درجة مؤكدة بعد</b> — الإجابة محفوظة، ويجب مراجعة حالة التصحيح.</p>';
+ }
  return '<p><b>تصحيح OpenAI: '+Math.round(e.provisional_percent)+'%</b></p><p>'+esc(e.feedback_ar||e.feedback_en||'')+'</p>'+((e.criteria||[]).length?'<ul>'+e.criteria.map(function(c){return '<li class="recordCriterion '+(c.credit===1?'recordCorrect':c.credit>0?'recordPartial':'recordIncorrect')+'"><b>'+(c.credit===1?'✓ صحيح':c.credit>0?'◐ صحيح جزئيًا':'✗ ناقص أو يحتاج تصحيحًا')+' — '+esc(c.label_ar||c.label_en||c.id)+'</b>'+(c.evidence?'<blockquote>'+esc(c.evidence)+'</blockquote>':'')+'<p>'+esc(c.explanation_ar||c.explanation_en||'')+'</p></li>';}).join('')+'</ul>':'');
 }
 function questionMap(r){var map=new Map();(r.questions||[]).forEach(function(q){map.set(q.id,q);if(q.metadata&&q.metadata.official_diagnostic_v2_id)map.set(q.metadata.official_diagnostic_v2_id,q);});return map;}
