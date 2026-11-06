@@ -245,3 +245,18 @@ console.log("Admin detailed and aggregate evidence dashboard: PASS");
  assert.ok(!response.includes("راجع الفرق بين الشرط والنتيجة"),"generic wrong-answer message removed");
  console.log("Fresh recall, delayed prior answer, self-comparison, and specific legal correction: PASS");
 }
+
+
+{
+ const ar=fs.readFileSync("assets/showcase.js","utf8");
+ const en=fs.readFileSync("assets/showcase-en.js","utf8");
+ assert.equal(en,ar,"Arabic and English showcase logic must remain in sync");
+ const root={sessionStorage:{removeItem(){},setItem(){}}};
+ const ctx={window:root,document:{}};
+ vm.createContext(ctx);vm.runInContext(fs.readFileSync("assets/showcase-learning-cycle.js","utf8"),ctx);
+ const capacityAr=root.LEX_SHOWCASE_CYCLE.plan("recall","ar")[0];
+ const capacityEn=root.LEX_SHOWCASE_CYCLE.plan("recall","en")[0];
+ assert.ok(capacityAr.wrongExplanations[1].includes("المادة 49"));
+ assert.ok(capacityEn.wrongExplanations[1].includes("Article 49"));
+ console.log("Bilingual showcase parity and legal personality vs capacity explanation: PASS");
+}
