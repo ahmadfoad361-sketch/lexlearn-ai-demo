@@ -27,3 +27,12 @@ Source media (realistic legal-study hero with official LexLearn X on laptop, fiv
 6. P95 performance budgets, mobile 4G, accessibility, AR/EN, regression, rollback, actual 100-student QA.
 
 **Neither unit tests nor a static visual prototype is proof of educational effectiveness.**
+
+## End-of-break audio (preview only, 2026-11-06)
+
+- After the student **clicks Start break**, the browser unlocks Web Audio and plays a gentle original three-note sine chime **once** when the countdown reaches zero.
+- A visible on/off checkbox defaults to ON and the learner can mute the sound at any time; when OFF there is no audio.
+- The finish message and `Return to training` control remain available even if sound cannot be played.
+- The timer still relies on the browser remaining alive; browsers may throttle background tabs or block audio, and a closed website cannot guarantee an alert. No push notifications and no native app audio are implemented.
+- Automated review tested completion with three scheduled oscillator notes, no repeat on subsequent timer ticks, muted completion with zero additional notes, no JavaScript errors, and all controls visible at 390×844.
+- This does not change the feature flag, server-grade timing, student consent or production release requirements.
