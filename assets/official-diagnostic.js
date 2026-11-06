@@ -124,12 +124,11 @@ function exactApprovedQuestion(item,q){
 }
 async function academicItemsApproved(cloud){
  var c=cloud&&cloud.db&&cloud.db();if(!c)throw new Error("cloud_not_configured");
- // Fail closed. A reviewed record must explicitly map to EACH deployed question.
- var r=await c.from("content_items").select("status,metadata,reviewed_at,legal_reviewer,learning_reviewer,prompt_ar,rubric_json,options_json,answer_key_json,source_ids")
-   .eq("course_id",COURSE_DB_ID).eq("status","approved");
+ // Never query protected content_items from a student session: RLS intentionally
+ // hides answer keys. The server checks all six official items and review gates.
+ var r=await c.rpc("lex_diagnostic_bank_ready",{p_course:COURSE_DB_ID});
  if(r.error)throw r.error;
- var items=r.data||[];
- return QUESTIONS.every(function(q){return items.some(function(item){return exactApprovedQuestion(item,q);});});
+ return r.data===true;
 }
 async function mount(){
  var rootEl=root.document.getElementById("officialDiagnostic"),lang=language(),cloud=root.LEX_CLOUD;
