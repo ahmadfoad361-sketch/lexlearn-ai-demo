@@ -7,7 +7,7 @@ body.ll-coach-open{overflow:hidden}
 .ll-coach-dialog{position:relative;width:min(100%,1000px);max-height:97dvh;overflow:auto;outline:none;background:#f9f4ef;color:#111d31;border-radius:24px;box-shadow:0 22px 78px #111d3144}
 .ll-coach-x{position:absolute;top:14px;left:15px;z-index:2;border:0;border-radius:0;width:42px;height:42px;background:transparent;font-size:31px;font-weight:700;line-height:1;color:#111d31}
 .ll-coach-top{display:grid;grid-template-columns:46% 54%;direction:ltr;min-height:260px}
-.ll-coach-hero{background:#f9f4ef url('study-coach/hero.webp') center/cover no-repeat;min-height:250px}
+.ll-coach-hero{background:#f9f4ef url('study-coach/hero.jpg') center/cover no-repeat;min-height:250px}
 .ll-coach-intro{direction:rtl;text-align:center;padding:25px 48px 16px 12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px}
 .ll-coach-brand{display:flex;gap:8px;align-items:center;direction:ltr;font-size:34px;font-weight:800}.ll-coach-brand img{width:56px;height:46px;object-fit:contain}
 .ll-coach-intro small{color:#8a1f39;font-size:12px}.ll-coach-intro h2{font-size:clamp(18px,2vw,26px);color:white;background:#8a1f39;border-radius:24px;padding:12px 20px;margin:2px 0 0}
