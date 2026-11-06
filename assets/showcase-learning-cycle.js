@@ -178,6 +178,8 @@ function run(options) {
   var flowArrow = pick(ar,"←","→");
   var weak = ["recall","understanding","foundation"].indexOf(options.weak)>=0 ? options.weak : "balanced";
   var tasks = plan(weak,options.lang), pos = 0, choiceScores = [];
+  var attemptId=typeof options.attemptId==="string"?options.attemptId:"";
+  var previousAnswer=typeof options.previousAnswer==="string"?options.previousAnswer:"";
   var description = weak === "recall" ?
     pick(ar,"ظهر الفهم أقوى من الاسترجاع في هذه المحاولة؛ سنبدأ من المعنى لنُثبّت عناصر القاعدة في الذاكرة.","Understanding appeared stronger than recall in this attempt; use meaning to strengthen recall.") :
     weak === "understanding" ?
@@ -212,13 +214,15 @@ function run(options) {
     var task=tasks[pos], free=task.type==="free";
     var progress='<div class="cycleProgress"><span>'+pick(ar,"التدريب","Practice")+' '+(pos+1)+' / '+tasks.length+'</span><div class="cycleMeter"><i style="width:'+((pos+1)*100/tasks.length)+'%"></i></div></div>';
     var question=free ?
-      '<textarea class="freeInput cycleInput" id="cycleAnswer" maxlength="1600" aria-label="'+pick(ar,"إجابتك التدريبية","Your practice answer")+'" placeholder="'+pick(ar,"اكتب بطريقتك؛ لا يلزم حفظ الصياغة حرفيًا.","Write in your own words; exact wording is not required.")+'"></textarea><p class="cycleHint">'+pick(ar,"لن تُحسب هذه الكتابة ضمن درجتك السابقة.","This text does not change your earlier score.")+'</p><button type="button" class="btn primary" id="cycleCompare">'+pick(ar,"قارن إجابتي بالنموذج","Compare with the reference")+'</button>' :
+      '<textarea class="freeInput cycleInput" id="cycleAnswer" autocomplete="off" name="fresh-cycle-'+esc(attemptId)+'-'+pos+'" maxlength="1600" aria-label="'+pick(ar,"إجابتك التدريبية","Your practice answer")+'" placeholder="'+pick(ar,"اكتب بطريقتك؛ لا يلزم حفظ الصياغة حرفيًا.","Write in your own words; exact wording is not required.")+'"></textarea><p class="cycleHint">'+pick(ar,"لن تُحسب هذه الكتابة ضمن درجتك السابقة.","This text does not change your earlier score.")+'</p><button type="button" class="btn primary" id="cycleCompare">'+pick(ar,"اعرض النموذج للمقارنة الذاتية","Show reference for self-comparison")+'</button>' :
       '<div class="choices cycleChoices">'+[2,0,1].map(function(index){return '<button type="button" class="choice" data-cycle-choice="'+index+'">'+esc(task.options[index])+'</button>';}).join("")+'</div>';
     stage(progress+'<h2>'+esc(task.title)+'</h2><p class="cycleLead">'+esc(task.prompt)+'</p>'+question+
       '<div id="cycleFeedback" class="cycleFeedback" aria-live="polite"></div>'+
       '<div class="demoActions">'+backButton()+'</div>');
     wireBack();
     if(free){
+      // Clear before each retrieval exercise; diagnostic text is never prefilled.
+      document.getElementById("cycleAnswer").value="";
       document.getElementById("cycleCompare").onclick=function(){
         var field=document.getElementById("cycleAnswer"),value=field.value.trim();
         if(!value){document.getElementById("cycleFeedback").textContent=pick(ar,"اكتب محاولتك أولًا، حتى لو كانت غير مكتملة.","Write an attempt first, even if incomplete.");field.focus();return;}
@@ -249,7 +253,7 @@ function run(options) {
     // One-tab, non-credentialed preview entry. Never write a certified diagnostic
     // or university score into the student's permanent profile.
     try { root.sessionStorage.setItem("lexlearn-showcase-first-session-v1",
-      JSON.stringify({completed:true,at:Date.now(),lang:options.lang==="en"?"en":"ar"})); } catch (_) {}
+      JSON.stringify({completed:true,attemptId:attemptId,at:Date.now(),lang:options.lang==="en"?"en":"ar"})); } catch (_) {}
     stage('<span class="demoEyebrow">'+pick(ar,"اكتملت دورة التدريب","Practice cycle complete")+'</span>'+
       '<div class="cycleFinishIcon" aria-hidden="true">✓</div>'+
       '<h2>'+pick(ar,"من التشخيص إلى تدريب موجّه","From diagnosis to targeted practice")+'</h2>'+
