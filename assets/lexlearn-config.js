@@ -1,8 +1,2 @@
-window.LEX_CONFIG=window.LEX_CONFIG||{
-  mode:"production",
-  supabaseUrl:"https://emxiuwcuxyljfynnzpnh.supabase.co",
-  supabaseAnonKey:"sb_publishable_AlUGXdTwlvIqpyKJbHGBlg_Qr-dAXef",
-  aiEnabled:true,
-  defaultCourseId:"qa-qu-lawc101-rights",
-  studentEmailDomain:"students.lexlearn.local"
-};
+// REVIEW DEPLOYMENT ONLY — no Supabase/Auth/API connection.
+window.LEX_CONFIG={mode:"offline-review",supabaseUrl:"",supabaseAnonKey:"",aiEnabled:false,defaultCourseId:"",studentEmailDomain:"students.lexlearn.local"};
