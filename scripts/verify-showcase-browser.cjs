@@ -42,22 +42,17 @@ async function main(){
     ?"تبدأ شخصية الإنسان بتمام ولادته حيًا وتنتهي بموته. وتثبت حقوق الحمل المشروطة بولادته حيًا."
     :"Legal personality begins on live birth and ends on death. The stated prenatal rights depend on live birth.");
 
-   // Replace client cloud object only in this isolated browser tab.
-   await page.evaluate(()=>{
-    window.LEX_CLOUD={
-     isConfigured:()=>true,
-     db:()=>({
-      auth:{getSession:async()=>({error:null,data:{session:{user:{id:"browser-fake-user"}}}})},
-      functions:{invoke:async()=>({error:null,data:{
-       received:true,submission_id:"synthetic-no-data-written",
-       choice_indicators:{understanding:10}
-      }})}
-     })
-    };
-   });
+   // Isolated public preview must have NO backend credentials or fake server receipt.
+   const config=await page.evaluate(()=>window.LEX_CONFIG);
+   assert.equal(config.mode,"offline-review");
+   assert.equal(config.supabaseUrl,"");
+   assert.equal(config.supabaseAnonKey,"");
+   assert.equal(config.aiEnabled,false);
    await page.locator("#seeResult").click();
    await page.locator(".demoDiagnosticReview").waitFor({timeout:20000});
    assert.equal(await page.locator(".demoReviewItem").count(),6,"every incorrect question must have review");
+   assert.ok((await page.locator("body").innerText()).includes(
+       lang==="ar"?"الإجابة لم تُرسل":"your answer was not submitted"),"preview must disclose no remote saving");
    assert.ok((await page.locator(".demoDiagnosticReview").innerText()).includes(lang==="ar"?"المادة 39":"Article 39"));
    assert.equal(await page.locator("#firstStageFromResults").count(),0,
     "a new untrained attempt must not claim to have finished the cycle");
@@ -122,7 +117,7 @@ async function main(){
    assert.ok(!previewText.includes("Sign in to begin the real diagnostic"));
    assert.ok(await preview.locator("#programApp").count(),"preview app exists");
    if(errors.length)throw new Error(lang+" browser errors: "+errors.join(" | "));
-   console.log("PASS "+lang+": mobile diagnostic, 6 explanations, 4 practice steps, new attempt reset, public preview, zero server writes");
+   console.log("PASS "+lang+": offline mode, 6 explanations, 4 practice steps, new attempt reset, public preview, no Supabase config");
    await context.close();
   }
  }finally{await browser.close();}
