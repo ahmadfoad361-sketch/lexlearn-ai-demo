@@ -52,7 +52,7 @@ async function main(){
    await page.locator(".demoDiagnosticReview").waitFor({timeout:20000});
    assert.equal(await page.locator(".demoReviewItem").count(),6,"every incorrect question must have review");
    assert.ok((await page.locator("body").innerText()).includes(
-       lang==="ar"?"الإجابة لم تُرسل":"your answer was not submitted"),"preview must disclose no remote saving");
+       lang==="ar"?"دون اتصال بحسابات الطلاب":"no student accounts"),"preview must disclose no remote saving");
    assert.ok((await page.locator(".demoDiagnosticReview").innerText()).includes(lang==="ar"?"المادة 39":"Article 39"));
    assert.equal(await page.locator("#firstStageFromResults").count(),0,
     "a new untrained attempt must not claim to have finished the cycle");
