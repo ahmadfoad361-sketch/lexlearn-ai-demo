@@ -39,3 +39,17 @@ jobs:
           trap 'kill "$server_pid" || true' EXIT
           for attempt in $(seq 1 20); do curl -fsS -o /dev/null http://127.0.0.1:8765/showcase.html && break || sleep 1; done
           node scripts/verify-showcase-browser.cjs
+
+
+      - name: Confirm standalone Vercel visitor preview is public and disconnected from Production
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          url="https://lexlearn-safe-review-20261107-922etuplh-bkh74wx6sx-9707.vercel.app"
+          curl -fsSL --retry 2 --max-time 25 "$url/showcase.html" -o /tmp/lexlearn-published-showcase.html
+          curl -fsSL --retry 2 --max-time 25 "$url/assets/lexlearn-config.js" -o /tmp/lexlearn-published-config.js
+          grep -Fq 'assets/showcase.js' /tmp/lexlearn-published-showcase.html
+          grep -Fq 'mode:"offline-review"' /tmp/lexlearn-published-config.js
+          grep -Fq 'supabaseUrl:""' /tmp/lexlearn-published-config.js
+          grep -Fq 'supabaseAnonKey:""' /tmp/lexlearn-published-config.js
+          echo 'PASS: deployed review pages are reachable and have no Supabase connection.'
