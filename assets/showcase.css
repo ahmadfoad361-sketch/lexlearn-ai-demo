@@ -249,3 +249,18 @@ html[lang=en] .demoIntro .demoPrivacy{text-align:center}
 @media(max-width:600px){.demoDeliveryWarning{padding:13px 14px}.demoDeliveryWarning strong{font-size:16px}.demoDeliveryWarning p{font-size:13px}}
 
 .analysisScreen .analysisTagline{color:var(--maroon);font-weight:700;font-size:clamp(1.1rem,3vw,1.4rem)}.analysisScreen{min-height:330px}.analysisScreen h2{font-size:clamp(1.35rem,4vw,2rem)}
+
+
+/* Post-diagnostic explanations shown after the measurement is complete. */
+.demoDiagnosticReview{margin:18px 0;padding:15px 18px;border:1px solid #d7c6c8;border-radius:15px;background:#f9f4ef;color:#111d31;text-align:start}
+.demoDiagnosticReview summary{cursor:pointer;font-weight:800;font-size:clamp(15px,1.6vw,19px)}
+.demoDiagnosticReview[open] summary{margin-bottom:12px}
+.demoReviewList{margin:0;padding-inline-start:1.45rem;display:grid;gap:12px}
+.demoReviewItem{border-bottom:1px solid #dfd5d6;padding-bottom:10px;overflow-wrap:anywhere}
+.demoReviewItem:last-child{border-bottom:none}
+.demoReviewItem p{font-size:clamp(13px,1.45vw,16px);line-height:1.75;margin:4px 0}
+.demoReviewItem p:last-child{color:#8a1f39}
+.demoReviewClear{color:#111d31;font-weight:650}
+.cyclePreviousAnswer{margin-top:12px;padding:9px 12px;border:1px solid #d7c6c8;border-radius:12px;background:#f9f4ef;overflow-wrap:anywhere}
+.cyclePreviousAnswer summary{cursor:pointer;font-weight:700}
+.cyclePreviousAnswer p{white-space:pre-wrap}
