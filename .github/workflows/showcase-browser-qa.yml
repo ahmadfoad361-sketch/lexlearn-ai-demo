@@ -1,5 +1,7 @@
 name: Showcase browser QA (isolated, zero student data)
 on:
+  push:
+    branches: ['preview/no-database-demo-20261107']
   pull_request:
     branches: [main]
     paths:
