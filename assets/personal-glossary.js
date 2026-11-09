@@ -254,7 +254,7 @@ async function mountPage(){
    var val=host.querySelector("#lexQuizRecall").value.trim();
    var msg=host.querySelector("#lexQuizFeedback");
    msg.innerHTML="<div class='lexQuizReference'><strong>"+esc(tr("التعريف المرجعي","Reference definition"))+"</strong><p>"+esc(current.definition_ar)+"</p><small>"+esc(tr("لا يُصحَّح النص الحر تلقائيًا هنا. اختر تقييمًا صادقًا بعد المقارنة.","Free text is not automatically graded here. Rate your recall after comparing."))+"</small></div><div class='lexQuizChoices'><button type='button' data-rate='recalled'>"+esc(tr("تذكرت المعنى بشكل صحيح","I recalled the meaning"))+"</button><button type='button' data-rate='not_recalled'>"+esc(tr("احتجت إلى مراجعة","I needed a review"))+"</button></div><p role='alert' id='lexQuizError'></p>";
-   msg.querySelectorAll("[data-rate]").forEach(function(b){b.onclick=async function(){
+   msg.querySelectorAll("[data-rate]").forEach(function(b){if(b.dataset.rate==="recalled"&&!val)b.disabled=true;b.onclick=async function(){
     msg.querySelectorAll("button").forEach(function(x){x.disabled=true;});
     try{await record(current,"recall","self_report",b.dataset.rate);application();}
     catch(_){msg.querySelectorAll("button").forEach(function(x){x.disabled=false;});msg.querySelector("#lexQuizError").textContent=tr("تعذر حفظ المراجعة. حاول مرة أخرى.","Could not save review. Retry.");}
