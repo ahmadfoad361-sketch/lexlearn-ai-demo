@@ -129,7 +129,8 @@ async function run({en=false,marker,session=true,error,access,consent=true,role,
  assert.ok(calls>=3);
  
  // Direct URLs must never query glossary rows when a session is still active.
- const deniedContext={document:{documentElement:{lang:'ar'},getElementById:id=>id==='personalGlossaryApp'?{innerHTML:'',querySelector(){return null}}:null}};
+ const lockedHost={innerHTML:'',querySelector(){return null}};
+ const deniedContext={document:{documentElement:{lang:'ar'},getElementById:id=>id==='personalGlossaryApp'?lockedHost:null}};
  let protectedReads=0;
  deniedContext.LEX_GLOSSARY_ACCESS={check:async()=>false,notice:()=>access.notice('ar'),canShowTerms:()=>false};
  deniedContext.LEX_CLOUD={requireStudent:async()=>({id:'test_student'}),db:()=>({from(){protectedReads++;throw Error('glossary query must not execute');}})};
