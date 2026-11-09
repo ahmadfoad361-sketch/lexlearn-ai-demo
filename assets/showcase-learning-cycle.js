@@ -119,6 +119,53 @@ function plan(weak, lang) {
     correct:0,
     feedback:pick(ar,"نلاحظ الشرط أولًا، ثم نربطه بالأثر القانوني. هذه خطوة دعم تدريبي، وليست دليلًا على الإتقان.","Identify the condition, then its legal consequence. This is guided instruction, not proof of mastery.")
   };
+
+ // Explanations identify the selected misconception, with statutory references.
+ meaning.wrongExplanations=ar?[
+  '',
+  'المادة 40 تتناول حقوقًا محددة للحمل مشروطة بالولادة الحية، ولا تجعل كل الحقوق ثابتة بلا شرط.',
+  'المادة 39 تحدد بداية الشخصية القانونية بالولادة الحية لا بمجرد الحمل.'
+ ]:[
+  '',
+  'Article 40 recognizes specific prenatal rights conditional on live birth, not every right without conditions.',
+  'Article 39 begins legal personality at live birth, not at conception.'
+ ];
+ capacity.wrongExplanations=ar?[
+  '',
+  'المادة 39 تثبت الشخصية بالولادة الحية؛ أما المادة 49 فتشترط لتمام أهلية الأداء بلوغ 18 سنة كاملة وعدم استمرار ولاية أو وصاية أو حجر.',
+  'المادة 39 تثبت الشخصية منذ الولادة حية، فلا تنتظر سن الرشد. أهلية الأداء أمر منفصل تحكمه المواد 49–51.'
+ ]:[
+  '',
+  'Article 39 establishes personality at live birth. Article 49 separately requires majority (18 full years) and no continuing legal restriction for full capacity to act.',
+  'Article 39 establishes personality at live birth, not adulthood. Capacity to act is governed separately by Articles 49–51.'
+ ];
+ transfer.wrongExplanations=ar?[
+  '',
+  'المادة 39: الولادة الحية تكفي لبدء الشخصية، ولا يشترط استمرار الحياة حتى سن الرشد.',
+  'المادة 39: تبدأ الشخصية بالولادة الحية وتنتهي بالوفاة، وليس العكس.'
+ ]:[
+  '',
+  'Article 39: personality begins at live birth; surviving to adulthood is not required.',
+  'Article 39: personality begins at live birth and ends at death, not the reverse.'
+ ];
+ noBirth.wrongExplanations=ar?[
+  '',
+  'المادة 40: عدم اشتراط القبول في سبب الحق لا يسقط شرط تمام الولادة حية.',
+  'المادتان 39 و40: الحمل ليس بدءًا للشخصية، والحق المحدد يظل مشروطًا بالولادة الحية.'
+ ]:[
+  '',
+  'Article 40: no acceptance requirement does not remove the live-birth condition.',
+  'Articles 39–40: conception does not begin personality, and the stated right depends on live birth.'
+ ];
+ worked.wrongExplanations=ar?[
+  '',
+  'المادة 39 لا تشترط حياة طويلة؛ تبدأ الشخصية بالولادة الحية وتنتهي بالوفاة.',
+  'المادة 39 تجعل الوفاة نهاية الشخصية لا بدايتها.'
+ ]:[
+  '',
+  'Article 39 does not require long survival; personality begins at live birth and ends at death.',
+  'Article 39 makes death the end of personality, not its beginning.'
+ ];
   if(mode === "foundation") return [worked,capacity,reconstruct,noBirth];
   if(mode === "recall") return [capacity,memoryCues,reconstruct,transfer];
   if(mode === "understanding") return [recall,meaning,explain,noBirth];
@@ -131,6 +178,8 @@ function run(options) {
   var flowArrow = pick(ar,"←","→");
   var weak = ["recall","understanding","foundation"].indexOf(options.weak)>=0 ? options.weak : "balanced";
   var tasks = plan(weak,options.lang), pos = 0, choiceScores = [];
+  var attemptId=typeof options.attemptId==="string"?options.attemptId:"";
+  var previousAnswer=typeof options.previousAnswer==="string"?options.previousAnswer:"";
   var description = weak === "recall" ?
     pick(ar,"ظهر الفهم أقوى من الاسترجاع في هذه المحاولة؛ سنبدأ من المعنى لنُثبّت عناصر القاعدة في الذاكرة.","Understanding appeared stronger than recall in this attempt; use meaning to strengthen recall.") :
     weak === "understanding" ?
@@ -165,18 +214,21 @@ function run(options) {
     var task=tasks[pos], free=task.type==="free";
     var progress='<div class="cycleProgress"><span>'+pick(ar,"التدريب","Practice")+' '+(pos+1)+' / '+tasks.length+'</span><div class="cycleMeter"><i style="width:'+((pos+1)*100/tasks.length)+'%"></i></div></div>';
     var question=free ?
-      '<textarea class="freeInput cycleInput" id="cycleAnswer" maxlength="1600" aria-label="'+pick(ar,"إجابتك التدريبية","Your practice answer")+'" placeholder="'+pick(ar,"اكتب بطريقتك؛ لا يلزم حفظ الصياغة حرفيًا.","Write in your own words; exact wording is not required.")+'"></textarea><p class="cycleHint">'+pick(ar,"لن تُحسب هذه الكتابة ضمن درجتك السابقة.","This text does not change your earlier score.")+'</p><button type="button" class="btn primary" id="cycleCompare">'+pick(ar,"قارن إجابتي بالنموذج","Compare with the reference")+'</button>' :
+      '<textarea class="freeInput cycleInput" id="cycleAnswer" autocomplete="off" name="fresh-cycle-'+esc(attemptId)+'-'+pos+'" maxlength="1600" aria-label="'+pick(ar,"إجابتك التدريبية","Your practice answer")+'" placeholder="'+pick(ar,"اكتب بطريقتك؛ لا يلزم حفظ الصياغة حرفيًا.","Write in your own words; exact wording is not required.")+'"></textarea><p class="cycleHint">'+pick(ar,"لن تُحسب هذه الكتابة ضمن درجتك السابقة.","This text does not change your earlier score.")+'</p><button type="button" class="btn primary" id="cycleCompare">'+pick(ar,"اعرض النموذج للمقارنة الذاتية","Show reference for self-comparison")+'</button>' :
       '<div class="choices cycleChoices">'+[2,0,1].map(function(index){return '<button type="button" class="choice" data-cycle-choice="'+index+'">'+esc(task.options[index])+'</button>';}).join("")+'</div>';
     stage(progress+'<h2>'+esc(task.title)+'</h2><p class="cycleLead">'+esc(task.prompt)+'</p>'+question+
       '<div id="cycleFeedback" class="cycleFeedback" aria-live="polite"></div>'+
       '<div class="demoActions">'+backButton()+'</div>');
     wireBack();
     if(free){
+      // Clear before each retrieval exercise; diagnostic text is never prefilled.
+      document.getElementById("cycleAnswer").value="";
       document.getElementById("cycleCompare").onclick=function(){
         var field=document.getElementById("cycleAnswer"),value=field.value.trim();
         if(!value){document.getElementById("cycleFeedback").textContent=pick(ar,"اكتب محاولتك أولًا، حتى لو كانت غير مكتملة.","Write an attempt first, even if incomplete.");field.focus();return;}
         field.disabled=true;this.disabled=true;
-        feedback('<span class="cycleLabel">'+pick(ar,"نموذج للمقارنة الذاتية","Reference for self-comparison")+'</span><p>'+esc(task.comparison)+'</p><small>'+esc(task.lesson)+'</small><small>'+pick(ar,"هذه مقارنة ذاتية؛ لم يُمنح نصك درجة آلية.","This is self-comparison; your text has not received an automated score.")+'</small>',true);
+        feedback('<span class="cycleLabel">'+pick(ar,"نموذج للمقارنة الذاتية","Reference for self-comparison")+'</span><p>'+esc(task.comparison)+'</p><small>'+esc(task.lesson)+'</small><small>'+pick(ar,"هذه مقارنة ذاتية؛ لم يُمنح نصك درجة آلية.","This is self-comparison; your text has not received an automated score.")+'</small>'+
+         (previousAnswer?'<details class="cyclePreviousAnswer"><summary>'+pick(ar,"راجع إجابتك السابقة في التشخيص","Review your earlier diagnostic answer")+'</summary><p>'+esc(previousAnswer)+'</p></details>':''),true);
       };
     } else {
       document.querySelectorAll("[data-cycle-choice]").forEach(function(btn){
@@ -188,7 +240,11 @@ function run(options) {
             if(Number(b.getAttribute("data-cycle-choice"))===task.correct)b.classList.add("good");
           });
           if(!correct)this.classList.add("bad");
-          feedback('<span class="cycleLabel">'+(correct?pick(ar,"إجابة صحيحة","Correct answer"):pick(ar,"راجع الفرق بين الشرط والنتيجة","Review the condition and outcome"))+'</span><p>'+esc(task.feedback)+'</p>',correct);
+          var detail=correct?'<p>'+esc(task.feedback)+'</p>':
+            '<p><b>'+pick(ar,"اختيارك: ","Your choice: ")+'</b>'+esc(task.options[selected])+'</p>'+
+            '<p><b>'+pick(ar,"الإجابة الصحيحة: ","Correct choice: ")+'</b>'+esc(task.options[task.correct])+'</p>'+
+            '<p><b>'+pick(ar,"السبب القانوني: ","Legal reason: ")+'</b>'+esc((task.wrongExplanations||[])[selected]||task.feedback)+'</p>';
+           feedback('<span class="cycleLabel">'+(correct?pick(ar,"إجابة صحيحة","Correct answer"):pick(ar,"مراجعة الإجابة","Answer review"))+'</span>'+detail,correct);
         };
       });
     }
@@ -202,7 +258,7 @@ function run(options) {
     // One-tab, non-credentialed preview entry. Never write a certified diagnostic
     // or university score into the student's permanent profile.
     try { root.sessionStorage.setItem("lexlearn-showcase-first-session-v1",
-      JSON.stringify({completed:true,at:Date.now(),lang:options.lang==="en"?"en":"ar"})); } catch (_) {}
+      JSON.stringify({completed:true,attemptId:attemptId,at:Date.now(),lang:options.lang==="en"?"en":"ar"})); } catch (_) {}
     stage('<span class="demoEyebrow">'+pick(ar,"اكتملت دورة التدريب","Practice cycle complete")+'</span>'+
       '<div class="cycleFinishIcon" aria-hidden="true">✓</div>'+
       '<h2>'+pick(ar,"من التشخيص إلى تدريب موجّه","From diagnosis to targeted practice")+'</h2>'+
