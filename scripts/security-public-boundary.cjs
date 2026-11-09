@@ -35,7 +35,7 @@ try{
   'scripts/build-public.js','scripts/verify-observability.cjs','scripts/verify-observability-build.cjs','scripts/security-public-boundary.cjs','scripts/verify-public-links.cjs','scripts/check-identity-cards.cjs','scripts/verify-learning-intelligence.cjs','scripts/verify-student-session.cjs','scripts/verify-showcase-browser.cjs',
   '.github/workflows/showcase-browser-qa.yml',
   'README.md','AGENTS.md','.gitignore',
-  '.github/workflows/cohort-bulk-archive.yml','tests/admin-bulk-parser.test.cjs'
+  '.github/workflows/cohort-bulk-archive.yml','tests/admin-bulk-parser.test.cjs','tests/learner-extensions.test.cjs'
  ]);
  const published=new Set(files);
  for(const file of tracked)if(!published.has(file)&&!infrastructure.has(file))
