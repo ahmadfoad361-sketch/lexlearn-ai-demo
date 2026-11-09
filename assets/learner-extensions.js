@@ -118,7 +118,7 @@ async function mountCareer(node){
   var completed=await db.from("student_training_sessions").select("session_number,completed_at,tasks_json")
    .eq("user_id",uid).eq("course_id",COURSE).eq("session_number",n).maybeSingle();
   if(completed.error)throw completed.error;
-  if(!completed.data||!completed.data.completed_at){
+  if(!completed.data||Number(completed.data.session_number)!==n||!completed.data.completed_at){
    visible(node,"<div class='lexExtensionCard'><h2>"+tr(lang,"تحديك القادم","Your next role challenge")+"</h2><p>"+
    tr(lang,"يفتح بعد إكمال الجلسة رقم ","Unlocks after completing session ")+n+"</p>"+
    "<a href='student-path.html?lang="+lang+"'>"+tr(lang,"ارجع إلى رحلتك","Back to learning")+"</a></div>");return;
