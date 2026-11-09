@@ -114,7 +114,10 @@ function pendingGrade(v){return !!(v&&v.evaluation&&["ai_queued","ai_pending","a
 // Operator recovery must first reconcile the durable job and provider outcome.
 function heldGrade(v){
  var ev=v&&v.evaluation||{};
- return ["ai_review_required","review_required","human_review_required","needs_review"].includes(ev.status);
+ // A confirmed 429 rate limit is the ONLY held state with an existing
+ // bounded, server-authorized retry path. All unknown/credit/evidence holds
+ // remain blocked until recovery checks protect against duplicate billing.
+ return ["ai_review_required","review_required","human_review_required","needs_review"].includes(ev.status)&&ev.reason!=="provider_rate_limited";
 }
 function needsAssessment(v){return !pendingGrade(v)&&!heldGrade(v)&&!confirmedGrade(v&&v.evaluation)&&!deterministicZero(v&&v.evaluation);}
 function stageSkillSnapshot(rows,session){
@@ -244,6 +247,7 @@ async function boot(){
    if(gradingIssue==='queued')return t("إجابتك محفوظة، والتصحيح مستمر تلقائيًا. يمكنك متابعة التدريب أو العودة لاحقًا.","Your answer is saved and assessment continues automatically. You can continue practising or return later.");
    if(gradingIssue==='approved_rubric_required'||gradingIssue==='approved_sources_required')return t("لم تتمكن الخدمة من تحميل معايير السؤال ومصادره. إجابتك محفوظة؛ أعد التصحيح من الزر أدناه.","The question criteria or sources could not load. Your answer is saved; retry below.");
    if(gradingIssue==='answer_retry_limit')return t("لم نحصل على نتيجة مؤكدة بعد المحاولات المتاحة لهذه الإجابة. إجابتك محفوظة ولم تُحتسب صفرًا.","No confirmed result was obtained within this answer’s retry allowance. Your answer is saved and has not been scored zero.");
+   if(gradingIssue==='provider_rate_limited')return t("رفض مزود التصحيح الطلب بسبب حد مؤقت. الإجابة محفوظة؛ يمكنك إعادة المحاولة لاحقًا عبر المسار الآمن دون إعادة كتابة الإجابة.","The provider temporarily rate-limited the request. Your answer is saved; you can retry later through the safe path without rewriting it.");
    if(gradingIssue==='provider_timeout')return t("استغرق التصحيح وقتًا أطول من المتاح. إجابتك محفوظة؛ أعد التصحيح من الزر أدناه.","Assessment took longer than the available time. Your answer is saved; retry below.");
    return t("لم يكتمل التصحيح الآلي. إجابتك محفوظة؛ أعد التصحيح من الزر أدناه لتظهر النتيجة والملاحظات.","Automatic assessment did not complete. Your answer is saved; retry below to see the result and feedback.");
   }
