@@ -144,3 +144,50 @@ test('admin-only cognitive fingerprint can run independently of unreleased learn
  const report=fingerprint.render({concepts:[{label_ar:'شرط قانوني',dimension:'recall',evidence_count:2,rolling_percent:55,measurement:'provisional_criterion_coverage'}]});
  assert.match(report,/البصمة المعرفية/);
 });
+
+
+test('single student research pilot is mounted only after server says eligible and non-credit',async()=>{
+ const fs=require('node:fs'),vm=require('node:vm');
+ const entry=fs.readFileSync('assets/student-research-entry.js','utf8');
+ async function simulate(eligible,non_credit){
+  let mounts=0;
+  const offer={hidden:true,innerHTML:'',focus(){},querySelector(){return {onclick:null,focus(){}};}};
+  const original={hidden:false},workspace={hidden:true,querySelector(){return {onclick:null}}};
+  const lookup={researchPilotOffer:offer,researchPilotWorkspace:workspace,studentTrainingApp:original};
+  const sandbox={
+   document:{getElementById(id){return lookup[id]||null}},
+   window:{LEX_RESEARCH_PILOT:{mount(){mounts++;}},
+    LEX_CLOUD:{db(){return{
+     auth:{getUser:async()=>({data:{user:{id:'fictional-test-user'}},error:null})},
+     functions:{invoke:async()=>({data:{eligible,non_credit},error:null})}
+    };}}}
+  };
+  vm.runInNewContext(entry,sandbox,{timeout:1500});
+  await new Promise(resolve=>setImmediate(resolve));
+  return {offer,workspace,original,mounts};
+ }
+ const blocked=await simulate(false,true);
+ assert.equal(blocked.workspace.hidden,true);
+ assert.equal(blocked.original.hidden,false);
+ assert.equal(blocked.mounts,0);
+ const lackingConsent=await simulate(true,false);
+ assert.equal(lackingConsent.workspace.hidden,true);
+ assert.equal(lackingConsent.mounts,0);
+ const eligible=await simulate(true,true);
+ assert.equal(eligible.workspace.hidden,false);
+ assert.equal(eligible.original.hidden,true);
+ assert.equal(eligible.mounts,1);
+});
+test('research pilot is isolated, consent-gated and hidden from ordinary learners',()=>{
+ const fs=require('node:fs');
+ const html=fs.readFileSync('student-path.html','utf8');
+ const css=fs.readFileSync('assets/research-pilot-inline.css','utf8');
+ const entry=fs.readFileSync('assets/student-research-entry.js','utf8');
+ assert.match(html,/id="researchPilotWorkspace" hidden/);
+ assert.match(html,/id="researchShowOriginal"/);
+ assert.match(html,/assets\/student-research-pilot\.js/);
+ assert.match(css,/#researchPilotWorkspace\[hidden\]\{display:none!important\}/);
+ assert.match(entry,/r\.data\.eligible!==true\|\|r\.data\.non_credit!==true/);
+ assert.match(entry,/original\.hidden=false/);
+ assert.match(entry,/workspace\.hidden=false/);
+});
