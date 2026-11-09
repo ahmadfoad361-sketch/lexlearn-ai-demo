@@ -58,6 +58,15 @@ async function run({en=false,marker,session=true,error,access,consent=true,role,
  assert.match(dictionaryCode,/if\(!allowAi\)throw Error\("ai_consent_needed"\)/);
  assert.match(dictionaryCode,/accept_ai_processing:true/);
  assert.doesNotMatch(dictionaryCode,/OPENAI_API_KEY/);
+ const adminGlossary=fs.readFileSync('assets/admin-glossaries.js','utf8');
+ assert.match(adminGlossary,/staff_inference/);
+ assert.match(adminGlossary,/admin|owner/);
+ assert.match(adminGlossary,/lexlearn-admin-glossary/);
+ assert.doesNotMatch(dictionaryCode,/staff_inference|lexlearn-admin-glossary|status\(e\)/);
+ assert.match(dictionaryCode,/personal_note/);
+ assert.match(dictionaryCode,/قاموسك فارغ/);
+ assert.doesNotMatch(dictionaryCode,/صعوبة التذكر والفهم|التذكر يحتاج مراجعة|الفهم يحتاج مراجعة/);
+ console.log('PASS: student glossary has no difficulty labels or ready-made entries; staff report is separate.');
  console.log('PASS: glossary matching, original legal text, HTML escaping, active course routing, consent boundary, and sample legal quiz.');
  console.log('PASS: Arabic and English session recovery, missing/expired Auth, stale identity, network errors, role/activation, admission, enrollment, consent, and cross-tab sign-out.');
 })().catch(e=>{console.error(e);process.exitCode=1;});
