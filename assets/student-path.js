@@ -258,7 +258,7 @@ async function boot(){
     t("الجلسة ","Session ")+(i+1);});
   function nav(){
    return "<div class='heading'><div><b>"+t("مسارك التدريبي المتكيف","Your adaptive learning path")+"</b><p>"+t("المقرر: نظرية الحق • 6 أسابيع • 30 جلسة • نتائج لكل طالب","Theory of Rights • 6 weeks • 30 sessions • individual results")+"</p>"+lawContext([])+"</div><a href='student"+(lang()==="en"?"-en":"")+".html'>"+t("حساب الطالب","Student account")+"</a></div>"+
-   "<p class='scope' role='note'>"+t("تدريب يتكيف مع أدائك، مع حفظ إجاباتك وتقدمك في حسابك. النتائج مؤشرات تدريبية والمشرف يتابع تقدمك، وليست درجات جامعية معتمدة.","Practice adapts to your performance, with answers and progress saved to your account. Results are training indicators instructor oversight only, not certified university marks.")+"</p>"+
+   (root.LEX_GLOSSARY?root.LEX_GLOSSARY.appendLink():"")+"<p class='scope' role='note'>"+t("تدريب يتكيف مع أدائك، مع حفظ إجاباتك وتقدمك في حسابك. النتائج مؤشرات تدريبية والمشرف يتابع تقدمك، وليست درجات جامعية معتمدة.","Practice adapts to your performance, with answers and progress saved to your account. Results are training indicators instructor oversight only, not certified university marks.")+"</p>"+
    "<p class='overview'>"+t("التقدم المحفوظ: ","Verified practice progress: ")+overview.completed_count+" / 30 · "+t("الجلسة الحالية: ","Current session: ")+overview.unlocked+"</p>"+
    "<div class='levelStrip'>"+Array.from({length:6},function(_,i){
     var level=i+1,start=i*5+1,end=level*5,done=overview.completed_count>=end,unlocked=overview.unlocked>=start;
@@ -321,6 +321,7 @@ async function boot(){
     var reading=root.LEX_LEGAL_STUDY.render(sourceIds,lang());
     if(reading){
      show(nav()+reading);
+     if(root.LEX_GLOSSARY)root.LEX_GLOSSARY.bindArticle(host.querySelector(".legalStudy"));
      host.querySelector("#beginLegalQuestions").onclick=function(){studyRead=true;render();};
      return;
     }
