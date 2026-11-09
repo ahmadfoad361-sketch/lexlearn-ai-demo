@@ -1,0 +1,42 @@
+name: Smart Study Coach browser QA (isolated)
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'assets/study-coach.js'
+      - 'assets/study-coach.css'
+      - 'assets/study-coach/**'
+      - 'assets/student-path.js'
+      - 'student-path.html'
+      - 'scripts/verify-study-coach-browser.cjs'
+      - '.github/workflows/study-coach-browser-qa.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  mobile-desktop-chromium:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install test-only Playwright
+        run: |
+          npm install --no-save --no-package-lock --ignore-scripts playwright@1.58.2
+          npx playwright install --with-deps chromium
+      - name: Build static artifact and ensure no backend files
+        run: |
+          node scripts/build-public.js
+          node scripts/security-public-boundary.cjs
+          node scripts/verify-public-links.cjs
+      - name: Run isolated browser QA
+        env:
+          COACH_QA_URL: http://127.0.0.1:8766
+        run: |
+          python3 -m http.server 8766 --bind 127.0.0.1 --directory dist-site >/tmp/lexlearn-coach-qa.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" || true' EXIT
+          for attempt in $(seq 1 20); do curl -fsS -o /dev/null http://127.0.0.1:8766/student-path.html && break || sleep 1; done
+          node scripts/verify-study-coach-browser.cjs
