@@ -1,0 +1,15 @@
+/* Scoped pilot: no effect on regular student sessions. Hidden until server entitlement. */
+#researchPilotWorkspace[hidden]{display:none!important}
+#researchPilotWorkspace .researchReturnOriginal{font-weight:700;font-size:.9rem;background:#f9f4ef;color:#8a1f39;border:1px solid #8a1f39;border-radius:10px;padding:.65rem 1rem;margin:0 0 1.1rem;cursor:pointer}
+#researchPilotWorkspace .card{background:#fff;border:1px solid #d7dbe0;border-radius:14px;padding:1.15rem;margin:1rem 0;box-shadow:none}
+#researchPilotWorkspace .intro{border-inline-start:4px solid #8a1f39;background:#f9f4ef;padding:.85rem 1.1rem;border-radius:10px}
+#researchPilotWorkspace .choice{display:block;border:1px solid #d7dbe0;border-radius:10px;padding:.8rem 1rem;margin:.6rem 0;cursor:pointer;font-weight:500}
+#researchPilotWorkspace .choice:has(input:checked){background:#faeef2;border-color:#8a1f39}
+#researchPilotWorkspace .choice input{margin-inline-end:.65rem;accent-color:#8a1f39}
+#researchPilotWorkspace .muted{color:#5d6876;font-size:.88rem}
+#researchPilotWorkspace .error{color:#9c2139}
+#researchPilotWorkspace .feedback{border-inline-start:4px solid #417654;background:#eef5f0;padding:1.1rem;border-radius:10px}
+#researchPilotWorkspace textarea{box-sizing:border-box;width:100%;min-height:150px;max-width:100%;font:inherit;border:1px solid #b9c0ca;border-radius:11px;padding:.9rem}
+#researchPilotWorkspace fieldset{border:0;padding:0;margin:0}
+#researchPilotWorkspace button:focus-visible,#researchPilotWorkspace a:focus-visible{outline:3px solid #b67589;outline-offset:3px}
+@media(max-width:600px){#researchPilotWorkspace{padding:1rem!important;border-radius:0!important;min-height:85vh}}
