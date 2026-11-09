@@ -211,30 +211,19 @@ async function mountPage(){
  }catch(_){host.innerHTML="<p role='alert'>"+esc(tr("تعذر تحميل القاموس. سجل الدخول وتحقق من اتصالك.","Could not load the dictionary. Sign in and check your connection."))+"</p><a href='student-login.html'>"+esc(tr("دخول الطالب","Sign in"))+"</a>";return;}
  var attempt=[],testItems=[],pos=0,stage="",current=null;
  function latest(row,skill){return reviews.find(function(v){return v.entry_id===row.id&&v.skill===skill;})||null;}
- function status(row){
-  var rec=latest(row,"recall"),under=latest(row,"understanding");
-  if(!rec&&!under)return tr("لم يُختبر بعد","Not tested");
-  var weakRecall=!!(rec&&rec.outcome==="not_recalled");
-  var weakUnderstanding=!!(under&&under.outcome==="incorrect");
-  if(weakRecall&&weakUnderstanding)return tr("صعوبة التذكر والفهم","Recall and understanding need review");
-  if(weakRecall)return tr("التذكر يحتاج مراجعة","Recall needs review");
-  if(weakUnderstanding)return tr("الفهم يحتاج مراجعة","Understanding needs review");
-  if(rec&&rec.outcome==="recalled"&&under&&under.outcome==="correct")return tr("تذكر ذاتي + فهم تطبيقي","Self-recall + applied understanding");
-  return tr("تقييم جزئي","Partly reviewed");
- }
  function renderList(filter){
   var shown=entries.filter(function(e){
    return !filter||normalize(e.term_ar).includes(normalize(filter));
   });
-  host.innerHTML="<div class='lexDictionaryHero'><span class='lexDictionaryEyebrow'>My Legal Dictionary</span><h1>"+esc(tr("قاموسي القانوني","My Legal Dictionary"))+"</h1><p>"+esc(tr("مصطلحات صادفتها في القانون. احفظها ثم اختبر نفسك بعيدًا عن نص المادة.","Save terms from legal provisions, then test yourself without looking at the text."))+"</p><div class='lexDictionaryStats'><span><b>"+entries.length+"</b>"+esc(tr("مصطلحًا محفوظًا"," saved terms"))+"</span><span><b>"+entries.filter(due).length+"</b>"+esc(tr("جاهزًا للمراجعة"," due for review"))+"</span></div></div>"+
+  host.innerHTML="<div class='lexDictionaryHero'><span class='lexDictionaryEyebrow'>My Legal Dictionary</span><h1>"+esc(tr("قاموسي القانوني","My Legal Dictionary"))+"</h1><p>"+esc(tr("قاموسك أنت؛ يبدأ فارغًا وتضيف إليه فقط المصطلحات التي تختارها من النص القانوني.","Start with an empty dictionary. Save only the terms you personally choose while reading."))+"</p><div class='lexDictionaryStats'><span><b>"+entries.length+"</b>"+esc(tr("مصطلحًا محفوظًا"," saved terms"))+"</span><span><b>"+entries.filter(due).length+"</b>"+esc(tr("جاهزًا للمراجعة"," due for review"))+"</span></div></div>"+
   "<section class='lexDictionaryToolbar'><label>"+esc(tr("ابحث في قاموسك","Search your terms"))+"<input id='lexDictionarySearch' value='"+esc(filter||"")+"' maxlength='100' placeholder='"+esc(tr("اكتب مصطلحًا…","Search a term…"))+"'></label><button type='button' id='lexDictionaryQuiz' "+(!entries.length?"disabled":"")+">"+esc(tr("اختبر قاموسي","Test my dictionary"))+"</button></section>"+
-  (!entries.length?"<div class='lexDictionaryEmpty'>"+esc(tr("قاموسك فارغ. افتح جلسة تدريب، ثم اضغط على أي مصطلح مميز داخل المادة القانونية لحفظه.","Your dictionary is empty. Open a session and save highlighted legal terms."))+"</div>":
+  (!entries.length?"<div class='lexDictionaryEmpty'>"+esc(tr("قاموسك فارغ حتى الآن. اقرأ المادة، واختَر بنفسك مصطلحًا ثم اضغط «أضف لقاموسي».","Your dictionary is empty. Choose a term yourself in the legal text, then save it."))+"</div>":
    "<div class='lexDictionaryGrid'>"+shown.map(function(e){
      var definition=e.definition_ar?(root.document.documentElement.lang==="en"&&e.definition_en?e.definition_en:e.definition_ar):tr("الشرح لم يتوفر بعد، ويمكنك إعادة طلبه من نص المادة.","The explanation is pending. Reopen the legal text to request it.");
-     return "<article class='lexDictionaryCard'><div class='lexDictionaryCardTop'><h2>"+esc(e.term_ar)+"</h2><span>"+esc(status(e))+"</span></div><p>"+esc(definition)+"</p><small>"+esc(tr("القانون المدني القطري 22/2004 — المادة ","Qatar Civil Code 22/2004 — Article "))+esc(e.article_number||"—")+" · "+esc(formatDate(e.added_at))+"</small>"+
+     return "<article class='lexDictionaryCard'><div class='lexDictionaryCardTop'><h2>"+esc(e.term_ar)+"</h2></div><p>"+esc(definition)+"</p><small>"+esc(tr("القانون المدني القطري 22/2004 — المادة ","Qatar Civil Code 22/2004 — Article "))+esc(e.article_number||"—")+" · "+esc(formatDate(e.added_at))+"</small>"+
        (e.definition_status==="ai_unverified"?"<p class='lexDictionaryCaution'>"+esc(tr("شرح آلي أولي — غير مُراجع أكاديميًا","AI draft — not academically reviewed"))+"</p>":"")+"</article>";
    }).join("")+"</div>")+
-  "<p class='lexDictionaryHint'>"+esc(tr("اختيار مصطلح لا يعني ضعف الحفظ أو الفهم؛ نفهم الصعوبة من المراجعات اللاحقة. هذه النتائج مستقلة عن درجاتك التدريبية الرسمية.","Saving a term does not prove a memory or understanding weakness. Review results are separate from official training grades."))+"</p>";
+  "<p class='lexDictionaryHint'>"+esc(tr("هذا قاموسك الشخصي؛ لا تُضاف إليه كلمات تلقائيًا. اختبر ما حفظته في الوقت الذي يناسبك.","This is your personal dictionary. Terms are never added automatically. Review whenever you like."))+"</p>";
   var search=host.querySelector("#lexDictionarySearch");if(search)search.oninput=function(){var v=search.value;renderList(v);var newer=host.querySelector("#lexDictionarySearch");newer.focus();newer.setSelectionRange(v.length,v.length);};
   var quiz=host.querySelector("#lexDictionaryQuiz");if(quiz)quiz.onclick=function(){testItems=entries.filter(due).filter(function(e){return !!e.definition_ar;}).slice(0,12);if(!testItems.length)testItems=entries.filter(function(e){return !!e.definition_ar;}).slice(0,12);if(!testItems.length){host.querySelector(".lexDictionaryHint").textContent=tr("كل مصطلحاتك تنتظر شرحًا. أعد فتحها من النص القانوني.","All saved terms await explanations.");return;}pos=0;attempt=[];question();};
  }
@@ -278,9 +267,8 @@ async function mountPage(){
   };
  }
  function finish(){
-  var r=attempt.filter(function(x){return x.skill==="recall";}),u=attempt.filter(function(x){return x.skill==="understanding";});
-  var recalled=r.filter(function(x){return x.outcome==="recalled";}).length,understood=u.filter(function(x){return x.outcome==="correct";}).length;
-  host.innerHTML="<section class='lexQuiz lexQuizResult'><span class='lexQuizChip'>"+esc(tr("نتيجة مراجعة القاموس","Dictionary review results"))+"</span><h1>"+esc(tr("أكملت المراجعة","Review complete"))+"</h1><div class='lexDictionaryStats'><span><b>"+r.length+"</b>"+esc(tr("مصطلحًا راجعته"," terms reviewed"))+"</span><span><b>"+recalled+"/"+r.length+"</b>"+esc(tr("تذكّر بحسب تقييمك الذاتي"," self-rated recall"))+"</span><span><b>"+understood+"/"+u.length+"</b>"+esc(tr("إجابات تطبيقية صحيحة"," correct applications"))+"</span></div><p>"+esc(tr("الاختبار يميز تقييم التذكر الذاتي عن إجابات الفهم الموضوعية. لا يضيف درجات إلى التشخيص أو التقييم الرسمي. ستعود المصطلحات الصعبة للمراجعة مبكرًا.","Self-rated recall and objective application are separate evidence. This does not affect official grades. Difficult terms become due for review sooner."))+"</p><button type='button' id='lexQuizEnd'>"+esc(tr("العودة لقاموسي","Back to dictionary"))+"</button></section>";
+  var reviewed=attempt.filter(function(x){return x.skill==="recall";}).length;
+  host.innerHTML="<section class='lexQuiz lexQuizResult'><span class='lexQuizChip'>"+esc(tr("مراجعة القاموس","Dictionary review"))+"</span><h1>"+esc(tr("خلصت مراجعتك","Review complete"))+"</h1><p>"+esc(tr("راجعت "+reviewed+" مصطلحًا من قاموسك. تقدر ترجع لقاموسك أو تبدأ جلسة جديدة.","You reviewed "+reviewed+" terms. Return to your dictionary or continue learning."))+"</p><button type='button' id='lexQuizEnd'>"+esc(tr("العودة لقاموسي","Back to dictionary"))+"</button></section>";
   host.querySelector("#lexQuizEnd").onclick=function(){renderList("");};
  }
  renderList("");
