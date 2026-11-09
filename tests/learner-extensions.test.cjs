@@ -130,3 +130,17 @@ test('production feature flag defaults off and never injects extras into active 
  assert.match(path,/root\.LEX_CONFIG\?\.learningExtensionsV1===true/);
  assert.match(profile,/window\.LEX_CONFIG\?\.learningExtensionsV1===true/);
 });
+
+test('admin-only cognitive fingerprint can run independently of unreleased learner features',()=>{
+ const fs=require('node:fs');
+ const config=fs.readFileSync('assets/lexlearn-config.js','utf8');
+ const admin=fs.readFileSync('assets/admin-progress.js','utf8');
+ const student=fs.readFileSync('assets/student-path.js','utf8');
+ assert.match(config,/learningExtensionsV1:false/);
+ assert.match(config,/cognitiveFingerprintV1:true/);
+ assert.match(admin,/cognitiveFingerprintV1===true/);
+ assert.match(admin,/\["owner","admin"\]\.includes\(p\.role\)/);
+ assert.doesNotMatch(student,/cognitiveFingerprintV1/);
+ const report=fingerprint.render({concepts:[{label_ar:'شرط قانوني',dimension:'recall',evidence_count:2,rolling_percent:55,measurement:'provisional_criterion_coverage'}]});
+ assert.match(report,/البصمة المعرفية/);
+});
