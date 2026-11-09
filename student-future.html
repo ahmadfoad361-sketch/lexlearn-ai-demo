@@ -25,6 +25,6 @@ document.documentElement.lang=isEn?"en":"ar";
 document.documentElement.dir=isEn?"ltr":"rtl";
 document.getElementById("back").href="student-path.html?lang="+(isEn?"en":"ar");
 document.getElementById("back").textContent=isEn?"Back to learning":"العودة للتدريب";
-LEX_LEARNER_EXTENSIONS.mountCareer(document.getElementById("careerApp"));
+if(window.LEX_CONFIG?.learningExtensionsV1===true){LEX_LEARNER_EXTENSIONS.mountCareer(document.getElementById("careerApp"));}else{document.getElementById("careerApp").textContent=isEn?"This optional practice is being prepared. Your existing training is available.":"التجربة الاختيارية قيد الإعداد. تدريبك الحالي متاح كالمعتاد.";}
 </script>
 </body></html>
