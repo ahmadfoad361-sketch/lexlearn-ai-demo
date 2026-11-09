@@ -5,7 +5,9 @@
 (function(root){
 "use strict";
 const COURSE="qa-qu-lawc101-rights";
+let latestAllowed=false;
 async function check(cloud){
+ latestAllowed=false;
  const api=cloud||root.LEX_CLOUD;
  if(!api||!api.db||!api.requireStudent)throw Error("glossary_access_unavailable");
  await api.requireStudent();
@@ -13,7 +15,8 @@ async function check(cloud){
  if(!db||!db.rpc)throw Error("glossary_access_unavailable");
  const result=await db.rpc("lex_glossary_access_allowed",{p_course_id:COURSE});
  if(result.error||typeof result.data!=="boolean")throw Error("glossary_access_unavailable");
- return result.data;
+ latestAllowed=result.data;
+ return latestAllowed;
 }
 function notice(language){
  return language==="en"?"Your legal dictionary becomes available when this session is completed.":
@@ -43,6 +46,6 @@ function installLinkGuard(cloud){
   }finally{a.dataset.lexChecking="0";}
  },true);
 }
-root.LEX_GLOSSARY_ACCESS={check:check,notice:notice,linkHtml:linkHtml,installLinkGuard:installLinkGuard};
+root.LEX_GLOSSARY_ACCESS={check:check,notice:notice,linkHtml:linkHtml,canShowTerms:function(){return latestAllowed===true;},installLinkGuard:installLinkGuard};
 if(typeof module!=="undefined"&&module.exports)module.exports=root.LEX_GLOSSARY_ACCESS;
 })(typeof window!=="undefined"?window:globalThis);
