@@ -42,6 +42,7 @@ async function run({en=false,marker,session=true,error,access,consent=true,role,
  r=await run({session:false});await assert.rejects(()=>r.cloud.signInStudent('verified','test-only'),/student_session_missing/);
 
  const glossaryContext={document:{documentElement:{lang:'ar'}}};
+ glossaryContext.LEX_GLOSSARY_ACCESS={check:async()=>true,notice:()=>"unlocked",canShowTerms:()=>true};
  vm.createContext(glossaryContext);
  vm.runInContext(fs.readFileSync('assets/personal-glossary.js','utf8'),glossaryContext);
  const dictionary=glossaryContext.LEX_GLOSSARY;
@@ -98,6 +99,72 @@ async function run({en=false,marker,session=true,error,access,consent=true,role,
  assert.match(dictionaryCode,/exampleText\.textContent=shownExample/);
  assert.match(dictionaryCode,/lexQuizExample/);
  assert.match(dictionaryCode,/example_ar:value\.example_ar/);
+
+
+ // The authority is the server's session row, not local state, cached scores or tabs.
+ const accessSource=fs.readFileSync('assets/glossary-access.js','utf8');
+ const accessContext={document:{documentElement:{lang:'ar'}},URLSearchParams};
+ accessContext.window=accessContext;vm.createContext(accessContext);vm.runInContext(accessSource,accessContext);
+ const access=accessContext.LEX_GLOSSARY_ACCESS;
+ let openState=true,fail=false,calls=0;
+ const authCloud={
+   requireStudent:async()=>({id:'test_student'}),
+   db:()=>({rpc:async(name,args)=>{
+     assert.equal(name,'lex_glossary_access_allowed');
+     assert.equal(args.p_course_id,'qa-qu-lawc101-rights');calls++;
+     return fail?{data:null,error:{message:'outage'}}:{data:openState,error:null};
+   }})
+ };
+ assert.equal(await access.check(authCloud),true);
+ assert.match(access.linkHtml(true,'ar'),/student-glossary\.html/);
+ assert.equal(access.canShowTerms(),true);
+ openState=false;
+ assert.equal(await access.check(authCloud),false);
+ assert.doesNotMatch(access.linkHtml(false,'ar'),/href=/);
+ assert.match(access.notice('ar'),/بعد انتهاء الجلسة/);
+ assert.equal(access.canShowTerms(),false);
+ fail=true;
+ await assert.rejects(()=>access.check(authCloud),/glossary_access_unavailable/);
+ assert.equal(access.canShowTerms(),false,'failed auth checks must always close glossary');
+ assert.ok(calls>=3);
+ 
+ // Direct URLs must never query glossary rows when a session is still active.
+ const lockedHost={innerHTML:'',querySelector(){return null}};
+ const deniedContext={document:{documentElement:{lang:'ar'},getElementById:id=>id==='personalGlossaryApp'?lockedHost:null}};
+ let protectedReads=0;
+ deniedContext.LEX_GLOSSARY_ACCESS={check:async()=>false,notice:()=>access.notice('ar'),canShowTerms:()=>false};
+ deniedContext.LEX_CLOUD={requireStudent:async()=>({id:'test_student'}),db:()=>({from(){protectedReads++;throw Error('glossary query must not execute');}})};
+ deniedContext.window=deniedContext;vm.createContext(deniedContext);
+ vm.runInContext(fs.readFileSync('assets/personal-glossary.js','utf8'),deniedContext);
+ const deniedDom=deniedContext.document.getElementById('personalGlossaryApp');
+ await deniedContext.LEX_GLOSSARY.mountPage();
+ assert.match(deniedDom.innerHTML,/بعد انتهاء الجلسة/);
+ assert.equal(protectedReads,0);
+ assert.doesNotMatch(deniedContext.LEX_GLOSSARY.linkText(46,'قرابة الحواشي'),/data-lex-term/);
+ 
+ const trainingContext={document:{getElementById:()=>null},location:{search:'?lang=ar'},URLSearchParams};
+ trainingContext.window=trainingContext;vm.createContext(trainingContext);
+ vm.runInContext(fs.readFileSync('assets/student-path.js','utf8'),trainingContext);
+ const rows=[
+  {session_number:1,dimension:'recall',evaluation:{status:'preliminary_ai',rubric_version:'lexlearn-training-ai-v4',provisional_percent:40}},
+  {session_number:2,dimension:'recall',evaluation:{status:'preliminary_ai',rubric_version:'lexlearn-training-ai-v4',provisional_percent:100}},
+  {session_number:1,dimension:'understanding',evaluation:{status:'preliminary_ai',rubric_version:'lexlearn-training-ai-v4',provisional_percent:60}},
+  {session_number:2,dimension:'understanding',evaluation:{status:'preliminary_ai',rubric_version:'lexlearn-training-ai-v4',provisional_percent:80}}
+ ];
+ const aggregate=trainingContext.LEX_STUDENT_PATH.progressHtml(rows,2,true);
+ assert.match(aggregate,/إجمالي تقدمك حتى الآن/);
+ assert.match(aggregate,/70%/);
+ assert.doesNotMatch(aggregate,/سجل نتائج الجلسات|Session evidence history|جلسة 1:|جلسة 2:/);
+ assert.doesNotMatch(fs.readFileSync('assets/student-path.js','utf8'),/سجل نتائج الجلسات|Session evidence history/);
+ const adminSource=fs.readFileSync('assets/admin-progress.js','utf8');
+ assert.match(adminSource,/gradedStageHistoryHtml/,'detailed per-session evidence stays in authorized admin report');
+ assert.match(adminSource,/owner","admin/);
+ for(const page of ['student.html','student-en.html','student-path.html','student-glossary.html']){
+  const html=fs.readFileSync(page,'utf8');
+  assert.match(html,/assets\/glossary-access\.js/);
+  assert.match(html,/assets\/glossary-access\.css/);
+ }
+ console.log('PASS: server-verified session gating, direct glossary denial, fail-closed lookup, aggregate-only student reporting and staff history.');
 
  console.log('PASS: student glossary has no difficulty labels or ready-made entries; staff report is separate.');
  console.log('PASS: glossary matching, original legal text, HTML escaping, active course routing, consent boundary, and sample legal quiz.');
