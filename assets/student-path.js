@@ -171,6 +171,7 @@ function examSummary(rows,session){
 }
 function progressHtml(rows,session,historyAvailable){
  var m=progressModel(rows,session),overall=stageSkillSnapshot(rows,session),visual=root.LEX_MOMENTS;
+ var pending=(rows||[]).some(function(r){return r&&r.session_number<=session&&pendingGrade(r);});
  var card={kind:m.checkpoint?"level":"session",level:m.level,session:session,recall:overall.recall.percent,understanding:overall.understanding.percent};
  return "<section class='progressReport' aria-label='"+t("ملخص إجمالي تقدمك","Overall progress summary")+"'><h2>"+
    t("إجمالي تقدمك حتى الآن","Your overall progress so far")+"</h2>"+
@@ -185,6 +186,7 @@ function progressHtml(rows,session,historyAvailable){
        esc(v.percent===null?t("لم يُقَس بعد","Not measured yet"):noHtmlScore(v.percent))+"</strong>"+
        "<p>"+t("إجمالي الإجابات المصححة: ","Total assessed answers: ")+v.count+"</p></article>";
    }).join("")+"</div>"+
+   (pending?"<p role='status'>"+t("بعض الإجابات ما زالت جارٍ التصحيح؛ لم تُحسب ضمن الإجمالي ولن تُعامل كصفر.","Some answers are still being assessed; they are excluded from the total rather than treated as zero.")+"</p>":"")+
    "<p class='nextAdvice'>"+t("خطوتك القادمة: استرجع القاعدة بكلماتك ثم جرّب تطبيقها على واقعة جديدة.",
      "Next: recall the rule in your own words and apply it to a new legal scenario.")+"</p>"+
    "<small>"+t("هذه مؤشرات تدريبية إجمالية وليست درجات جامعية. يحتفظ المشرف بسجل النتائج التفصيلي للجلسات.",
