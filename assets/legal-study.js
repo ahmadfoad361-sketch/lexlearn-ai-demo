@@ -52,7 +52,7 @@ function render(ids,lang){
  var ns=numbers(ids),en=lang==="en";
  if(!ns.length)return "";
  return "<section class='legalStudy' aria-labelledby='legalStudyTitle'><p class='legalStudyEyebrow'>"+(en?"Before question one":"قبل السؤال الأول")+"</p><h2 id='legalStudyTitle'>"+(en?"Read the legal provisions first":"اقرأ المواد القانونية أولًا")+"</h2><p>"+(en?"Qatar Civil Code — Law 22 of 2004. The original Arabic text is shown below. Read it, then start the questions. The text will be hidden while you answer.":"القانون المدني القطري رقم (22) لسنة 2004. اقرأ النصوص التالية، ثم ابدأ الأسئلة. ستختفي النصوص أثناء الإجابة.")+"</p>"+
- ns.map(function(n){return "<figure class='legalStudyArticle' data-article='"+n+"'><blockquote lang='ar' dir='rtl'>"+esc(TEXT[n])+"</blockquote><figcaption><strong>"+(en?"Article ":"المادة ")+n+(en?" of the ":" من ")+esc(law(lang))+"</strong><a href='"+esc(sourceUrl(n))+"' target='_blank' rel='noopener noreferrer'>"+(en?"Legal source":"المصدر القانوني")+"</a></figcaption></figure>";}).join("")+
+ ns.map(function(n){return "<figure class='legalStudyArticle' data-article='"+n+"'><blockquote lang='ar' dir='rtl'>"+(root.LEX_GLOSSARY?root.LEX_GLOSSARY.linkText(n,TEXT[n]):esc(TEXT[n]))+"</blockquote><figcaption><strong>"+(en?"Article ":"المادة ")+n+(en?" of the ":" من ")+esc(law(lang))+"</strong><a href='"+esc(sourceUrl(n))+"' target='_blank' rel='noopener noreferrer'>"+(en?"Legal source":"المصدر القانوني")+"</a></figcaption></figure>";}).join("")+
  "<button type='button' id='beginLegalQuestions'>"+(en?"Start question one":"ابدأ السؤال الأول")+"</button></section>";
 }
 var api={render:render,numbers:numbers,text:TEXT,law:law,reference:reference,context:context,qualify:qualify};root.LEX_LEGAL_STUDY=api;

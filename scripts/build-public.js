@@ -4,7 +4,7 @@ fs.rmSync(out,{recursive:true,force:true});
 fs.mkdirSync(path.join(out,"assets"),{recursive:true});
 
 const pages=[
-  "index.html","conference.html","go/index.html","showcase.html","showcase-level1.html","program.html","diagnostic.html","student-practice.html","student-path.html","student-profile.html",
+  "index.html","conference.html","go/index.html","showcase.html","showcase-level1.html","program.html","diagnostic.html","student-practice.html","student-path.html","student-profile.html","student-glossary.html","admin-glossaries.html",
   "index-en.html","showcase-en.html","showcase-level1-en.html","program-en.html",
   "student-login.html","student-register.html","student.html","student-login-en.html","student-register-en.html","student-en.html",
   "admin-login.html","admin.html","admin-bulk.html","admin-archive.html","admin-instructors.html","admin-analytics.html","admin-progress.html","admin-research.html","instructor-login.html","instructor.html","references.html","lexlearn-grading-console.html","demo-supervisor.html","pilot-review.html","pilot-qa.html",
@@ -13,7 +13,7 @@ const pages=[
 const assets=[
   "academic-picker.js","academic-picker.css",
   "university-brands.js","university-picker-decor.js","card-branding.js","student-identity.js","student-identity.css","student-profile.js","student-card-pdf.js","qrcode-generator.js","qrcode-generator-LICENSE.txt",
-  "session-moments.js","session-moments.css","grading-wait.js","grading-wait.css","learning-keys.js","learning-keys.css",
+  "session-moments.js","session-moments.css","personal-glossary.js","personal-glossary.css","admin-glossaries.js","admin-glossaries.css","grading-wait.js","grading-wait.css","learning-keys.js","learning-keys.css",
   "brand-wordmark.js","brand-wordmark.css","learner-theme.js","learner-experience.css","staff-entry.css","learner-brand.js","legal-emphasis.js",
   "lexlearn-logo.svg","lexlearn-x-transparent.svg","lexlearn-og.jpg","lexlearn-public-pitch-en.pdf","lexlearn-go-qr.svg","conference.css","conference.js","conference-experience.css","conference-experience.js","conference-theme.css","conference-theme.js","conference-citations.js","conference-media/lexlearn-logo-hq.webp","conference-media/investor-men-v3.webp","conference-media/law-lecture-v3.webp","conference-media/student-law.webp","conference-media/logo-intro-navy.mp4","conference-pdf.js","lexlearn-navigation.css","lexlearn-navigation.js","lexlearn-learning-lines.js","lexlearn-investor-quotes.js","conference-promo.css","brand-intro.js","training-carousel.js",
   "v9-law.css","v9-law-content.js","v9-law.js",

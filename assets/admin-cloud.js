@@ -118,7 +118,7 @@ function shell(body){
  '<details class="adminNavGroup" '+(["grading","content"].includes(state.tab)?"open":"")+'><summary>التعلم والتقارير</summary><div class="adminNavItems">'+
  '<button data-tab="grading" class="'+(state.tab==="grading"?"active":"")+'">تصحيح التدريب</button>'+
  '<button data-tab="content" class="'+(state.tab==="content"?"active":"")+'">اعتماد المحتوى</button>'+
- '<a href="admin-progress.html">تدرّج الحفظ والفهم</a>'+
+ '<a href="admin-progress.html">تدرّج الحفظ والفهم</a><a href="admin-glossaries.html">قواميس الطلاب</a>'+
  '<a href="pilot-review.html">مراجعة التدريب</a>'+
  '<button type="button" id="openAnalytics">حضور الطلاب والأساتذة</button>'+
  '<a href="demo-supervisor.html">نتائج الديمو</a></div></details>'+
@@ -270,7 +270,7 @@ function recordSection(key,number,title,description){
 function detail(v){
  var s=v.s,r=risk(v),axes=v.model.axes||{},advice=adminAdvice(v),lastUpdate=v.courseUpdated||v.profileUpdated;
  return '<section class="panel studentHero"><div><span class="overline">'+esc(s.cohort||"طالب مستقل · دون مجموعة")+'</span><h2>'+esc(s.name||s.username)+'</h2><p>@'+esc(s.username)+' • '+countryName(s.country)+' • '+esc(universityLabel(s.university||"—"))+' • '+esc(displayYear(s.year||"—"))+'</p>'+
- '<p><button type="button" class="btn secondary" data-transfer-student="'+esc(s.id)+'">نقل الطالب</button></p>'+
+ '<p><button type="button" class="btn secondary" data-transfer-student="'+esc(s.id)+'">نقل الطالب</button></p><p><a class="btn secondary" href="admin-glossaries.html?student='+encodeURIComponent(s.id)+'">عرض القاموس الشخصي</a></p>'+
  '<p>الكلية: '+esc(academic.faculty(s.faculty||"—",s.university))+' • الشعبة/القسم: '+esc(s.section||"—")+'</p>'+
  (s.studentRegistrationNumber?'<p>رقم القيد الجامعي: <b>'+esc(s.studentRegistrationNumber)+'</b></p>':'')+
  (s.groupEmail?'<p>بريد المجموعة: <b dir="ltr">'+esc(s.groupEmail)+'</b></p>':'')+

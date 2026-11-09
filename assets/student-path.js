@@ -258,7 +258,7 @@ async function boot(){
     t("الجلسة ","Session ")+(i+1);});
   function nav(){
    return "<div class='heading'><div><b>"+t("مسارك التدريبي المتكيف","Your adaptive learning path")+"</b><p>"+t("المقرر: نظرية الحق • 6 أسابيع • 30 جلسة • نتائج لكل طالب","Theory of Rights • 6 weeks • 30 sessions • individual results")+"</p>"+lawContext([])+"</div><a href='student"+(lang()==="en"?"-en":"")+".html'>"+t("حساب الطالب","Student account")+"</a></div>"+
-   "<p class='scope' role='note'>"+t("تدريب يتكيف مع أدائك، مع حفظ إجاباتك وتقدمك في حسابك. النتائج مؤشرات تدريبية والمشرف يتابع تقدمك، وليست درجات جامعية معتمدة.","Practice adapts to your performance, with answers and progress saved to your account. Results are training indicators instructor oversight only, not certified university marks.")+"</p>"+
+   (root.LEX_GLOSSARY?root.LEX_GLOSSARY.appendLink():"")+"<p class='scope' role='note'>"+t("تدريب يتكيف مع أدائك، مع حفظ إجاباتك وتقدمك في حسابك. النتائج مؤشرات تدريبية والمشرف يتابع تقدمك، وليست درجات جامعية معتمدة.","Practice adapts to your performance, with answers and progress saved to your account. Results are training indicators instructor oversight only, not certified university marks.")+"</p>"+
    "<p class='overview'>"+t("التقدم المحفوظ: ","Verified practice progress: ")+overview.completed_count+" / 30 · "+t("الجلسة الحالية: ","Current session: ")+overview.unlocked+"</p>"+
    "<div class='levelStrip'>"+Array.from({length:6},function(_,i){
     var level=i+1,start=i*5+1,end=level*5,done=overview.completed_count>=end,unlocked=overview.unlocked>=start;
@@ -321,6 +321,7 @@ async function boot(){
     var reading=root.LEX_LEGAL_STUDY.render(sourceIds,lang());
     if(reading){
      show(nav()+reading);
+     if(root.LEX_GLOSSARY)root.LEX_GLOSSARY.bindArticle(host.querySelector(".legalStudy"));
      host.querySelector("#beginLegalQuestions").onclick=function(){studyRead=true;render();};
      return;
     }
@@ -353,7 +354,7 @@ async function boot(){
     main+="<h2>"+t("اكتملت تدريبات الجلسة","Practice session completed")+"</h2>"+
     "<p>"+t("إجاباتك محفوظة. يمكنك متابعة الجلسة التالية.","Your answers are saved. You can continue to the next session.")+"</p>"+
     (selected<30?"<button type='button' id='nextSession'>"+(selected%5===0?t("انتقل إلى المستوى ","Continue to level ")+(Math.ceil(selected/5)+1):t("انتقل للجلسة التالية","Continue to next session"))+"</button>":
-     "<p role='status'>"+t("اكتملت الجلسات التدريبية الثلاثون. احتفظ بنتائجك للمراجعة.","All 30 practice sessions completed; your results remain saved for review.")+"</p>");
+     "<p role='status'>"+t("اكتملت الجلسات التدريبية الثلاثون. احتفظ بنتائجك للمراجعة.","All 30 practice sessions completed; your results remain saved for review.")+"</p>"+(root.LEX_GLOSSARY?"<p>"+t("الخطوة الختامية: راجع المصطلحات التي جمعتها واختبر تذكرك وفهمك لها.","Final step: review your saved terms and check your recall and understanding.")+"</p><p>"+root.LEX_GLOSSARY.appendLink()+"</p>":""));
    }else if(next){
     var prompt=root.LEX_BEGINNER_PROMPTS?root.LEX_BEGINNER_PROMPTS.prepare(next,lang()):(lang()==="en"?next.prompt_en:next.prompt_ar);
     if(root.LEX_LEGAL_STUDY)prompt=root.LEX_LEGAL_STUDY.qualify(prompt,lang());
