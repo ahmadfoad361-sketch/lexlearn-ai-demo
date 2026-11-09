@@ -4,7 +4,7 @@ fs.rmSync(out,{recursive:true,force:true});
 fs.mkdirSync(path.join(out,"assets"),{recursive:true});
 
 const pages=[
-  "index.html","conference.html","go/index.html","showcase.html","showcase-level1.html","program.html","diagnostic.html","student-practice.html","student-path.html","student-profile.html","student-glossary.html","admin-glossaries.html",
+  "index.html","conference.html","go/index.html","showcase.html","showcase-level1.html","program.html","diagnostic.html","student-practice.html","student-path.html","student-research-pilot.html","student-profile.html","student-glossary.html","admin-glossaries.html",
   "index-en.html","showcase-en.html","showcase-level1-en.html","program-en.html",
   "student-login.html","student-register.html","student.html","student-login-en.html","student-register-en.html","student-en.html",
   "admin-login.html","admin.html","admin-bulk.html","admin-archive.html","admin-instructors.html","admin-analytics.html","admin-progress.html","admin-research.html","instructor-login.html","instructor.html","references.html","lexlearn-grading-console.html","demo-supervisor.html","pilot-review.html","pilot-qa.html",
@@ -12,7 +12,7 @@ const pages=[
 ];
 const assets=[
   "academic-picker.js","academic-picker.css",
-  "university-brands.js","university-picker-decor.js","card-branding.js","student-identity.js","student-identity.css","student-profile.js","student-card-pdf.js","qrcode-generator.js","qrcode-generator-LICENSE.txt",
+  "university-brands.js","university-picker-decor.js","card-branding.js","student-identity.js","student-identity.css","student-profile.js","student-card-pdf.js","student-research-entry.js","student-research-pilot.js","qrcode-generator.js","qrcode-generator-LICENSE.txt",
   "session-moments.js","session-moments.css","personal-glossary.js","personal-glossary.css","admin-glossaries.js","admin-glossaries.css","grading-wait.js","grading-wait.css","learning-keys.js","learning-keys.css",
   "brand-wordmark.js","brand-wordmark.css","learner-theme.js","learner-experience.css","staff-entry.css","learner-brand.js","legal-emphasis.js",
   "lexlearn-logo.svg","lexlearn-x-transparent.svg","lexlearn-og.jpg","lexlearn-public-pitch-en.pdf","lexlearn-go-qr.svg","conference.css","conference.js","conference-experience.css","conference-experience.js","conference-theme.css","conference-theme.js","conference-citations.js","conference-media/lexlearn-logo-hq.webp","conference-media/investor-men-v3.webp","conference-media/law-lecture-v3.webp","conference-media/student-law.webp","conference-media/logo-intro-navy.mp4","conference-pdf.js","lexlearn-navigation.css","lexlearn-navigation.js","lexlearn-learning-lines.js","lexlearn-investor-quotes.js","conference-promo.css","brand-intro.js","training-carousel.js",
@@ -23,7 +23,7 @@ const assets=[
   "portal.css","register.css","auth-controls.js","student-register.js","student-login.js","student-login-en.js","admin-login-v2.js",
   "student.css","student.js","student-en.js",
   "english.css",
-  "site-analytics.js","lexlearn-observability.js","admin-analytics.js","admin-analytics.css","academic-display.js","flags/qa.svg","flags/eg.svg","flags/sa.svg","flags/ae.svg","flags/LICENSE","admin.css","admin-experience.css","admin-appearance.js","admin-entry.js","admin-cloud.js","admin-transfer.js","admin-bulk-core.js","admin-bulk.js","admin-bulk.css","admin-archive.js","instructor.css","instructor-card.js","instructor-card.css","instructor-login.js","instructor-dashboard.js","admin-instructors.js","admin-progress.js","admin-research.js","admin-research-shadow.js","lex-references.js","student-records.js","student-report.js","admin.js",
+  "site-analytics.js","lexlearn-observability.js","admin-analytics.js","admin-analytics.css","academic-display.js","flags/qa.svg","flags/eg.svg","flags/sa.svg","flags/ae.svg","flags/LICENSE","admin.css","admin-experience.css","admin-appearance.js","admin-entry.js","admin-cloud.js","admin-transfer.js","admin-bulk-core.js","admin-bulk.js","admin-bulk.css","admin-archive.js","instructor.css","instructor-card.js","instructor-card.css","instructor-login.js","instructor-dashboard.js","admin-instructors.js","admin-progress.js","admin-research.js","admin-research-shadow.js","admin-research-pilot.js","lex-references.js","student-records.js","student-report.js","admin.js",
   "lexlearn-config.js","cloud-data.js","lexlearn-grading-console.js","reset-password.js",
   "legal-pages.css"
 ];
@@ -188,9 +188,9 @@ fs.writeFileSync(path.join(out,"build-manifest.json"),JSON.stringify(manifest,nu
 // Silent omissions caused valid GitHub source changes to be absent from the live site.
 for(const required of [
   "conference.html","go/index.html","assets/conference.js","assets/conference-pdf.js","assets/conference.css","assets/academic-display.js","assets/admin-entry.js","assets/admin-cloud.js","assets/admin-experience.css","assets/lexlearn-navigation.js","assets/lexlearn-navigation.css","assets/lexlearn-learning-lines.js","assets/lexlearn-investor-quotes.js","assets/lexlearn-go-qr.svg","assets/lexlearn-public-pitch-en.pdf",
-  "student-register.html","student-register-en.html","diagnostic.html","assets/diagnostic.css","student-practice.html","student-path.html","assets/student-practice.js","assets/student-path.js","assets/grading-wait.js","assets/grading-wait.css","assets/legal-case-guide.js","assets/legal-case-guide.css","assets/official-diagnostic.js","assets/server-diagnostic.js","assets/official-level-one.js","showcase-level1.html","showcase-level1-en.html",
+  "student-register.html","student-register-en.html","diagnostic.html","assets/diagnostic.css","student-practice.html","student-path.html","student-research-pilot.html","assets/student-research-entry.js","assets/student-research-pilot.js","assets/student-practice.js","assets/student-path.js","assets/grading-wait.js","assets/grading-wait.css","assets/legal-case-guide.js","assets/legal-case-guide.css","assets/official-diagnostic.js","assets/server-diagnostic.js","assets/official-level-one.js","showcase-level1.html","showcase-level1-en.html",
   "privacy-en.html","terms-en.html",
-  "references.html","assets/lex-references.js","admin-research.html","assets/admin-research.js","assets/admin-research-shadow.js",
+  "references.html","assets/lex-references.js","admin-research.html","assets/admin-research.js","assets/admin-research-shadow.js","assets/admin-research-pilot.js",
   "assets/student-register.js","assets/register.css","assets/auth-controls.js","assets/student-report.js",
   "assets/showcase-learning-cycle.js","assets/showcase-learning-cycle.css"
 ]) {
