@@ -212,7 +212,11 @@ async function mountPage(){
  function status(row){
   var rec=latest(row,"recall"),under=latest(row,"understanding");
   if(!rec&&!under)return tr("لم يُختبر بعد","Not tested");
-  if((rec&&rec.outcome==="not_recalled")||(under&&under.outcome==="incorrect"))return tr("يحتاج مراجعة","Needs review");
+  var weakRecall=!!(rec&&rec.outcome==="not_recalled");
+  var weakUnderstanding=!!(under&&under.outcome==="incorrect");
+  if(weakRecall&&weakUnderstanding)return tr("صعوبة التذكر والفهم","Recall and understanding need review");
+  if(weakRecall)return tr("التذكر يحتاج مراجعة","Recall needs review");
+  if(weakUnderstanding)return tr("الفهم يحتاج مراجعة","Understanding needs review");
   if(rec&&rec.outcome==="recalled"&&under&&under.outcome==="correct")return tr("تذكر ذاتي + فهم تطبيقي","Self-recall + applied understanding");
   return tr("تقييم جزئي","Partly reviewed");
  }
