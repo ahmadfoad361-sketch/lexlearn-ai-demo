@@ -160,7 +160,7 @@ console.log("Admin detailed and aggregate evidence dashboard: PASS");
   {session_number:6,dimension:"exam_execution",item_id:"e",evaluation:graded(17)}
  ];
  const html=ctx.LEX_STUDENT_PATH.progressHtml(pending,6,false);
- assert.ok(html.includes("0%")&&html.includes("17%"));
+ assert.ok(html.includes("0%")&&!html.includes("17%"),"students see aggregated recall/understanding, not individual application question scores");
  assert.ok(html.includes("جارٍ التصحيح"),"pending skills must show an in-progress label");
  const verified=pending.map(x=>x.dimension==="understanding"?{...x,evaluation:graded(0)}:x);
  const final=ctx.LEX_STUDENT_PATH.progressHtml(verified,6,false);
