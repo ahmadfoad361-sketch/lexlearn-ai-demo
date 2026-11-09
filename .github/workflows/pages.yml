@@ -21,6 +21,8 @@ jobs:
       - name: Check public scripts
         run: |
           for f in assets/*.js scripts/*.js scripts/*.cjs; do node --check "$f"; done
+      - name: Verify optional learning extensions
+        run: node --test tests/learner-extensions.test.cjs
       - name: Verify identity cards and QR safety
         run: node scripts/check-identity-cards.cjs
       - name: Verify student authentication and access routing
