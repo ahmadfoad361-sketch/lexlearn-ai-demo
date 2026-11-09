@@ -92,8 +92,10 @@ async function resolveTerm(key,term,article,context,allowAi){
  if(!allowAi)throw Error("ai_consent_needed");
  // An unknown term is explained only after the student explicitly requests AI.
  // The browser never receives the provider's API key.
+ var fullContext=String(context||""),foundAt=fullContext.indexOf(term),from=foundAt<0?0:Math.max(0,foundAt-180);
+ var excerpt=fullContext.slice(from,from+650);
  var ai=await current.client.functions.invoke("lexlearn-glossary-define",{
-  body:{course_id:COURSE,term:term,article_number:article,context:String(context||"").slice(0,650),accept_ai_processing:true}
+  body:{course_id:COURSE,term:term,article_number:article,context:excerpt,accept_ai_processing:true}
  });
  if(ai.error||!ai.data||!ai.data.definition_ar)throw ai.error||Error("ai_definition_unavailable");
  var value={key:key,term:term,article:article,definition_ar:String(ai.data.definition_ar).slice(0,800),definition_en:String(ai.data.definition_en||"").slice(0,800),status:"ai_unverified"};
