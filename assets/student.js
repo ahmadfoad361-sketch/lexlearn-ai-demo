@@ -327,7 +327,7 @@ function render(){
       "<section class='weekGrid'>"+weeks+"</section>"+
       "<div class='sectionHead'><div><h2>مستواك ببساطة</h2><p>الحفظ: تذكّر القاعدة دون النص • الفهم: معرفة لماذا تعمل • التطبيق على الوقائع: استخدام القاعدة في واقعة قانونية جديدة.</p></div></div>"+
       learningProfile+
-      "<section class='learnerWelcome'><div><h2>📖 قاموسي القانوني</h2><p>احفظ المصطلحات الصعبة وراجعها واختبر تذكرك وفهمك لها.</p></div><a class='actionCard primary' href='student-glossary.html?lang=ar'>افتح قاموسك</a></section>"+
+      "<section class='learnerWelcome'><div><h2>📖 قاموسي القانوني</h2><p>اختر المصطلحات التي تلفت انتباهك، واحفظها في قاموسك لتراجعها لاحقًا.</p></div><a class='actionCard primary' href='student-glossary.html?lang=ar'>افتح قاموسك</a></section>"+
       "<div class='sectionHead'><div><h2>إنجازاتك</h2><p>كل مرحلة تنهيها تضيف إنجازًا جديدًا.</p></div></div>"+
       "<section class='achievementStrip'>"+achievements+"</section>"+
     "</main>";
