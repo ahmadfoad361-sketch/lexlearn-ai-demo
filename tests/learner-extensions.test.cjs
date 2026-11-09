@@ -85,7 +85,7 @@ test('unfinished profession challenge cannot be entered through direct URL',asyn
   global.location={search:'?lang=ar&milestone=4'};
   global.LEX_CLOUD={
    requireStudent:async()=>({id:'synthetic'}),
-   db:()=>({from:()=>({select(){return this},eq(){return this},maybeSingle:async()=>({data:null,error:null}),
+   db:()=>({from:()=>({select(){return this},eq(){return this},maybeSingle:async()=>({data:{session_number:2,completed_at:'2026-11-09T10:00:00Z',tasks_json:[{id:'case2',dimension:'exam_execution',prompt_ar:'مسألة'}]},error:null}),
     insert(){writes++;return Promise.resolve({error:null})}})})
   };
   await addon.mountCareer(node);
