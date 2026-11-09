@@ -191,3 +191,23 @@ test('research pilot is isolated, consent-gated and hidden from ordinary learner
  assert.match(entry,/original\.hidden=false/);
  assert.match(entry,/workspace\.hidden=false/);
 });
+
+
+test('research pilot standalone and in-session view inherit learner theme without a separate controller',()=>{
+ const fs=require('node:fs');
+ const standalone=fs.readFileSync('student-research-pilot.html','utf8');
+ const training=fs.readFileSync('student-path.html','utf8');
+ const css=fs.readFileSync('assets/research-pilot-theme.css','utf8');
+ const build=fs.readFileSync('scripts/build-public.js','utf8');
+ assert.match(standalone,/class="lexResearchStandalone"/);
+ assert.match(standalone,/assets\/research-pilot-theme\.css/);
+ assert.match(training,/assets\/research-pilot-theme\.css/);
+ assert.match(build,/"research-pilot-theme\.css"/);
+ assert.match(css,/html\[data-learner-theme="dark"\]/);
+ assert.match(css,/#researchPilotWorkspace/);
+ assert.match(css,/body\.lexResearchStandalone/);
+ assert.match(css,/--rp-surface/);
+ assert.doesNotMatch(css,/localStorage|sessionStorage|supabase/);
+ assert.equal((standalone.match(/assets\/learner-theme\.js/g)||[]).length,1);
+ assert.equal((training.match(/assets\/learner-theme\.js/g)||[]).length,1);
+});

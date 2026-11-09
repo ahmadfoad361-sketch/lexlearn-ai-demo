@@ -7,6 +7,10 @@ on:
       - 'assets/showcase*.css'
       - 'scripts/verify-showcase-browser.cjs'
       - 'scripts/verify-learner-extensions-browser.cjs'
+      - 'scripts/verify-research-theme-browser.cjs'
+      - 'assets/research-pilot-theme.css'
+      - 'student-research-pilot.html'
+      - 'student-path.html'
       - 'student-future.html'
       - 'assets/learner-extensions.js'
       - 'assets/learner-extensions.css'
@@ -42,3 +46,4 @@ jobs:
           for attempt in $(seq 1 20); do curl -fsS -o /dev/null http://127.0.0.1:8765/showcase.html && break || sleep 1; done
           node scripts/verify-showcase-browser.cjs
           node scripts/verify-learner-extensions-browser.cjs
+          node scripts/verify-research-theme-browser.cjs
