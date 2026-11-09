@@ -109,7 +109,17 @@ function confirmedGrade(ev){return !!(ev&&ev.status==="preliminary_ai"&&ev.rubri
 function deterministicZero(ev){return !!(ev&&ev.status==="nonanswer_zero"&&ev.provisional_percent===0);}
 function queuedGrade(v){return !!(v&&v.evaluation&&v.evaluation.status==="ai_queued"&&v.evaluation.queue_job_id);}
 function pendingGrade(v){return !!(v&&v.evaluation&&["ai_queued","ai_pending","ai_verification_pending","queued","processing"].includes(v.evaluation.status));}
-function needsAssessment(v){return !pendingGrade(v)&&!confirmedGrade(v&&v.evaluation)&&!deterministicZero(v&&v.evaluation);}
+// An unknown provider outcome may already have incurred a charge. Never let the
+// learner trigger a second paid attempt for a held/review-required queue job.
+// Operator recovery must first reconcile the durable job and provider outcome.
+function heldGrade(v){
+ var ev=v&&v.evaluation||{};
+ // A confirmed 429 rate limit is the ONLY held state with an existing
+ // bounded, server-authorized retry path. All unknown/credit/evidence holds
+ // remain blocked until recovery checks protect against duplicate billing.
+ return ["ai_review_required","review_required","human_review_required","needs_review"].includes(ev.status)&&ev.reason!=="provider_rate_limited";
+}
+function needsAssessment(v){return !pendingGrade(v)&&!heldGrade(v)&&!confirmedGrade(v&&v.evaluation)&&!deterministicZero(v&&v.evaluation);}
 function stageSkillSnapshot(rows,session){
  var output={recall:{percent:null,count:0,fresh:false},understanding:{percent:null,count:0,fresh:false}};
  Object.keys(output).forEach(function(dim){
@@ -143,6 +153,13 @@ function stageSkillScorecard(rows,session){
 
 function feedback(item){
  var ev=item&&item.evaluation||{};
+ if(heldGrade(item)){
+  var temporary=ev.reason==="provider_rate_limited"||ev.reason==="provider_quota_exhausted";
+  return "<div class='feedback' role='status'><b>"+t("إجابتك محفوظة — التصحيح متعذر حاليًا","Answer saved — assessment temporarily unavailable")+"</b><p>"+
+   (temporary?t("توقّف التصحيح بسبب حدود الخدمة أو رصيدها، وليس بسبب إجابتك. لم تصدر درجة ولا حاجة لإعادة إرسال الإجابة.","Assessment was interrupted by provider limits or credit, not by your answer. No score was issued; do not resubmit."):
+    t("تعذر توثيق نتيجة تصحيح مؤكدة. نحتفظ بالإجابة للمراجعة الآمنة دون احتساب صفر أو تكرار طلب مدفوع.","A verified grading result is unavailable. Your answer is retained for safe recovery without a zero or another paid request."))+
+   "</p></div>";
+ }
  if(pendingGrade(item))return "<div class='feedback' role='status'><b>"+t("إجابتك محفوظة — جارٍ التصحيح","Answer saved — assessment in progress")+"</b><p>"+t("النسبة لم تصدر بعد. ستُحدّث هذه الشاشة تلقائيًا بعد انتهاء المراجعة؛ لا ترسل الإجابة مرة أخرى.","No percentage has been issued yet. This page updates after verification; do not resubmit.")+"</p></div>";
  if(deterministicZero(ev)){
   return "<div class='feedback' role='status'><b>"+t("درجة السؤال: 0%","Task score: 0%")+"</b><p>"+
@@ -230,6 +247,7 @@ async function boot(){
    if(gradingIssue==='queued')return t("إجابتك محفوظة، والتصحيح مستمر تلقائيًا. يمكنك متابعة التدريب أو العودة لاحقًا.","Your answer is saved and assessment continues automatically. You can continue practising or return later.");
    if(gradingIssue==='approved_rubric_required'||gradingIssue==='approved_sources_required')return t("لم تتمكن الخدمة من تحميل معايير السؤال ومصادره. إجابتك محفوظة؛ أعد التصحيح من الزر أدناه.","The question criteria or sources could not load. Your answer is saved; retry below.");
    if(gradingIssue==='answer_retry_limit')return t("لم نحصل على نتيجة مؤكدة بعد المحاولات المتاحة لهذه الإجابة. إجابتك محفوظة ولم تُحتسب صفرًا.","No confirmed result was obtained within this answer’s retry allowance. Your answer is saved and has not been scored zero.");
+   if(gradingIssue==='provider_rate_limited')return t("رفض مزود التصحيح الطلب بسبب حد مؤقت. الإجابة محفوظة؛ يمكنك إعادة المحاولة لاحقًا عبر المسار الآمن دون إعادة كتابة الإجابة.","The provider temporarily rate-limited the request. Your answer is saved; you can retry later through the safe path without rewriting it.");
    if(gradingIssue==='provider_timeout')return t("استغرق التصحيح وقتًا أطول من المتاح. إجابتك محفوظة؛ أعد التصحيح من الزر أدناه.","Assessment took longer than the available time. Your answer is saved; retry below.");
    return t("لم يكتمل التصحيح الآلي. إجابتك محفوظة؛ أعد التصحيح من الزر أدناه لتظهر النتيجة والملاحظات.","Automatic assessment did not complete. Your answer is saved; retry below to see the result and feedback.");
   }
@@ -346,6 +364,7 @@ async function boot(){
    var main=resume+"<section class='stage'>"+lawNumberRail(data.tasks,lang())+"<h1>"+esc(name)+"</h1>"+why+
     "<p>"+t("أُرسلت ","Saved ")+saved.length+" / "+data.tasks.length+t(" إجابات محفوظة في حسابك."," answers to your account.")+"</p>"+
     completedFeedback+(saved.length?stageSkillScorecard(progressRows,selected):"");
+   if(saved.some(heldGrade))main+="<p class='assessmentRecovery' role='status'>"+t("بعض الإجابات محفوظة وتنتظر استكمال التصحيح من النظام. لم تُحتسب صفرًا، ولا تعِد إرسالها.","Some saved answers await safe assessment recovery. They were not graded zero; do not resubmit.")+"</p>";
    if(pendingRows.length&&acceptedAi)main+="<p class='assessmentRecovery' role='status'>"+t("التصحيح جارٍ في الخلفية. لا حاجة لإعادة إرسال الإجابات.","Assessment continues in the background. Do not resubmit answers.")+" <button type='button' id='refreshGradesNow'>"+t("تحديث النسب الآن","Refresh percentages now")+"</button></p>";
    if(completed){
     main+=progressHtml(progressRows,selected,historyAvailable);
@@ -472,7 +491,7 @@ async function boot(){
   await open(selected);
  }catch(e){reportError(e);}
 }
-root.LEX_STUDENT_PATH={mount:boot,noHtmlScore:noHtmlScore,previousAnswerTitle:previousAnswerTitle,progressModel:progressModel,progressHtml:progressHtml};
+root.LEX_STUDENT_PATH={mount:boot,noHtmlScore:noHtmlScore,previousAnswerTitle:previousAnswerTitle,progressModel:progressModel,progressHtml:progressHtml,heldGrade:heldGrade,needsAssessment:needsAssessment,feedback:feedback};
 if(typeof module!=="undefined"&&module.exports)module.exports=root.LEX_STUDENT_PATH;
 })(typeof window!=="undefined"?window:globalThis);
 

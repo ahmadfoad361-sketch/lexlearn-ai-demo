@@ -24,8 +24,11 @@ function evaluation(e){
   var status=e&&e.status||'';
   if(['ai_queued','ai_pending','ai_verification_pending','queued','processing'].includes(status))
    return '<p role="status"><b>التصحيح جارٍ</b> — الإجابة محفوظة وتنتظر نتيجة الذكاء الاصطناعي. لم تُحتسب صفرًا.</p>';
-  if(['review_required','human_review_required','needs_review'].includes(status))
-   return '<p role="status"><b>تنتظر المراجعة</b> — الإجابة محفوظة ولم تصدر لها درجة مؤكدة بعد.</p>';
+  if(['ai_review_required','review_required','human_review_required','needs_review'].includes(status)){
+   var temporary=['provider_rate_limited','provider_quota_exhausted'].includes(e.reason);
+   return '<p role="status"><b>التصحيح غير مكتمل</b> — '+(temporary?'الخدمة متوقفة مؤقتًا بسبب الرصيد أو حدود الطلبات. ':'لم تثبت نتيجة تصحيح موثوقة بعد. ')+
+     'الإجابة محفوظة، ولم تُحتسب صفرًا، ولا تحتاج إلى إعادة إرسالها.</p>';
+  }
   if(['nonanswer_zero'].includes(status)&&e.provisional_percent===0)
    return '<p><b>درجة السؤال: 0%</b> — الإجابة لا تحمل مضمونًا قابلًا للتصحيح.</p>';
   return '<p><b>لم تصدر درجة مؤكدة بعد</b> — الإجابة محفوظة، ويجب مراجعة حالة التصحيح.</p>';
