@@ -73,7 +73,7 @@ function modal(){
  return d;
 }
 function popShow(term,article,source){
- var d=modal();d.innerHTML="<section class='lexGlossaryDialogBody'><div class='lexGlossaryDialogHeader'><b>"+esc(term)+"</b><button type='button' data-close aria-label='"+esc(tr("إغلاق","Close"))+"'>×</button></div><p class='lexGlossarySource'>"+esc(tr("القانون المدني القطري رقم 22 لسنة 2004 • المادة ","Qatar Civil Code, Law 22/2004 • Article "))+article+"</p><p id='lexGlossaryMeaning' aria-live='polite'>"+esc(tr("جارٍ تحميل شرح المصطلح…","Loading a short explanation…"))+"</p><p class='lexGlossarySafety'>"+esc(tr("تبسيط للمذاكرة، ولا يغيّر النص القانوني أو نتيجة الاختبار.","A study aid; it does not alter law text or assessment results."))+"</p><label class='lexPersonalMoment'>"+esc(tr("إيه الموقف اللي خلاك تختار المصطلح؟ (اختياري)","What made you choose this term? (optional)"))+"<textarea id='lexPersonalMoment' maxlength='350' rows='2' placeholder='"+esc(tr("مثال: قابلته في مسألة قانونية","E.g. I saw it in a legal case"))+"'></textarea></label><p role='alert' id='lexGlossaryError'></p><button type='button' class='lexGlossarySave' id='lexGlossarySave' disabled>"+esc(tr("أضف لقاموسي","Save to my dictionary"))+"</button></section>";
+ var d=modal();d.innerHTML="<section class='lexGlossaryDialogBody'><div class='lexGlossaryDialogHeader'><b>"+esc(term)+"</b><button type='button' data-close aria-label='"+esc(tr("إغلاق","Close"))+"'>×</button></div><p class='lexGlossarySource'>"+esc(tr("القانون المدني القطري رقم 22 لسنة 2004 • المادة ","Qatar Civil Code, Law 22/2004 • Article "))+article+"</p><p id='lexGlossaryMeaning' aria-live='polite'>"+esc(tr("جارٍ تحميل شرح المصطلح…","Loading a short explanation…"))+"</p><section class='lexGlossaryExample' id='lexGlossaryExample' hidden><strong>"+esc(tr("مثال قانوني للتوضيح","Illustrative legal example"))+"</strong><p id='lexGlossaryExampleText'></p></section><p class='lexGlossarySafety'>"+esc(tr("تبسيط للمذاكرة، ولا يغيّر النص القانوني أو نتيجة الاختبار.","A study aid; it does not alter law text or assessment results."))+"</p><label class='lexPersonalMoment'>"+esc(tr("إيه الموقف اللي خلاك تختار المصطلح؟ (اختياري)","What made you choose this term? (optional)"))+"<textarea id='lexPersonalMoment' maxlength='350' rows='2' placeholder='"+esc(tr("مثال: قابلته في مسألة قانونية","E.g. I saw it in a legal case"))+"'></textarea></label><p role='alert' id='lexGlossaryError'></p><button type='button' class='lexGlossarySave' id='lexGlossarySave' disabled>"+esc(tr("أضف لقاموسي","Save to my dictionary"))+"</button></section>";
  d.querySelector("[data-close]").onclick=function(){d.close();};
  if(!d.open)d.showModal();
  return d;
@@ -82,11 +82,11 @@ async function resolveTerm(key,term,article,context,allowAi){
  if(glossaryCache.has(key))return glossaryCache.get(key);
  var current=await student();
  var r=await current.client.from("lex_glossary_definitions")
- .select("term_key,term_ar,definition_ar,definition_en,source_article,source_status")
+ .select("term_key,term_ar,definition_ar,definition_en,example_ar,example_en,source_article,source_status")
  .eq("course_id",COURSE).eq("term_key",key).eq("source_status","curated").maybeSingle();
  if(r.error)throw r.error;
  if(r.data){
-  var value={key:key,term:r.data.term_ar,article:r.data.source_article,definition_ar:r.data.definition_ar,definition_en:r.data.definition_en,status:"curated"};
+  var value={key:key,term:r.data.term_ar,article:r.data.source_article,definition_ar:r.data.definition_ar,definition_en:r.data.definition_en,example_ar:r.data.example_ar||"",example_en:r.data.example_en||"",status:"curated"};
   glossaryCache.set(key,value);return value;
  }
  if(!allowAi)throw Error("ai_consent_needed");
@@ -98,19 +98,24 @@ async function resolveTerm(key,term,article,context,allowAi){
   body:{course_id:COURSE,term:term,article_number:article,context:excerpt,accept_ai_processing:true}
  });
  if(ai.error||!ai.data||!ai.data.definition_ar)throw ai.error||Error("ai_definition_unavailable");
- var value={key:key,term:term,article:article,definition_ar:String(ai.data.definition_ar).slice(0,800),definition_en:String(ai.data.definition_en||"").slice(0,800),status:"ai_unverified"};
+ var value={key:key,term:term,article:article,definition_ar:String(ai.data.definition_ar).slice(0,800),definition_en:String(ai.data.definition_en||"").slice(0,800),example_ar:String(ai.data.example_ar||"").slice(0,900),example_en:String(ai.data.example_en||"").slice(0,900),status:"ai_unverified"};
  glossaryCache.set(key,value);return value;
 }
 async function save(value,note){
  var who=await student();
  var row={student_id:who.id,course_id:COURSE,term_key:value.key,term_ar:value.term,
-  article_number:value.article,definition_ar:value.definition_ar||"",definition_en:value.definition_en||"",definition_status:value.status||"pending",personal_note:String(note||"").trim().slice(0,350)};
- var prior=await who.client.from("lex_student_glossary").select("id,definition_status,personal_note").eq("student_id",who.id)
+  article_number:value.article,definition_ar:value.definition_ar||"",definition_en:value.definition_en||"",example_ar:value.example_ar||"",example_en:value.example_en||"",definition_status:value.status||"pending",personal_note:String(note||"").trim().slice(0,350)};
+ var prior=await who.client.from("lex_student_glossary").select("id,definition_status,personal_note,example_ar,example_en").eq("student_id",who.id)
  .eq("course_id",COURSE).eq("term_key",value.key).maybeSingle();
  if(prior.error)throw prior.error;
  if(prior.data){
-  if(prior.data.definition_status==="pending"&&value.status!=="pending"){
-   var patch=await who.client.from("lex_student_glossary").update({definition_ar:row.definition_ar,definition_en:row.definition_en,definition_status:row.definition_status,updated_at:new Date().toISOString()}).eq("id",prior.data.id).eq("student_id",who.id);
+  var upgrade=prior.data.definition_status==="pending"&&value.status!=="pending";
+  var addExample=!!row.example_ar&&(!prior.data.example_ar||!prior.data.example_en);
+  if(upgrade||addExample){
+   var changes={updated_at:new Date().toISOString()};
+   if(upgrade){changes.definition_ar=row.definition_ar;changes.definition_en=row.definition_en;changes.definition_status=row.definition_status;}
+   if(addExample){changes.example_ar=row.example_ar;changes.example_en=row.example_en;}
+   var patch=await who.client.from("lex_student_glossary").update(changes).eq("id",prior.data.id).eq("student_id",who.id);
    if(patch.error)throw patch.error;
   }
   return false;
@@ -123,10 +128,14 @@ async function openWord(word,article,context,knownKey){
  var key=term?term[0]:termKey(word),name=term?label(term):normalize(word);
  if(!name||name.length>120)return;
  var d=popShow(name,article,context),meaning=d.querySelector("#lexGlossaryMeaning"),btn=d.querySelector("#lexGlossarySave"),err=d.querySelector("#lexGlossaryError");
- var value={key:key,term:name,article:article,definition_ar:"",definition_en:"",status:"pending"};
+ var value={key:key,term:name,article:article,definition_ar:"",definition_en:"",example_ar:"",example_en:"",status:"pending"};
  function showMeaning(){
   if(!d.open)return;
   meaning.textContent=tr(value.definition_ar,value.definition_en||value.definition_ar);
+  var exampleBox=d.querySelector("#lexGlossaryExample"),exampleText=d.querySelector("#lexGlossaryExampleText");
+  var shownExample=tr(value.example_ar||"",value.example_en||value.example_ar||"");
+  exampleBox.hidden=!shownExample;
+  exampleText.textContent=shownExample;
   if(value.status==="ai_unverified"){
    var note=root.document.createElement("small");note.className="lexGlossaryAiNote";
    note.textContent=tr("شرح أولي مولّد بالذكاء الاصطناعي؛ راجع النص الأصلي.","AI-generated draft. Check the original legal provision.");
@@ -220,7 +229,8 @@ async function mountPage(){
   (!entries.length?"<div class='lexDictionaryEmpty'>"+esc(tr("قاموسك فارغ حتى الآن. اقرأ المادة، واختَر بنفسك مصطلحًا ثم اضغط «أضف لقاموسي».","Your dictionary is empty. Choose a term yourself in the legal text, then save it."))+"</div>":
    "<div class='lexDictionaryGrid'>"+shown.map(function(e){
      var definition=e.definition_ar?(root.document.documentElement.lang==="en"&&e.definition_en?e.definition_en:e.definition_ar):tr("الشرح لم يتوفر بعد، ويمكنك إعادة طلبه من نص المادة.","The explanation is pending. Reopen the legal text to request it.");
-     return "<article class='lexDictionaryCard'><div class='lexDictionaryCardTop'><h2>"+esc(e.term_ar)+"</h2></div><p>"+esc(definition)+"</p>"+(e.personal_note?"<div class='lexPersonalMemory'><b>"+esc(tr("ملاحظتي: ","My note: "))+"</b>"+esc(e.personal_note)+"</div>":"")+"<small>"+esc(tr("القانون المدني القطري 22/2004 — المادة ","Qatar Civil Code 22/2004 — Article "))+esc(e.article_number||"—")+" · "+esc(formatDate(e.added_at))+"</small>"+
+     var example=e.example_ar?(root.document.documentElement.lang==="en"&&e.example_en?e.example_en:e.example_ar):"";
+     return "<article class='lexDictionaryCard'><div class='lexDictionaryCardTop'><h2>"+esc(e.term_ar)+"</h2></div><p>"+esc(definition)+"</p>"+(example?"<div class='lexDictionaryExample'><b>"+esc(tr("مثال للتوضيح:","Illustrative example:"))+"</b><p>"+esc(example)+"</p></div>":"")+(e.personal_note?"<div class='lexPersonalMemory'><b>"+esc(tr("ملاحظتي: ","My note: "))+"</b>"+esc(e.personal_note)+"</div>":"")+"<small>"+esc(tr("القانون المدني القطري 22/2004 — المادة ","Qatar Civil Code 22/2004 — Article "))+esc(e.article_number||"—")+" · "+esc(formatDate(e.added_at))+"</small>"+
        (e.definition_status==="ai_unverified"?"<p class='lexDictionaryCaution'>"+esc(tr("شرح آلي أولي — غير مُراجع أكاديميًا","AI draft — not academically reviewed"))+"</p>":"")+"</article>";
    }).join("")+"</div>")+
   "<p class='lexDictionaryHint'>"+esc(tr("هذا قاموسك الشخصي؛ لا تُضاف إليه كلمات تلقائيًا. اختبر ما حفظته في الوقت الذي يناسبك.","This is your personal dictionary. Terms are never added automatically. Review whenever you like."))+"</p>";
@@ -252,7 +262,7 @@ async function mountPage(){
   host.querySelector("#lexQuizReveal").onclick=function(){
    var val=host.querySelector("#lexQuizRecall").value.trim();
    var msg=host.querySelector("#lexQuizFeedback");
-   msg.innerHTML="<div class='lexQuizReference'><strong>"+esc(tr("التعريف المرجعي","Reference definition"))+"</strong><p>"+esc(current.definition_ar)+"</p><small>"+esc(tr("لا يُصحَّح النص الحر تلقائيًا هنا. اختر تقييمًا صادقًا بعد المقارنة.","Free text is not automatically graded here. Rate your recall after comparing."))+"</small></div><div class='lexQuizChoices'><button type='button' data-rate='recalled'>"+esc(tr("تذكرت المعنى بشكل صحيح","I recalled the meaning"))+"</button><button type='button' data-rate='not_recalled'>"+esc(tr("احتجت إلى مراجعة","I needed a review"))+"</button></div><p role='alert' id='lexQuizError'></p>";
+   msg.innerHTML="<div class='lexQuizReference'><strong>"+esc(tr("التعريف المرجعي","Reference definition"))+"</strong><p>"+esc(root.document.documentElement.lang==="en"&&current.definition_en?current.definition_en:current.definition_ar)+"</p>"+(current.example_ar?"<div class='lexQuizExample'><b>"+esc(tr("مثال للتوضيح:","Illustrative example:"))+"</b> "+esc(root.document.documentElement.lang==="en"&&current.example_en?current.example_en:current.example_ar)+"</div>":"")+"<small>"+esc(tr("لا يُصحَّح النص الحر تلقائيًا هنا. اختر تقييمًا صادقًا بعد المقارنة.","Free text is not automatically graded here. Rate your recall after comparing."))+"</small></div><div class='lexQuizChoices'><button type='button' data-rate='recalled'>"+esc(tr("تذكرت المعنى بشكل صحيح","I recalled the meaning"))+"</button><button type='button' data-rate='not_recalled'>"+esc(tr("احتجت إلى مراجعة","I needed a review"))+"</button></div><p role='alert' id='lexQuizError'></p>";
    msg.querySelectorAll("[data-rate]").forEach(function(b){if(b.dataset.rate==="recalled"&&!val)b.disabled=true;b.onclick=async function(){
     msg.querySelectorAll("button").forEach(function(x){x.disabled=true;});
     try{await record(current,"recall","self_report",b.dataset.rate);application();}

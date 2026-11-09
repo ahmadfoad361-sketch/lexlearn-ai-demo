@@ -68,6 +68,37 @@ async function run({en=false,marker,session=true,error,access,consent=true,role,
  assert.match(dictionaryCode,/personal_note/);
  assert.match(dictionaryCode,/قاموسك فارغ/);
  assert.doesNotMatch(dictionaryCode,/صعوبة التذكر والفهم|التذكر يحتاج مراجعة|الفهم يحتاج مراجعة/);
+
+ // A student's saved dictionary displays its own definition and example,
+ // without importing curated terms automatically or interpreting them as weakness.
+ const stubHost={innerHTML:"",querySelector:()=>null};
+ const savedExample="<script>bad()</script> مثال قانوني توضيحي";
+ const stubEntry={id:"example-test-id",term_key:"chosen-domicile",term_ar:"الموطن المختار",
+   course_id:"qa-qu-lawc101-rights",definition_ar:"مكان يختاره الشخص كتابةً لعمل قانوني معين",
+   definition_en:"Chosen domicile for a legal transaction",example_ar:savedExample,
+   example_en:"A written address selected for contract notices",personal_note:"لاحظت المصطلح في واقعة تدريبية",
+   article_number:44,definition_status:"curated",added_at:"2026-11-09T10:00:00Z",
+   next_review_at:"2026-11-09T10:00:00Z"};
+ glossaryContext.document.getElementById=id=>id==="personalGlossaryApp"?stubHost:null;
+ glossaryContext.LEX_CLOUD={
+   requireStudent:async()=>({id:"example-test-student"}),
+   db:()=>({from:table=>({
+     select(){return this},eq(){return this},order(){return this},
+     limit(){return Promise.resolve({data:table==="lex_student_glossary"?[stubEntry]:[],error:null})}
+   })})
+ };
+ await dictionary.mountPage();
+ assert.match(stubHost.innerHTML,/مثال للتوضيح/);
+ assert.match(stubHost.innerHTML,/&lt;script&gt;bad\(\)&lt;\/script&gt;/);
+ assert.doesNotMatch(stubHost.innerHTML,/<script>bad/);
+ assert.match(stubHost.innerHTML,/لاحظت المصطلح في واقعة تدريبية/);
+ assert.match(stubHost.innerHTML,/الموطن المختار/);
+ assert.match(dictionaryCode,/example_ar:r\.data\.example_ar/);
+ assert.match(dictionaryCode,/example_en:r\.data\.example_en/);
+ assert.match(dictionaryCode,/exampleText\.textContent=shownExample/);
+ assert.match(dictionaryCode,/lexQuizExample/);
+ assert.match(dictionaryCode,/example_ar:value\.example_ar/);
+
  console.log('PASS: student glossary has no difficulty labels or ready-made entries; staff report is separate.');
  console.log('PASS: glossary matching, original legal text, HTML escaping, active course routing, consent boundary, and sample legal quiz.');
  console.log('PASS: Arabic and English session recovery, missing/expired Auth, stale identity, network errors, role/activation, admission, enrollment, consent, and cross-tab sign-out.');
