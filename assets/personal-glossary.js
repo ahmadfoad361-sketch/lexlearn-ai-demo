@@ -78,7 +78,7 @@ function popShow(term,article,source){
  if(!d.open)d.showModal();
  return d;
 }
-async function resolveTerm(key,term,article,context){
+async function resolveTerm(key,term,article,context,allowAi){
  if(glossaryCache.has(key))return glossaryCache.get(key);
  var current=await student();
  var r=await current.client.from("lex_glossary_definitions")
@@ -89,10 +89,11 @@ async function resolveTerm(key,term,article,context){
   var value={key:key,term:r.data.term_ar,article:r.data.source_article,definition_ar:r.data.definition_ar,definition_en:r.data.definition_en,status:"curated"};
   glossaryCache.set(key,value);return value;
  }
- // An unknown term may only be explained through an authenticated server function.
+ if(!allowAi)throw Error("ai_consent_needed");
+ // An unknown term is explained only after the student explicitly requests AI.
  // The browser never receives the provider's API key.
  var ai=await current.client.functions.invoke("lexlearn-glossary-define",{
-  body:{course_id:COURSE,term:term,article_number:article,context:String(context||"").slice(0,650)}
+  body:{course_id:COURSE,term:term,article_number:article,context:String(context||"").slice(0,650),accept_ai_processing:true}
  });
  if(ai.error||!ai.data||!ai.data.definition_ar)throw ai.error||Error("ai_definition_unavailable");
  var value={key:key,term:term,article:article,definition_ar:String(ai.data.definition_ar).slice(0,800),definition_en:String(ai.data.definition_en||"").slice(0,800),status:"ai_unverified"};
@@ -121,15 +122,43 @@ async function openWord(word,article,context,knownKey){
  if(!name||name.length>120)return;
  var d=popShow(name,article,context),meaning=d.querySelector("#lexGlossaryMeaning"),btn=d.querySelector("#lexGlossarySave"),err=d.querySelector("#lexGlossaryError");
  var value={key:key,term:name,article:article,definition_ar:"",definition_en:"",status:"pending"};
- try{
-  value=await resolveTerm(key,name,article,context);
+ function showMeaning(){
   if(!d.open)return;
   meaning.textContent=tr(value.definition_ar,value.definition_en||value.definition_ar);
-  if(value.status==="ai_unverified"){var note=root.document.createElement("small");note.className="lexGlossaryAiNote";note.textContent=tr("شرح أولي مولّد بالذكاء الاصطناعي؛ راجع النص الأصلي.","AI-generated draft. Check the original legal provision.");meaning.appendChild(note);}
+  if(value.status==="ai_unverified"){
+   var note=root.document.createElement("small");note.className="lexGlossaryAiNote";
+   note.textContent=tr("شرح أولي مولّد بالذكاء الاصطناعي؛ راجع النص الأصلي.","AI-generated draft. Check the original legal provision.");
+   meaning.appendChild(note);
+  }
+ }
+ try{
+  value=await resolveTerm(key,name,article,context,false);
+  showMeaning();
  }catch(e){
   if(!d.open)return;
-  meaning.textContent=tr("تعذّر تحميل الشرح الآن. يمكنك حفظ المصطلح للمراجعة لاحقًا.","Explanation unavailable. You can save the term for later review.");
+  if(e&&e.message==="ai_consent_needed"){
+   meaning.textContent=tr("المصطلح غير موجود في بنك التعريفات المعتمد. يمكنك حفظه الآن أو طلب شرح آلي اختياري.","This term is not in the curated dictionary. Save it now or request an optional AI explanation.");
+   var consent=root.document.createElement("p");consent.className="lexGlossarySafety";
+   consent.textContent=tr("بالضغط على طلب الشرح، سيُرسل المصطلح ومقتطف من المادة القانونية إلى مزوّد الذكاء الاصطناعي، دون اسمك أو إجاباتك.","By requesting AI, this term and a legal-text excerpt are sent to the AI provider, without your name or answers.");
+   meaning.appendChild(consent);
+   var aiButton=root.document.createElement("button");aiButton.type="button";aiButton.className="lexGlossaryAiRequest";
+   aiButton.textContent=tr("اشرحه بالذكاء الاصطناعي","Explain with AI");
+   meaning.appendChild(aiButton);
+   aiButton.onclick=async function(){
+    aiButton.disabled=true;aiButton.textContent=tr("جارٍ طلب الشرح…","Requesting explanation…");
+    try{
+     value=await resolveTerm(key,name,article,context,true);showMeaning();
+     btn.disabled=false;btn.textContent=tr("أضف لقاموسي","Save to my dictionary");
+    }catch(_){
+     if(!d.open)return;
+     meaning.textContent=tr("خدمة الشرح الآلي غير متاحة الآن. ما زال بإمكانك حفظ المصطلح للمراجعة لاحقًا.","AI explanation is unavailable now. You can still save the term for later review.");
+    }
+   };
+  }else{
+   meaning.textContent=tr("تعذّر تحميل الشرح الآن. يمكنك حفظ المصطلح للمراجعة لاحقًا.","Explanation unavailable. You can save the term for later review.");
+  }
  }
+ if(!d.open)return;
  btn.disabled=false;
  btn.onclick=async function(){
   btn.disabled=true;err.textContent="";
