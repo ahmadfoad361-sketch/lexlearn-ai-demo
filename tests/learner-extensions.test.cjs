@@ -108,6 +108,8 @@ test('review module saves a non-credit answer from a previous completed session'
   global.LEX_LEGAL_STUDY={context:()=>'<p>القانون المدني القطري رقم 22 لسنة 2004</p>'};
   await addon.mountReview(node,{cloud:{db:()=>({from})},uid:'synthetic',session:2,lang:'ar'});
   assert.match(node.innerHTML,/استرجع القاعدة دون نص/);
+  assert.doesNotMatch(node.innerHTML,/القانون المدني القطري رقم 22 لسنة 2004/);
+  assert.match(node.innerHTML,/حاول الإجابة أولًا من الذاكرة/);
   node.area.value='أسترجع القاعدة القانونية من الدرس السابق وأربط شروطها بأمثلة تطبيقية.';
   await node.button.onclick();
   assert.equal(writes.length,1);
