@@ -54,7 +54,7 @@ async function mountReview(node,opts){
    tr(lang,"مراجعة ذكية مدمجة","Integrated recall")+"</p><h3 id='lexRecallTitle'>"+
    tr(lang,"سؤال واحد من اللي اتعلمته","One question from your earlier learning")+"</h3><p>"+
    tr(lang,"حاول تسترجع المعلومة من ذاكرتك، من غير ما ترجع للإجابة السابقة.","Try retrieving the idea without looking back at your previous answer.")+
-   "</p>"+lawContext(question,lang)+"<div class='lexExtensionPrompt'>"+esc(textOf(question,lang))+"</div>"+
+   "</p><p class='lexExtensionSourceHint'>"+tr(lang,"مرجع السؤال محفوظ في جلستك السابقة؛ حاول الإجابة أولًا من الذاكرة.","The source is in your earlier session. Try answering from memory first.")+"</p><div class='lexExtensionPrompt'>"+esc(textOf(question,lang))+"</div>"+
    "<label for='lexRecallAnswer'>"+tr(lang,"اكتب اللي تفتكره","Write what you remember")+"</label>"+
    "<textarea id='lexRecallAnswer' rows='4' maxlength='4000'></textarea>"+
    "<button type='button' id='lexRecallSave'>"+tr(lang,"احفظ مراجعتي","Save my review")+"</button>"+
