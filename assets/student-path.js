@@ -354,7 +354,7 @@ async function boot(){
     main+="<h2>"+t("اكتملت تدريبات الجلسة","Practice session completed")+"</h2>"+
     "<p>"+t("إجاباتك محفوظة. يمكنك متابعة الجلسة التالية.","Your answers are saved. You can continue to the next session.")+"</p>"+
     (selected<30?"<button type='button' id='nextSession'>"+(selected%5===0?t("انتقل إلى المستوى ","Continue to level ")+(Math.ceil(selected/5)+1):t("انتقل للجلسة التالية","Continue to next session"))+"</button>":
-     "<p role='status'>"+t("اكتملت الجلسات التدريبية الثلاثون. احتفظ بنتائجك للمراجعة.","All 30 practice sessions completed; your results remain saved for review.")+"</p>");
+     "<p role='status'>"+t("اكتملت الجلسات التدريبية الثلاثون. احتفظ بنتائجك للمراجعة.","All 30 practice sessions completed; your results remain saved for review.")+"</p>"+(root.LEX_GLOSSARY?"<p>"+t("الخطوة الختامية: راجع المصطلحات التي جمعتها واختبر تذكرك وفهمك لها.","Final step: review your saved terms and check your recall and understanding.")+"</p><p>"+root.LEX_GLOSSARY.appendLink()+"</p>":""));
    }else if(next){
     var prompt=root.LEX_BEGINNER_PROMPTS?root.LEX_BEGINNER_PROMPTS.prepare(next,lang()):(lang()==="en"?next.prompt_en:next.prompt_ar);
     if(root.LEX_LEGAL_STUDY)prompt=root.LEX_LEGAL_STUDY.qualify(prompt,lang());
