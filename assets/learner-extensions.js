@@ -6,7 +6,7 @@
 "use strict";
 var COURSE="qa-qu-lawc101-rights", MILESTONES=[2,4,6];
 function tr(lang,ar,en){return lang==="en"?en:ar;}
-function esc(x){return String(x==null?"":x).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
+function esc(x){return String(x==null?"":x).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;",[String.fromCharCode(39)]:"&#39;"}[c];});}
 function isMilestone(n){return MILESTONES.includes(Number(n));}
 function eligibleReview(n){return Number.isInteger(n)&&n>=2&&n<=30&&n%2===0;}
 function tasksFrom(session){return Array.isArray(session&&session.tasks_json)?session.tasks_json:[];}
