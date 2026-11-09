@@ -73,7 +73,7 @@ function modal(){
  return d;
 }
 function popShow(term,article,source){
- var d=modal();d.innerHTML="<section class='lexGlossaryDialogBody'><div class='lexGlossaryDialogHeader'><b>"+esc(term)+"</b><button type='button' data-close aria-label='"+esc(tr("إغلاق","Close"))+"'>×</button></div><p class='lexGlossarySource'>"+esc(tr("القانون المدني القطري رقم 22 لسنة 2004 • المادة ","Qatar Civil Code, Law 22/2004 • Article "))+article+"</p><p id='lexGlossaryMeaning' aria-live='polite'>"+esc(tr("جارٍ تحميل شرح المصطلح…","Loading a short explanation…"))+"</p><p class='lexGlossarySafety'>"+esc(tr("تبسيط للمذاكرة، ولا يغيّر النص القانوني أو نتيجة الاختبار.","A study aid; it does not alter law text or assessment results."))+"</p><p role='alert' id='lexGlossaryError'></p><button type='button' class='lexGlossarySave' id='lexGlossarySave' disabled>"+esc(tr("أضف لقاموسي","Save to my dictionary"))+"</button></section>";
+ var d=modal();d.innerHTML="<section class='lexGlossaryDialogBody'><div class='lexGlossaryDialogHeader'><b>"+esc(term)+"</b><button type='button' data-close aria-label='"+esc(tr("إغلاق","Close"))+"'>×</button></div><p class='lexGlossarySource'>"+esc(tr("القانون المدني القطري رقم 22 لسنة 2004 • المادة ","Qatar Civil Code, Law 22/2004 • Article "))+article+"</p><p id='lexGlossaryMeaning' aria-live='polite'>"+esc(tr("جارٍ تحميل شرح المصطلح…","Loading a short explanation…"))+"</p><p class='lexGlossarySafety'>"+esc(tr("تبسيط للمذاكرة، ولا يغيّر النص القانوني أو نتيجة الاختبار.","A study aid; it does not alter law text or assessment results."))+"</p><label class='lexPersonalMoment'>"+esc(tr("إيه الموقف اللي خلاك تختار المصطلح؟ (اختياري)","What made you choose this term? (optional)"))+"<textarea id='lexPersonalMoment' maxlength='350' rows='2' placeholder='"+esc(tr("مثال: قابلته في مسألة قانونية","E.g. I saw it in a legal case"))+"'></textarea></label><p role='alert' id='lexGlossaryError'></p><button type='button' class='lexGlossarySave' id='lexGlossarySave' disabled>"+esc(tr("أضف لقاموسي","Save to my dictionary"))+"</button></section>";
  d.querySelector("[data-close]").onclick=function(){d.close();};
  if(!d.open)d.showModal();
  return d;
@@ -101,11 +101,11 @@ async function resolveTerm(key,term,article,context,allowAi){
  var value={key:key,term:term,article:article,definition_ar:String(ai.data.definition_ar).slice(0,800),definition_en:String(ai.data.definition_en||"").slice(0,800),status:"ai_unverified"};
  glossaryCache.set(key,value);return value;
 }
-async function save(value){
+async function save(value,note){
  var who=await student();
  var row={student_id:who.id,course_id:COURSE,term_key:value.key,term_ar:value.term,
-  article_number:value.article,definition_ar:value.definition_ar||"",definition_en:value.definition_en||"",definition_status:value.status||"pending"};
- var prior=await who.client.from("lex_student_glossary").select("id,definition_status").eq("student_id",who.id)
+  article_number:value.article,definition_ar:value.definition_ar||"",definition_en:value.definition_en||"",definition_status:value.status||"pending",personal_note:String(note||"").trim().slice(0,350)};
+ var prior=await who.client.from("lex_student_glossary").select("id,definition_status,personal_note").eq("student_id",who.id)
  .eq("course_id",COURSE).eq("term_key",value.key).maybeSingle();
  if(prior.error)throw prior.error;
  if(prior.data){
@@ -164,7 +164,7 @@ async function openWord(word,article,context,knownKey){
  btn.disabled=false;
  btn.onclick=async function(){
   btn.disabled=true;err.textContent="";
-  try{var fresh=await save(value);btn.textContent=fresh?tr("✓ تم الحفظ","✓ Saved"):tr("✓ موجود في قاموسك","✓ Already saved");}
+  try{var fresh=await save(value,d.querySelector("#lexPersonalMoment").value);btn.textContent=fresh?tr("✓ تم الحفظ","✓ Saved"):tr("✓ موجود في قاموسك","✓ Already saved");}
   catch(_){btn.disabled=false;err.textContent=tr("لم يُحفظ المصطلح؛ تحقق من اتصالك أو صلاحية حسابك.","Could not save. Check your connection and account access.");}
  };
 }
