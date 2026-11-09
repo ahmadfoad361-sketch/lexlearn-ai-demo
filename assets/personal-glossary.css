@@ -1,0 +1,81 @@
+/* LexLearn personal legal glossary. Accessible in light and dark modes. */
+.lexGlossaryTerm{display:inline;appearance:none;background:transparent;border:0;border-bottom:2px dotted #8a1f39;color:inherit;font:inherit;font-weight:700;line-height:inherit;padding:0 .05em;cursor:pointer;border-radius:2px;text-decoration:none;text-underline-offset:3px}
+.lexGlossaryTerm:hover,.lexGlossaryTerm:focus-visible{background:#fff1f3;color:#7b1734;outline:2px solid #8a1f39;outline-offset:2px}
+.lexGlossarySelection{display:block;margin:.4rem 0;background:#111d31;color:#fff;border:0;border-radius:9px;padding:.5rem .7rem;font:inherit;font-size:.83rem;font-weight:650;cursor:pointer}
+.lexGlossaryNav{display:inline-flex;align-items:center;gap:.35rem;padding:.6rem .85rem;background:#fff5f4;color:#7b1734;border:1px solid #eac5cd;border-radius:10px;font-weight:700;text-decoration:none}
+.lexGlossaryNav:hover,.lexGlossaryNav:focus-visible{outline:2px solid #8a1f39;outline-offset:2px}
+.lexGlossaryDialog{border:1px solid #d5c9ce;padding:0;border-radius:20px;background:#fff;color:#111d31;max-width:min(94vw,425px);width:100%;box-sizing:border-box;box-shadow:0 20px 70px #111d3160;text-align:start}
+.lexGlossaryDialog::backdrop{background:#0c142c85}
+.lexGlossaryDialogBody{padding:clamp(1rem,3vw,1.45rem)}
+.lexGlossaryDialogHeader{display:flex;align-items:center;justify-content:space-between;gap:1rem}
+.lexGlossaryDialogHeader b{font-size:1.25rem;color:#111d31}
+.lexGlossaryDialogHeader button{border:0;background:#f3edf0;color:#111d31;border-radius:100%;font-size:1.5rem;cursor:pointer;width:2.2rem;height:2.2rem;padding:0}
+.lexGlossarySource{color:#666174;font-size:.78rem;margin:.3rem 0 1.1rem}
+#lexGlossaryMeaning{line-height:1.9;font-size:1rem;white-space:pre-wrap}
+.lexGlossaryAiNote{display:block;color:#995d19;background:#fff8e3;padding:.55rem;border-radius:7px;margin-top:.6rem}
+.lexGlossarySafety{font-size:.78rem;color:#615b6c}
+.lexGlossarySave{width:100%;padding:.75rem 1rem;color:white;background:#8a1f39;border:0;border-radius:10px;font:inherit;font-weight:700;cursor:pointer}
+.lexGlossarySave:disabled{opacity:.55;cursor:wait}
+#lexGlossaryError,#lexQuizError{color:#a32136;font-size:.85rem}
+.lexDictionaryBody{margin:0;background:#f9f4ef;color:#111d31;font:16px/1.75 system-ui,"IBM Plex Sans Arabic",Tahoma,Arial,sans-serif}
+.lexDictionaryWrap{max-width:1020px;margin:0 auto;padding:clamp(1rem,3vw,2rem)}
+.lexDictionaryHeader{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;margin-bottom:1rem}
+.lexDictionaryHeader img{width:112px}
+.lexDictionaryHeader a{color:#8a1f39;font-weight:700}
+.lexDictionaryHero{border-radius:22px;background:linear-gradient(120deg,#111d31,#263854);color:#fff;padding:clamp(1.2rem,3vw,2.4rem)}
+.lexDictionaryEyebrow{font-size:.76rem;color:#f1c6cd;font-weight:750;letter-spacing:.06em}
+.lexDictionaryHero h1{font-size:clamp(1.7rem,4vw,2.5rem);margin:.15rem 0}
+.lexDictionaryHero p{max-width:65ch;color:#eee4eb;margin:.3rem 0 1.15rem}
+.lexDictionaryStats{display:flex;gap:.7rem;flex-wrap:wrap}
+.lexDictionaryStats span{background:#ffffff16;border:1px solid #ffffff38;border-radius:13px;padding:.7rem 1rem;font-size:.85rem;display:flex;align-items:center;gap:.45rem}
+.lexDictionaryStats b{font-size:1.5rem}
+.lexDictionaryToolbar{display:flex;justify-content:space-between;align-items:end;flex-wrap:wrap;gap:1rem;padding:1.2rem 0}
+.lexDictionaryToolbar label{font-weight:650;flex:1;min-width:190px}
+.lexDictionaryToolbar input{display:block;width:100%;box-sizing:border-box;padding:.73rem .85rem;border:1px solid #bbc1cd;border-radius:10px;font:inherit;background:#fff;color:#111d31}
+.lexDictionaryToolbar button,.lexQuiz button:not(#lexQuizExit){padding:.75rem 1.2rem;border:0;border-radius:11px;background:#8a1f39;color:white;font:inherit;font-weight:700;cursor:pointer}
+.lexDictionaryToolbar button:disabled{opacity:.5}
+.lexDictionaryGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:1rem}
+.lexDictionaryCard{background:#fff;padding:1.3rem;border:1px solid #ded7d9;border-radius:16px;box-shadow:0 4px 14px #111d3109}
+.lexDictionaryCardTop{display:flex;justify-content:space-between;gap:.6rem;align-items:start}
+.lexDictionaryCard h2{font-size:1.18rem;margin:0;color:#8a1f39}
+.lexDictionaryCardTop span{font-size:.69rem;max-width:130px;background:#f2eced;color:#4f4050;border-radius:20px;padding:.3rem .5rem}
+.lexDictionaryCard p{margin:.65rem 0}
+.lexDictionaryCard small{color:#5e6575}
+.lexDictionaryCard .lexDictionaryCaution{font-size:.78rem;color:#8e5c16;background:#fff7e5;padding:.5rem;border-radius:8px}
+.lexDictionaryHint,.lexDictionaryEmpty{border:1px solid #d8d4d7;border-radius:12px;padding:1rem;color:#586074;background:#fff;margin-top:1.2rem}
+.lexQuiz{max-width:710px;margin:1.5rem auto;background:#fff;border-radius:20px;padding:clamp(1rem,3vw,2rem);box-shadow:0 8px 30px #111d3110}
+.lexQuizTop{display:flex;justify-content:space-between;align-items:center;gap:1rem}
+.lexQuizTop small{color:#525e76}
+.lexQuizTop button{border:0;background:transparent;color:#8a1f39;font-weight:700;cursor:pointer}
+.lexQuizChip{display:inline-block;background:#f7e7eb;color:#7b1734;padding:.28rem .8rem;border-radius:30px;font-size:.8rem;margin-top:.8rem}
+.lexQuiz h1{font-size:1.65rem;line-height:1.5}
+.lexQuiz textarea{display:block;box-sizing:border-box;width:100%;padding:1rem;border:1px solid #b4b9c5;border-radius:12px;font:inherit;min-height:110px;margin:.55rem 0}
+.lexQuiz label{font-weight:600}
+.lexQuizReference{background:#f9f4ef;border-inline-start:4px solid #8a1f39;padding:1rem;border-radius:10px;margin:1rem 0}
+.lexQuizReference p{margin:.3rem 0}
+.lexQuizReference small{color:#5b6473}
+.lexQuizChoices{display:flex;gap:.65rem;flex-wrap:wrap}
+.lexQuizOption{display:flex;align-items:center;gap:.65rem;padding:.9rem;margin:.65rem 0;border:1px solid #cfd4dc;border-radius:11px;cursor:pointer}
+.lexQuizOption:has(input:checked){border-color:#8a1f39;background:#fff2f5}
+.lexQuizOption input{accent-color:#8a1f39}
+.lexQuiz fieldset{border:0;padding:0;margin:1rem 0}
+.lexQuizResult .lexDictionaryStats span{color:#111d31;background:#f9f4ef;border-color:#e0d9df}
+.lexDictionaryToolbar button:focus-visible,.lexGlossarySave:focus-visible,.lexQuiz button:focus-visible{outline:3px solid #c58b9b;outline-offset:3px}
+@media(max-width:600px){.lexGlossaryDialog{position:fixed;top:auto;bottom:0;left:0;right:0;margin:0;max-width:100vw;border-radius:20px 20px 0 0}.lexDictionaryToolbar{align-items:stretch}.lexDictionaryToolbar button{width:100%}}
+@media(prefers-reduced-motion:reduce){.lexGlossaryDialog,.lexGlossaryTerm{transition:none!important}}
+@media(prefers-color-scheme:dark){
+ body.lexDictionaryBody{background:#101827;color:#ecf0f9}
+ .lexDictionaryCard,.lexDictionaryEmpty,.lexDictionaryHint,.lexQuiz,.lexGlossaryDialog{background:#1e293b;color:#edf0f6;border-color:#3d495c}
+ .lexDictionaryCard h2,.lexQuizTop button,.lexDictionaryHeader a{color:#f0a9b8}
+ .lexDictionaryCardTop span,.lexQuizChip{background:#4c3042;color:#ffe6ed}
+ .lexDictionaryCard small,.lexDictionaryHint{color:#cbd1de}
+ .lexDictionaryToolbar input,.lexQuiz textarea{background:#152234;color:#f0f3fa;border-color:#556075}
+ .lexQuizReference{background:#293244}
+ .lexGlossaryDialogHeader b{color:#f3f4f8}
+ .lexGlossaryDialogHeader button{background:#3c495a;color:white}
+ .lexGlossarySource,.lexGlossarySafety{color:#cad0df}
+ .lexGlossaryTerm{border-color:#ffb6c5}
+ .lexGlossaryTerm:hover,.lexGlossaryTerm:focus-visible{color:#ffbbce;background:#4a2b3a}
+ .lexQuizOption:has(input:checked){background:#472c3b}
+ .lexQuizResult .lexDictionaryStats span{background:#293449;border-color:#475368;color:white}
+}
