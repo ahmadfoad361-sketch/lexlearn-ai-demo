@@ -17,38 +17,12 @@ function weakName(s){return {recall:t("الحفظ","Recall"),understanding:t("ا
 function byId(a,id){return (a||[]).find(function(x){return x.item_id===id;});}
 // Student-only learning insights derived from verified saved answers. No claims of certified mastery.
 function learningOverview(adaptation){
+ // Individual criterion evidence and per-session history belong to the staff report.
  if(!adaptation||!adaptation.learning||adaptation.learning.status!=="provisional_learning_map")return "";
- var items=Array.isArray(adaptation.learning.concepts)?adaptation.learning.concepts.slice(0,6):[];
- if(!items.length)return "";
- var advice={
-  rebuild_memory_cues:t("كوّن مفاتيح للقاعدة ثم استرجع عناصرها دون الرجوع إلى النص.","Build memory cues and recall the legal elements unaided."),
-  contrast_one_condition:t("قارن واقعتين تختلفان في شرط واحد وفسّر اختلاف النتيجة.","Compare two cases that differ in one legal condition."),
-  practice_exam_structure:t("اكتب المسألة والقاعدة والتطبيق والنتيجة.","Practice issue, rule, application and conclusion."),
-  reconstruct_from_memory:t("أغلق النص واكتب العناصر القانونية من ذاكرتك.","Close the text and reconstruct the legal elements from memory."),
-  explain_then_vary_case:t("اشرح سبب القاعدة ثم غيّر شرطًا واحدًا في الواقعة.","Explain the rule, then change one fact in the case.")
- };
- var entries=items.map(function(c){
-  if(!c||typeof c.rolling_percent!=="number"||!Number.isFinite(c.rolling_percent))return "";
-  var n=Math.max(0,Math.min(100,Math.round(c.rolling_percent))),label=lang()==="en"?c.label_en:c.label_ar;
-  var hint=advice[c.next_step]||advice.explain_then_vary_case;
-  return "<li class='learningConcept'><div><b>"+esc(label)+"</b><small>"+esc(weakName(c.dimension))+
-    " · "+t("دليل تقييم: ","Assessment observations: ")+Math.max(0,Number(c.evidence_count)||0)+
-    "</small></div><div class='learningMeter'><progress max='100' value='"+n+"' aria-label='"+esc(label)+"'></progress><strong>"+n+"%</strong></div>"+
-    "<p>"+esc(hint)+"</p></li>";
- }).join("");
- var trends=adaptation.trends||{},history=["recall","understanding"].map(function(dim){
-  var points=Array.isArray(trends[dim])?trends[dim].slice(-5):[];
-  if(!points.length)return "";
-  return "<tr><th scope='row'>"+esc(weakName(dim))+"</th><td>"+points.map(function(p){
-   return esc(t("جلسة ","Session ")+p.session+": "+noHtmlScore(p.percent));
-  }).join(" · ")+"</td></tr>";
- }).join("");
- return "<section class='learningIntelligence' aria-label='"+t("خريطة تعلمك","Your learning map")+"'>"+
-  "<h2>"+t("خريطة حفظك وفهمك","Your recall and understanding map")+"</h2>"+
-  "<p>"+t("هذه مؤشرات من عناصر الإجابات التي صُححت بالفعل، وليست حكمًا نهائيًا على مستواك.","These are indicators from assessed answer criteria, not a final judgement of your ability.")+"</p>"+
-  "<ul class='learningConceptList'>"+entries+"</ul>"+
-  (history?"<h3>"+t("سجل نتائج الجلسات","Session evidence history")+"</h3><table class='learningTrend'><tbody>"+history+"</tbody></table>":"")+
-  "<small>"+t("اختلاف السؤال أو المعيار قد يغيّر النسبة. لا نعتبر الفرق بين الجلسات إثباتًا للتحسن حتى تتم مقارنات عادلة.","Different questions or rubrics may change the score. Differences alone do not establish measured learning gains.")+"</small></section>";
+ return "<p class='scope'>"+t(
+  "واصل التدريب خطوة بخطوة. يظهر لك ملخص الحفظ والفهم الإجمالي؛ أما سجل الجلسات والتحليل التفصيلي فيتابعه المشرف.",
+  "Keep learning step by step. Your overall recall and understanding summary is shown here; detailed session evidence remains with your supervisor."
+ )+"</p>";
 }
 
 function previousAnswerTitle(item,task){
@@ -120,7 +94,7 @@ function stageSkillSnapshot(rows,session){
  Object.keys(output).forEach(function(dim){
   var matches=(rows||[]).filter(function(r){return r&&r.dimension===dim&&Number.isInteger(r.session_number)&&r.session_number<=session&&r.session_number>=1&&(confirmedGrade(r.evaluation)||deterministicZero(r.evaluation));})
    .sort(function(a,b){return b.session_number-a.session_number||String(b.submitted_at||"").localeCompare(String(a.submitted_at||""));});
-  var latest=matches.slice(0,3);
+  var latest=matches;
   if(latest.length){
    output[dim].percent=Math.round(latest.reduce(function(sum,r){return sum+r.evaluation.provisional_percent;},0)/latest.length);
    output[dim].count=latest.length;
@@ -139,10 +113,10 @@ function stageSkillScorecard(rows,session){
       esc(has?noHtmlScore(v.percent):t("لم يُقَس بعد","Not measured yet"))+"</strong>"+
       "<small>"+(has?(v.fresh?t("مُحدّث بتصحيح هذه الجلسة","Updated by this session"):
       t("آخر قياس محفوظ سابقًا","Latest saved earlier measurement"))+
-      " · "+t("إجابات محسوبة: ","Scores used: ")+v.count:
+      " · "+t("إجابات مصححة إجمالًا: ","Total assessed answers: ")+v.count:
       t("لم يكتمل قياس هذه المهارة؛ أعد تصحيح الإجابة المحفوظة عند توفرها","This skill has no completed assessment; retry its saved answer when available"))+"</small></article>";
    }).join("")+"</div><p class='scope'>"+
-   t("كل نسبة متوسط آخر ثلاث إجابات مصححة لهذه المهارة حتى هذه الجلسة. إذا لم يُختبر أحد الجانبين، نظهر آخر قياس سابق له لا صفرًا افتراضيًا. النتائج تدريبية أولية.","Each percentage averages up to three accepted assessments in that skill through this session. Where a skill was not tested now, we show its last recorded measurement, never an invented zero. Results are preliminary practice indicators.")+
+   t("كل نسبة هي متوسط جميع الإجابات المصححة والمعتمدة لهذه المهارة حتى الآن، دون احتساب الإجابات المعلقة صفرًا. تفاصيل كل جلسة متاحة للمشرف.","Each percentage averages all reliably assessed answers for that skill so far; pending assessments are never treated as zero. Session-by-session detail is reserved for staff.")+
    "</p></section>";
 }
 
@@ -196,22 +170,26 @@ function examSummary(rows,session){
  return "<p class='examSummary'><b>"+t("بناء الإجابة والتطبيق في هذه الجلسة: ","Answer structure and application in this session: ")+(values.length?noHtmlScore(values.reduce(function(a,b){return a+b;},0)/values.length):entries.some(pendingGrade)?t("جارٍ التصحيح","Assessment in progress"):t("التصحيح غير مكتمل","Assessment incomplete"))+"</b><br><small>"+t("هذه نتيجة سؤال التطبيق، وتُعرض منفصلة عن الحفظ والفهم.","This is the application question result, shown separately from recall and understanding.")+"</small></p>";
 }
 function progressHtml(rows,session,historyAvailable){
- var m=progressModel(rows,session),visual=root.LEX_MOMENTS,card=momentData(rows,session);
- return "<section class='progressReport' aria-label='"+t("ملخص تقدمك","Your progress report")+"'><h2>"+
- (m.checkpoint?t("إتمام المستوى ","Level completion ")+m.level:t("ملخص الجلسة ","Session summary ")+session)+"</h2>"+
- (visual?visual.completion(card,lang()):"")+
- (root.LEX_SESSION_MOMENTS?root.LEX_SESSION_MOMENTS.render(session,lang(),card):"")+
- "<p class='completionState'>✓ "+t("أكملت مهام هذه الجلسة وحُفظت إجاباتك.","You completed this session and your answers were saved.")+"</p>"+
- "<div class='progressSkills'>"+m.skills.map(function(x){
-   var aiRows=(rows||[]).filter(function(r){return r.dimension===x.dimension&&r.session_number===session&&r.evaluation&&(confirmedGrade(r.evaluation)||deterministicZero(r.evaluation));});
-   var values=aiRows.map(function(r){return r.evaluation.provisional_percent;}).filter(function(v){return typeof v==="number"&&Number.isFinite(v)&&v>=0&&v<=100;});
-   var waiting=(rows||[]).some(function(r){return r.dimension===x.dimension&&r.session_number===session&&pendingGrade(r);});
-   var shown=values.length?noHtmlScore(values.reduce(function(a,b){return a+b;},0)/values.length):waiting?t("جارٍ التصحيح","Assessment in progress"):t("التصحيح غير مكتمل","Assessment incomplete");
-   return "<article class='progressSkill'><h3>"+esc(weakName(x.dimension))+"</h3>"+(visual&&values.length?visual.ring(card[x.dimension],x.dimension):"")+"<strong class='"+(values.length?"":"assessmentMissing")+"'>"+esc(shown)+"</strong>"+
-   "<p>"+t("إجابات محفوظة: ","Saved answers: ")+x.current.total+"</p></article>";
- }).join("")+"</div>"+examSummary(rows,session)+
- "<p class='nextAdvice'>"+(card.recall!==null&&card.understanding!==null?(card.recall<card.understanding?t("الفهم أقوى في هذه الجلسة؛ حوّل المعنى إلى مفاتيح قصيرة ثم استرجع القاعدة.","Understanding was stronger in this session. Turn meaning into brief cues, then recall the rule."):card.understanding<card.recall?t("الحفظ أقوى في هذه الجلسة؛ اشرح السبب بكلماتك وجرّب تغيير شرط واحد.","Recall was stronger in this session. Explain why in your words, then change one condition."):t("نتيجتا الحفظ والفهم متقاربتان؛ طبّق القاعدة في مثال جديد.","Recall and understanding are close. Apply the rule in a new example.")):t("خطوتك التالية: اختر جزءًا احتجت فيه إلى مساعدة، واشرحه بكلماتك، ثم جرّبه في مثال جديد.","Your next step: choose one part you needed help with, explain it in your own words, then try it in a new example."))+"</p>"+
- "<small>"+t("هذه مؤشرات تدريبية أولية، وليست درجات رسمية. سيُعاد قياس المهارات بأسئلة مستقلة.","These are preliminary practice indicators, not official grades. Skills will be reassessed with independent questions.")+"</small>"+(visual?visual.downloadButton(lang()):"")+"</section>";
+ var m=progressModel(rows,session),overall=stageSkillSnapshot(rows,session),visual=root.LEX_MOMENTS;
+ var card={kind:m.checkpoint?"level":"session",level:m.level,session:session,recall:overall.recall.percent,understanding:overall.understanding.percent};
+ return "<section class='progressReport' aria-label='"+t("ملخص إجمالي تقدمك","Overall progress summary")+"'><h2>"+
+   t("إجمالي تقدمك حتى الآن","Your overall progress so far")+"</h2>"+
+   (visual?visual.completion(card,lang()):"")+
+   "<p class='completionState'>✓ "+t("اكتملت هذه الجلسة وحُفظت إجاباتك. هذه النسب ملخص تدريباتك المصححة حتى الآن.",
+     "This session is complete and your answers are saved. These scores summarize all reliably assessed training to date.")+"</p>"+
+   "<div class='progressSkills'>"+["recall","understanding"].map(function(dim){
+     var v=overall[dim],label=weakName(dim);
+     return "<article class='progressSkill'><h3>"+esc(label)+"</h3>"+
+       (visual&&v.percent!==null?visual.ring(v.percent,dim):"")+
+       "<strong class='"+(v.percent!==null?"":"assessmentMissing")+"'>"+
+       esc(v.percent===null?t("لم يُقَس بعد","Not measured yet"):noHtmlScore(v.percent))+"</strong>"+
+       "<p>"+t("إجمالي الإجابات المصححة: ","Total assessed answers: ")+v.count+"</p></article>";
+   }).join("")+"</div>"+
+   "<p class='nextAdvice'>"+t("خطوتك القادمة: استرجع القاعدة بكلماتك ثم جرّب تطبيقها على واقعة جديدة.",
+     "Next: recall the rule in your own words and apply it to a new legal scenario.")+"</p>"+
+   "<small>"+t("هذه مؤشرات تدريبية إجمالية وليست درجات جامعية. يحتفظ المشرف بسجل النتائج التفصيلي للجلسات.",
+     "These are aggregate practice indicators, not university grades. The detailed session record is available to authorized staff.")+"</small>"+
+   "</section>";
 }
 function momentData(rows,session){
  var data={kind:session%5===0?"level":"session",level:Math.ceil(session/5),session:session};
@@ -236,7 +214,14 @@ async function boot(){
   }
   var selected=Number(new URLSearchParams(root.location.search).get("session"));
   if(!Number.isInteger(selected)||selected<1||selected>30||selected>overview.unlocked)selected=overview.unlocked;
-  var data=null,busy=false,progressRows=[],historyAvailable=false,adaptation=null,acceptedAi=false,aiUnavailable=false,gradingIssue="",studyRead=false,stopQueueWatch=null;
+  var data=null,busy=false,progressRows=[],historyAvailable=false,adaptation=null,acceptedAi=false,aiUnavailable=false,gradingIssue="",studyRead=false,stopQueueWatch=null,glossaryAllowed=false;
+  async function updateGlossaryAccess(){
+   glossaryAllowed=false; // Failed checks are always closed, never guessed from browser state.
+   try{
+    if(root.LEX_GLOSSARY_ACCESS)glossaryAllowed=await root.LEX_GLOSSARY_ACCESS.check(cloud);
+   }catch(_){glossaryAllowed=false;}
+  }
+  if(root.LEX_GLOSSARY_ACCESS)root.LEX_GLOSSARY_ACCESS.installLinkGuard(cloud);
   try{if(cloud.getConsent)acceptedAi=!!await cloud.getConsent("lexlearn-ai-grading-v1","external_ai_grading");}catch(_){}
   function gradingMessage(){
    if(gradingIssue==='queued')return t("إجابتك محفوظة، والتصحيح مستمر تلقائيًا. يمكنك متابعة التدريب أو العودة لاحقًا.","Your answer is saved and assessment continues automatically. You can continue practising or return later.");
@@ -271,7 +256,7 @@ async function boot(){
     t("الجلسة ","Session ")+(i+1);});
   function nav(){
    return "<div class='heading'><div><b>"+t("مسارك التدريبي المتكيف","Your adaptive learning path")+"</b><p>"+t("المقرر: نظرية الحق • 6 أسابيع • 30 جلسة • نتائج لكل طالب","Theory of Rights • 6 weeks • 30 sessions • individual results")+"</p>"+lawContext([])+"</div><a href='student"+(lang()==="en"?"-en":"")+".html'>"+t("حساب الطالب","Student account")+"</a></div>"+
-   (root.LEX_GLOSSARY?root.LEX_GLOSSARY.appendLink():"")+"<p class='scope' role='note'>"+t("تدريب يتكيف مع أدائك، مع حفظ إجاباتك وتقدمك في حسابك. النتائج مؤشرات تدريبية والمشرف يتابع تقدمك، وليست درجات جامعية معتمدة.","Practice adapts to your performance, with answers and progress saved to your account. Results are training indicators instructor oversight only, not certified university marks.")+"</p>"+
+   (root.LEX_GLOSSARY&&root.LEX_GLOSSARY_ACCESS?root.LEX_GLOSSARY_ACCESS.linkHtml(glossaryAllowed,lang()):"")+"<p class='scope' role='note'>"+t("تدريب يتكيف مع أدائك، مع حفظ إجاباتك وتقدمك في حسابك. النتائج مؤشرات تدريبية والمشرف يتابع تقدمك، وليست درجات جامعية معتمدة.","Practice adapts to your performance, with answers and progress saved to your account. Results are training indicators instructor oversight only, not certified university marks.")+"</p>"+
    "<p class='overview'>"+t("التقدم المحفوظ: ","Verified practice progress: ")+overview.completed_count+" / 30 · "+t("الجلسة الحالية: ","Current session: ")+overview.unlocked+"</p>"+
    "<div class='levelStrip'>"+Array.from({length:6},function(_,i){
     var level=i+1,start=i*5+1,end=level*5,done=overview.completed_count>=end,unlocked=overview.unlocked>=start;
@@ -290,7 +275,7 @@ async function boot(){
     if(!result||!result.allowed||!Array.isArray(result.tasks)||!Array.isArray(result.saved))throw Error(result&&result.reason||"invalid_session");
     selected=n;data=result;studyRead=false;
     // Do not silently regrade saved work on navigation; use explicit retry controls.
-    await refreshAdaptation();await loadProgress();busy=false;render();
+    await refreshAdaptation();await loadProgress();await updateGlossaryAccess();busy=false;render();
    }catch(e){reportError(e);}
   }
   function render(){
@@ -334,7 +319,7 @@ async function boot(){
     var reading=root.LEX_LEGAL_STUDY.render(sourceIds,lang());
     if(reading){
      show(nav()+reading);
-     if(root.LEX_GLOSSARY)root.LEX_GLOSSARY.bindArticle(host.querySelector(".legalStudy"));
+     if(glossaryAllowed&&root.LEX_GLOSSARY)root.LEX_GLOSSARY.bindArticle(host.querySelector(".legalStudy"));
      host.querySelector("#beginLegalQuestions").onclick=function(){studyRead=true;render();};
      return;
     }
@@ -371,7 +356,7 @@ async function boot(){
     main+="<h2>"+t("اكتملت تدريبات الجلسة","Practice session completed")+"</h2>"+
     "<p>"+t("إجاباتك محفوظة. يمكنك متابعة الجلسة التالية.","Your answers are saved. You can continue to the next session.")+"</p>"+
     (selected<30?"<button type='button' id='nextSession'>"+(selected%5===0?t("انتقل إلى المستوى ","Continue to level ")+(Math.ceil(selected/5)+1):t("انتقل للجلسة التالية","Continue to next session"))+"</button>":
-     "<p role='status'>"+t("اكتملت الجلسات التدريبية الثلاثون. احتفظ بنتائجك للمراجعة.","All 30 practice sessions completed; your results remain saved for review.")+"</p>"+(root.LEX_GLOSSARY?"<p>"+t("الخطوة الختامية: راجع المصطلحات التي جمعتها واختبر تذكرك وفهمك لها.","Final step: review your saved terms and check your recall and understanding.")+"</p><p>"+root.LEX_GLOSSARY.appendLink()+"</p>":""));
+     "<p role='status'>"+t("اكتملت الجلسات التدريبية الثلاثون. احتفظ بنتائجك للمراجعة.","All 30 practice sessions completed; your results remain saved for review.")+"</p>"+(glossaryAllowed&&root.LEX_GLOSSARY&&root.LEX_GLOSSARY_ACCESS?"<p>"+t("الخطوة الختامية: راجع المصطلحات التي جمعتها واختبر تذكرك وفهمك لها.","Final step: review your saved terms and check your recall and understanding.")+"</p><p>"+root.LEX_GLOSSARY_ACCESS.linkHtml(true,lang())+"</p>":""));
    }else if(next){
     var prompt=root.LEX_BEGINNER_PROMPTS?root.LEX_BEGINNER_PROMPTS.prepare(next,lang()):(lang()==="en"?next.prompt_en:next.prompt_ar);
     if(root.LEX_LEGAL_STUDY)prompt=root.LEX_LEGAL_STUDY.qualify(prompt,lang());
@@ -464,7 +449,7 @@ async function boot(){
      }
      var checked=await cloud.studentLifecycleRpc("trainingOpen",{courseId:COURSE,session:selected});
      if(!checked||!checked.allowed||!byId(checked.saved,next.id))throw Error("answer_readback_failed");
-     data=checked;await refreshAdaptation();await loadProgress();
+     data=checked;await refreshAdaptation();await loadProgress();await updateGlossaryAccess();
      if(data.completed){
       var fresh=await cloud.studentLifecycleRpc("trainingOverview",{courseId:COURSE});
       if(fresh&&fresh.allowed)overview=fresh;
