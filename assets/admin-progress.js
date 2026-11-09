@@ -110,7 +110,7 @@ function renderStudent(r){
  '<h3>حالة أعمال الطالب</h3><div class="grid three"><div class="metric"><span>إجابات محفوظة</span><strong>'+Number(r.submitted_answers||0)+'</strong></div>'+
  '<div class="metric"><span>تصحيح آلي بمعيار حالي</span><strong>'+Number(r.ai_graded_answers||0)+'</strong></div>'+
  '<div class="metric"><span>إجابات تنتظر تقييمًا</span><strong>'+Number(r.ungraded_answers||0)+'</strong></div></div>'+
- '<h3>تحليل عناصر الإجابات</h3>'+(typeof window!=='undefined'&&window.LEX_CONFIG?.learningExtensionsV1===true&&window.LEX_COGNITIVE_FINGERPRINT?window.LEX_COGNITIVE_FINGERPRINT.render(l):'')+conceptMap(l)+
+ '<h3>تحليل عناصر الإجابات</h3>'+(typeof window!=='undefined'&&(window.LEX_CONFIG?.cognitiveFingerprintV1===true||window.LEX_CONFIG?.learningExtensionsV1===true)&&window.LEX_COGNITIVE_FINGERPRINT?window.LEX_COGNITIVE_FINGERPRINT.render(l):'')+conceptMap(l)+
  optionalReport(r.optional_practice)+
  '<h3>تاريخ التقييم في الجلسات</h3>'+timeline(r.skill_trends)+
  '<h3>نسب الحفظ والفهم بعد كل عملية تصحيح</h3>'+gradedStageHistoryHtml(r)+
