@@ -109,7 +109,14 @@ function confirmedGrade(ev){return !!(ev&&ev.status==="preliminary_ai"&&ev.rubri
 function deterministicZero(ev){return !!(ev&&ev.status==="nonanswer_zero"&&ev.provisional_percent===0);}
 function queuedGrade(v){return !!(v&&v.evaluation&&v.evaluation.status==="ai_queued"&&v.evaluation.queue_job_id);}
 function pendingGrade(v){return !!(v&&v.evaluation&&["ai_queued","ai_pending","ai_verification_pending","queued","processing"].includes(v.evaluation.status));}
-function needsAssessment(v){return !pendingGrade(v)&&!confirmedGrade(v&&v.evaluation)&&!deterministicZero(v&&v.evaluation);}
+// An unknown provider outcome may already have incurred a charge. Never let the
+// learner trigger a second paid attempt for a held/review-required queue job.
+// Operator recovery must first reconcile the durable job and provider outcome.
+function heldGrade(v){
+ var ev=v&&v.evaluation||{};
+ return ["ai_review_required","review_required","human_review_required","needs_review"].includes(ev.status);
+}
+function needsAssessment(v){return !pendingGrade(v)&&!heldGrade(v)&&!confirmedGrade(v&&v.evaluation)&&!deterministicZero(v&&v.evaluation);}
 function stageSkillSnapshot(rows,session){
  var output={recall:{percent:null,count:0,fresh:false},understanding:{percent:null,count:0,fresh:false}};
  Object.keys(output).forEach(function(dim){
@@ -143,6 +150,13 @@ function stageSkillScorecard(rows,session){
 
 function feedback(item){
  var ev=item&&item.evaluation||{};
+ if(heldGrade(item)){
+  var temporary=ev.reason==="provider_rate_limited"||ev.reason==="provider_quota_exhausted";
+  return "<div class='feedback' role='status'><b>"+t("إجابتك محفوظة — التصحيح متعذر حاليًا","Answer saved — assessment temporarily unavailable")+"</b><p>"+
+   (temporary?t("توقّف التصحيح بسبب حدود الخدمة أو رصيدها، وليس بسبب إجابتك. لم تصدر درجة ولا حاجة لإعادة إرسال الإجابة.","Assessment was interrupted by provider limits or credit, not by your answer. No score was issued; do not resubmit."):
+    t("تعذر توثيق نتيجة تصحيح مؤكدة. نحتفظ بالإجابة للمراجعة الآمنة دون احتساب صفر أو تكرار طلب مدفوع.","A verified grading result is unavailable. Your answer is retained for safe recovery without a zero or another paid request."))+
+   "</p></div>";
+ }
  if(pendingGrade(item))return "<div class='feedback' role='status'><b>"+t("إجابتك محفوظة — جارٍ التصحيح","Answer saved — assessment in progress")+"</b><p>"+t("النسبة لم تصدر بعد. ستُحدّث هذه الشاشة تلقائيًا بعد انتهاء المراجعة؛ لا ترسل الإجابة مرة أخرى.","No percentage has been issued yet. This page updates after verification; do not resubmit.")+"</p></div>";
  if(deterministicZero(ev)){
   return "<div class='feedback' role='status'><b>"+t("درجة السؤال: 0%","Task score: 0%")+"</b><p>"+
@@ -346,6 +360,7 @@ async function boot(){
    var main=resume+"<section class='stage'>"+lawNumberRail(data.tasks,lang())+"<h1>"+esc(name)+"</h1>"+why+
     "<p>"+t("أُرسلت ","Saved ")+saved.length+" / "+data.tasks.length+t(" إجابات محفوظة في حسابك."," answers to your account.")+"</p>"+
     completedFeedback+(saved.length?stageSkillScorecard(progressRows,selected):"");
+   if(saved.some(heldGrade))main+="<p class='assessmentRecovery' role='status'>"+t("بعض الإجابات محفوظة وتنتظر استكمال التصحيح من النظام. لم تُحتسب صفرًا، ولا تعِد إرسالها.","Some saved answers await safe assessment recovery. They were not graded zero; do not resubmit.")+"</p>";
    if(pendingRows.length&&acceptedAi)main+="<p class='assessmentRecovery' role='status'>"+t("التصحيح جارٍ في الخلفية. لا حاجة لإعادة إرسال الإجابات.","Assessment continues in the background. Do not resubmit answers.")+" <button type='button' id='refreshGradesNow'>"+t("تحديث النسب الآن","Refresh percentages now")+"</button></p>";
    if(completed){
     main+=progressHtml(progressRows,selected,historyAvailable);
@@ -472,7 +487,7 @@ async function boot(){
   await open(selected);
  }catch(e){reportError(e);}
 }
-root.LEX_STUDENT_PATH={mount:boot,noHtmlScore:noHtmlScore,previousAnswerTitle:previousAnswerTitle,progressModel:progressModel,progressHtml:progressHtml};
+root.LEX_STUDENT_PATH={mount:boot,noHtmlScore:noHtmlScore,previousAnswerTitle:previousAnswerTitle,progressModel:progressModel,progressHtml:progressHtml,heldGrade:heldGrade,needsAssessment:needsAssessment,feedback:feedback};
 if(typeof module!=="undefined"&&module.exports)module.exports=root.LEX_STUDENT_PATH;
 })(typeof window!=="undefined"?window:globalThis);
 
