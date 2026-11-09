@@ -10,8 +10,12 @@ function stopRinging(){
  if(ringStopTimer){root.clearTimeout(ringStopTimer);ringStopTimer=0;}
  try{if(soundMaster&&soundContext)soundMaster.gain.setValueAtTime(0,soundContext.currentTime);}catch(_){}
 }
+function isMobileDevice(){
+ var n=root.navigator||{},ua=String(n.userAgent||"");
+ return /Android|iPhone|iPad|iPod/i.test(ua)||(n.platform==="MacIntel"&&Number(n.maxTouchPoints)>1);
+}
 function startRinging(){
- if(!soundWasPrimed||!soundContext)return;
+ if(!isMobileDevice()||!soundWasPrimed||!soundContext)return;
  stopRinging();
  try{if(soundMaster)soundMaster.gain.setValueAtTime(1,soundContext.currentTime);}catch(_){}
  playFinishedSound();
@@ -19,6 +23,7 @@ function startRinging(){
  ringStopTimer=root.setTimeout(stopRinging,12000);
 }
 function primeSound(){
+ if(!isMobileDevice())return;
  try{
   var AudioCtor=root.AudioContext||root.webkitAudioContext;
   if(!AudioCtor)return;
