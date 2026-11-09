@@ -21,20 +21,20 @@ var TERMS=[
  ["abuse-of-right","استعمال الحق غير مشروع",63]
 ];
 var APPLY={
- "collateral-kinship":{q:"أي علاقة تعد قرابة حواشٍ؟",a:["أب وابنه","أخ وأخته","أم وابنتها"],correct:1},
- "direct-kinship":{q:"أي علاقة تعد قرابة مباشرة؟",a:["أخ وأخوه","ابن عم وابنة عمه","جد وحفيدته"],correct:2},
- "kinship-degree":{q:"عند حساب درجة قرابة الحواشي، ما الأصل المشترك؟",a:["يُحسب ضمن عدد الدرجات","لا يُحسب ضمن عدد الدرجات","لا تؤثر صلة النسب"],correct:1},
- "chosen-domicile":{q:"شخص اختار موطنًا لعمل قانوني محدد. ما الشرط المذكور في المادة؟",a:["أن يكون الاختيار كتابةً","أن يكون بالضرورة مكان الميلاد","أن يقيم فيه طوال حياته"],correct:0},
- "capacity-to-act":{q:"ما الذي تتعلق به أهلية الأداء؟",a:["مباشرة التصرفات القانونية","الاسم في شهادة الميلاد فقط","القرابة بين الإخوة"],correct:0},
- "lack-discernment":{q:"طفل لم يكمل السابعة. ما وصفه في المادة 50؟",a:["كامل الأهلية","عديم التمييز","شخص معنوي"],correct:1},
- "limited-capacity":{q:"شخص بلغ سن التمييز ولم يبلغ الرشد. كيف تصفه المادة 51؟",a:["ناقص الأهلية","كامل الأهلية دائمًا","ليس شخصًا قانونيًا"],correct:0},
- "juristic-person":{q:"أي مثال يعد شخصًا معنويًا وفق المادة 53؟",a:["شركة مدنية","أب وابنه","موطن مختار"],correct:0},
- "separate-estate":{q:"ما الأثر المقصود بالذمة المالية المستقلة للشخص المعنوي؟",a:["تتحد أمواله دائمًا مع أموال أعضائه","توجد له حقوق والتزامات مالية منفصلة","لا يملك حقوقًا مالية"],correct:1},
- "public-property":{q:"متى تعد أموال الدولة أو الشخص المعنوي العام أموالًا عامة؟",a:["كلما امتلكتها أي شركة خاصة","عند تخصيصها لمنفعة عامة بالفعل أو بمقتضى القانون","حين تكون منقولة فقط"],correct:1},
- "immovable-by-destination":{q:"متى يمكن اعتبار المنقول عقارًا بالتخصيص؟",a:["عندما يضعه صاحب العقار لخدمته أو استغلاله","بمجرد بيعه خارج العقار","إذا كان كل منقول بلا استثناء"],correct:0},
- "fungible-items":{q:"أي مثال أقرب للأشياء المثلية؟",a:["لوحة أصلية فريدة","كمية سكر من النوع نفسه تُباع بالوزن","عقار محدد بعنوانه"],correct:1},
- "nonfungible-items":{q:"ما الذي يميز الشيء القيمي؟",a:["تساوي وحداته دومًا دون فرق","اختلاف وحداته في القيمة أو الصفات اختلافًا معتدًا به","تقديره بالوزن فقط"],correct:1},
- "abuse-of-right":{q:"أي حالة وردت ضمن الاستعمال غير المشروع للحق؟",a:["استعماله لتحقيق مصلحة مشروعة بلا تعسف","قصد الإضرار بالغير وحده","ممارسته دون ضرر مطلقًا"],correct:1}
+ "collateral-kinship":{q:"أي علاقة تعد قرابة حواشٍ؟",a:["أب وابنه","أخ وأخته","أم وابنتها"]},
+ "direct-kinship":{q:"أي علاقة تعد قرابة مباشرة؟",a:["أخ وأخوه","ابن عم وابنة عمه","جد وحفيدته"]},
+ "kinship-degree":{q:"عند حساب درجة قرابة الحواشي، ما الأصل المشترك؟",a:["يُحسب ضمن عدد الدرجات","لا يُحسب ضمن عدد الدرجات","لا تؤثر صلة النسب"]},
+ "chosen-domicile":{q:"شخص اختار موطنًا لعمل قانوني محدد. ما الشرط المذكور في المادة؟",a:["أن يكون الاختيار كتابةً","أن يكون بالضرورة مكان الميلاد","أن يقيم فيه طوال حياته"]},
+ "capacity-to-act":{q:"ما الذي تتعلق به أهلية الأداء؟",a:["مباشرة التصرفات القانونية","الاسم في شهادة الميلاد فقط","القرابة بين الإخوة"]},
+ "lack-discernment":{q:"طفل لم يكمل السابعة. ما وصفه في المادة 50؟",a:["كامل الأهلية","عديم التمييز","شخص معنوي"]},
+ "limited-capacity":{q:"شخص بلغ سن التمييز ولم يبلغ الرشد. كيف تصفه المادة 51؟",a:["ناقص الأهلية","كامل الأهلية دائمًا","ليس شخصًا قانونيًا"]},
+ "juristic-person":{q:"أي مثال يعد شخصًا معنويًا وفق المادة 53؟",a:["شركة مدنية","أب وابنه","موطن مختار"]},
+ "separate-estate":{q:"ما الأثر المقصود بالذمة المالية المستقلة للشخص المعنوي؟",a:["تتحد أمواله دائمًا مع أموال أعضائه","توجد له حقوق والتزامات مالية منفصلة","لا يملك حقوقًا مالية"]},
+ "public-property":{q:"متى تعد أموال الدولة أو الشخص المعنوي العام أموالًا عامة؟",a:["كلما امتلكتها أي شركة خاصة","عند تخصيصها لمنفعة عامة بالفعل أو بمقتضى القانون","حين تكون منقولة فقط"]},
+ "immovable-by-destination":{q:"متى يمكن اعتبار المنقول عقارًا بالتخصيص؟",a:["عندما يضعه صاحب العقار لخدمته أو استغلاله","بمجرد بيعه خارج العقار","إذا كان كل منقول بلا استثناء"]},
+ "fungible-items":{q:"أي مثال أقرب للأشياء المثلية؟",a:["لوحة أصلية فريدة","كمية سكر من النوع نفسه تُباع بالوزن","عقار محدد بعنوانه"]},
+ "nonfungible-items":{q:"ما الذي يميز الشيء القيمي؟",a:["تساوي وحداته دومًا دون فرق","اختلاف وحداته في القيمة أو الصفات اختلافًا معتدًا به","تقديره بالوزن فقط"]},
+ "abuse-of-right":{q:"أي حالة وردت ضمن الاستعمال غير المشروع للحق؟",a:["استعماله لتحقيق مصلحة مشروعة بلا تعسف","قصد الإضرار بالغير وحده","ممارسته دون ضرر مطلقًا"]}
 };
 var glossaryCache=new Map(),lastSelection="";
 function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
@@ -227,7 +227,15 @@ async function mountPage(){
   var search=host.querySelector("#lexDictionarySearch");if(search)search.oninput=function(){var v=search.value;renderList(v);var newer=host.querySelector("#lexDictionarySearch");newer.focus();newer.setSelectionRange(v.length,v.length);};
   var quiz=host.querySelector("#lexDictionaryQuiz");if(quiz)quiz.onclick=function(){testItems=entries.filter(due).filter(function(e){return !!e.definition_ar;}).slice(0,12);if(!testItems.length)testItems=entries.filter(function(e){return !!e.definition_ar;}).slice(0,12);if(!testItems.length){host.querySelector(".lexDictionaryHint").textContent=tr("كل مصطلحاتك تنتظر شرحًا. أعد فتحها من النص القانوني.","All saved terms await explanations.");return;}pos=0;attempt=[];question();};
  }
- async function record(entry,skill,mode,outcome){
+ async function record(entry,skill,mode,outcome,optionIndex){
+  if(mode==="objective"){
+   var response=await who.client.functions.invoke("lexlearn-glossary-review",{
+    body:{entry_id:entry.id,option_index:optionIndex}
+   });
+   if(response.error||!response.data||response.data.ok!==true)throw Error("review_unconfirmed");
+   attempt.push({entry:entry.id,skill:skill,mode:"objective",outcome:"saved"});
+   return;
+  }
   var result=await who.client.from("lex_student_glossary_reviews").insert({entry_id:entry.id,student_id:who.id,skill:skill,assessment_mode:mode,outcome:outcome});
   if(result.error)throw result.error;
   var when=new Date(Date.now()+((outcome==="incorrect"||outcome==="not_recalled")?1:3)*86400000).toISOString();
@@ -261,8 +269,7 @@ async function mountPage(){
    var checked=host.querySelector("input[name=lexChoice]:checked"),error=host.querySelector("#lexQuizError"),btn=host.querySelector("#lexQuizSubmit");
    if(!checked){error.textContent=tr("اختر إجابة أولًا.","Choose an answer.");return;}
    btn.disabled=true;
-   var ok=Number(checked.value)===ex.correct;
-   try{await record(current,"understanding","objective",ok?"correct":"incorrect");pos++;question();}
+   try{await record(current,"understanding","objective",null,Number(checked.value));pos++;question();}
    catch(_){btn.disabled=false;error.textContent=tr("تعذر حفظ النتيجة؛ حاول مجددًا.","Could not save the result. Retry.");}
   };
  }
