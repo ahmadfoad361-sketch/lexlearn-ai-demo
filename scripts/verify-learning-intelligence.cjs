@@ -24,10 +24,10 @@ const page=context.learningOverview({
  ]},
  trends:{recall:[{session:1,percent:70}],understanding:[{session:1,percent:55}]}
 });
-assert.ok(page.includes("&lt;script&gt;"),"untrusted label is escaped");
-assert.ok(!page.includes("<script>"),"HTML injection prevented");
-assert.ok(page.includes("progress max='100' value='50'"));
-assert.ok(page.includes("جلسة 1: 70%"));
+assert.ok(!page.includes("&lt;script&gt;")&&!page.includes("<script>"),"student does not receive untrusted criterion labels");
+assert.ok(!page.includes("progress max='100' value='50'"),"staff-only criterion details are not displayed");
+assert.ok(!page.includes("جلسة 1: 70%"),"session-by-session history is staff-only");
+assert.ok(page.includes("ملخص الحفظ والفهم الإجمالي"),"student gets only aggregate learning guidance");
 assert.ok(page.includes("أجوبة")===false);
 console.log("Learning intelligence panel: PASS");
 
@@ -81,7 +81,7 @@ console.log("Admin detailed and aggregate evidence dashboard: PASS");
  assert.equal(stage.understanding.percent,70);
  assert.equal(stage.understanding.fresh,false);
  stage=sc.stageSkillSnapshot(rows,4);
- assert.equal(stage.recall.percent,57);
+ assert.equal(stage.recall.percent,65); // cumulative mean across all confirmed sessions
  assert.equal(stage.understanding.percent,70);
  assert.ok(!stage.understanding.fresh);
  stage=sc.stageSkillSnapshot(rows,5);
