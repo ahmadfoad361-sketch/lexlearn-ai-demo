@@ -40,5 +40,24 @@ async function run({en=false,marker,session=true,error,access,consent=true,role,
  r.cloud.setRememberMe(false);assert.equal(r.localStorage.getItem('sb-test-auth-token'),null);r.cloud.setRememberMe(true);assert.equal(r.localStorage.getItem('sb-test-auth-token'),'test-token');
  r=await run({role:'admin'});await assert.rejects(()=>r.cloud.signInStudent('admin','test-only'),/student_account_not_active/);
  r=await run({session:false});await assert.rejects(()=>r.cloud.signInStudent('verified','test-only'),/student_session_missing/);
+
+ const glossaryContext={document:{documentElement:{lang:'ar'}}};
+ vm.createContext(glossaryContext);
+ vm.runInContext(fs.readFileSync('assets/personal-glossary.js','utf8'),glossaryContext);
+ const dictionary=glossaryContext.LEX_GLOSSARY;
+ assert.equal(dictionary.terms.length,16);
+ const legalText='قرابة الحواشي هي الصلة بين من يجمعهم أصل مشترك دون أن يكون أحدهم فرعاً للآخر.';
+ const rendered=dictionary.linkText(46,legalText);
+ assert.match(rendered,/data-lex-term='collateral-kinship'/);
+ assert.match(rendered,/قرابة الحواشي/);
+ assert.doesNotMatch(dictionary.linkText(45,legalText),/data-lex-term/);
+ assert.match(dictionary.linkText(46,'<script>قرابة الحواشي</script>'),/&lt;script&gt;/);
+ assert.match(dictionary.appendLink(),/student-glossary.html\?lang=ar/);
+ assert.equal(dictionary.apply['collateral-kinship'].correct,1);
+ const dictionaryCode=fs.readFileSync('assets/personal-glossary.js','utf8');
+ assert.match(dictionaryCode,/if\(!allowAi\)throw Error\("ai_consent_needed"\)/);
+ assert.match(dictionaryCode,/accept_ai_processing:true/);
+ assert.doesNotMatch(dictionaryCode,/OPENAI_API_KEY/);
+ console.log('PASS: glossary matching, original legal text, HTML escaping, active course routing, consent boundary, and sample legal quiz.');
  console.log('PASS: Arabic and English session recovery, missing/expired Auth, stale identity, network errors, role/activation, admission, enrollment, consent, and cross-tab sign-out.');
 })().catch(e=>{console.error(e);process.exitCode=1;});
