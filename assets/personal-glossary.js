@@ -44,6 +44,7 @@ function termKey(s){return "manual-"+normalize(s).slice(0,90);}
 function isLetter(c){return !!c&&/[\u0621-\u064aA-Za-z]/.test(c);}
 function linkText(article,text){
  var s=String(text||""),terms=TERMS.filter(function(t){return t[2]===Number(article);}),i=0,parts=[];
+ if(root.LEX_GLOSSARY_ACCESS&&!root.LEX_GLOSSARY_ACCESS.canShowTerms())return esc(s);
  while(i<s.length){
   var best=null;
   terms.forEach(function(term){
@@ -211,6 +212,12 @@ async function mountPage(){
  var who,entries=[],reviews=[];
  try{
   who=await student();
+  if(!root.LEX_GLOSSARY_ACCESS)throw Error("glossary_access_unavailable");
+  var allowed=await root.LEX_GLOSSARY_ACCESS.check(root.LEX_CLOUD);
+  if(!allowed){
+    host.innerHTML="<section class='lexDictionaryLocked' role='status'><h1>"+esc(tr("القاموس متاح بعد انتهاء الجلسة","Dictionary opens after your session"))+"</h1><p>"+esc(root.LEX_GLOSSARY_ACCESS.notice(root.document.documentElement.lang))+"</p><a href='student-path.html?lang="+esc(root.document.documentElement.lang==="en"?"en":"ar")+"'>"+esc(tr("أكمل جلستك","Continue your session"))+"</a></section>";
+    return;
+  }
   var [list,history]=await Promise.all([
    who.client.from("lex_student_glossary").select("*").eq("student_id",who.id).eq("course_id",COURSE).order("added_at",{ascending:false}).limit(500),
    who.client.from("lex_student_glossary_reviews").select("entry_id,skill,assessment_mode,outcome,created_at").eq("student_id",who.id).order("created_at",{ascending:false}).limit(1500)
@@ -289,6 +296,16 @@ async function mountPage(){
   host.querySelector("#lexQuizEnd").onclick=function(){renderList("");};
  }
  renderList("");
+ if(root.document&&root.document.addEventListener){
+   root.document.addEventListener("visibilitychange",async function(){
+     if(root.document.hidden)return;
+     try{
+       if(!await root.LEX_GLOSSARY_ACCESS.check(root.LEX_CLOUD)){
+         host.innerHTML="<section class='lexDictionaryLocked' role='status'><h1>"+esc(tr("يتفعّل دخول القاموس بعد انتهاء الجلسة.","Dictionary access resumes after the session."))+"</h1><a href='student-path.html?lang="+esc(root.document.documentElement.lang==="en"?"en":"ar")+"'>"+esc(tr("أكمل جلستك","Continue your session"))+"</a></section>";
+       }
+     }catch(_){host.innerHTML="<p role='alert'>"+esc(tr("تعذر التحقق من إتاحة القاموس. أعد تحميل الصفحة.","Could not verify glossary access. Refresh this page."))+"</p>";}
+   });
+ }
 }
 var api={terms:TERMS,apply:APPLY,linkText:linkText,normalize:normalize,bindArticle:bindArticle,appendLink:appendLink,mountPage:mountPage};
 root.LEX_GLOSSARY=api;
