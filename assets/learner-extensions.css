@@ -1,0 +1,20 @@
+/* Accessible, distraction-free extensions. LexLearn brand palette only. */
+.lexExtensionCard{border:1px solid #d5cbd0;border-inline-start:4px solid #8a1f39;border-radius:16px;background:#fff;padding:clamp(1rem,3vw,1.5rem);margin:1.4rem 0;box-shadow:0 6px 18px #111d310b;color:#111d31}
+.lexExtensionEyebrow{font-weight:700;color:#8a1f39;letter-spacing:.015em}
+.lexExtensionCard h1,.lexExtensionCard h2,.lexExtensionCard h3{color:#111d31;line-height:1.55;margin:.4rem 0}
+.lexExtensionCard h1{font-size:1.65rem}.lexExtensionCard p{line-height:1.8}
+.lexExtensionCard small{display:block;color:#515b6b;margin-top:1rem}
+.lexExtensionPrompt{white-space:pre-wrap;overflow-wrap:anywhere;background:#f9f4ef;border-radius:12px;padding:1rem;line-height:1.9;margin:.8rem 0 1.2rem}
+.lexExtensionCard textarea{display:block;box-sizing:border-box;width:100%;min-height:130px;padding:1rem;margin:.55rem 0 1rem;border:1px solid #aab2bf;border-radius:12px;background:#fff;color:#111d31;font:inherit;resize:vertical}
+.lexExtensionCard button,.lexExtensionAction{display:inline-block;background:#111d31;color:#fff;border:1px solid #111d31;border-radius:11px;text-decoration:none;font:inherit;font-weight:700;line-height:1.5;padding:.8rem 1rem;cursor:pointer}
+.lexExtensionCard button:disabled{opacity:.65;cursor:wait}
+.lexExtensionCard .lexSpeak{background:#f9f4ef;color:#111d31;border-color:#aab2bf}
+.lexExtensionCard :is(button,a,textarea):focus-visible{outline:3px solid #8a1f39;outline-offset:3px}
+.lexRoleGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.6rem;margin:1rem 0}
+.lexRoleGrid button{padding:1rem .45rem;background:#f9f4ef;color:#111d31;border:1px solid #c9bfc5;min-height:58px}
+.lexRoleGrid button.chosen{background:#111d31;color:#fff;border-color:#111d31}
+.lexCareerActions{display:flex;flex-wrap:wrap;gap:.6rem}.lexExtensionStatus{min-height:1.5em;color:#8a1f39;font-weight:600}
+.lexExtensionPreferences{background:#f9f4ef;padding:1rem;border-radius:10px}
+.lexExtensionNote{font-weight:600;color:#111d31}
+@media(max-width:480px){.lexRoleGrid{grid-template-columns:1fr}.lexCareerActions>*{width:100%;text-align:center}}
+@media(prefers-reduced-motion:reduce){.lexExtensionCard *{animation:none!important;transition:none!important}}
