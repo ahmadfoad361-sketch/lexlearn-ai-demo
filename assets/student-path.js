@@ -364,6 +364,9 @@ async function boot(){
    if(pendingRows.length&&acceptedAi)main+="<p class='assessmentRecovery' role='status'>"+t("التصحيح جارٍ في الخلفية. لا حاجة لإعادة إرسال الإجابات.","Assessment continues in the background. Do not resubmit answers.")+" <button type='button' id='refreshGradesNow'>"+t("تحديث النسب الآن","Refresh percentages now")+"</button></p>";
    if(completed){
     main+=progressHtml(progressRows,selected,historyAvailable);
+    // Non-credit recall and role challenges are shown only AFTER official session completion.
+    if(root.LEX_CONFIG?.learningExtensionsV1===true&&root.LEX_LEARNER_EXTENSIONS&&root.LEX_LEARNER_EXTENSIONS.eligibleReview(selected))main+="<div id='lexReviewSlot'></div>";
+    if(root.LEX_CONFIG?.learningExtensionsV1===true&&root.LEX_LEARNER_EXTENSIONS&&root.LEX_LEARNER_EXTENSIONS.isMilestone(selected))main+="<div id='lexCareerSlot'></div>";
     if(saved.some(needsAssessment)&&acceptedAi&&cloud.gradeTrainingAi)main+="<div class='assessmentRecovery' role='status'><p>"+gradingMessage()+"</p><button type='button' id='retrySessionGrades'>"+t("أعد تصحيح إجابات الجلسة","Retry session assessment")+"</button><p id='sessionGradeStatus' aria-live='polite'></p></div>";
     main+="<h2>"+t("اكتملت تدريبات الجلسة","Practice session completed")+"</h2>"+
     "<p>"+t("إجاباتك محفوظة. يمكنك متابعة الجلسة التالية.","Your answers are saved. You can continue to the next session.")+"</p>"+
@@ -393,6 +396,10 @@ async function boot(){
    }
    main+="</section>";
    show(nav()+main);
+   if(completed&&root.LEX_CONFIG?.learningExtensionsV1===true&&root.LEX_LEARNER_EXTENSIONS){
+    root.LEX_LEARNER_EXTENSIONS.mountReview(host.querySelector("#lexReviewSlot"),{cloud:cloud,uid:uid,session:selected,lang:lang()});
+    root.LEX_LEARNER_EXTENSIONS.mountCareerCard(host.querySelector("#lexCareerSlot"),{session:selected,lang:lang()});
+   }
    var refreshButton=host.querySelector("#refreshGradesNow");
    if(refreshButton&&refreshPendingScores)refreshButton.onclick=async function(){
     refreshButton.disabled=true;refreshButton.textContent=t("نراجع النتائج المحفوظة…","Checking saved results…");
