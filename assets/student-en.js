@@ -316,6 +316,7 @@ function render(){
       "<section class='weekGrid'>"+weeks+"</section>"+
       "<div class='sectionHead'><div><h2>Your level at a glance</h2><p>3 Simple indicators show where you currently stand.</p></div></div>"+
       learningProfile+
+      "<section class='learnerWelcome'><div><h2>📖 My legal dictionary</h2><p>Save difficult terms, review them, and test your recall and understanding.</p></div><a class='actionCard primary' href='student-glossary.html?lang=en'>Open dictionary</a></section>"+
       "<div class='sectionHead'><div><h2>Your achievements</h2><p>Each completed stage adds a new achievement.</p></div></div>"+
       "<section class='achievementStrip'>"+achievements+"</section>"+
     "</main>";
