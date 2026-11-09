@@ -53,7 +53,9 @@ async function run({en=false,marker,session=true,error,access,consent=true,role,
  assert.doesNotMatch(dictionary.linkText(45,legalText),/data-lex-term/);
  assert.match(dictionary.linkText(46,'<script>قرابة الحواشي</script>'),/&lt;script&gt;/);
  assert.match(dictionary.appendLink(),/student-glossary.html\?lang=ar/);
- assert.equal(dictionary.apply['collateral-kinship'].correct,1);
+ assert.equal(dictionary.apply['collateral-kinship'].a.length,3);
+ assert.equal(Object.prototype.hasOwnProperty.call(dictionary.apply['collateral-kinship'],'correct'),false);
+ assert.match(dictionaryCode,/lexlearn-glossary-review/);
  const dictionaryCode=fs.readFileSync('assets/personal-glossary.js','utf8');
  assert.match(dictionaryCode,/if\(!allowAi\)throw Error\("ai_consent_needed"\)/);
  assert.match(dictionaryCode,/accept_ai_processing:true/);
