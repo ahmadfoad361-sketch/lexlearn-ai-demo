@@ -1,0 +1,149 @@
+/* Research pilot shares the platform theme; no auth, grading or student data writes.
+   Covers both the standalone research page and the authorized in-session workspace. */
+html[data-learner-theme]{
+  --rp-canvas:#f9f4ef;
+  --rp-surface:#fffdfa;
+  --rp-soft:#f4eee8;
+  --rp-ink:#18253b;
+  --rp-muted:#536176;
+  --rp-border:#cec7c1;
+  --rp-link:#87213e;
+  --rp-button:#111d31;
+  --rp-button-text:#fff;
+  --rp-selected:#faeaf0;
+  --rp-feedback:#edf5f0;
+  --rp-feedback-rule:#28714c;
+  --rp-danger:#9b243b;
+  --rp-focus:#8a1f39;
+}
+html[data-learner-theme="dark"]{
+  --rp-canvas:#101b2c;
+  --rp-surface:#1b2a40;
+  --rp-soft:#263750;
+  --rp-ink:#f7f4ef;
+  --rp-muted:#c1ccdd;
+  --rp-border:#718099;
+  --rp-link:#ffc7d6;
+  --rp-button:#8a1f39;
+  --rp-button-text:#fff;
+  --rp-selected:#463149;
+  --rp-feedback:#224239;
+  --rp-feedback-rule:#a0e4c1;
+  --rp-danger:#ffb9ca;
+  --rp-focus:#f3d598;
+}
+
+/* The original standalone page sets fixed light backgrounds; override them through
+   theme variables without rewriting its educational markup. */
+html[data-learner-theme] body.lexResearchStandalone{
+  background:var(--rp-canvas);
+  color:var(--rp-ink);
+  padding-bottom:90px;
+}
+html[data-learner-theme] body.lexResearchStandalone main{
+  background:var(--rp-surface);
+  color:var(--rp-ink);
+  border:1px solid var(--rp-border);
+}
+html[data-learner-theme] body.lexResearchStandalone :is(header,footer){
+  color:var(--rp-ink);
+  border-color:var(--rp-border);
+}
+html[data-learner-theme] body.lexResearchStandalone :is(h1,h2,h3,p,label,legend,small,strong){
+  color:inherit;
+}
+
+/* On the full session page the existing inline style attribute is light-only,
+   so these two overrides need !important. This is scoped to the pilot. */
+html[data-learner-theme] #researchPilotWorkspace{
+  background:var(--rp-surface)!important;
+  color:var(--rp-ink)!important;
+  border-color:var(--rp-border)!important;
+}
+html[data-learner-theme] #researchPilotWorkspace #researchPilotApp{
+  color:var(--rp-ink);
+}
+html[data-learner-theme] :is(#researchPilotWorkspace,body.lexResearchStandalone) :is(.card,.choice){
+  background:var(--rp-surface);
+  color:var(--rp-ink);
+  border-color:var(--rp-border);
+}
+html[data-learner-theme] :is(#researchPilotWorkspace,body.lexResearchStandalone) .intro{
+  background:var(--rp-soft);
+  color:var(--rp-ink);
+  border-inline-start-color:var(--rp-link);
+}
+html[data-learner-theme] :is(#researchPilotWorkspace,body.lexResearchStandalone) .choice:has(input:checked){
+  background:var(--rp-selected);
+  color:var(--rp-ink);
+  border-color:var(--rp-link);
+}
+html[data-learner-theme] :is(#researchPilotWorkspace,body.lexResearchStandalone) :is(.muted,small,footer){
+  color:var(--rp-muted);
+}
+html[data-learner-theme] :is(#researchPilotWorkspace,body.lexResearchStandalone) .feedback{
+  background:var(--rp-feedback);
+  color:var(--rp-ink);
+  border-inline-start-color:var(--rp-feedback-rule);
+}
+html[data-learner-theme] :is(#researchPilotWorkspace,body.lexResearchStandalone) :is(.error,[role="alert"]){
+  color:var(--rp-danger);
+}
+html[data-learner-theme] :is(#researchPilotWorkspace,body.lexResearchStandalone) :is(input:not([type="radio"]),textarea,select){
+  background:var(--rp-surface);
+  color:var(--rp-ink);
+  border-color:var(--rp-border);
+  caret-color:var(--rp-link);
+}
+html[data-learner-theme] :is(#researchPilotWorkspace,body.lexResearchStandalone) :is(input,textarea,select)::placeholder{
+  color:var(--rp-muted);
+  opacity:1;
+}
+html[data-learner-theme] :is(#researchPilotWorkspace,body.lexResearchStandalone) :is(input[type="radio"],progress){
+  accent-color:var(--rp-link);
+}
+html[data-learner-theme] :is(#researchPilotWorkspace,body.lexResearchStandalone) a{
+  color:var(--rp-link);
+}
+html[data-learner-theme] :is(#researchPilotWorkspace,body.lexResearchStandalone) button:not(.learnerThemeToggle):not(.outline):not(.researchReturnOriginal){
+  background:var(--rp-button);
+  color:var(--rp-button-text);
+  border:1px solid var(--rp-border);
+}
+html[data-learner-theme] :is(#researchPilotWorkspace,body.lexResearchStandalone) :is(button.outline,button.researchReturnOriginal){
+  background:var(--rp-soft);
+  color:var(--rp-ink);
+  border:1px solid var(--rp-border);
+}
+html[data-learner-theme] :is(#researchPilotWorkspace,body.lexResearchStandalone) :is(a,button,input,textarea,select):focus-visible{
+  outline:3px solid var(--rp-focus);
+  outline-offset:3px;
+}
+
+/* The standalone pilot has no learner-experience.css, so style the existing
+   learner-theme.js switch here. Do not create a second theme controller. */
+html[data-learner-theme] body.lexResearchStandalone .learnerThemeToggle{
+  position:fixed;
+  inset-inline-end:18px;
+  bottom:18px;
+  z-index:85;
+  min-height:46px;
+  border-radius:99px;
+  padding:10px 17px;
+  border:1px solid var(--rp-border);
+  background:var(--rp-surface);
+  color:var(--rp-ink);
+  box-shadow:0 6px 24px #0003;
+  font:600 14px/1.5 system-ui,Tahoma,Arial,sans-serif;
+  cursor:pointer;
+}
+html[data-learner-theme] body.lexResearchStandalone .learnerThemeToggle:focus-visible{
+  outline:3px solid var(--rp-focus);
+  outline-offset:3px;
+}
+@media(max-width:650px){
+  html[data-learner-theme] body.lexResearchStandalone main{margin:0;border:0;border-radius:0}
+  html[data-learner-theme] body.lexResearchStandalone .learnerThemeToggle{
+    inset-inline-end:12px;bottom:12px;
+  }
+}
