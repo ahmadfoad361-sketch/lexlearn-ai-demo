@@ -2,7 +2,7 @@
 "use strict";
 var $=function(id){return document.getElementById(id);};
 var refs=[],rules=[],availableCourses=[],availableSources=[];
-var cloud=window.LEX_CLOUD,client=null;
+var cloud=window.LEX_CLOUD,client=null,authorized=false,generating=false,pendingDraft=null;
 function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
 function status(message,isError){$("status").hidden=false;$("status").textContent=message;$("status").style.borderColor=isError?"#8a1f39":"#e2dbd7";}
 function safeLink(link){return /^https:\/\//i.test(String(link||""))?String(link):"#";}
@@ -77,14 +77,54 @@ async function start(){
    $("course").innerHTML='<option value="">اختر مقررًا</option>'+availableCourses.map(function(c){
      return '<option value="'+esc(c.id)+'">'+esc(c.title_ar||c.id)+' ('+esc(c.country_code)+')</option>';
    }).join("");
-   paintSources();renderReferences();$("workspace").hidden=false;
+   paintSources();renderReferences();authorized=true;$("generate").disabled=false;$("workspace").hidden=false;
    status("تم التحقق من صلاحية الإدارة. يمكن استعراض الأبحاث وإعداد مسودات لا تؤثر على حسابات الطلاب.");
  }catch(e){status("لم تُفتح الواجهة: "+e.message+". سجّل الدخول من لوحة الإدارة ثم أعد المحاولة.",true);}
 }
+async function generateAiDraft(){
+ if(generating)return;
+ generating=true;$("generate").disabled=true;$("clear").disabled=true;
+ status("جار توليد مسودة سؤال من المصادر القانونية والأبحاث التعليمية. لا تُستخدم هذه المسودة مع الطلاب قبل اعتمادها.");
+ try{
+  if(!authorized||!client)throw new Error("سجّل الدخول بحساب مشرف مصرح له أولًا");
+  if(!$("draftCostConsent").checked)throw new Error("فعّل الموافقة على تكلفة التوليد قبل الطلب");
+  var course=$("course").value,skill=$("skill").value,attempts=Number($("evidenceCount").value);
+  var ids=Array.from($("sources").selectedOptions).map(function(x){return x.value;});
+  if(!course||ids.length<1||ids.length>3)throw new Error("اختر مقررًا ومصدرًا قانونيًا إلى ثلاثة مصادر معتمدة");
+  if(!Number.isInteger(attempts)||attempts<0||attempts>500)throw new Error("أدخل عدد محاولات صحيحًا بين 0 و500");
+  var signature=JSON.stringify([course,skill,attempts,ids.slice().sort()]);
+  if(pendingDraft&&pendingDraft.signature!==signature)throw new Error("تحقق من الطلب السابق بنفس الاختيارات أو امسحها لبدء طلب جديد");
+  if(!pendingDraft)pendingDraft={signature:signature,key:crypto.randomUUID()};
+  var key=pendingDraft.key;
+  var r=await client.functions.invoke("lexlearn-research-question-draft",{body:{
+    action:"generate",request_key:key,course_id:course,target_skill:skill,
+    approved_source_ids:ids,evidence_count:attempts
+  }});
+  if(r.error||!r.data||r.data.error)throw new Error(r.data&&r.data.error||r.error&&r.error.message||"خدمة إنشاء السؤال غير متاحة");
+  if(r.data.status==="reserved")throw new Error("الطلب السابق ما زال قيد التوليد. أعد التحقق بنفس الزر دون إنشاء طلب آخر");
+  if(r.data.status==="failed")throw new Error("الطلب السابق لم يكتمل. لن نكرر تكلفته تلقائيًا؛ امسح الاختيارات إذا أردت بدء طلب جديد");
+  var d=r.data.question;
+  if(r.data.status!=="ready_for_review"||!d)throw new Error("المسودة لم تكتمل");
+  var markup='<article><h3>مسودة سؤال قانوني غير معتمدة: '+esc(d.title_ar)+'</h3>'+
+   '<p><b>السؤال:</b> '+esc(d.question_ar)+'</p>'+
+   '<p><b>إجابة مقترحة للمراجعة:</b> '+esc(d.reference_answer_ar)+'</p>'+
+   '<p><b>التعليل:</b> '+esc(d.legal_explanation_ar)+'</p>'+
+   '<h3>معايير التصحيح المقترحة</h3><ol>'+((d.rubric_criteria||[]).map(function(q){return '<li>'+esc(q.criterion_ar)+' — '+esc(q.maximum_points)+' نقطة</li>';}).join(""))+'</ol>'+
+   '<p><b>المصادر القانونية:</b> '+(d.source_ids||[]).map(esc).join("، ")+'</p>'+
+   '<p><b>مراجع التصميم التربوي:</b> '+(d.research_study_ids||[]).map(esc).join("، ")+'</p>'+
+   '<div class="note"><b>المسودة محفوظة للمراجعة:</b> '+esc(r.data.draft_id)+'. يجب اعتماد المرجع القانوني والإجابة والمشتتات والدرجة بواسطة مختصين قبل أي استخدام رسمي. لم يتم نشر السؤال أو تحديث أي درجة.</div></article>';
+  $("generated").innerHTML=markup;
+  status("تم حفظ مسودة السؤال في سجل المراجعة الداخلي. لا توجد أي تغييرات في بنك الأسئلة المنشورة.");
+ }catch(e){status("تعذر توليد السؤال: "+e.message,true);}
+ finally{generating=false;$("generate").disabled=!authorized;$("clear").disabled=false;}
+}
+$("generate").addEventListener("click",generateAiDraft);
 $("search").addEventListener("input",renderReferences);
 $("course").addEventListener("change",paintSources);
 $("propose").addEventListener("click",propose);
 $("clear").addEventListener("click",function(){
+ if(generating)return;
+ pendingDraft=null;$("generated").innerHTML="";$("draftCostConsent").checked=false;
  $("skill").value="foundation";$("evidenceCount").value="0";$("course").value="";paintSources();$("proposals").innerHTML="";
 });
 start();
