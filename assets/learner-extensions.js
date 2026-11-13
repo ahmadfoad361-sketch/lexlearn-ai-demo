@@ -54,7 +54,7 @@ async function mountReview(node,opts){
    tr(lang,"مراجعة ذكية مدمجة","Integrated recall")+"</p><h3 id='lexRecallTitle'>"+
    tr(lang,"سؤال واحد من اللي اتعلمته","One question from your earlier learning")+"</h3><p>"+
    tr(lang,"حاول تسترجع المعلومة من ذاكرتك، من غير ما ترجع للإجابة السابقة.","Try retrieving the idea without looking back at your previous answer.")+
-   "</p><p class='lexExtensionSourceHint'>"+tr(lang,"مرجع السؤال محفوظ في جلستك السابقة؛ حاول الإجابة أولًا من الذاكرة.","The source is in your earlier session. Try answering from memory first.")+"</p><div class='lexExtensionPrompt'>"+esc(textOf(question,lang))+"</div>"+
+   "</p>"+lawContext(question,lang)+"<p class='lexExtensionSourceHint'>"+tr(lang,"حاول الإجابة أولًا من الذاكرة.","Try answering from memory first.")+"</p><div class='lexExtensionPrompt'>"+esc(textOf(question,lang))+"</div>"+
    "<label for='lexRecallAnswer'>"+tr(lang,"اكتب اللي تفتكره","Write what you remember")+"</label>"+
    "<textarea id='lexRecallAnswer' rows='4' maxlength='4000'></textarea>"+
    "<button type='button' id='lexRecallSave'>"+tr(lang,"احفظ مراجعتي","Save my review")+"</button>"+
@@ -70,7 +70,11 @@ async function mountReview(node,opts){
      student_id:uid,course_id:COURSE,after_session:n,source_session:selected.session,
      source_item_id:String(question.id),answer_text:answer
     });
-    if(r.error&&r.error.code!=="23505")throw r.error;
+    if(r.error){
+     if(r.error.code!=="23505")throw r.error;
+     var prior=await db.from("lex_retrieval_checks").select("id").eq("student_id",uid).eq("course_id",COURSE).eq("after_session",n).eq("source_item_id",String(question.id)).maybeSingle();
+     if(prior.error||!prior.data)throw new Error("review_save_unconfirmed");
+    }
     visible(node,"<section class='lexExtensionCard'><h3>"+tr(lang,"✓ خطوة جديدة في رحلتك","✓ Another step forward")+
       "</h3><p>"+tr(lang,"أحسنت! استرجعت معلومة قديمة وسجلت مراجعتك. تقدر تكمل الجلسة التالية.","Great work revisiting earlier material. Your review was saved.")+"</p></section>");
    }catch(_){button.disabled=false;status.textContent=tr(lang,"تقدر تكمل دلوقتي وترجع للمراجعة بعدين.","You can continue now and return to this review later.");}
@@ -183,8 +187,14 @@ async function mountCareer(node){
        student_id:uid,course_id:COURSE,milestone_session:n,source_item_id:String(task.id),
        role_choice:selected,answer_text:answer,input_mode:inputMode
      });
-     if(r.error&&r.error.code!=="23505")throw r.error;
-     records.push({milestone_session:n,role_choice:selected});
+     var savedRole=selected;
+     if(r.error){
+      if(r.error.code!=="23505")throw r.error;
+      var prior=await db.from("lex_career_trials").select("role_choice").eq("student_id",uid).eq("course_id",COURSE).eq("milestone_session",n).maybeSingle();
+      if(prior.error||!prior.data||!Object.hasOwn(roles,prior.data.role_choice))throw new Error("role_save_unconfirmed");
+      savedRole=prior.data.role_choice;
+     }
+     records.push({milestone_session:n,role_choice:savedRole});
      visible(node,"<section class='lexExtensionCard'><h1>"+tr(lang,"✓ أول خطوة في مهنتك","✓ Your professional journey begins")+
       "</h1><p>"+tr(lang,"أحسنت! حفظنا محاولتك التدريبية. تقدر تجرب مهنة تانية في التحدي القادم.","Great work! Your practice is saved. Try another role at your next milestone.")+
       "</p>"+preference()+"<a class='lexExtensionAction' href='student-path.html?lang="+lang+"'>"+tr(lang,"أكمل رحلتك","Continue learning")+"</a></section>");

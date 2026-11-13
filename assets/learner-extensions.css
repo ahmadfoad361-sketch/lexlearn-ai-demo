@@ -18,3 +18,12 @@
 .lexExtensionNote{font-weight:600;color:#111d31}
 @media(max-width:480px){.lexRoleGrid{grid-template-columns:1fr}.lexCareerActions>*{width:100%;text-align:center}}
 @media(prefers-reduced-motion:reduce){.lexExtensionCard *{animation:none!important;transition:none!important}}
+.lexExtensionCard .legalCitation{font-weight:700;color:#8a1f39;border-inline-start:3px solid currentColor;padding-inline-start:.75rem}
+html[data-learner-theme="dark"] .lexExtensionCard{background:#16243b;color:#f2f4f8;border-color:#61738e}
+html[data-learner-theme="dark"] .lexExtensionCard :is(h1,h2,h3){color:#f2f4f8}
+html[data-learner-theme="dark"] .lexExtensionCard :is(small,.lexExtensionNote){color:#c3cedf}
+html[data-learner-theme="dark"] .lexExtensionCard :is(.lexExtensionEyebrow,.lexExtensionStatus,.legalCitation){color:#f1a8bb}
+html[data-learner-theme="dark"] :is(.lexExtensionPrompt,.lexExtensionPreferences){background:#22334e}
+html[data-learner-theme="dark"] .lexExtensionCard textarea{background:#101d31;color:#f2f4f8;border-color:#8193ad}
+html[data-learner-theme="dark"] .lexRoleGrid button{background:#22334e;color:#f2f4f8;border-color:#8193ad}
+html[data-learner-theme="dark"] .lexRoleGrid button.chosen{background:#8a1f39;border-color:#f1a8bb}
