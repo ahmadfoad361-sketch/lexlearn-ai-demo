@@ -18,7 +18,7 @@ async function main(){
     return route.continue();
    });
    const p=await ctx.newPage(),errors=[];p.on("pageerror",e=>errors.push(String(e)));
-   await p.goto(BASE+"/coach-qa.html?coach_preview=0",{waitUntil:"load"});
+   await p.goto(BASE+"/coach-qa.html",{waitUntil:"load"});
    const evidence=await p.evaluate(()=>{
     const c=window.LEX_STUDY_COACH;
     c.init({learnerId:"synthetic",language:document.documentElement.lang});
@@ -45,7 +45,7 @@ async function main(){
    if(u.pathname==="/coach-qa.html")return route.fulfill({status:200,contentType:"text/html",body:'<html><body><script src="/assets/study-coach.js"></script></body></html>'});
    return route.continue();
   });
-  const p=await ctx.newPage();await p.goto(BASE+"/coach-qa.html",{waitUntil:"load"});
+  const p=await ctx.newPage();await p.goto(BASE+"/coach-qa.html?coach_preview=0",{waitUntil:"load"});
   assert.equal(await p.evaluate(()=>window.LEX_STUDY_COACH.enabled),false);
   await ctx.close();
   console.log("PASS: isolated AR mobile/EN desktop break dialog, continue-without-lock, one-time completion, explicit opt-out, no external network.");
