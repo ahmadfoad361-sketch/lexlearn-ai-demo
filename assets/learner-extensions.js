@@ -127,7 +127,7 @@ async function mountCareer(node){
    tr(lang,"يفتح بعد إكمال الجلسة رقم ","Unlocks after completing session ")+n+"</p>"+
    "<a href='student-path.html?lang="+lang+"'>"+tr(lang,"ارجع إلى رحلتك","Back to learning")+"</a></div>");return;
   }
-  var previous=await db.from("lex_career_trials").select("milestone_session,role_choice").eq("student_id",uid).eq("course_id",COURSE).order("milestone_session",{ascending:true});
+  var previous=await db.from("lex_career_trials").select("milestone_session,role_choice,representation_side,scenario_version,answer_text").eq("student_id",uid).eq("course_id",COURSE).order("milestone_session",{ascending:true});
   if(previous.error)throw previous.error;
   var records=previous.data||[],mine=records.find(function(x){return x.milestone_session===n;});
   function preference(){
@@ -139,15 +139,16 @@ async function mountCareer(node){
     Object.keys(counts).map(function(k){return esc(names[k].name)+": "+counts[k];}).join(" · ")+
     "</p><small>"+tr(lang,"اختياراتك تعبّر عن اهتماماتك، وليست اختبارًا لصلاحيتك المهنية.","Your choices show interests, not professional aptitude.")+"</small></div>";
   }
+  if(mine&&root.LEX_CAREER_AUDIO)root.LEX_CAREER_AUDIO.mount(node,{uid:uid,n:n,lang:lang,choice:mine.role_choice+(mine.representation_side||"claimant"),role:mine.role_choice,side:mine.representation_side||"claimant",version:mine.scenario_version||"legacy"});
   if(mine){
    visible(node,"<div class='lexExtensionCard'><h1>"+tr(lang,"✓ أنهيت تحدي المهنة","✓ Role challenge completed")+"</h1><p>"+
      tr(lang,"أحسنت! جرّبت دور ","Great work trying the role of ")+esc(roleTasks(lang)[mine.role_choice]?.name||"")+
-     "</p>"+preference()+"<a class='lexExtensionAction' href='student-path.html?lang="+lang+"'>"+tr(lang,"العودة إلى دراستك","Back to learning")+"</a></div>");return;
+     "</p><h3>"+tr(lang,"نصك المحفوظ","Your saved answer")+"</h3><p style='white-space:pre-wrap'>"+esc(mine.answer_text||"")+"</p>"+preference()+"<a class='lexExtensionAction' href='student-path.html?lang="+lang+"'>"+tr(lang,"العودة إلى دراستك","Back to learning")+"</a></div>");return;
   }
-  var taskList=tasksFrom(completed.data),roles=roleTasks(lang),selected="judge",inputMode="typed",recognition=null;
+  var taskList=tasksFrom(completed.data),roles=roleTasks(lang),selected="judge",side="claimant",inputMode="typed",recognition=null;
   function render(){
-   var task=roleTask(taskList,selected);
-   if(!task){visible(node,"<p>"+tr(lang,"تحديك سيكون جاهزًا مع الدرس المعتمد.","The role challenge needs an approved lesson.")+"</p>");return;}
+   var task=roleTask(taskList,selected),scenario=root.LEX_CAREER_CASES?.get(n,selected,side,lang);
+   if(!task||!scenario){visible(node,"<p>"+tr(lang,"تحديك سيكون جاهزًا مع الدرس المعتمد.","The role challenge needs an approved lesson.")+"</p>");return;}
    visible(node,"<div class='lexExtensionCard'><span class='lexExtensionEyebrow'>"+tr(lang,"تحدي الجلسة ","Session challenge ")+n+
     "</span><h1>"+tr(lang,"اختار مهنتك القادمة","Choose your future role")+"</h1>"+
     "<p>"+tr(lang,"كل مهنة بتشوف نفس القانون من زاوية مختلفة. تقدر تختار وظيفة جديدة في المرة القادمة.","Each role explores the law differently. You can switch next time.")+"</p>"+
@@ -155,7 +156,7 @@ async function mountCareer(node){
      return "<button type='button' data-lex-role='"+k+"' class='"+(selected===k?"chosen":"")+"' aria-pressed='"+(selected===k)+"'>"+
       esc(roles[k].name)+"</button>";
     }).join("")+"</div><h2>"+esc(roles[selected].name)+"</h2><p>"+esc(roles[selected].lead)+"</p>"+
-    lawContext(task,lang)+"<div class='lexExtensionPrompt'>"+esc(textOf(task,lang))+"</div>"+
+    (selected==="lawyer"?"<label>"+tr(lang,"الطرف الذي تمثله","Your client")+" <select id=lexCareerParty><option value=claimant>"+tr(lang,"المدعي","Claimant")+"</option><option value=defendant>"+tr(lang,"المدعى عليه","Defendant")+"</option></select></label>":"")+lawContext(task,lang)+"<div class='lexExtensionPrompt'>"+esc(scenario||textOf(task,lang))+"</div>"+
     "<label for='lexCareerAnswer'>"+tr(lang,"قدم إجابتك بأسلوبك","Give your answer in your own words")+"</label>"+
     "<textarea id='lexCareerAnswer' rows='8' maxlength='4000'></textarea>"+
     "<div class='lexCareerActions'><button type='button' id='lexCareerSave'>"+
@@ -167,6 +168,8 @@ async function mountCareer(node){
      "هذا تدريب اختياري، ولا يؤثر على درجاتك. إذا استخدمت الإملاء الصوتي فقد يعتمد على خدمة المتصفح؛ راجع النص قبل حفظه. لا نخزن تسجيلًا صوتيًا.",
      "This is optional and non-credit. Browser dictation may use an external speech service; review the transcript before saving. No audio recording is stored.")+"</small></div>");
    node.querySelectorAll("[data-lex-role]").forEach(function(b){b.onclick=function(){if(recognition)try{recognition.stop();}catch(_){} selected=b.dataset.lexRole;inputMode="typed";render();};});
+   var party=node.querySelector("#lexCareerParty");if(party){party.value=side;party.onchange=function(){side=party.value;render();};}
+   if(root.LEX_CAREER_AUDIO)root.LEX_CAREER_AUDIO.mount(node,{uid:uid,n:n,lang:lang,choice:selected+side,role:selected,side:side,version:"career-roles-v2"});
    var save=node.querySelector("#lexCareerSave"),area=node.querySelector("#lexCareerAnswer"),status=node.querySelector("#lexCareerStatus");
    var speak=node.querySelector("#lexCareerSpeak");
    if(speak)speak.onclick=function(){
@@ -185,7 +188,7 @@ async function mountCareer(node){
     try{
      var r=await db.from("lex_career_trials").insert({
        student_id:uid,course_id:COURSE,milestone_session:n,source_item_id:String(task.id),
-       role_choice:selected,answer_text:answer,input_mode:inputMode
+       role_choice:selected,answer_text:answer,input_mode:area.dataset?.speechTranscribed?"speech_transcript":inputMode,scenario_version:"career-roles-v2",representation_side:side
      });
      var savedRole=selected;
      if(r.error){

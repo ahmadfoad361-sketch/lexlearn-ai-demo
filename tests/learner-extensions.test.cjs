@@ -1,5 +1,6 @@
 const test=require('node:test');
 const assert=require('node:assert/strict');
+require('../assets/career-role-cases.js');
 const addon=require('../assets/learner-extensions.js');
 const fingerprint=require('../assets/admin-cognitive-fingerprint.js');
 const session=(n,dimension='recall')=>({session_number:n,completed_at:'2026-11-09T10:00:00Z',tasks_json:[{id:'item-'+n,dimension,prompt_ar:'تدريب معتمد',sources:['qa-civil-2004-art39']}]});
@@ -66,11 +67,11 @@ test('completed profession milestone displays three role choices and saves typed
     assert.match(node.innerHTML,/محامي/);
     assert.match(node.innerHTML,/أستاذ جامعي/);
     node.buttons.find(b=>b.dataset.lexRole==='professor').onclick();
-    assert.match(node.innerHTML,/شرح القاعدة/);
+    assert.match(node.innerHTML,/اشرح لطالب جديد/);
     node.area.value='أشرح القاعدة القانونية بأسلوبي وأقدم مثالاً تطبيقياً يوضح شرطها ونتيجتها القانونية';
     await node.save.onclick();
     assert.equal(writes.length,1);
-    assert.equal(writes[0].role_choice,'professor');
+    assert.equal(writes[0].role_choice,'professor');assert.equal(writes[0].scenario_version,'career-roles-v2');assert.equal(writes[0].representation_side,'claimant');
     assert.equal(writes[0].milestone_session,2);
     assert.equal(writes[0].source_item_id,'understanding2');
     assert.equal(writes[0].input_mode,'typed');
@@ -211,3 +212,5 @@ test('research pilot standalone and in-session view inherit learner theme withou
  assert.equal((standalone.match(/assets\/learner-theme\.js/g)||[]).length,1);
  assert.equal((training.match(/assets\/learner-theme\.js/g)||[]).length,1);
 });
+
+test('each career has a distinct task and the lawyer chooses a party',()=>{const c=require('../assets/career-role-cases.js');for(const n of [2,4,6])for(const lang of ['ar','en']){const j=c.get(n,'judge','claimant',lang),l=c.get(n,'lawyer','claimant',lang),d=c.get(n,'lawyer','defendant',lang),p=c.get(n,'professor','claimant',lang);assert.equal(new Set([j,l,d,p]).size,4);assert.match(j,lang==='ar'?/حجة المدعي/:/Claimant/);assert.match(j,lang==='ar'?/حجة المدعى عليه/:/Defendant/);}});

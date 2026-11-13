@@ -27,3 +27,6 @@ html[data-learner-theme="dark"] :is(.lexExtensionPrompt,.lexExtensionPreferences
 html[data-learner-theme="dark"] .lexExtensionCard textarea{background:#101d31;color:#f2f4f8;border-color:#8193ad}
 html[data-learner-theme="dark"] .lexRoleGrid button{background:#22334e;color:#f2f4f8;border-color:#8193ad}
 html[data-learner-theme="dark"] .lexRoleGrid button.chosen{background:#8a1f39;border-color:#f1a8bb}
+
+.lexExtensionCard audio{display:block;width:100%;max-width:100%;margin:.8rem 0}.lexExtensionCard select{max-width:100%;font:inherit;padding:.5rem}.lexExtensionCard{overflow-wrap:anywhere}
+.lexExtensionCard audio[hidden]{display:none!important}
