@@ -1,0 +1,47 @@
+/* Smart Study Coach review UI. Does not alter existing student styles. */
+body.ll-coach-open{overflow:hidden}
+.ll-coach-layer{position:fixed;inset:0;z-index:100001;display:flex;align-items:center;justify-content:center;background:#111d3180;padding:14px;box-sizing:border-box}
+.ll-coach-layer[hidden]{display:none}
+.ll-coach-layer button{font:inherit;cursor:pointer;touch-action:manipulation}
+.ll-coach-layer button:focus-visible{outline:3px solid #8a1f39;outline-offset:2px}
+.ll-coach-dialog{position:relative;width:min(100%,1000px);max-height:97dvh;overflow:auto;outline:none;background:#f9f4ef;color:#111d31;border-radius:24px;box-shadow:0 22px 78px #111d3144}
+.ll-coach-x{position:absolute;top:14px;left:15px;z-index:2;border:0;border-radius:0;width:42px;height:42px;background:transparent;font-size:31px;font-weight:700;line-height:1;color:#111d31}
+.ll-coach-top{display:grid;grid-template-columns:46% 54%;direction:ltr;min-height:260px}
+.ll-coach-hero{background:#f9f4ef url('study-coach/hero.jpg') center/cover no-repeat;min-height:250px}
+.ll-coach-intro{direction:rtl;text-align:center;padding:25px 48px 16px 12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px}
+.ll-coach-brand{display:flex;gap:8px;align-items:center;direction:ltr;font-size:34px;font-weight:800}.ll-coach-brand img{width:56px;height:46px;object-fit:contain}
+.ll-coach-intro small{color:#8a1f39;font-size:12px}.ll-coach-intro h2{font-size:clamp(18px,2vw,26px);color:white;background:#8a1f39;border-radius:24px;padding:12px 20px;margin:2px 0 0}
+.ll-coach-intro p{font-size:clamp(15px,1.7vw,19px);line-height:1.7;margin:5px 0;max-width:450px}
+.ll-coach-content{text-align:center;padding:3px 22px 18px}.ll-coach-content h3{display:inline-block;border-radius:22px;background:#111d31;color:white;padding:9px 24px;margin:8px auto 16px;font-size:18px}
+.ll-coach-activities{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+.ll-coach-activity{padding:6px 6px 12px;background:#fffdfa;border:1px solid #d4cbd0;border-radius:18px;color:#111d31;min-width:0;font-weight:700}
+.ll-coach-activity img{display:block;width:100%;height:110px;object-fit:cover;border-radius:13px;margin-bottom:5px}.ll-coach-activity span{display:block;line-height:1.35;font-size:14px;min-height:38px}
+.ll-coach-activity[aria-pressed=true]{border:2px solid #8a1f39;padding:5px 5px 11px}
+.ll-coach-activity[aria-pressed=true] img{animation:llCoachSway 4s ease-in-out infinite}
+@keyframes llCoachSway{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+
+.ll-coach-duration{display:flex;align-items:center;justify-content:center;gap:15px;margin:8px auto 14px}.ll-coach-duration>div{display:flex;gap:4px;border:1px solid #d4cbd0;background:#fffdfa;padding:4px;border-radius:14px}
+.ll-coach-duration button{border:0;border-radius:10px;padding:8px 15px;background:transparent;color:#111d31}.ll-coach-duration button[aria-pressed=true]{background:#8a1f39;color:#fff}
+
+#llCoachClock{direction:ltr;font-size:26px;font-weight:800;margin:4px auto 10px}
+.ll-coach-actions{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:9px;padding-bottom:4px}
+.ll-coach-actions button{padding:13px 8px;border-radius:15px;font-weight:750;min-height:51px}
+.ll-coach-primary{background:#8a1f39;color:white;border:1px solid #8a1f39}.ll-coach-secondary{background:#fffdfa;color:#8a1f39;border:2px solid #8a1f39}.ll-coach-quiet{background:transparent;color:#111d31;border:1px solid #a69fa2}
+.ll-coach-sr{position:absolute!important;clip:rect(0,0,0,0);overflow:hidden;width:1px;height:1px;margin:-1px;padding:0;white-space:nowrap}
+@media(max-width:760px){
+
+
+.ll-coach-layer{padding:5px}.ll-coach-dialog{max-height:99dvh;border-radius:17px}.ll-coach-top{grid-template-columns:1fr}.ll-coach-hero{min-height:0;height:230px;background-position:center 60%}
+.ll-coach-intro{padding:4px 12px}.ll-coach-brand{font-size:22px}.ll-coach-brand img{width:35px;height:30px}.ll-coach-intro h2{font-size:17px;padding:8px 12px}
+.ll-coach-intro p{font-size:12px;line-height:1.55;margin:0}.ll-coach-intro small{font-size:10px}.ll-coach-content{padding:0 9px 7px}
+.ll-coach-content h3{font-size:14px;padding:7px 12px;margin:7px 0}.ll-coach-activities{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:6px;scrollbar-width:thin;padding-bottom:4px}
+.ll-coach-activity{flex:0 0 115px;border-radius:12px;padding:3px}.ll-coach-activity[aria-pressed=true]{padding:2px}.ll-coach-activity img{height:72px;border-radius:8px}.ll-coach-activity span{font-size:11px;min-height:30px}
+.ll-coach-duration{gap:6px;font-size:12px;margin:3px auto 6px}.ll-coach-duration button{padding:5px 9px;font-size:12px}
+.ll-coach-actions{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}.ll-coach-actions button{min-height:45px;border-radius:10px;font-size:11px;padding:5px 3px}
+.ll-coach-x{left:9px;top:9px;width:34px;height:34px;font-size:23px}
+}
+@media(max-height:630px) and (max-width:760px){.ll-coach-hero{height:102px}.ll-coach-activity img{height:50px}}
+@media(prefers-reduced-motion:reduce){.ll-coach-activity[aria-pressed=true] img{animation:none}}
+
+/* Plain, high-contrast X over the photo — no circular background. */
+.ll-coach-layer .ll-coach-x{font:800 34px/1 Arial,sans-serif;color:#fff;text-shadow:0 2px 6px #111d31;background:transparent;border:0;border-radius:0;display:flex;align-items:center;justify-content:center}

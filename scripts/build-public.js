@@ -11,6 +11,7 @@ const pages=[
   "privacy.html","privacy-en.html","terms.html","terms-en.html","reset-password.html",".nojekyll"
 ];
 const assets=[
+"study-coach.js","study-coach.css","study-coach/hero.jpg","study-coach/activity-1.jpg","study-coach/activity-2.jpg","study-coach/activity-3.jpg","study-coach/activity-4.jpg","study-coach/activity-5.jpg",
   "academic-picker.js","academic-picker.css",
   "university-brands.js","university-picker-decor.js","card-branding.js","student-identity.js","student-identity.css","student-profile.js","student-card-pdf.js","student-research-entry.js","student-research-pilot.js","qrcode-generator.js","qrcode-generator-LICENSE.txt",
   "session-moments.js","session-moments.css","learner-extensions.js","learner-extensions.css","personal-glossary.js","personal-glossary.css","glossary-access.js","glossary-access.css","research-pilot-inline.css","research-pilot-theme.css","admin-glossaries.js","admin-glossaries.css","grading-wait.js","grading-wait.css","learning-keys.js","learning-keys.css",

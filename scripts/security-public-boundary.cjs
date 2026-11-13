@@ -31,6 +31,7 @@ try{
 try{
  const tracked=execFileSync('git',['ls-files','-z'],{encoding:'utf8'}).split('\0').filter(Boolean);
  const infrastructure=new Set([
+'scripts/verify-study-coach.cjs','scripts/verify-study-coach-browser.cjs','.github/workflows/study-coach-browser-qa.yml',
   '.github/workflows/pages.yml','.github/workflows/public-release-security.yml',
   'scripts/build-public.js','scripts/verify-observability.cjs','scripts/verify-observability-build.cjs','scripts/security-public-boundary.cjs','scripts/verify-public-links.cjs','scripts/check-identity-cards.cjs','scripts/verify-learning-intelligence.cjs','scripts/verify-student-session.cjs','scripts/verify-showcase-browser.cjs','scripts/verify-learner-extensions-browser.cjs','scripts/verify-research-theme-browser.cjs',
   '.github/workflows/showcase-browser-qa.yml',

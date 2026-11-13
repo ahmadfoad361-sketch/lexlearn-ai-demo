@@ -211,6 +211,7 @@ async function boot(){
   var learnerDisplayName="";
   try{var ownProfile=await cloud.profile();if(ownProfile&&ownProfile.id===uid)learnerDisplayName=String(ownProfile.display_name||"");}catch(_){}
   var overview=await cloud.studentLifecycleRpc("trainingOverview",{courseId:COURSE});
+  if(root.LEX_STUDY_COACH&&root.LEX_STUDY_COACH.enabled&&overview&&overview.allowed)root.LEX_STUDY_COACH.init({learnerId:uid,language:lang()});
   if(!overview||!overview.allowed){
     show("<p>"+t("ابدأ التقييم التشخيصي أولًا حتى تتكوّن خطتك.","Complete the diagnostic first to create your individual plan.")+"</p><a href='diagnostic.html?lang="+lang()+"'>"+t("ابدأ التشخيص","Start diagnostic")+"</a>");return;
   }
@@ -421,7 +422,7 @@ async function boot(){
     finally{if(wait)wait.finish();}
    };
    var nextButton=host.querySelector("#nextSession");
-   if(nextButton)nextButton.onclick=function(){if(!busy){root.location.href=url(selected+1);}};
+   if(nextButton)nextButton.onclick=function(){if(busy)return;var go=function(){root.location.href=url(selected+1);};if(root.LEX_STUDY_COACH&&root.LEX_STUDY_COACH.offerAtBoundary({learnerId:uid,go:go}))return;go();};
    async function submitAnswer(answer,button){
     if(busy)return;
     answer=String(answer||"").trim();
@@ -457,6 +458,7 @@ async function boot(){
       if(fresh&&fresh.allowed)overview=fresh;
      }
      busy=false;render();
+     if(data.completed&&root.LEX_STUDY_COACH)root.LEX_STUDY_COACH.recordCompleted(uid,selected);
      if(data.completed&&root.LEX_SESSION_MOMENTS)root.LEX_SESSION_MOMENTS.show(selected,lang(),uid+":"+COURSE+":"+selected,momentData(progressRows,selected));
      if(data.completed&&selected%5===0&&overview.completed_count>=selected&&root.LEX_MOMENTS)root.LEX_MOMENTS.celebrate((root.document.querySelector&&root.document.querySelector(".sessionMomentDialog[open]"))||host,uid+":"+COURSE+":"+selected);
     }catch(e){
