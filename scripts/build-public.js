@@ -7,10 +7,10 @@ const pages=[
   "index.html","conference.html","go/index.html","showcase.html","showcase-level1.html","program.html","diagnostic.html","student-practice.html","student-path.html","student-research-pilot.html","student-profile.html","student-glossary.html","student-future.html","admin-glossaries.html",
   "index-en.html","showcase-en.html","showcase-level1-en.html","program-en.html",
   "student-login.html","student-register.html","student.html","student-login-en.html","student-register-en.html","student-en.html",
-  "admin-login.html","admin.html","admin-bulk.html","admin-archive.html","admin-instructors.html","admin-analytics.html","admin-progress.html","admin-research.html","instructor-login.html","instructor.html","references.html","lexlearn-grading-console.html","demo-supervisor.html","pilot-review.html","pilot-qa.html",
+  "admin-login.html","admin.html","admin-career-audio.html","admin-bulk.html","admin-archive.html","admin-instructors.html","admin-analytics.html","admin-progress.html","admin-research.html","instructor-login.html","instructor.html","references.html","lexlearn-grading-console.html","demo-supervisor.html","pilot-review.html","pilot-qa.html",
   "privacy.html","privacy-en.html","terms.html","terms-en.html","reset-password.html",".nojekyll"
 ];
-const assets=[
+const assets=["career-role-cases.js","career-audio.js","admin-career-audio.js",
 "study-coach.js","study-coach.css","study-coach/hero.jpg","study-coach/activity-1.jpg","study-coach/activity-2.jpg","study-coach/activity-3.jpg","study-coach/activity-4.jpg","study-coach/activity-5.jpg",
   "academic-picker.js","academic-picker.css",
   "university-brands.js","university-picker-decor.js","card-branding.js","student-identity.js","student-identity.css","student-profile.js","student-card-pdf.js","student-research-entry.js","student-research-pilot.js","qrcode-generator.js","qrcode-generator-LICENSE.txt",
