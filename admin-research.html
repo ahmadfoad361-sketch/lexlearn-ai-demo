@@ -54,7 +54,7 @@ button:disabled{opacity:.55;cursor:not-allowed}.ghost{background:#edf0f4;color:v
 <p id="sourceHint" class="muted">على الكمبيوتر: Ctrl أو Cmd لتحديد عدة مصادر. الاستعانة بالنص المعتمد لا تغني عن مراجعة الأستاذ القانوني.</p>
 <div class="note">إذا كانت الأدلة المتاحة قليلة، يبدأ التصور بالتأسيس وتوليد بيانات قياس إضافية، وليس تصنيف الطالب بنمط تعلم ثابت.</div>
 <div class="actions"><button id="propose">اقتراح استراتيجية تدريب</button><button id="generate" type="button" disabled>توليد سؤال قانوني بالذكاء الاصطناعي</button><button id="clear" class="ghost" type="button">مسح الاختيارات</button></div>
-<p class="muted">توليد الأسئلة خدمة تجريبية محدودة: 5 مسودات يوميًا لكل مشرف وبحد أقصى 15 مسودة للمشروع. قد تترتب تكلفة API بسيطة عند الضغط. جميع الأسئلة الجديدة تحتاج مراجعة مستقلة قبل اعتمادها.</p>
+<p class="muted">توليد مسودات الأسئلة خدمة محدودة: 5 مسودات يوميًا لكل مشرف وبحد أقصى 15 مسودة للمشروع. قد تترتب تكلفة API بسيطة عند الضغط. جميع الأسئلة الجديدة تحتاج مراجعة مستقلة قبل اعتمادها.</p>
 <label class="shadowCheck"><input id="draftCostConsent" type="checkbox">أوافق على استخدام خدمة التوليد المدفوعة لهذا الطلب. فتح الصفحة لا يستهلك رصيدًا.</label>
 <p class="muted">إعادة الضغط بنفس الاختيارات تتحقق من الطلب نفسه. لبدء سؤال آخر استخدم «مسح الاختيارات» ثم اختر المصادر ووافق من جديد. عند نفاد الرصيد لن تُنشأ مسودة.</p>
 <div id="generated" class="results" aria-live="polite"></div>
@@ -65,7 +65,7 @@ button:disabled{opacity:.55;cursor:not-allowed}.ghost{background:#edf0f4;color:v
 <div id="refList" class="refList"></div>
 </section>
 <section class="panel full" id="shadowPanel">
-<h2>مقارنة تجريبية: القديم مقابل المقترح</h2>
+<h2>مراجعة صياغة الأسئلة</h2>
 <p class="muted">عرض للمشرف فقط يقرأ سؤالًا معتمدًا كما هو من قاعدة المحتوى، ويعرض بجواره مسودة أكثر تعليلًا. لا يكتب أي شيء في حسابات الطلاب أو بنك الأسئلة.</p>
 <label for="shadowItemId">اختر سؤالًا معتمدًا</label>
 <div class="shadowActions"><select id="shadowItemId" style="max-width:630px"><option value="lexdiag-v2-q39u">بداية الشخصية القانونية — المادة 39 (سؤال فهم)</option><option value="lexdiag-v2-q63a">استعمال الحق — المادة 63 (سؤال تطبيق)</option></select>
@@ -73,11 +73,11 @@ button:disabled{opacity:.55;cursor:not-allowed}.ghost{background:#edf0f4;color:v
 <p id="shadowMessage" class="muted" role="status"></p>
 <div id="shadowCompare" aria-live="polite"></div>
 </section><section class="panel full" id="saraPilotStaff">
-<h2>تجربة طالب واحد: التدريب المبني على الأبحاث</h2>
-<p class="muted">المسار البحثي معزول عن الدرجات والتدريب الرسمي. متاح لحساب واحد محدد ويمكن إيقافه دون فقد بيانات الطالب.</p>
-<div class="actions"><button id="saraRefresh" type="button">عرض حالة التجربة وإجاباتها</button>
-<button class="ghost" id="saraPause" type="button" disabled>إيقاف التجربة</button>
-<button class="ghost" id="saraResume" type="button" disabled>إعادة إتاحة التجربة لسارة</button></div>
+<h2>سجل التدريب السابق</h2>
+<p class="muted">الأسئلة الحالية تتبع الأسلوب المعتمد لجميع الطلاب. الإجابات السابقة محفوظة للمراجعة، ولا تُنقل إلى الدرجات الرسمية.</p>
+<div class="actions"><button id="saraRefresh" type="button">عرض الإجابات السابقة</button>
+
+</div>
 <p id="saraPilotMessage" class="muted" role="status"></p><div id="saraPilotResults" aria-live="polite"></div>
 </section></div>
 </main><script src="assets/admin-research.js?v=20261110.1"></script><script src="assets/admin-research-shadow.js?v=20261105.1"></script><script src="assets/admin-research-pilot.js?v=20261109.1"></script>

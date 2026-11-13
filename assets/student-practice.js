@@ -74,7 +74,7 @@ async function mount(){
    html+="<h2>"+esc(q[lang()])+"</h2><fieldset>"+q[lang()+"Options"].map(function(a,i){return "<label class='choice'><input type='radio' name='practiceAnswer' value='"+i+"'>"+esc(a)+"</label>";}).join("")+
      "<label class='choice'><input type='radio' name='practiceAnswer' value='-1'>"+tr("لا أدري — لا تُحتسب صفرًا","Not sure — not treated as zero")+"</label></fieldset>";
   }else{
-   html+="<h2>"+tr("إجابة حرة اختيارية","Optional free recall")+"</h2><p>"+tr("اكتب القاعدة بلغتك. تقييم النص هنا تجريبي، ولا يُعتمد كدرجة قانونية.","Write the rule in your words. The free-text analysis is only a rehearsal, not a legal grade.")+"</p><textarea id='practiceFree' rows='5' maxlength='2000'></textarea>";
+   html+="<h2>"+tr("إجابة حرة اختيارية","Optional free recall")+"</h2><p>"+tr("اكتب القاعدة بلغتك. تحليل النص هنا مبدئي، ولا يُعتمد كدرجة قانونية.","Write the rule in your words. The free-text analysis is only a rehearsal, not a legal grade.")+"</p><textarea id='practiceFree' rows='5' maxlength='2000'></textarea>";
   }
   html+="<button type='button' id='practiceNext'>"+(done?tr("حلّل إجاباتي وابدأ المستوى التدريبي الأول","See my plan and start first practice level"):tr("السؤال التالي","Next question"))+"</button><p role='alert' id='practiceError'></p>";
   node.innerHTML=html;
@@ -104,7 +104,7 @@ async function mount(){
   var previous=p.order.slice(0,idx).map(function(id){
    var a=state.responses[id],h=hint(a);
    return "<section class='done'><b>"+esc(lang()==="en"?tasks[id].titleEn:tasks[id].titleAr)+"</b><p>"+tr("إجابة محفوظة مؤقتًا. ","Answer saved temporarily. ")+
-    (h?tr("تغطية مؤشرات نصية تجريبية: ","Provisional keyword coverage: ")+h.covered+"% — "+tr("تحتاج مراجعة معنى الإجابة.","meaning needs review.") :tr("لا تتوفر أدلة كافية لتقدير نسبة.","Insufficient evidence for a percentage."))+"</p></section>";
+    (h?tr("تغطية مؤشرات نصية مبدئية: ","Provisional keyword coverage: ")+h.covered+"% — "+tr("تحتاج مراجعة معنى الإجابة.","meaning needs review.") :tr("لا تتوفر أدلة كافية لتقدير نسبة.","Insufficient evidence for a percentage."))+"</p></section>";
   }).join("");
   node.innerHTML=summary+"<p class='counter'>"+tr("المستوى الأول التدريبي • مهمة ","Practice level 1 • Task ")+(idx+1)+" / 3</p>"+
    previous+"<h2>"+esc(lang()==="en"?task.titleEn:task.titleAr)+"</h2><p>"+esc(lang()==="en"?task.helpEn:task.helpAr)+"</p><div class='prompt'>"+esc(lang()==="en"?task.promptEn:task.promptAr)+"</div>"+

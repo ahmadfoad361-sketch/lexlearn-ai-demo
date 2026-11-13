@@ -27,12 +27,12 @@
         <a id="langLink" href="?lang=en" lang="en">English</a>
       </nav>
     </header>
-    <p class="diagNotice" id="diagNotice" role="note">تقييم تعليمي تجريبي داخل LexLearn، وليس درجة جامعية أو اعتمادًا أكاديميًا مستقلًا. تُحفظ إجاباتك في حسابك.</p>
+    <p class="diagNotice" id="diagNotice" role="note">تقييم تعليمي داخل LexLearn، وليس درجة جامعية أو اعتمادًا أكاديميًا مستقلًا. تُحفظ إجاباتك في حسابك.</p>
     <section class="diagCard" id="officialDiagnostic" aria-label="الاختبار التشخيصي" aria-live="polite"></section>
     <p class="diagFooter" id="diagFooter">LexLearn — نفهم طريقة تفكيرك، ونبني طريقك.</p>
   </main>
-  <script src="assets/learning-moments.js"></script><script src="assets/beginner-prompts.js"></script><script src="assets/legal-study.js"></script><script src="assets/official-diagnostic.js?v=20261018.1"></script>
-  <script src="assets/server-diagnostic.js?v=20261103.queue1"></script>
+  <script src="assets/learning-moments.js"></script><script src="assets/legal-study.js"></script><script src="assets/official-diagnostic.js?v=20261018.1"></script>
+  <script src="assets/beginner-prompts.js"></script><script src="assets/question-style.js"></script><script src="assets/server-diagnostic.js?v=20261103.queue1"></script>
   <script>
     (function(){
       var p=new URLSearchParams(location.search),en=p.get('lang')==='en';
@@ -41,7 +41,7 @@
       document.title=en?'LexLearn — Diagnostic assessment':'LexLearn — التقييم التشخيصي';
       document.getElementById('pageTitle').textContent=en?'Diagnostic assessment':'التقييم التشخيصي';
       document.getElementById('pageSubtitle').textContent=en?'Find your starting point in recall, understanding and legal application':'اكتشف نقطة انطلاقك في الحفظ والفهم والتطبيق القانوني';
-      document.getElementById('diagNotice').textContent=en?'This is an experimental LexLearn learning assessment, not an accredited university grade. Your answers are saved to your account.':'تقييم تعليمي تجريبي داخل LexLearn، وليس درجة جامعية أو اعتمادًا أكاديميًا مستقلًا. تُحفظ إجاباتك في حسابك.';
+      document.getElementById('diagNotice').textContent=en?'This is a LexLearn learning assessment, not an accredited university grade. Your answers are saved to your account.':'تقييم تعليمي داخل LexLearn، وليس درجة جامعية أو اعتمادًا أكاديميًا مستقلًا. تُحفظ إجاباتك في حسابك.';
       var l=document.getElementById('langLink');
       l.href=en?'?lang=ar':'?lang=en';
       l.lang=en?'ar':'en';
