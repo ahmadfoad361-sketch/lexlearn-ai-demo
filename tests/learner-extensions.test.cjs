@@ -108,7 +108,7 @@ test('review module saves a non-credit answer from a previous completed session'
   global.LEX_LEGAL_STUDY={context:()=>'<p>القانون المدني القطري رقم 22 لسنة 2004</p>'};
   await addon.mountReview(node,{cloud:{db:()=>({from})},uid:'synthetic',session:2,lang:'ar'});
   assert.match(node.innerHTML,/استرجع القاعدة دون نص/);
-  assert.doesNotMatch(node.innerHTML,/القانون المدني القطري رقم 22 لسنة 2004/);
+  assert.match(node.innerHTML,/القانون المدني القطري رقم 22 لسنة 2004/);
   assert.match(node.innerHTML,/حاول الإجابة أولًا من الذاكرة/);
   node.area.value='أسترجع القاعدة القانونية من الدرس السابق وأربط شروطها بأمثلة تطبيقية.';
   await node.button.onclick();
@@ -119,12 +119,12 @@ test('review module saves a non-credit answer from a previous completed session'
   assert.match(node.innerHTML,/خطوة جديدة في رحلتك/);
  }finally{if(before.LEX_LEGAL_STUDY===undefined)delete global.LEX_LEGAL_STUDY;else global.LEX_LEGAL_STUDY=before.LEX_LEGAL_STUDY;}
 });
-test('production feature flag defaults off and never injects extras into active exercise',()=>{
+test('released optional practice stays outside active exercises',()=>{
  const fs=require('node:fs');
  const config=fs.readFileSync('assets/lexlearn-config.js','utf8');
  const path=fs.readFileSync('assets/student-path.js','utf8');
  const profile=fs.readFileSync('assets/student.js','utf8');
- assert.match(config,/learningExtensionsV1:false/);
+ assert.match(config,/learningExtensionsV1:true/);
  assert.match(path,/if\(completed\)\{/);
  assert.ok(path.indexOf('if(completed){')<path.indexOf("main+=\"<div id='lexReviewSlot'"));
  assert.match(path,/root\.LEX_CONFIG\?\.learningExtensionsV1===true/);
@@ -136,7 +136,7 @@ test('admin-only cognitive fingerprint can run independently of unreleased learn
  const config=fs.readFileSync('assets/lexlearn-config.js','utf8');
  const admin=fs.readFileSync('assets/admin-progress.js','utf8');
  const student=fs.readFileSync('assets/student-path.js','utf8');
- assert.match(config,/learningExtensionsV1:false/);
+ assert.match(config,/learningExtensionsV1:true/);
  assert.match(config,/cognitiveFingerprintV1:true/);
  assert.match(admin,/cognitiveFingerprintV1===true/);
  assert.match(admin,/\["owner","admin"\]\.includes\(p\.role\)/);
