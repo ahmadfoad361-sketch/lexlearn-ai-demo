@@ -53,7 +53,11 @@ button:disabled{opacity:.55;cursor:not-allowed}.ghost{background:#edf0f4;color:v
 <label for="sources">المصادر القانونية المعتمدة (اختر مصدرًا أو أكثر)</label><select id="sources" multiple size="7" aria-describedby="sourceHint"></select>
 <p id="sourceHint" class="muted">على الكمبيوتر: Ctrl أو Cmd لتحديد عدة مصادر. الاستعانة بالنص المعتمد لا تغني عن مراجعة الأستاذ القانوني.</p>
 <div class="note">إذا كانت الأدلة المتاحة قليلة، يبدأ التصور بالتأسيس وتوليد بيانات قياس إضافية، وليس تصنيف الطالب بنمط تعلم ثابت.</div>
-<div class="actions"><button id="propose">إنشاء مسودة تدريب</button><button id="clear" class="ghost" type="button">مسح الاختيارات</button></div>
+<div class="actions"><button id="propose">اقتراح استراتيجية تدريب</button><button id="generate" type="button" disabled>توليد سؤال قانوني بالذكاء الاصطناعي</button><button id="clear" class="ghost" type="button">مسح الاختيارات</button></div>
+<p class="muted">توليد الأسئلة خدمة تجريبية محدودة: 5 مسودات يوميًا لكل مشرف وبحد أقصى 15 مسودة للمشروع. قد تترتب تكلفة API بسيطة عند الضغط. جميع الأسئلة الجديدة تحتاج مراجعة مستقلة قبل اعتمادها.</p>
+<label class="shadowCheck"><input id="draftCostConsent" type="checkbox">أوافق على استخدام خدمة التوليد المدفوعة لهذا الطلب. فتح الصفحة لا يستهلك رصيدًا.</label>
+<p class="muted">إعادة الضغط بنفس الاختيارات تتحقق من الطلب نفسه. لبدء سؤال آخر استخدم «مسح الاختيارات» ثم اختر المصادر ووافق من جديد. عند نفاد الرصيد لن تُنشأ مسودة.</p>
+<div id="generated" class="results" aria-live="polite"></div>
 <div id="proposals" class="results" aria-live="polite"></div>
 </section>
 <section class="panel"><h2>فهرس الأبحاث المعتمدة كمرجع للتصميم</h2><p class="muted">ملخصات تفسيرية مع حدود الاستفادة؛ لا تمثل مراجعة للنص الكامل لكل دراسة.</p>
@@ -76,5 +80,5 @@ button:disabled{opacity:.55;cursor:not-allowed}.ghost{background:#edf0f4;color:v
 <button class="ghost" id="saraResume" type="button" disabled>إعادة إتاحة التجربة لسارة</button></div>
 <p id="saraPilotMessage" class="muted" role="status"></p><div id="saraPilotResults" aria-live="polite"></div>
 </section></div>
-</main><script src="assets/admin-research.js?v=20261105.1"></script><script src="assets/admin-research-shadow.js?v=20261105.1"></script><script src="assets/admin-research-pilot.js?v=20261109.1"></script>
+</main><script src="assets/admin-research.js?v=20261110.1"></script><script src="assets/admin-research-shadow.js?v=20261105.1"></script><script src="assets/admin-research-pilot.js?v=20261109.1"></script>
 </body></html>

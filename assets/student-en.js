@@ -35,6 +35,7 @@ var students=read(STUDENTS_KEY,[]);
 var params=new URLSearchParams(location.search);
 var session=read(SESSION_KEY,null);
 var CONSENT_VERSION="2026-10-06-v1",consentOk=true;
+var glossaryAllowed=false;
 
 if(params.get("demo")==="1"){
   location.replace("showcase-en.html");return;
@@ -316,7 +317,7 @@ function render(){
       "<section class='weekGrid'>"+weeks+"</section>"+
       "<div class='sectionHead'><div><h2>Your level at a glance</h2><p>3 Simple indicators show where you currently stand.</p></div></div>"+
       learningProfile+
-      "<section class='learnerWelcome'><div><h2>📖 My legal dictionary</h2><p>Choose and save terms that catch your attention, then revisit your personal dictionary.</p></div><a class='actionCard primary' href='student-glossary.html?lang=en'>Open dictionary</a></section>"+
+      "<section class='learnerWelcome'><div><h2>📖 My legal dictionary</h2><p>Choose and save terms that catch your attention, then revisit your personal dictionary.</p></div>"+(glossaryAllowed?"<a class='actionCard primary' data-lex-glossary-link='1' href='student-glossary.html?lang=en'>Open dictionary</a>":"<span class='lexGlossaryLocked' aria-disabled='true' role='status'>🔒 Your legal dictionary becomes available when this session is completed.</span>")+"</section>"+
       "<div class='sectionHead'><div><h2>Your achievements</h2><p>Each completed stage adds a new achievement.</p></div></div>"+
       "<section class='achievementStrip'>"+achievements+"</section>"+
     "</main>";
@@ -402,6 +403,9 @@ async function boot(){
     }
   }
   if(session.cloud&&!result){course={session:1,completed:[],weekResults:{},achievements:[],adminOverrideWeeks:{},repairRequired:false,completedProgram:false};}
+  glossaryAllowed=false;
+  try{if(window.LEX_GLOSSARY_ACCESS)glossaryAllowed=await LEX_GLOSSARY_ACCESS.check(LEX_CLOUD);}catch(_){glossaryAllowed=false;}
+  if(window.LEX_GLOSSARY_ACCESS)LEX_GLOSSARY_ACCESS.installLinkGuard(LEX_CLOUD);
   render();
 }
 if(window.LEX_CLOUD&&LEX_CLOUD.db())LEX_CLOUD.db().auth.onAuthStateChange(function(event){

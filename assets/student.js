@@ -35,6 +35,7 @@ var students=read(STUDENTS_KEY,[]);
 var params=new URLSearchParams(location.search);
 var session=read(SESSION_KEY,null);
 var CONSENT_VERSION="2026-10-06-v1",consentOk=true;
+var glossaryAllowed=false;
 
 if(params.get("demo")==="1"){
   location.replace("showcase.html");return;
@@ -327,7 +328,8 @@ function render(){
       "<section class='weekGrid'>"+weeks+"</section>"+
       "<div class='sectionHead'><div><h2>مستواك ببساطة</h2><p>الحفظ: تذكّر القاعدة دون النص • الفهم: معرفة لماذا تعمل • التطبيق على الوقائع: استخدام القاعدة في واقعة قانونية جديدة.</p></div></div>"+
       learningProfile+
-      "<section class='learnerWelcome'><div><h2>📖 قاموسي القانوني</h2><p>اختر المصطلحات التي تلفت انتباهك، واحفظها في قاموسك لتراجعها لاحقًا.</p></div><a class='actionCard primary' href='student-glossary.html?lang=ar'>افتح قاموسك</a></section>"+
+      (window.LEX_CONFIG?.learningExtensionsV1===true?"<section class='learnerWelcome'><div><h2>⚖️ اختار مهنتك القادمة</h2><p>"+(course.completed.length>=2?"تحدي اختياري بعد كل جلستين: قاضي أو محامي أو أستاذ جامعي.":"يكبر مشوارك خطوة خطوة. أول تحدٍ مهني يفتح بعد الجلسة الثانية.")+"</p></div>"+(course.completed.length>=2?"<a class='actionCard primary' href='student-future.html?lang=ar&milestone="+(course.completed.length>=6?6:course.completed.length>=4?4:2)+"'>جرّب المهنة</a>":"<span class='actionCard' aria-disabled='true'>يفتح بعد جلستين</span>")+"</section>":"")+
+      "<section class='learnerWelcome'><div><h2>📖 قاموسي القانوني</h2><p>اختر المصطلحات التي تلفت انتباهك، واحفظها في قاموسك لتراجعها لاحقًا.</p></div>"+(glossaryAllowed?"<a class='actionCard primary' data-lex-glossary-link='1' href='student-glossary.html?lang=ar'>افتح قاموسك</a>":"<span class='lexGlossaryLocked' aria-disabled='true' role='status'>🔒 يتفعّل دخول القاموس بعد انتهاء الجلسة.</span>")+"</section>"+
       "<div class='sectionHead'><div><h2>إنجازاتك</h2><p>كل مرحلة تنهيها تضيف إنجازًا جديدًا.</p></div></div>"+
       "<section class='achievementStrip'>"+achievements+"</section>"+
     "</main>";
@@ -413,6 +415,9 @@ async function boot(){
     }
   }
   if(session.cloud&&!result){course={session:1,completed:[],weekResults:{},achievements:[],adminOverrideWeeks:{},repairRequired:false,completedProgram:false};}
+  glossaryAllowed=false;
+  try{if(window.LEX_GLOSSARY_ACCESS)glossaryAllowed=await LEX_GLOSSARY_ACCESS.check(LEX_CLOUD);}catch(_){glossaryAllowed=false;}
+  if(window.LEX_GLOSSARY_ACCESS)LEX_GLOSSARY_ACCESS.installLinkGuard(LEX_CLOUD);
   render();
 }
 if(window.LEX_CLOUD&&LEX_CLOUD.db())LEX_CLOUD.db().auth.onAuthStateChange(function(event){

@@ -90,6 +90,16 @@ function evidenceRows(rows){
    '</details>';
  }).join("");
 }
+function optionalReport(data){
+ if(typeof window==='undefined'||window.LEX_CONFIG?.learningExtensionsV1!==true)return '';
+ const d=data||{},roles=d.role_choices||{},names={judge:'قاضٍ',lawyer:'محامٍ',professor:'أستاذ جامعي'};
+ const choices=Object.entries(names).map(([k,v])=>v+': '+Math.max(0,Number(roles[k])||0)).join(' · ');
+ const top=d.most_selected_role&&names[d.most_selected_role]?names[d.most_selected_role]:'لا يوجد اختيار منفرد حتى الآن';
+ return '<section class="lexFingerprint"><h3>المراجعة المدمجة وتجربة المهن</h3>'+
+ '<p>مراجعات الاسترجاع المحفوظة: <b>'+Math.max(0,Number(d.retrieval_checks)||0)+'</b> · التحديات المهنية: <b>'+Math.max(0,Number(d.career_trials)||0)+'</b></p>'+
+ '<p>التجارب: '+esc(choices)+'</p><p>المهنة الأكثر اختيارًا: <b>'+esc(top)+'</b></p>'+
+ '<p class="notice">هذه اختيارات تعبر عن اهتمام الطالب فقط؛ لا تقيس الصلاحية لمهنة أو نتيجة تعليمية.</p></section>';
+}
 function renderStudent(r){
  if(!r)return '<section class="panel"><p>اختر طالبًا لاستعراض ملفه.</p></section>';
  const d=r.diagnostic||{},l=r.learning||{};
@@ -100,7 +110,8 @@ function renderStudent(r){
  '<h3>حالة أعمال الطالب</h3><div class="grid three"><div class="metric"><span>إجابات محفوظة</span><strong>'+Number(r.submitted_answers||0)+'</strong></div>'+
  '<div class="metric"><span>تصحيح آلي بمعيار حالي</span><strong>'+Number(r.ai_graded_answers||0)+'</strong></div>'+
  '<div class="metric"><span>إجابات تنتظر تقييمًا</span><strong>'+Number(r.ungraded_answers||0)+'</strong></div></div>'+
- '<h3>خريطة الحفظ والفهم بحسب المفهوم</h3>'+conceptMap(l)+
+ '<h3>تحليل عناصر الإجابات</h3>'+(typeof window!=='undefined'&&(window.LEX_CONFIG?.cognitiveFingerprintV1===true||window.LEX_CONFIG?.learningExtensionsV1===true)&&window.LEX_COGNITIVE_FINGERPRINT?window.LEX_COGNITIVE_FINGERPRINT.render(l):'')+conceptMap(l)+
+ optionalReport(r.optional_practice)+
  '<h3>تاريخ التقييم في الجلسات</h3>'+timeline(r.skill_trends)+
  '<h3>نسب الحفظ والفهم بعد كل عملية تصحيح</h3>'+gradedStageHistoryHtml(r)+
  '<h3>سجل الإجابات والتصحيح والمعايير</h3>'+
@@ -123,6 +134,7 @@ function renderGroup(impact){
  stat("الإجابات المحفوظة",impact.answers_submitted,"جميع مهام التدريب")+
  stat("إجابات صُححت بالمعيار الحالي",impact.ai_graded_answers,"نسبة التصحيح: "+score(impact.grading_coverage_percent))+
  stat("إجابات بانتظار تصحيح",impact.pending_or_ungraded_answers,"لا تحتسب صفرًا")+'</div>'+
+ (typeof window!=='undefined'&&window.LEX_CONFIG?.learningExtensionsV1===true?'<p>مراجعات الاسترجاع الاختيارية المحفوظة: <b>'+Number(impact.optional_retrieval_checks||0)+'</b> · التجارب المهنية: <b>'+Number(impact.optional_career_trials||0)+'</b></p>':'')+
  '<h3>متوسط تغطية معايير كل مهارة</h3>'+
  '<div class="grid three">'+["recall","understanding","exam_execution"].map(k=>stat(dim(k),score(s[k]?.mean_provisional_coverage),
   "عدد الطلاب المقاسين: "+Math.max(0,Number(s[k]?.students_measured)||0))).join("")+'</div>'+

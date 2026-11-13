@@ -44,19 +44,30 @@ async function main(){
 
    // Replace client cloud object only in this isolated browser tab.
    await page.evaluate(()=>{
+    window.__showcaseQaCalls=[];
     window.LEX_CLOUD={
      isConfigured:()=>true,
      db:()=>({
       auth:{getSession:async()=>({error:null,data:{session:{user:{id:"browser-fake-user"}}}})},
-      functions:{invoke:async()=>({error:null,data:{
-       received:true,submission_id:"synthetic-no-data-written",
-       choice_indicators:{understanding:10}
-      }})}
+      functions:{invoke:async(_name,request)=>{
+       window.__showcaseQaCalls.push(request.body.request_id);
+       if(window.__showcaseQaCalls.length===1)return {error:{message:"simulated network loss"},data:null};
+       return {error:null,data:{received:true,submission_id:"synthetic-no-data-written",choice_indicators:{understanding:10}}};
+      }}
      })
     };
    });
    await page.locator("#seeResult").click();
    await page.locator(".demoDiagnosticReview").waitFor({timeout:20000});
+   assert.equal(await page.locator("#retryDelivery").count(),1,"unconfirmed saving must have an explicit retry");
+   assert.ok((await page.locator(".deliveryState").innerText()).includes(lang==="ar"?"لم يصل تأكيد حفظ المحاولة":"Saving has not been confirmed"));
+   assert.ok(!(await page.locator(".deliveryState").innerText()).includes("synthetic-no-data-written"));
+   await page.locator("#retryDelivery").click();
+   await page.locator(".deliveryState code").waitFor({timeout:20000});
+   const requestKeys=await page.evaluate(()=>window.__showcaseQaCalls);
+   assert.equal(requestKeys.length,2,"retry is explicit, not automatic");
+   assert.equal(requestKeys[0],requestKeys[1],"network retry keeps the same request ID");
+   assert.equal(await page.locator("#retryDelivery").count(),0,"confirmed save removes retry notice");
    assert.equal(await page.locator(".demoReviewItem").count(),6,"every incorrect question must have review");
    assert.ok((await page.locator(".demoDiagnosticReview").innerText()).includes(lang==="ar"?"المادة 39":"Article 39"));
    assert.equal(await page.locator("#firstStageFromResults").count(),0,

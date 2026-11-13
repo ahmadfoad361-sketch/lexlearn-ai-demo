@@ -16,13 +16,13 @@ function boot(query,ua){
  vm.runInNewContext(js,ctx);
  return {api:root.LEX_STUDY_COACH,root};
 }
-const inactive=boot('','Mozilla/5.0 (Macintosh; Intel Mac OS X)');
-assert.equal(inactive.api.enabled,false,'coach must remain off for ordinary production sessions');
+const inactive=boot('?coach_preview=0','Mozilla/5.0 (Macintosh; Intel Mac OS X)');
+assert.equal(inactive.api.enabled,false,'explicit opt-out must disable coach');
 inactive.api.init({learnerId:'synthetic',language:'ar'});
 inactive.api.recordCompleted('synthetic',2);
 assert.equal(inactive.api.getDebugSummary(),null);
-const preview=boot('?coach_preview=1','Mozilla/5.0 (iPhone; CPU iPhone OS 18_0)');
-assert.equal(preview.api.enabled,true,'explicit preview URL can enable local UI');
+const preview=boot('','Mozilla/5.0 (iPhone; CPU iPhone OS 18_0)');
+assert.equal(preview.api.enabled,true,'ordinary student sessions enable local reminders');
 assert.equal(preview.api.isMobileDevice(),true,'mobile sound gate should recognize phones');
 preview.api.init({learnerId:'synthetic-student',language:'ar'});
 preview.api.recordCompleted('wrong-student',2);
@@ -39,4 +39,4 @@ assert.ok(path.includes('root.LEX_STUDY_COACH.offerAtBoundary'));
 assert.ok(path.includes('root.LEX_STUDY_COACH.recordCompleted'));
 assert.ok(build.includes('study-coach/hero.jpg'),'real licensed image must ship');
 assert.ok(!js.includes('.functions.invoke(')&&!js.includes('supabase.from('),'coach should not trigger API/AI spending');
-console.log('PASS: coach off by default, opt-in only, own learner counting, no duplicate sessions, no forced navigation, mobile-only sound, UI assets and no API cost.');
+console.log('PASS: coach enabled and explicit opt-out respected, own learner counting, no duplicate sessions, no forced navigation, mobile-only sound, UI assets and no API cost.');

@@ -1,6 +1,6 @@
-/* LexLearn Smart Study Coach — REVIEW ONLY. Browser-only preview, no Supabase writes. */
+/* LexLearn Smart Study Coach — Local break reminders, no Supabase writes. */
 (function(root){'use strict';
-var enabled=new URLSearchParams(root.location.search).get('coach_preview')==='1';
+var enabled=new URLSearchParams(root.location.search).get('coach_preview')!=='0';
 var learner='',language='ar',inited=false,overlay=null,onContinue=null,clockId=0,dialogWasOpen=false,lastFocus=null;
 var TAB='coach-'+Math.random().toString(36).slice(2),STORAGE='lexlearn:study-coach-preview:v1:';
 var lastInteraction=Date.now(),lastTick=Date.now();
