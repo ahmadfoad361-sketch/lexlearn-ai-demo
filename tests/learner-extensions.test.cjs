@@ -147,70 +147,17 @@ test('admin-only cognitive fingerprint can run independently of unreleased learn
 });
 
 
-test('single student research pilot is mounted only after server says eligible and non-credit',async()=>{
- const fs=require('node:fs'),vm=require('node:vm');
+test('one shared training entry replaces the retired singleton without reading or deleting its history',()=>{
+ const fs=require('fs'),vm=require('vm');
  const entry=fs.readFileSync('assets/student-research-entry.js','utf8');
- async function simulate(eligible,non_credit){
-  let mounts=0;
-  const offer={hidden:true,innerHTML:'',focus(){},querySelector(){return {onclick:null,focus(){}};}};
-  const original={hidden:false},workspace={hidden:true,querySelector(){return {onclick:null}}};
-  const lookup={researchPilotOffer:offer,researchPilotWorkspace:workspace,studentTrainingApp:original};
-  const sandbox={
-   document:{getElementById(id){return lookup[id]||null}},
-   window:{LEX_RESEARCH_PILOT:{mount(){mounts++;}},
-    LEX_CLOUD:{db(){return{
-     auth:{getUser:async()=>({data:{user:{id:'fictional-test-user'}},error:null})},
-     functions:{invoke:async()=>({data:{eligible,non_credit},error:null})}
-    };}}}
-  };
-  vm.runInNewContext(entry,sandbox,{timeout:1500});
-  await new Promise(resolve=>setImmediate(resolve));
-  return {offer,workspace,original,mounts};
+ vm.runInNewContext(entry,{});
+ for(const page of ['student.html','student-path.html']){
+  const html=fs.readFileSync(page,'utf8');
+  assert.doesNotMatch(html,/researchPilotSwitch|researchShowOriginal|id="researchPilotWorkspace"|assets\/student-research-entry\.js|assets\/student-research-pilot\.js/);
  }
- const blocked=await simulate(false,true);
- assert.equal(blocked.workspace.hidden,true);
- assert.equal(blocked.original.hidden,false);
- assert.equal(blocked.mounts,0);
- const lackingConsent=await simulate(true,false);
- assert.equal(lackingConsent.workspace.hidden,true);
- assert.equal(lackingConsent.mounts,0);
- const eligible=await simulate(true,true);
- assert.equal(eligible.workspace.hidden,false);
- assert.equal(eligible.original.hidden,true);
- assert.equal(eligible.mounts,1);
-});
-test('research pilot is isolated, consent-gated and hidden from ordinary learners',()=>{
- const fs=require('node:fs');
- const html=fs.readFileSync('student-path.html','utf8');
- const css=fs.readFileSync('assets/research-pilot-inline.css','utf8');
- const entry=fs.readFileSync('assets/student-research-entry.js','utf8');
- assert.match(html,/id="researchPilotWorkspace" hidden/);
- assert.match(html,/id="researchShowOriginal"/);
- assert.match(html,/assets\/student-research-pilot\.js/);
- assert.match(css,/#researchPilotWorkspace\[hidden\]\{display:none!important\}/);
- assert.match(entry,/r\.data\.eligible!==true\|\|r\.data\.non_credit!==true/);
- assert.match(entry,/original\.hidden=false/);
- assert.match(entry,/workspace\.hidden=false/);
-});
-
-
-test('research pilot standalone and in-session view inherit learner theme without a separate controller',()=>{
- const fs=require('node:fs');
- const standalone=fs.readFileSync('student-research-pilot.html','utf8');
- const training=fs.readFileSync('student-path.html','utf8');
- const css=fs.readFileSync('assets/research-pilot-theme.css','utf8');
- const build=fs.readFileSync('scripts/build-public.js','utf8');
- assert.match(standalone,/class="lexResearchStandalone"/);
- assert.match(standalone,/assets\/research-pilot-theme\.css/);
- assert.match(training,/assets\/research-pilot-theme\.css/);
- assert.match(build,/"research-pilot-theme\.css"/);
- assert.match(css,/html\[data-learner-theme="dark"\]/);
- assert.match(css,/#researchPilotWorkspace/);
- assert.match(css,/body\.lexResearchStandalone/);
- assert.match(css,/--rp-surface/);
- assert.doesNotMatch(css,/localStorage|sessionStorage|supabase/);
- assert.equal((standalone.match(/assets\/learner-theme\.js/g)||[]).length,1);
- assert.equal((training.match(/assets\/learner-theme\.js/g)||[]).length,1);
+ assert.doesNotMatch(entry,/functions.invoke|LEX_RESEARCH_PILOT|delete|\.update\(/);
+ const admin=fs.readFileSync('assets/admin-research-pilot.js','utf8');
+ assert.match(admin,/admin_review/);
 });
 
 test('each career has a distinct task and the lawyer chooses a party',()=>{const c=require('../assets/career-role-cases.js');for(const n of [2,4,6])for(const lang of ['ar','en']){const j=c.get(n,'judge','claimant',lang),l=c.get(n,'lawyer','claimant',lang),d=c.get(n,'lawyer','defendant',lang),p=c.get(n,'professor','claimant',lang);assert.equal(new Set([j,l,d,p]).size,4);assert.match(j,lang==='ar'?/حجة المدعي/:/Claimant/);assert.match(j,lang==='ar'?/حجة المدعى عليه/:/Defendant/);}});

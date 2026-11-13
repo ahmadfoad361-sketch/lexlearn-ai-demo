@@ -21,6 +21,8 @@ jobs:
       - name: Check public scripts
         run: |
           for f in assets/*.js scripts/*.js scripts/*.cjs; do node --check "$f"; done
+      - name: Verify default question style and unchanged assessment contracts
+        run: node --test tests/question-style.test.cjs
       - name: Verify Smart Study Coach safeguards
         run: node scripts/verify-study-coach.cjs
       - name: Verify optional learning extensions

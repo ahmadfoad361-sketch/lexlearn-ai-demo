@@ -26,7 +26,7 @@ function lawContext(task,lang){
   root.LEX_LEGAL_STUDY.context(task&&task.sources||[],lang):
   "<p>"+esc(tr(lang,"القانون المدني القطري رقم (22) لسنة 2004","Qatar Civil Code, Law 22 of 2004"))+"</p>";
 }
-function textOf(task,lang){return String(lang==="en"?(task.prompt_en||task.prompt_ar):(task.prompt_ar||task.prompt_en)||"");}
+function textOf(task,lang){if(root.LEX_QUESTION_STYLE)return root.LEX_QUESTION_STYLE.prepare(task,lang);return String(lang==="en"?(task.prompt_en||task.prompt_ar):(task.prompt_ar||task.prompt_en)||"");}
 function visible(node,html){if(node&&node.isConnected)node.innerHTML=html;}
 function note(node,lang){
  visible(node,"<p class='lexExtensionNote'>"+tr(lang,

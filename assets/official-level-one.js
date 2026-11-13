@@ -156,7 +156,7 @@ async function mount(host,opts){
   var previousResults=data.tasks.filter(function(x){return !!byId(saved,x.id);}).map(function(x){
    var entry=byId(saved,x.id),pending=!confirmedAi(entry)&&entry.evaluation?.status!=="nonanswer_zero"&&entry.evaluation?.status!=="ai_queued";
    return "<section class='taskCard' style='margin:1rem 0'><h3>"+esc(lang==="en"?x.title_en:x.title_ar)+"</h3>"+
-    feedbackHtml(entry,lang)+(pending&&consented?"<button type='button' data-level-grade='"+esc(x.id)+"' "+(gradingBusy?"disabled":"")+">"+
+    (root.LEX_LEGAL_STUDY?root.LEX_LEGAL_STUDY.context(x.source_ids||x.sources||[],lang):"")+feedbackHtml(entry,lang)+(pending&&consented?"<button type='button' data-level-grade='"+esc(x.id)+"' "+(gradingBusy?"disabled":"")+">"+
     t("تصحيح الإجابة بالذكاء الاصطناعي","Assess this answer with AI")+"</button>":"")+"</section>";
   }).join("");
   if(saved.length)previousResults+=levelSkillScorecard(saved,lang,opts&&opts.diagnostic);
@@ -165,13 +165,14 @@ async function mount(host,opts){
    wireReviewActions();return;
   }
   var n=completed+1,dim=next.dimension;
-  var q=lang==="en"?next.prompt_en:next.prompt_ar;
+  var q=root.LEX_QUESTION_STYLE?root.LEX_QUESTION_STYLE.prepare(next,lang):(lang==="en"?next.prompt_en:next.prompt_ar);
   if(!q||q.length<15){
    host.innerHTML="<p role='alert'>"+t("المهمة غير مترجمة أو غير مكتملة.","The lesson question is not available in this language.")+"</p>";return;
   }
   host.innerHTML=summary+previousResults+"<section class='stage'><div class='taskCard'><span class='kicker'>"+t("المهمة ","Task ")+n+" / 3</span>"+
    "<h2>"+esc(lang==="en"?next.title_en:next.title_ar)+"</h2><p>"+esc(adaptiveHint(lang,mode,dim))+"</p>"+
-   "<div class='legalBox' style='white-space:pre-line'>"+esc(q)+"</div>"+
+   (root.LEX_LEGAL_STUDY?root.LEX_LEGAL_STUDY.context(next.source_ids||next.sources||[],lang):"")+
+   (root.LEX_QUESTION_STYLE?root.LEX_QUESTION_STYLE.render(q,lang):"<div class='legalBox' style='white-space:pre-line'>"+esc(q)+"</div>")+
    "<label for='officialEssayAnswer'>"+t("إجابتك القانونية","Your legal answer")+"</label>"+
    "<textarea id='officialEssayAnswer' class='textarea' rows='8' maxlength='12000' placeholder='"+t("اكتب إجابتك بأسلوبك…","Write in your own words…")+"' aria-label='"+t("إجابة قانونية حرة","Free legal answer")+"'></textarea>"+
    "<div class='choiceRow'><button type='button' id='officialSaveAnswer' class='primary'>"+t("حفظ الإجابة والانتقال","Save answer and continue")+"</button></div>"+

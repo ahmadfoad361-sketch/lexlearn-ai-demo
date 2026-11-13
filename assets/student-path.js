@@ -361,7 +361,8 @@ async function boot(){
     (selected<30?"<button type='button' id='nextSession'>"+(selected%5===0?t("انتقل إلى المستوى ","Continue to level ")+(Math.ceil(selected/5)+1):t("انتقل للجلسة التالية","Continue to next session"))+"</button>":
      "<p role='status'>"+t("اكتملت الجلسات التدريبية الثلاثون. احتفظ بنتائجك للمراجعة.","All 30 practice sessions completed; your results remain saved for review.")+"</p>"+(glossaryAllowed&&root.LEX_GLOSSARY&&root.LEX_GLOSSARY_ACCESS?"<p>"+t("الخطوة الختامية: راجع المصطلحات التي جمعتها واختبر تذكرك وفهمك لها.","Final step: review your saved terms and check your recall and understanding.")+"</p><p>"+root.LEX_GLOSSARY_ACCESS.linkHtml(true,lang())+"</p>":""));
    }else if(next){
-    var prompt=root.LEX_BEGINNER_PROMPTS?root.LEX_BEGINNER_PROMPTS.prepare(next,lang()):(lang()==="en"?next.prompt_en:next.prompt_ar);
+    var style=root.LEX_QUESTION_STYLE||root.LEX_BEGINNER_PROMPTS;
+    var prompt=style?style.prepare(next,lang()):(lang()==="en"?next.prompt_en:next.prompt_ar);
     if(root.LEX_LEGAL_STUDY)prompt=root.LEX_LEGAL_STUDY.qualify(prompt,lang());
     var guide=root.LEX_LEGAL_CASE_GUIDE;
     var guided=next.dimension==="exam_execution"&&guide&&guide.parse(prompt,lang());
@@ -372,8 +373,8 @@ async function boot(){
      // answer goes to the existing server rubric with explicit section headings.
      main+="<div id='legalExamGuide'></div>";
     }else{
-     main+=(root.LEX_BEGINNER_PROMPTS&&root.LEX_BEGINNER_PROMPTS.render?
-       root.LEX_BEGINNER_PROMPTS.render(prompt,lang()):
+     main+=(style&&style.render?
+       style.render(prompt,lang()):
        "<div class='prompt' style='white-space:pre-wrap'>"+esc(prompt)+"</div>")+
       "<label for='adaptiveEssay'>"+t("اكتب إجابتك القانونية بأسلوبك","Write your legal explanation in your own words")+"</label>"+
       "<textarea id='adaptiveEssay' rows='7' maxlength='4000' placeholder='"+t("اكتب إجابتك بأسلوبك...","Write your answer in your own words...")+"'></textarea>"+

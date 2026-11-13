@@ -141,13 +141,15 @@ async function startUI(){
     "<div class='diagProgressTrack' role='progressbar' aria-label='"+tr("تقدّم الاختبار","Assessment progress")+"' aria-valuemin='0' aria-valuemax='100' aria-valuenow='"+progress+"'><span class='diagProgressFill' style='width:"+progress+"%'></span></div>";
    html+=lawContext(done?[39,40]:({q39r:[39],q49r:[49],q62r:[62],q39u:[39],q50u:[50],q63a:[63]}[q.id]||[]));
    if(!done){
-    html+="<h2>"+esc(legalPrompt(q[lang()]))+"</h2><fieldset><legend>"+tr("اختر إجابتك أو «لا أدري»","Choose your answer or Not sure")+"</legend>"+
-      q[lang()+"Options"].map(function(o,j){return "<label class='choice'><input name='selected' type='radio' value='"+j+"'>"+esc(o)+"</label>";}).join("")+
+    var presented=root.LEX_QUESTION_STYLE?root.LEX_QUESTION_STYLE.diagnostic(q,lang()):{prompt:q[lang()],options:q[lang()+"Options"]};
+    html+="<h2>"+esc(legalPrompt(presented.prompt))+"</h2><fieldset><legend>"+tr("اختر إجابتك أو «لا أدري»","Choose your answer or Not sure")+"</legend>"+
+      presented.options.map(function(o,j){return "<label class='choice'><input name='selected' type='radio' value='"+j+"'>"+esc(o)+"</label>";}).join("")+
       "<label class='choice'><input name='selected' type='radio' value='-1'>"+tr("لا أدري (لم يُقَس)","Not sure (not measured)")+"</label></fieldset>";
    }else{
     html+="<h2>"+tr("استرجاع من الذاكرة (اختياري)","Recall from memory (optional)")+"</h2>"+
-      "<p>"+tr("اكتب من ذاكرتك: متى تبدأ الشخصية القانونية للإنسان؟ عبّر عن القاعدة بأسلوبك دون الرجوع إلى النص.","From memory, when does a human being’s legal personality begin? State the rule in your own words without consulting the text.")+"</p>"+
-      "<p>"+tr("اكتب أيضًا: متى تنتهي الشخصية القانونية؟ وماذا يقول النص عن حقوق الجنين قبل ولادته (المادة 40 من القانون المدني القطري الصادر بالقانون رقم (22) لسنة 2004)؟ اكتب بجمل قصيرة من ذاكرتك، دون فتح النص.","Also answer: when does legal personality end? What does Article 40 of the Qatar Civil Code, promulgated by Law No. 22 of 2004, say about an unborn child's rights? Use short sentences from memory, without reopening the text.")+"</p>"+
+      (root.LEX_QUESTION_STYLE?root.LEX_QUESTION_STYLE.render(root.LEX_QUESTION_STYLE.freeDiagnostic(lang()),lang()):
+"<p>"+tr("اكتب من ذاكرتك: متى تبدأ الشخصية القانونية للإنسان؟ عبّر عن القاعدة بأسلوبك دون الرجوع إلى النص.","From memory, when does a human being’s legal personality begin? State the rule in your own words without consulting the text.")+"</p>"+
+      "<p>"+tr("اكتب أيضًا: متى تنتهي الشخصية القانونية؟ وماذا يقول النص عن حقوق الجنين قبل ولادته (المادة 40 من القانون المدني القطري الصادر بالقانون رقم (22) لسنة 2004)؟ اكتب بجمل قصيرة من ذاكرتك، دون فتح النص.","Also answer: when does legal personality end? What does Article 40 of the Qatar Civil Code, promulgated by Law No. 22 of 2004, say about an unborn child's rights? Use short sentences from memory, without reopening the text.")+"</p>")+
       "<textarea id='ungradedText' rows='5' maxlength='2000' aria-label='"+tr("إجابة حرة","Free answer")+"'></textarea>";
    }
    html+="<button id='serverNext'>"+(done?tr("احفظ التقييم واعرض نتيجتي","Save assessment and show my result"):tr("حفظ والانتقال للسؤال التالي","Save and continue"))+"</button>"+
