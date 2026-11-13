@@ -52,6 +52,7 @@ jobs:
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     permissions:
       contents: read
+      actions: read
       pages: write
       id-token: write
     environment:
@@ -77,10 +78,32 @@ jobs:
           enablement: true
       - uses: actions/upload-pages-artifact@v3
         with:
+          name: github-pages-${{ github.run_id }}-${{ github.run_attempt }}
           path: dist-site
+      - name: Confirm uploaded Pages artifact is visible
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PAGES_ARTIFACT_NAME: github-pages-${{ github.run_id }}-${{ github.run_attempt }}
+        run: |
+          node <<'NODE'
+          (async()=>{
+            const url=process.env.GITHUB_API_URL+'/repos/'+process.env.GITHUB_REPOSITORY+'/actions/runs/'+process.env.GITHUB_RUN_ID+'/artifacts?per_page=100';
+            for(let attempt=0;attempt<10;attempt++){
+              const response=await fetch(url,{headers:{Authorization:'Bearer '+process.env.GH_TOKEN,Accept:'application/vnd.github+json'},signal:AbortSignal.timeout(10000)});
+              if(response.ok){
+                const data=await response.json();
+                if(data.artifacts.filter(a=>a.name===process.env.PAGES_ARTIFACT_NAME&&!a.expired).length===1){console.log('Uploaded Pages artifact is available.');return;}
+              }
+              await new Promise(resolve=>setTimeout(resolve,3000));
+            }
+            throw Error('Uploaded Pages artifact metadata is not yet available; deployment was not started.');
+          })().catch(error=>{console.error(error.message);process.exitCode=1;});
+          NODE
       - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v4
+        with:
+          artifact_name: github-pages-${{ github.run_id }}-${{ github.run_attempt }}
       - name: Verify published commit and required routes
         env:
           SITE_URL: ${{ steps.deployment.outputs.page_url }}
