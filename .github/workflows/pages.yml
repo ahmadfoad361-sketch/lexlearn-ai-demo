@@ -26,7 +26,7 @@ jobs:
       - name: Verify Smart Study Coach safeguards
         run: node scripts/verify-study-coach.cjs
       - name: Verify optional learning extensions
-        run: node --test tests/learner-extensions.test.cjs
+        run: node --test tests/learner-extensions.test.cjs tests/career-audio-simple-consent.test.cjs
       - name: Verify staff draft consent and duplicate request protection
         run: node --test tests/admin-research-draft.test.cjs
       - name: Verify identity cards and QR safety

@@ -161,26 +161,14 @@ async function mountCareer(node){
     "<textarea id='lexCareerAnswer' rows='8' maxlength='4000'></textarea>"+
     "<div class='lexCareerActions'><button type='button' id='lexCareerSave'>"+
     tr(lang,"احفظ تجربتي المهنية","Save my role challenge")+"</button>"+
-    ((root.SpeechRecognition||root.webkitSpeechRecognition)?"<button type='button' class='lexSpeak' id='lexCareerSpeak'>"+
-    tr(lang,"🎙️ تحويل كلامي إلى نص","🎙️ Dictate my answer")+"</button>":"")+
     "</div><p class='lexExtensionStatus' id='lexCareerStatus' role='status' aria-live='polite'></p>"+
     "<small>"+tr(lang,
-     "هذا تدريب اختياري، ولا يؤثر على درجاتك. إذا استخدمت الإملاء الصوتي فقد يعتمد على خدمة المتصفح؛ راجع النص قبل حفظه. لا نخزن تسجيلًا صوتيًا.",
-     "This is optional and non-credit. Browser dictation may use an external speech service; review the transcript before saving. No audio recording is stored.")+"</small></div>");
+     "هذا التدريب اختياري ومستقل عن درجات التصحيح.",
+     "This optional practice is separate from grading.")+"</small></div>");
    node.querySelectorAll("[data-lex-role]").forEach(function(b){b.onclick=function(){if(recognition)try{recognition.stop();}catch(_){} selected=b.dataset.lexRole;inputMode="typed";render();};});
    var party=node.querySelector("#lexCareerParty");if(party){party.value=side;party.onchange=function(){side=party.value;render();};}
-   if(root.LEX_CAREER_AUDIO)root.LEX_CAREER_AUDIO.mount(node,{uid:uid,n:n,lang:lang,choice:selected+side,role:selected,side:side,version:"career-roles-v2"});
+   if(root.LEX_CAREER_AUDIO)root.LEX_CAREER_AUDIO.mount(node,{uid:uid,n:n,lang:lang,choice:selected+side,sourceItemId:String(task.id),role:selected,side:side,version:"career-roles-v2"});
    var save=node.querySelector("#lexCareerSave"),area=node.querySelector("#lexCareerAnswer"),status=node.querySelector("#lexCareerStatus");
-   var speak=node.querySelector("#lexCareerSpeak");
-   if(speak)speak.onclick=function(){
-    var Speech=root.SpeechRecognition||root.webkitSpeechRecognition;
-    try{
-     recognition=new Speech();recognition.lang=lang==="ar"?"ar-QA":"en-US";recognition.interimResults=false;recognition.continuous=false;
-     recognition.onresult=function(ev){var transcript=Array.from(ev.results).map(function(r){return r[0].transcript;}).join(" ").trim();if(transcript){area.value=(area.value+" "+transcript).trim();inputMode="speech_transcript";status.textContent=tr(lang,"راجع النص وعدّله إذا احتاج، ثم احفظه.","Review and edit the transcript before saving.");}};
-     recognition.onerror=function(){status.textContent=tr(lang,"تقدر تكتب الإجابة مباشرة.","You can type your answer instead.");};
-     recognition.start();status.textContent=tr(lang,"اتكلم دلوقتي…","Speak now…");
-    }catch(_){status.textContent=tr(lang,"الإجابة الكتابية متاحة دائمًا.","Typing is always available.");}
-   };
    save.onclick=async function(){
     var answer=area.value.trim();
     if(answer.length<20){status.textContent=tr(lang,"كمّل فكرتك في جملتين على الأقل، وبعدين احفظها.","Add a couple of sentences, then save.");return;}
