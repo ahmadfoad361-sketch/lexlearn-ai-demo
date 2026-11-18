@@ -137,6 +137,7 @@ async function main(){
    await context.close();
   }
   await verifyMenusAndGlossary(browser);
+  await verifySelectedArchive(browser);
  }finally{await browser.close();}
 }
 async function verifyMenusAndGlossary(browser){
@@ -208,6 +209,76 @@ async function verifyMenusAndGlossary(browser){
   assert.match(await p.locator("#lexGlossarySaveNotice").innerText(),/موجود بالفعل/);
   assert.deepEqual(errors,[],"no synthetic dropdown or glossary browser errors");
   console.log("PASS supervisor dropdown dismiss, glossary closes on success, duplicate term suppressed (synthetic)");
+ }finally{await context.close();}
+}
+
+async function verifySelectedArchive(browser){
+ // No network or real users; every account and action is synthetic in this browser.
+ const context=await browser.newContext({viewport:{width:420,height:820}});
+ await context.route("**/*",function(route){
+  const u=new URL(route.request().url());
+  if(u.origin===new URL(BASE).origin&&u.pathname==="/__archive_qa")
+   return route.fulfill({contentType:"text/html",body:"<!doctype html><html lang='ar'><body></body></html>"});
+  return route.abort("blockedbyclient");
+ });
+ try{
+  const p=await context.newPage(),errors=[];
+  p.on("pageerror",e=>errors.push(e.message));
+  p.on("dialog",dialog=>dialog.accept(dialog.type()==="prompt"?"انتهاء المقرر التجريبي":undefined));
+  await p.goto(BASE+"/__archive_qa");
+  await p.setContent("<select id='archiveCohort'></select><button id='archiveGroup'></button>"+
+    "<button id='archiveSelected'></button><button id='archiveChooseAll'></button>"+
+    "<button id='archiveClearSelection'></button><span id='archiveCount'></span>"+
+    "<table><tbody id='activeArchiveRows'></tbody></table>"+
+    "<table><tbody id='archivedRows'></tbody></table>");
+  await p.evaluate(()=>{
+   window.__archiveRows=[
+    {id:"a1",name:"طالب اختبار 1",username:"test1",cohortId:"c1",accountStatus:"active"},
+    {id:"a2",name:"طالب اختبار 2",username:"test2",cohortId:"c1",accountStatus:"active"},
+    {id:"a3",name:"طالب اختبار 3",username:"test3",cohortId:"c1",accountStatus:"active"},
+    {id:"b1",name:"طالب اختبار 4",username:"test4",cohortId:"c2",accountStatus:"active"}
+   ];window.__archiveCalls=[];
+   window.LEX_CLOUD={
+    isConfigured:()=>true,
+    profile:async()=>({active:true,role:"admin"}),
+    listStudents:async()=>window.__archiveRows.map(s=>({...s})),
+    listCohorts:async()=>[{id:"c1",name:"المجموعة الأولى"},{id:"c2",name:"المجموعة الثانية"}],
+    manageStudent:async request=>{
+     window.__archiveCalls.push(request);
+     const row=window.__archiveRows.find(s=>s.id===request.user_id);
+     if(!row||request.action!=="archive_student")throw Error("Unexpected request");
+     row.accountStatus="archived";
+     return {ok:true,history_preserved:true};
+    }
+   };
+  });
+  await p.addScriptTag({path:"assets/admin-archive.js"});
+  await p.waitForFunction(()=>document.querySelector("#archiveCohort option[value='c2']"));
+  await p.selectOption("#archiveCohort","c1");
+  assert.equal(await p.locator(".archiveStudentCheck").count(),3,"only selected group roster visible");
+  await p.locator(".archiveStudentCheck").nth(0).check();
+  await p.locator(".archiveStudentCheck").nth(2).check();
+  assert.equal(await p.locator("#archiveSelected").isEnabled(),true);
+  assert.match(await p.locator("#archiveCount").innerText(),/2 محدد/);
+  await p.locator("#archiveSelected").click();
+  await p.waitForFunction(()=>window.__archiveCalls.length===2);
+  await p.waitForFunction(()=>document.querySelectorAll(".archiveStudentCheck").length===1);
+  let evidence=await p.evaluate(()=>({targets:window.__archiveCalls.map(x=>x.user_id),
+     states:window.__archiveRows.map(s=>({id:s.id,status:s.accountStatus}))}));
+  assert.deepEqual(evidence.targets,["a1","a3"],"only checked student accounts were archived");
+  assert.equal(evidence.states.find(s=>s.id==="a2").status,"active");
+  assert.equal(evidence.states.find(s=>s.id==="b1").status,"active");
+  assert.equal(await p.locator("#archiveSelected").isDisabled(),true,"selection cleared after success");
+
+  await p.locator("#archiveChooseAll").click();
+  assert.match(await p.locator("#archiveCount").innerText(),/1 محدد/);
+  await p.selectOption("#archiveCohort","c2");
+  assert.equal(await p.locator("#archiveSelected").isDisabled(),true,"changing cohort clears old selection");
+  await p.locator("#archiveChooseAll").click();
+  await p.locator("#archiveClearSelection").click();
+  assert.equal(await p.locator("#archiveSelected").isDisabled(),true,"clear-selection works");
+  assert.deepEqual(errors,[],"synthetic archive caused no browser errors");
+  console.log("PASS selected archival: group scope, multi-select, counts, no cross-group action, no deletion");
  }finally{await context.close();}
 }
 main().catch(e=>{console.error(e.stack||e);process.exit(1);});
