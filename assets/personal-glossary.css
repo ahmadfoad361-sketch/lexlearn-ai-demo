@@ -86,3 +86,16 @@ html[data-learner-theme=dark] :is(.lexGlossaryExample strong,.lexDictionaryExamp
  .lexQuizOption:has(input:checked){background:#472c3b}
  .lexQuizResult .lexDictionaryStats span{background:#293449;border-color:#475368;color:white}
 }
+
+/* Confirmation remains visible briefly after the dictionary dialog closes. */
+.lexGlossarySaveNotice{
+ position:fixed;z-index:10010;inset-inline-end:1rem;bottom:5.5rem;
+ max-width:min(90vw,400px);padding:.8rem 1.1rem;border:1px solid #b6d6c7;
+ border-inline-start:4px solid #20604c;border-radius:12px;
+ background:#fffdfb;color:#123d30;box-shadow:0 8px 28px #111d3133;
+ font:700 1rem/1.6 system-ui,Tahoma,sans-serif;
+}
+.lexGlossarySaveNotice[hidden]{display:none!important}
+html[data-learner-theme=dark] .lexGlossarySaveNotice{
+ background:#1e3049;color:#bce9d4;border-color:#437967;border-inline-start-color:#a0e4c1;
+}
