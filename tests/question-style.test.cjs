@@ -110,3 +110,54 @@ test('all learner question entry points use the same accessible clarity styleshe
  assert.match(css,/prefers-reduced-motion/);
  assert.doesNotMatch(css,/position:\s*absolute[^;]*!important/);
 });
+
+/* Dark visual palette regressions; checks presentation only, never student data. */
+function darkThemeTokens(css,selector){
+ const start=css.lastIndexOf(selector);
+ assert.ok(start>=0,'Missing visual theme selector '+selector);
+ const end=css.indexOf('}',start);
+ assert.ok(end>start,'Unterminated visual theme selector '+selector);
+ return Object.fromEntries([...css.slice(start+selector.length,end).matchAll(/--([a-z-]+)\s*:\s*([^;]+);/g)].map(([,name,value])=>[name,value.trim().split('/*')[0].trim()]));
+}
+function darkThemeLuminance(hex){
+ const rgb=hex.slice(1).match(/.{2}/g).map(n=>parseInt(n,16)/255);
+ const [r,g,b]=rgb.map(v=>v<=.04045?v/12.92:Math.pow((v+.055)/1.055,2.4));
+ return .2126*r+.7152*g+.0722*b;
+}
+function darkThemeContrast(a,b){
+ const x=darkThemeLuminance(a),y=darkThemeLuminance(b);
+ return (Math.max(x,y)+.05)/(Math.min(x,y)+.05);
+}
+test('dark mode palette uses accessible muted brick and distinct navy card layers',()=>{
+ const css=fs.readFileSync('assets/learner-experience.css','utf8');
+ const dark=darkThemeTokens(css,'html[data-learner-theme=dark] {');
+ assert.equal(dark['lx-bg'].toLowerCase(),'#111d31');
+ assert.equal(dark['lx-surface'],'#1e3049');
+ assert.equal(dark['lx-raised'],'#2b405c');
+ assert.equal(dark['lx-accent'],'#e794ab');
+ assert.equal(dark['lx-accent-line'],'#d8718a');
+ assert.ok(darkThemeContrast(dark['lx-ink'],dark['lx-bg'])>=7);
+ assert.ok(darkThemeContrast(dark['lx-surface'],dark['lx-bg'])>=1.25);
+ assert.ok(darkThemeContrast(dark['lx-raised'],dark['lx-surface'])>=1.25);
+ assert.ok(darkThemeContrast(dark['lx-accent'],dark['lx-raised'])>=4.5);
+ assert.ok(darkThemeContrast(dark['lx-accent-line'],dark['lx-raised'])>=3);
+});
+test('dark mode changes do not alter the brand light palette or primary burgundy CTAs',()=>{
+ const css=fs.readFileSync('assets/learner-experience.css','utf8');
+ const light=darkThemeTokens(css,'html[data-learner-theme] {');
+ assert.equal(light['lx-bg'].toLowerCase(),'#f9f4ef');
+ assert.equal(light['lx-surface'],'#fffdfb');
+ assert.equal(light['lx-accent'].toLowerCase(),'#8a1f39');
+ assert.match(css,/\.btn\.primary[^}]*background:#8a1f39;color:#fff;border-color:#8a1f39/);
+});
+test('dark question labels follow the shared card and muted brick palette',()=>{
+ const question=fs.readFileSync('assets/question-clarity.css','utf8');
+ const learner=fs.readFileSync('assets/learner-experience.css','utf8');
+ const dark=darkThemeTokens(question,'html[data-learner-theme="dark"]{');
+ assert.equal(dark['question-paper'],'var(--lx-surface,#1e3049)');
+ assert.equal(dark['question-soft'],'var(--lx-raised,#2b405c)');
+ assert.equal(dark['question-accent'],'var(--lx-accent-line,#d8718a)');
+ assert.match(question,/background:var\(--lx-accent,#e794ab\);color:#111d31/);
+ assert.match(learner,/\.stage--understanding\{--session-accent:var\(--lx-accent\)\}/);
+ assert.match(learner,/\.comparisonNumber\{\s*color:#111d31/);
+});
