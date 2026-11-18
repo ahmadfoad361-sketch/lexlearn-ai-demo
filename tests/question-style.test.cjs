@@ -172,3 +172,22 @@ test('dark results and occupied comparison buckets remain visibly differentiated
  assert.match(cards,/border-style:solid/);
  assert.match(cards,/background:color-mix\(in srgb,var\(--lx-accent/);
 });
+
+test('personal glossary canonicalizes manually selected known terms before saving',()=>{
+ const glossary=require('../assets/personal-glossary.js');
+ assert.equal(glossary.termKey('الموطن'),'legal-domicile');
+ assert.equal(glossary.termKey(' المَوْطِن  '),'legal-domicile');
+ assert.equal(glossary.termKey('  عَقَارٌ بالتخصيص '),'immovable-by-destination');
+ assert.equal(glossary.termKey('Legal TERM'),'manual-legal term');
+ const source=fs.readFileSync('assets/personal-glossary.js','utf8');
+ assert.match(source,/\.eq\("student_id",who.id\)\.eq\("course_id",COURSE\)\.limit\(500\)/);
+ assert.match(source,/if\(out.error.code==="23505"\)return false/);
+ assert.match(source,/d\.close\(\);\s*announceSaved\(/);
+});
+test('admin navigation closes on another dropdown, outside pointer, and Escape',()=>{
+ const source=fs.readFileSync('assets/admin-appearance.js','utf8');
+ assert.match(source,/details\.adminNavGroup\[open\]/);
+ assert.match(source,/addEventListener\("toggle"/);
+ assert.match(source,/addEventListener\("pointerdown"/);
+ assert.match(source,/e\.key==="Escape"/);
+});
