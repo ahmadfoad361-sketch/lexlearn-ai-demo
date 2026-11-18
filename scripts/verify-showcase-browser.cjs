@@ -136,6 +136,78 @@ async function main(){
    console.log("PASS "+lang+": mobile diagnostic, 6 explanations, 4 practice steps, new attempt reset, public preview, zero server writes");
    await context.close();
   }
+  await verifyMenusAndGlossary(browser);
  }finally{await browser.close();}
+}
+async function verifyMenusAndGlossary(browser){
+ // Entirely synthetic local fixture, with every external request blocked.
+ const context=await browser.newContext({viewport:{width:420,height:820}});
+ await context.route("**/*",function(route){
+  const u=new URL(route.request().url());
+  if(u.pathname==="/__lexlearn-ui-fixture"&&u.origin===new URL(BASE).origin)
+    return route.fulfill({contentType:"text/html",body:"<!doctype html><html lang='ar'><body></body></html>"});
+  return route.abort("blockedbyclient");
+ });
+ try{
+  const page=await context.newPage(),errors=[];
+  page.on("pageerror",e=>errors.push(e.message));
+  await page.goto(BASE+"/__lexlearn-ui-fixture");
+  await page.setContent("<details class='adminNavGroup' id='navOne'><summary>Students</summary>Students</details>"+
+   "<details class='adminNavGroup' id='navTwo'><summary>Reports</summary>Reports</details>"+
+   "<button id='outside'>Outside</button>");
+  await page.addScriptTag({path:"assets/admin-appearance.js"});
+  await page.locator("#navOne>summary").click();
+  await page.waitForFunction(()=>document.getElementById("navOne").open);
+  await page.locator("#navTwo>summary").click();
+  await page.waitForFunction(()=>!document.getElementById("navOne").open&&document.getElementById("navTwo").open);
+  await page.locator("#outside").click();
+  await page.waitForFunction(()=>!document.getElementById("navOne").open&&!document.getElementById("navTwo").open);
+
+  const p=await context.newPage();
+  p.on("pageerror",e=>errors.push(e.message));
+  await p.goto(BASE+"/__lexlearn-ui-fixture");
+  await p.setContent("<div id='article'></div>");
+  await p.evaluate(()=>{
+   window.__lexQaRows=[];
+   window.LEX_GLOSSARY_ACCESS={canShowTerms:()=>true};
+   window.LEX_CLOUD={
+    requireStudent:async()=>({id:"synthetic-student"}),
+    db:()=>({from:function(table){
+     const q={filters:{},select(){return this;},eq(k,v){this.filters[k]=v;return this;},
+      maybeSingle:async()=>{
+       if(table==="lex_glossary_definitions")return {data:{term_ar:"الموطن",definition_ar:"محل الإقامة المعتاد",definition_en:"Usual home",source_article:43,source_status:"curated",example_ar:"يقيم الشخص في موطنه."},error:null};
+       return {data:window.__lexQaRows.find(r=>r.term_key===q.filters.term_key)||null,error:null};
+      },
+      limit:async()=>({data:window.__lexQaRows.map(r=>({term_ar:r.term_ar})),error:null}),
+      insert:async(row)=>{window.__lexQaRows.push(row);return {data:null,error:null};},
+      update:()=>q};
+     return q;
+    }})
+   };
+  });
+  await p.addScriptTag({path:"assets/personal-glossary.js"});
+  await p.evaluate(()=>{
+   const host=document.getElementById("article");
+   host.innerHTML="<section data-article='43'><blockquote>"+
+     LEX_GLOSSARY.linkText(43,"الموطن هو محل الإقامة المعتاد.")+"</blockquote></section>";
+   LEX_GLOSSARY.bindArticle(host);
+  });
+  assert.equal(await p.evaluate(()=>LEX_GLOSSARY.termKey(" المَوطن ")),"legal-domicile");
+  const term=p.locator(".lexGlossaryTerm");
+  await term.click();await p.waitForFunction(()=>document.getElementById("lexGlossarySave")&&!document.getElementById("lexGlossarySave").disabled);
+  await p.locator("#lexGlossarySave").click();
+  await p.waitForFunction(()=>!document.getElementById("lexGlossaryDialog").open);
+  assert.equal(await p.evaluate(()=>window.__lexQaRows.length),1,"first glossary insert");
+  assert.match(await p.locator("#lexGlossarySaveNotice").innerText(),/تمت إضافة/);
+  // Simulate an existing manual-key entry for the same visible term.
+  await p.evaluate(()=>{window.__lexQaRows[0].term_key="manual-الموطن";});
+  await term.click();await p.waitForFunction(()=>document.getElementById("lexGlossarySave")&&!document.getElementById("lexGlossarySave").disabled);
+  await p.locator("#lexGlossarySave").click();
+  await p.waitForFunction(()=>!document.getElementById("lexGlossaryDialog").open);
+  assert.equal(await p.evaluate(()=>window.__lexQaRows.length),1,"no duplicate across manual and curated keys");
+  assert.match(await p.locator("#lexGlossarySaveNotice").innerText(),/موجود بالفعل/);
+  assert.deepEqual(errors,[],"no synthetic dropdown or glossary browser errors");
+  console.log("PASS supervisor dropdown dismiss, glossary closes on success, duplicate term suppressed (synthetic)");
+ }finally{await context.close();}
 }
 main().catch(e=>{console.error(e.stack||e);process.exit(1);});
