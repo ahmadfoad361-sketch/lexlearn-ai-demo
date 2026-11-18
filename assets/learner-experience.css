@@ -332,3 +332,76 @@ html[data-learner-theme] .learningTrend th{white-space:nowrap}
 html[data-learner-theme="dark"] .skillStageScorecard,html[data-learner-theme="dark"] .levelSkillScorecard{background:#19273c;color:#f9f4ef;border-color:#586578}
 html[data-learner-theme="dark"] .skillStageScorecard .progressSkill,html[data-learner-theme="dark"] .levelSkillScorecard .levelScoreTile{background:#23354a;color:#f9f4ef;border-color:#586578}
 html[data-learner-theme="dark"] .skillStageScorecard :is(.scope,small),html[data-learner-theme="dark"] .levelSkillScorecard small{color:#e0e7ed}
+
+/* Different visual structures for session tasks. Presentation-only. */
+html[data-learner-theme] #studentTrainingApp .stage{
+ --session-accent:var(--lx-accent);
+ border-top:3px solid var(--session-accent);border-radius:15px;
+ padding:clamp(1rem,3vw,1.6rem);margin-top:1.3rem;
+ background:var(--lx-surface);
+}
+html[data-learner-theme] #studentTrainingApp .stage--recall{--session-accent:#366b85}
+html[data-learner-theme] #studentTrainingApp .stage--understanding{--session-accent:#8a1f39}
+html[data-learner-theme] #studentTrainingApp .stage--exam_execution{--session-accent:#9b711e}
+html[data-learner-theme=dark] #studentTrainingApp .stage--recall{--session-accent:#8dc2dc}
+html[data-learner-theme=dark] #studentTrainingApp .stage--understanding{--session-accent:#f1a8bb}
+html[data-learner-theme=dark] #studentTrainingApp .stage--exam_execution{--session-accent:#f1ca80}
+html[data-learner-theme] #studentTrainingApp .stage>h1{margin-top:.2rem}
+html[data-learner-theme] #studentTrainingApp .stage>h2{
+ margin:1.25rem 0 .5rem;padding-inline-start:.7rem;
+ border-inline-start:4px solid var(--session-accent);color:var(--lx-ink);
+}
+html[data-learner-theme] #studentTrainingApp .stage .taskType{
+ display:inline-block;margin:.4rem 0 1rem;padding:.28rem .8rem;
+ border:1px solid var(--lx-border);border-radius:30px;
+ background:var(--lx-raised);color:var(--session-accent);
+ font-size:.87rem;font-weight:750;
+}
+html[data-learner-theme] #studentTrainingApp .stage :is(.prompt,.clearQuestionPrompt){
+ background:var(--lx-raised);border:1px solid var(--lx-border);
+ border-radius:18px;padding:clamp(1rem,3vw,1.4rem);
+}
+html[data-learner-theme] #studentTrainingApp .stage .questionBrief{
+ font-weight:650;line-height:2.05;color:var(--lx-ink);
+ padding-bottom:1rem;border-bottom:1px solid var(--lx-border);
+}
+html[data-learner-theme] #studentTrainingApp .stage .questionComparison{
+ background:var(--lx-surface);margin-top:1rem;margin-bottom:1rem;
+ border-inline-start-color:var(--session-accent);
+}
+html[data-learner-theme] #studentTrainingApp .stage .questionComparison>strong{color:var(--session-accent)}
+html[data-learner-theme] #studentTrainingApp .stage .comparisonStatement{
+ background:var(--lx-raised);border:1px solid var(--lx-border);
+ border-radius:12px;min-height:3.5rem;padding:1rem;
+}
+html[data-learner-theme] #studentTrainingApp .stage .comparisonNumber{background:var(--session-accent)}
+html[data-learner-theme] #studentTrainingApp .stage .questionFollowup{
+ padding-top:1rem;border-top:1px dashed var(--lx-border);
+}
+html[data-learner-theme] #studentTrainingApp .stage label[for="adaptiveEssay"]{
+ display:block;margin-top:1.2rem;font-weight:750;
+}
+html[data-learner-theme] #studentTrainingApp .stage #adaptiveEssay{
+ background:var(--lx-surface);color:var(--lx-ink);border:2px solid var(--lx-border);
+}
+html[data-learner-theme] #studentTrainingApp .stage #adaptiveEssay:focus{
+ outline:2px solid var(--session-accent);outline-offset:2px;
+}
+@media(max-width:600px){
+ html[data-learner-theme] #studentTrainingApp .stage{padding:1rem;margin-inline:-.45rem}
+ html[data-learner-theme] #studentTrainingApp .stage .comparisonStatement{padding:.75rem}
+}
+
+/* Make the question visually distinct from the supporting instructions. */
+html[data-learner-theme] #studentTrainingApp .questionLeadLabel{
+ display:inline-flex;align-items:center;margin:0 0 1rem;padding:.3rem .85rem;
+ border-radius:7px;background:var(--session-accent,#8a1f39);
+ color:#fff;font-size:.83rem;font-weight:800;line-height:1.5;
+}
+html[data-learner-theme=dark] #studentTrainingApp .questionLeadLabel{
+ background:var(--session-accent,#f1a8bb);color:#111d31;
+}
+html[data-learner-theme] #studentTrainingApp .questionSingle>div{font-size:1.16rem;font-weight:650;line-height:2.05}
+html[data-learner-theme] #studentTrainingApp .questionComparison .comparisonStatement{
+ box-shadow:0 2px 8px #111d310a;
+}

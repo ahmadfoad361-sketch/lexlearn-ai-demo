@@ -83,7 +83,7 @@ function examTask(n,lang){
 }
 function promptHtml(task,escapeHtml){
  if(task.displayPrompt&&root.LEX_QUESTION_STYLE)return root.LEX_QUESTION_STYLE.render(task.displayPrompt,task.mode==="free"?"ar":"en")+(task.reviewNote?"<small class='assessmentNote' role='note'>"+escapeHtml(task.reviewNote)+"</small>":"");
- var s="<p>"+escapeHtml(task.q)+"</p>";
+ var s="<section class='lexQuestionPrompt'><b>"+(task.mode==="free"?"السؤال":"Question")+"</b><p>"+escapeHtml(task.q)+"</p></section>";
  if(task.instructions&&task.instructions.length)s+="<div class=\"essayInstructions\"><b>"+(task.mode==="free"?"المطلوب في إجابتك:":"What to include:")+"</b><ol>"+task.instructions.map(function(x){return "<li>"+escapeHtml(x)+"</li>";}).join("")+"</ol></div>";
  if(task.comparison)s+="<div class=\"essayInstructions\"><b>"+(task.mode==="free"?"عبارتان للمقارنة؛ إحداهما غير دقيقة:":"Compare these statements; one is inaccurate:")+"</b><ol>"+task.comparison.map(function(x){return "<li>"+escapeHtml(x)+"</li>";}).join("")+"</ol></div>";
  if(task.reviewNote)s+="<small class=\"assessmentNote\" role=\"note\">"+escapeHtml(task.reviewNote)+"</small>";

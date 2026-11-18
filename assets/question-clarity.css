@@ -1,0 +1,257 @@
+/*
+ * LexLearn question-clarity v1
+ * Shared visual hierarchy across diagnostic, official training, public preview,
+ * noncredit practice, career simulations and review. CSS only: no changes to
+ * question wording, order, scoring, rubrics or persistence.
+ */
+html{
+ --question-ink:var(--lx-ink,#111d31);
+ --question-muted:var(--lx-muted,#536176);
+ --question-border:var(--lx-border,#d8d1ce);
+ --question-paper:var(--lx-surface,#fffdfa);
+ --question-soft:var(--lx-raised,#f9f4ef);
+ --question-accent:#8a1f39;
+}
+html[data-learner-theme="dark"]{
+ --question-ink:#f7f4ef;
+ --question-muted:#d0d9e6;
+ --question-border:#718099;
+ --question-paper:#1b2a40;
+ --question-soft:#263750;
+ --question-accent:#ffb1c4;
+}
+:where(#officialDiagnostic,#studentPractice,#studentTrainingApp,#officialLevelMount,#showcaseApp,#careerApp,.taskCard){
+ --question-line-height:1.95;
+}
+:where(
+ #officialDiagnostic:has(fieldset) h2,
+ #studentPractice:has(fieldset)>h2,
+ #showcaseApp .stageCard:has(.choices)>h2,
+ #showcaseApp .stageCard:has(textarea)>h2
+){
+ margin:1rem 0 1.15rem;
+ padding:clamp(1rem,3vw,1.35rem);
+ border:1px solid var(--question-border);
+ border-inline-start:5px solid var(--question-accent);
+ border-radius:16px;
+ background:var(--question-soft);
+ color:var(--question-ink);
+ font-size:clamp(1.16rem,2vw,1.42rem);
+ line-height:1.85;
+ font-weight:780;
+ overflow-wrap:anywhere;
+ box-shadow:0 4px 14px #111d3109;
+}
+:where(
+ #officialDiagnostic:has(fieldset) h2,
+ #studentPractice:has(fieldset)>h2,
+ #showcaseApp .stageCard:has(.choices)>h2,
+ #showcaseApp .stageCard:has(textarea)>h2
+)::before{
+ content:"السؤال";
+ display:block;width:max-content;
+ margin:0 0 .65rem;padding:.15rem .6rem;
+ border-radius:6px;background:#8a1f39;
+ color:#fff;font-size:.74rem;font-weight:800;line-height:1.6;
+}
+html[lang="en"] :where(
+ #officialDiagnostic:has(fieldset) h2,
+ #studentPractice:has(fieldset)>h2,
+ #showcaseApp .stageCard:has(.choices)>h2,
+ #showcaseApp .stageCard:has(textarea)>h2
+)::before{content:"QUESTION"}
+html[data-learner-theme="dark"] :where(
+ #officialDiagnostic:has(fieldset) h2,
+ #studentPractice:has(fieldset)>h2,
+ #showcaseApp .stageCard:has(.choices)>h2,
+ #showcaseApp .stageCard:has(textarea)>h2
+)::before{background:#ffb1c4;color:#101b2c}
+/* Explanatory boxes and exam prompts are visually separate from citations. */
+:where(
+ #studentPractice .prompt,
+ #studentTrainingApp .prompt,
+ #studentTrainingApp .clearQuestionPrompt,
+ #officialLevelMount .prompt,
+ .taskCard .prompt,
+ .taskCard .essayInstructions,
+ #showcaseApp .legalPaper,
+ #careerApp .lexExtensionPrompt,
+ #studentTrainingApp .lexExtensionPrompt
+){
+ padding:clamp(1rem,3vw,1.35rem);
+ border:1px solid var(--question-border);
+ border-radius:16px;
+ background:var(--question-soft);
+ color:var(--question-ink);
+ line-height:var(--question-line-height,1.95);
+ overflow-wrap:anywhere;
+}
+:where(#studentPractice .prompt,#studentTrainingApp .prompt,#officialLevelMount .prompt,.taskCard .prompt){
+ border-inline-start:4px solid var(--question-accent);
+ font-size:clamp(1.07rem,1.6vw,1.2rem);
+ font-weight:570;
+}
+:where(#studentPractice,.taskCard,#officialLevelMount,#studentTrainingApp) :where(.essayInstructions,.questionComparison){
+ border-radius:14px;
+ background:var(--question-paper);
+ border:1px solid var(--question-border);
+ padding:1rem 1.1rem;
+ line-height:1.85;
+}
+:where(.taskCard .essayInstructions,.questionComparison) :is(ol,ul){margin-block:.6rem;padding-inline-start:1.5rem}
+:where(.taskCard .essayInstructions,.questionComparison) li{margin-block:.65rem}
+:where(
+ #officialDiagnostic fieldset,
+ #studentPractice fieldset,
+ #showcaseApp .choices,
+ .taskCard .options
+){margin-block:1.2rem 1.5rem;min-width:0}
+:where(
+ #officialDiagnostic fieldset legend,
+ #studentPractice fieldset legend
+){
+ font-size:.94rem;font-weight:750;line-height:1.8;
+ color:var(--question-muted);margin-block:.4rem .7rem;
+}
+:where(
+ #officialDiagnostic .choice,
+ #studentPractice .choice,
+ #showcaseApp .stageCard .choices .choice,
+ .taskCard .options .option
+){
+ display:flex;align-items:center;
+ min-height:54px;padding:.85rem 1.05rem;
+ margin-block:.45rem;
+ border:1px solid var(--question-border);
+ border-radius:12px;
+ background:var(--question-paper);
+ color:var(--question-ink);
+ font-size:clamp(1rem,1.4vw,1.1rem);
+ line-height:1.75;
+ text-align:start;
+ overflow-wrap:anywhere;
+ transition:background-color .16s,border-color .16s,box-shadow .16s;
+}
+:where(#officialDiagnostic .choice,#studentPractice .choice,#showcaseApp .stageCard .choices .choice,.taskCard .options .option):is(:hover,:focus-visible){
+ border-color:var(--question-accent);
+ box-shadow:0 0 0 2px color-mix(in srgb,var(--question-accent) 20%,transparent);
+}
+:where(#officialDiagnostic .choice,#studentPractice .choice):has(input:checked),
+:where(#showcaseApp .stageCard .choices .choice,.taskCard .options .option).selected{
+ border:2px solid var(--question-accent);
+ background:var(--question-soft);
+ box-shadow:0 3px 12px #111d3110;
+}
+:where(#officialDiagnostic .choice,#studentPractice .choice) input{
+ flex:none;inline-size:20px;block-size:20px;accent-color:#8a1f39;
+}
+:where(
+ #studentPractice textarea,
+ #officialDiagnostic textarea,
+ #studentTrainingApp #adaptiveEssay,
+ #officialLevelMount textarea,
+ .taskCard textarea,
+ #careerApp textarea
+){
+ display:block;width:100%;box-sizing:border-box;
+ min-height:145px;line-height:1.9;font-size:max(16px,1.06rem);
+ padding:1rem;border:2px solid var(--question-border);
+ border-radius:14px;background:var(--question-paper);color:var(--question-ink);
+ resize:vertical;
+}
+:where(
+ #studentPractice textarea,
+ #officialDiagnostic textarea,
+ #studentTrainingApp #adaptiveEssay,
+ #officialLevelMount textarea,
+ .taskCard textarea,
+ #careerApp textarea
+):focus-visible{
+ outline:3px solid var(--question-accent);outline-offset:2px;
+}
+:where(
+ #studentPractice label[for="taskAnswer"],
+ #studentTrainingApp label[for="adaptiveEssay"],
+ #officialLevelMount label[for="officialEssayAnswer"],
+ #careerApp label[for="lexCareerAnswer"]
+){display:block;font-weight:770;color:var(--question-ink);margin-block:1rem .55rem}
+:where(#careerApp .lexExtensionPrompt,#studentTrainingApp .lexExtensionPrompt){
+ border-inline-start:4px solid var(--question-accent);
+ font-size:1.08rem;white-space:pre-wrap;font-weight:580;
+}
+:where(#careerApp .lexRoleGrid,#studentTrainingApp .lexRoleGrid){
+ padding:.75rem;border:1px solid var(--question-border);border-radius:13px;
+}
+:where(#careerApp .lexRoleGrid button,#studentTrainingApp .lexRoleGrid button){min-height:54px;line-height:1.65}
+:where(#studentTrainingApp .legalCaseGuide .caseMainQuestion){
+ border-inline-start:5px solid #ae5268;
+ box-shadow:0 5px 19px #111d3118;
+}
+:where(#studentTrainingApp .legalCaseGuide .caseAnswerStep){
+ border:1px solid var(--question-border);
+}
+:where(#officialDiagnostic,#studentPractice,#studentTrainingApp,#officialLevelMount,#showcaseApp,#careerApp,.taskCard) :where(button,textarea,select,input){scroll-margin-block:80px}
+@media(max-width:600px){
+ :where(
+  #officialDiagnostic:has(fieldset) h2,#studentPractice:has(fieldset)>h2,
+  #showcaseApp .stageCard:has(.choices)>h2,
+  #showcaseApp .stageCard:has(textarea)>h2
+ ){font-size:1.16rem;padding:.9rem;line-height:1.9}
+ :where(#officialDiagnostic .choice,#studentPractice .choice,#showcaseApp .stageCard .choices .choice,.taskCard .options .option){min-height:52px;padding:.9rem}
+ :where(#studentPractice .prompt,#studentTrainingApp .prompt,#officialLevelMount .prompt,.taskCard .prompt){font-size:1.08rem}
+}
+@media(prefers-reduced-motion:reduce){
+ :where(#officialDiagnostic .choice,#studentPractice .choice,#showcaseApp .choice,.taskCard .option){transition:none}
+}
+
+/* Universal essay question hierarchy: stem > instructions > response. */
+:where(#studentPractice,#studentTrainingApp,#officialLevelMount,.taskCard,#officialDiagnostic)
+ .clearQuestionPrompt>.questionLeadLabel{
+ display:inline-flex;align-items:center;max-width:100%;
+ padding:.24rem .8rem;margin:0 0 .9rem;
+ border-radius:7px;background:#8a1f39;color:#fff;
+ font-size:.84rem;font-weight:790;line-height:1.6;
+}
+html[data-learner-theme="dark"]
+ :where(#studentPractice,#studentTrainingApp,#officialLevelMount,.taskCard,#officialDiagnostic)
+ .clearQuestionPrompt>.questionLeadLabel{background:#ffb1c4;color:#101b2c}
+:where(#studentPractice,#studentTrainingApp,#officialLevelMount,.taskCard,#officialDiagnostic)
+ .clearQuestionPrompt .questionBrief{
+ font-size:clamp(1.15rem,2vw,1.34rem);
+ font-weight:775;line-height:1.95;color:var(--question-ink);
+ padding:0 0 .9rem;margin-bottom:.95rem;
+ border-bottom:1px solid var(--question-border);
+}
+:where(#studentPractice,#studentTrainingApp,#officialLevelMount,.taskCard,#officialDiagnostic)
+ .clearQuestionPrompt .questionGuidance{
+ font-size:clamp(.99rem,1.3vw,1.09rem);
+ line-height:2;color:var(--question-muted);
+ border-radius:11px;padding:.65rem .95rem;
+ background:var(--question-paper);
+ border-inline-start:3px solid var(--question-border);
+}
+:where(#studentPractice,#studentTrainingApp,#officialLevelMount,.taskCard,#officialDiagnostic)
+ .clearQuestionPrompt .questionComparison{
+ margin-top:1rem;background:var(--question-paper);
+ border:1px solid var(--question-border);
+ border-inline-start:4px solid var(--question-accent);
+}
+:where(#studentPractice,#studentTrainingApp,#officialLevelMount,.taskCard,#officialDiagnostic)
+ .clearQuestionPrompt .questionFollowup{
+ margin-top:1rem;padding:.9rem 0 0;
+ border-top:1px dashed var(--question-border);
+ color:var(--question-ink);font-weight:670;
+}
+.taskCard:has(.options)>h2,.taskCard:has(#freeAnswer)>h2,
+#officialLevelMount .taskCard:has(textarea)>h2{
+ /* This is the activity title, not the question itself. */
+ padding:0;border:0;background:transparent;
+ box-shadow:none;color:var(--question-ink);font-weight:750;
+}
+.taskCard .lexQuestionPrompt{
+ display:block;margin-block:1rem;
+ padding:1rem 1.2rem;border:1px solid var(--question-border);
+ border-inline-start:4px solid var(--question-accent);
+ border-radius:14px;background:var(--question-soft);
+ color:var(--question-ink);font-size:1.14rem;line-height:1.9;
+}

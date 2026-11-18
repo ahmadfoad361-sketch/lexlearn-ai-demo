@@ -12,6 +12,9 @@ test('all bilingual authoring tasks default to the common style and retain canon
   if(dim==='understanding'){
    for(const statement of task.comparison)assert.ok(task.displayPrompt.includes(statement));
    const html=style.render(task.displayPrompt,lang);assert.ok(html.indexOf('questionComparison')<html.indexOf('questionFollowup'));
+   assert.match(html,/comparisonStatement/);
+   assert.doesNotMatch(task.displayPrompt,lang==='ar'?/إحداهما غير دقيقة|أي العبارتين.*غير دقيقة/:/one is inaccurate|Which is inaccurate/);
+   assert.match(task.originalPrompt,lang==='ar'?/إحداهما غير دقيقة/:/one is inaccurate/);
   }
   if(dim==='exam'){assert.ok(guide.parse(task.displayPrompt,lang));assert.equal(task.displayPrompt.split('\n').length,5);}
  }
@@ -58,4 +61,52 @@ test('legacy bookmarks preserve Arabic/English and cannot replace an active trai
   assert.equal(target,'student-path.html?lang='+lang);
   target=null;vm.runInNewContext(source,{document:{getElementById:()=>({})},window,URLSearchParams});assert.equal(target,null);
  }
+});
+
+test('official question type cards have distinct accessible presentation without changing grading',()=>{
+ const fs=require('node:fs');
+ const student=fs.readFileSync('assets/student-path.js','utf8');
+ const css=fs.readFileSync('assets/learner-experience.css','utf8');
+ for(const dim of ['recall','understanding','exam_execution'])assert.match(css,new RegExp('stage--'+dim));
+ assert.match(student,/stage--/);
+ assert.match(css,/questionBrief/);
+ assert.match(css,/comparisonStatement/);
+});
+
+test('comparison classification is learner-owned, bilingual and passed through existing answer flow',()=>{
+ const sorter=require('../assets/comparison-cards.js');
+ function card(n,choice){return {dataset:{lexCardIndex:String(n),lexChoice:choice}};}
+ const host={querySelectorAll:()=>[card(2,'inaccurate'),card(1,'accurate')]};
+ assert.equal(sorter.answer(host,'ar'),'تقييمي المستقل للعبارات:\nالعبارة 1: دقيقة قانونيًا.\nالعبارة 2: غير دقيقة قانونيًا.');
+ assert.equal(sorter.answer(host,'en'),'My assessment of each statement:\nStatement 1: legally accurate.\nStatement 2: legally inaccurate.');
+ assert.equal(sorter.answer({querySelectorAll:()=>[card(1,''),card(2,'')]},'ar'),'');
+ const source=fs.readFileSync('assets/comparison-cards.js','utf8');
+ assert.match(source,/pointerdown/);assert.match(source,/pointermove/);assert.match(source,/pointerup/);
+ assert.match(source,/dragstart/);assert.match(source,/dragover/);assert.match(source,/keydown/);
+ const page=fs.readFileSync('student-path.html','utf8');
+ assert.match(page,/assets\/comparison-cards.js/);assert.match(page,/assets\/comparison-cards.css/);
+ const student=fs.readFileSync('assets/student-path.js','utf8');
+ assert.match(student,/LEX_COMPARISON_CARDS\.mount/);
+ assert.match(student,/LEX_COMPARISON_CARDS\.answer/);
+});
+
+test('all learner question entry points use the same accessible clarity stylesheet',()=>{
+ const pages=['diagnostic.html','student-path.html','program.html','program-en.html',
+  'showcase.html','showcase-en.html','showcase-level1.html','showcase-level1-en.html',
+  'student-practice.html','student-future.html','student-research-pilot.html',
+  'pilot-review.html','pilot-qa.html'];
+ for(const page of pages){
+  const source=fs.readFileSync(page,'utf8');
+  assert.match(source,/assets\/question-clarity\.css/,page);
+ }
+ const css=fs.readFileSync('assets/question-clarity.css','utf8');
+ for(const region of ['#officialDiagnostic','#studentPractice','#studentTrainingApp',
+  '#officialLevelMount','#showcaseApp','#careerApp','.taskCard']){
+  assert.ok(css.includes(region),'missing clarity scope '+region);
+ }
+ assert.match(css,/html\[lang="en"\]/);
+ assert.match(css,/data-learner-theme="dark"/);
+ assert.match(css,/@media\(max-width:600px\)/);
+ assert.match(css,/prefers-reduced-motion/);
+ assert.doesNotMatch(css,/position:\s*absolute[^;]*!important/);
 });
