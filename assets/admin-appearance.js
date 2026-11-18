@@ -20,6 +20,23 @@
    measure();if(window.ResizeObserver){observer=new ResizeObserver(measure);observer.observe(top);}
   }
  }
+ // Supervisor navigation behaves as an exclusive dropdown, not a persistent tree.
+ // Capture the non-bubbling native details toggle event.
+ function closeNav(except){
+   document.querySelectorAll("details.adminNavGroup[open]").forEach(function(item){
+     if(item!==except)item.open=false;
+   });
+ }
+ document.addEventListener("toggle",function(e){
+   var detail=e.target;
+   if(detail&&detail.matches&&detail.matches("details.adminNavGroup")&&detail.open)closeNav(detail);
+ },true);
+ document.addEventListener("pointerdown",function(e){
+   if(!e.target||!e.target.closest||!e.target.closest("details.adminNavGroup"))closeNav(null);
+ },true);
+ document.addEventListener("keydown",function(e){
+   if(e.key==="Escape")closeNav(null);
+ },true);
  window.LEX_ADMIN_APPEARANCE={mount:mount};
  document.addEventListener("DOMContentLoaded",mount);
  window.addEventListener("storage",function(e){if(e.key===key)apply(read());});
