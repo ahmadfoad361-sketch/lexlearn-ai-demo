@@ -345,7 +345,9 @@ async function boot(){
     return "<details class='past'"+(v===saved[saved.length-1]?" open":"")+"><summary>"+esc(previousAnswerTitle(v,task))+"</summary>"+lawContext(task&&task.sources)+"<p style='white-space:pre-wrap'>"+esc(v.answer_text)+"</p>"+feedback(v)+(needsAssessment(v)&&acceptedAi&&cloud.gradeTrainingAi?"<button type='button' id='retryGrade"+index+"'>"+t("أعد تصحيح هذه الإجابة","Retry assessment of this answer")+"</button>":"")+"</details>";
    }).join("");
    var resume=next?"<section class='learnerWelcome'><div><h2>"+t("تدريبك التالي جاهز","Your next practice is ready")+"</h2><p>"+t("إجاباتك السابقة محفوظة؛ أكمل خطوة واحدة الآن.","Your previous answers are saved. Continue one step at a time.")+"</p></div><a href='#currentPractice'>"+t("أكمل تدريبك","Continue practice")+"</a></section>":"";
-   var main=resume+"<section class='stage'>"+lawNumberRail(data.tasks,lang())+"<h1>"+esc(name)+"</h1>"+why+
+   var stageKind=next&&["recall","understanding","exam_execution"].includes(next.dimension)?next.dimension:"foundation";
+    // Distinguish task types visually; assessment fields and progression stay unchanged.
+    var main=resume+"<section class='stage stage--"+stageKind+"'>"+lawNumberRail(data.tasks,lang())+"<h1>"+esc(name)+"</h1>"+why+
     "<p>"+t("أُرسلت ","Saved ")+saved.length+" / "+data.tasks.length+t(" إجابات محفوظة في حسابك."," answers to your account.")+"</p>"+
     completedFeedback+(saved.length?stageSkillScorecard(progressRows,selected):"");
    if(saved.some(heldGrade))main+="<p class='assessmentRecovery' role='status'>"+t("هناك إجابات محفوظة تنتظر استكمال التصحيح بأمان. لم تُحتسب صفرًا، فلا تعِد إرسالها.","Saved answers await safe recovery. No zero was issued; do not resubmit.")+"</p>";
