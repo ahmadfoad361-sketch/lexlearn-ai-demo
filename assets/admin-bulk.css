@@ -24,3 +24,8 @@ button:hover,.fileButton:hover{filter:brightness(.96)}button:disabled{opacity:.4
 .bulkDanger{color:#7a2431;background:#fff0ed;padding:12px;border-right:4px solid var(--maroon);font-size:14px}
 .bulkFooter{text-align:center;padding:30px;color:#6d747f}
 @media(max-width:750px){.bulkWrap{padding:18px 12px}.bulkPanel{padding:17px}.bulkTop{padding:12px 16px}.bulkTop nav{gap:10px}h1{font-size:23px}}
+
+/* Reversible multi-student archive: clear and touch-friendly selection. */
+.archiveSelectLabel{display:inline-flex;align-items:center;gap:.35rem;white-space:nowrap;cursor:pointer;font-weight:600}
+.archiveStudentCheck{min-width:20px;min-height:20px;accent-color:var(--maroon);cursor:pointer}
+.bulkActions button:focus-visible,.archiveStudentCheck:focus-visible{outline:3px solid var(--maroon);outline-offset:3px}
