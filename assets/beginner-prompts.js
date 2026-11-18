@@ -137,10 +137,15 @@ function render(text,language){
  var legacy=en?"Compare these statements; one is inaccurate:":"عبارتان للمقارنة؛ إحداهما غير دقيقة:";
  var neutral=en?"Review each statement on its own:":"قيّم كل عبارة على حدة:";
  var at=lines.indexOf(neutral);if(at<0)at=lines.indexOf(legacy);
- if(at<0||lines.length<at+3)return "<section class='prompt clearQuestionPrompt questionSingle'><span class='questionLeadLabel'>"+(en?"Your task":"السؤال")+"</span><div style='white-space:pre-wrap'>"+esc(source)+"</div></section>";
- var marker=lines[at];
- var before=lines.slice(0,at).join("\n"),pair=lines.slice(at+1,at+3),after=lines.slice(at+3).join("\n");
- return "<section class='prompt clearQuestionPrompt'><span class='questionLeadLabel'>"+(en?"Your task":"السؤال")+"</span><div class='questionBrief' style='white-space:pre-wrap'>"+esc(before)+"</div>"+
+ function headerAndSteps(parts){
+  var heading=parts[0]||"",steps=parts.slice(1).join("\n");
+  return "<div class='questionBrief' style='white-space:pre-wrap'>"+esc(heading)+"</div>"+
+   (steps?"<div class='questionGuidance' style='white-space:pre-wrap'>"+esc(steps)+"</div>":"");
+ }
+ var lead="<span class='questionLeadLabel'>"+(en?"Your task":"السؤال")+"</span>";
+ if(at<0||lines.length<at+3)return "<section class='prompt clearQuestionPrompt questionSingle'>"+lead+headerAndSteps(lines)+"</section>";
+ var marker=lines[at],before=lines.slice(0,at),pair=lines.slice(at+1,at+3),after=lines.slice(at+3).join("\n");
+ return "<section class='prompt clearQuestionPrompt'>"+lead+headerAndSteps(before)+
  "<div class='questionComparison' role='group' aria-label='"+(en?"Evaluate each statement":"تقييم العبارات")+"'>"+
  "<strong>"+esc(marker)+"</strong>"+
  pair.map(function(value,i){return "<p class='comparisonStatement'><span class='comparisonNumber'>"+(i+1)+"</span>"+esc(value)+"</p>";}).join("")+
