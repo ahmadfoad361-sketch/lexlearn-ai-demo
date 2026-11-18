@@ -40,7 +40,7 @@ window.LEX_CLOUD={
 };
 `;
 async function run(){
- const browser=await chromium.launch({headless:true,args:["--no-sandbox"]});
+ const browser=await chromium.launch({headless:true,...(process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH?{executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH}:{}),args:["--no-sandbox"]});
  try{
   for(const lang of ["ar","en"]){
    const context=await browser.newContext({viewport:{width:390,height:844},locale:lang==="ar"?"ar-EG":"en-US"});

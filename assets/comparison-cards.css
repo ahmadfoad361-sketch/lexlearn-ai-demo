@@ -52,3 +52,14 @@ html[data-learner-theme=dark] #studentTrainingApp .lexSortTarget{background:var(
 @media(prefers-reduced-motion:reduce){
  html[data-learner-theme] #studentTrainingApp .lexSortableCard{transition:none}
 }
+
+/* A filled classification bucket must be obvious without relying on color alone. */
+html[data-learner-theme=dark] #studentTrainingApp .lexSortTarget:has(.lexSortableCard){
+ border-color:var(--lx-accent-line,#d8718a);
+ border-style:solid;
+ background:color-mix(in srgb,var(--lx-accent,#e794ab) 9%,var(--lx-surface,#1e3049));
+ box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--lx-accent-line,#d8718a) 20%,transparent);
+}
+html[data-learner-theme=dark] #studentTrainingApp .lexSortTarget:has(.lexSortableCard)>strong{
+ color:var(--lx-accent,#e794ab);
+}

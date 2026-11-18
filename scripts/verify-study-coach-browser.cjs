@@ -2,7 +2,7 @@
 const assert=require("node:assert/strict"),{chromium}=require("playwright");
 const BASE=process.env.COACH_QA_URL||"http://127.0.0.1:8766";
 async function main(){
- const browser=await chromium.launch({headless:true,args:["--no-sandbox"]});
+ const browser=await chromium.launch({headless:true,...(process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH?{executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH}:{}),args:["--no-sandbox"]});
  try{
   for(const conf of [
    {lang:"ar",ua:"Mozilla/5.0 (iPhone; CPU iPhone OS 18_0) Mobile",width:390},

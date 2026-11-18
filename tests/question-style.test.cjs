@@ -161,3 +161,14 @@ test('dark question labels follow the shared card and muted brick palette',()=>{
  assert.match(learner,/\.stage--understanding\{--session-accent:var\(--lx-accent\)\}/);
  assert.match(learner,/\.comparisonNumber\{\s*color:#111d31/);
 });
+
+test('dark results and occupied comparison buckets remain visibly differentiated',()=>{
+ const learner=fs.readFileSync('assets/learner-experience.css','utf8');
+ const cards=fs.readFileSync('assets/comparison-cards.css','utf8');
+ assert.match(learner,/html\[data-learner-theme="dark"\] \.skillStageScorecard[^\n]*background:var\(--lx-surface\)/);
+ assert.match(learner,/html\[data-learner-theme="dark"\] \.skillStageScorecard \.progressSkill[^\n]*background:var\(--lx-raised\)/);
+ assert.match(learner,/\.caseMainQuestion\)\{background:var\(--lx-raised\);color:var\(--lx-ink\);border-color:var\(--lx-border\)/);
+ assert.match(cards,/data-learner-theme=dark\] #studentTrainingApp \.lexSortTarget:has\(\.lexSortableCard\)\{/);
+ assert.match(cards,/border-style:solid/);
+ assert.match(cards,/background:color-mix\(in srgb,var\(--lx-accent/);
+});
