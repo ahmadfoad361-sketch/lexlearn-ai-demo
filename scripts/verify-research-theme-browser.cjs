@@ -38,6 +38,17 @@ try{for(const lang of ['ar','en'])for(const width of [390,1280])for(const theme 
     // Tap works even when the browser cannot drag.
     await card1.click();await accurate.click();
     assert.equal(await card1.getAttribute('data-lex-choice'),'accurate','tap classification');
+    if(theme==='dark'){
+     const filled=await page.evaluate(()=>{
+      const zone=document.querySelector('[data-lex-sort-target="accurate"]');
+      const empty=document.querySelector('[data-lex-sort-target="inaccurate"]');
+      return {filledBackground:getComputedStyle(zone).backgroundColor,emptyBackground:getComputedStyle(empty).backgroundColor,
+       filledBorder:getComputedStyle(zone).borderStyle,filledTitle:getComputedStyle(zone.querySelector('strong')).color};
+     });
+     assert.notEqual(filled.filledBackground,filled.emptyBackground,'occupied bucket visually distinct on dark background');
+     assert.equal(filled.filledBorder,'solid','occupied bucket has solid outline instead of an empty dashed placeholder');
+     assert.notEqual(filled.filledTitle,'rgb(249, 244, 239)','occupied bucket label uses accessible muted brick');
+    }
     // Real browser mouse movement exercises the pointer/drop interaction.
     const start=await card2.boundingBox(),end=await inaccurate.boundingBox();
     assert.ok(start&&end,'drag positions available');
