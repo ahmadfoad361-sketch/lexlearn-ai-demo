@@ -19,7 +19,7 @@ html[data-learner-theme] :is(.btn.primary,.actionCard.primary,.caseNext,#serverN
 html[data-learner-theme] :is(.choice:has(input:checked),.caseStep.active,.session.active,.levelCard.complete){background:var(--lx-raised);color:var(--lx-accent);border-color:var(--lx-accent)}
 html[data-learner-theme] :is(.completionState,.caseStep.filled,.criterionCorrect){color:var(--lx-good)}
 html[data-learner-theme=dark] :is([role=alert],.error,#status.error){color:#ffb9ca;background:#3d273b}
-html[data-learner-theme=dark] :is(.lexHomeLang,.qualityCarouselControls button,.lang-switch,.diagScoreTrack,.skillMeter,.momentJourney span,.caseMainQuestion){background:#263750;color:#f7f4ef;border-color:#718099}
+html[data-learner-theme=dark] :is(.lexHomeLang,.qualityCarouselControls button,.lang-switch,.diagScoreTrack,.skillMeter,.momentJourney span,.caseMainQuestion){background:var(--lx-raised);color:var(--lx-ink);border-color:var(--lx-border)}
 html[data-learner-theme=dark] :is(.brandTop,.brandTop b,.brandHero,.brandHero h1,.loginBrand p,.loginBrand small,.brandPoints,.heroMain,.heroMain h1,.heroMain p,.heroMain .eyebrow,.intro,.intro h1,.intro p){color:#fff}
 html[data-learner-theme] .loginBrand{background:linear-gradient(0deg,#111d31 12%,#111d3199 65%,#111d3155),url('conference-media/student-law.webp') center/cover;min-height:660px;padding:32px;color:#fff}
 html[data-learner-theme] .loginBrand .brandHero{margin-top:120px}
@@ -330,9 +330,9 @@ html[data-learner-theme] .learningTrend th{white-space:nowrap}
 .levelSkillScorecard .levelScoreTile strong{display:block;margin:.35rem 0;font-size:1.75rem}
 .levelSkillScorecard .levelScoreTile small{display:block;font-size:.83rem;color:#415064}
 @media(max-width:540px){.skillStageScorecard .progressSkills,.levelSkillScorecard .levelScoreGrid{grid-template-columns:1fr}}
-html[data-learner-theme="dark"] .skillStageScorecard,html[data-learner-theme="dark"] .levelSkillScorecard{background:#19273c;color:#f9f4ef;border-color:#586578}
-html[data-learner-theme="dark"] .skillStageScorecard .progressSkill,html[data-learner-theme="dark"] .levelSkillScorecard .levelScoreTile{background:#23354a;color:#f9f4ef;border-color:#586578}
-html[data-learner-theme="dark"] .skillStageScorecard :is(.scope,small),html[data-learner-theme="dark"] .levelSkillScorecard small{color:#e0e7ed}
+html[data-learner-theme="dark"] .skillStageScorecard,html[data-learner-theme="dark"] .levelSkillScorecard{background:var(--lx-surface);color:var(--lx-ink);border-color:var(--lx-border)}
+html[data-learner-theme="dark"] .skillStageScorecard .progressSkill,html[data-learner-theme="dark"] .levelSkillScorecard .levelScoreTile{background:var(--lx-raised);color:var(--lx-ink);border-color:var(--lx-border)}
+html[data-learner-theme="dark"] .skillStageScorecard :is(.scope,small),html[data-learner-theme="dark"] .levelSkillScorecard small{color:var(--lx-muted)}
 
 /* Different visual structures for session tasks. Presentation-only. */
 html[data-learner-theme] #studentTrainingApp .stage{
@@ -424,4 +424,12 @@ html[data-learner-theme=dark] #studentTrainingApp .stage--understanding>h2{
 }
 html[data-learner-theme=dark] #studentTrainingApp .stage .comparisonNumber{
   color:#111d31; /* Pale badge backgrounds require a dark numeral */
+}
+
+/* Dark results use the same three-layer navy palette as student questions. */
+html[data-learner-theme=dark] :is(.skillStageScorecard,.levelSkillScorecard){
+ box-shadow:0 10px 28px #060e1d52;
+}
+html[data-learner-theme=dark] :is(.skillStageScorecard .progressSkill,.levelSkillScorecard .levelScoreTile){
+ box-shadow:inset 0 1px 0 #ffffff0b;
 }
