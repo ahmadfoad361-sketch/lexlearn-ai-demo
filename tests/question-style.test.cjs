@@ -12,6 +12,9 @@ test('all bilingual authoring tasks default to the common style and retain canon
   if(dim==='understanding'){
    for(const statement of task.comparison)assert.ok(task.displayPrompt.includes(statement));
    const html=style.render(task.displayPrompt,lang);assert.ok(html.indexOf('questionComparison')<html.indexOf('questionFollowup'));
+   assert.match(html,/comparisonStatement/);
+   assert.doesNotMatch(task.displayPrompt,lang==='ar'?/إحداهما غير دقيقة|أي العبارتين.*غير دقيقة/:/one is inaccurate|Which is inaccurate/);
+   assert.match(task.originalPrompt,lang==='ar'?/إحداهما غير دقيقة/:/one is inaccurate/);
   }
   if(dim==='exam'){assert.ok(guide.parse(task.displayPrompt,lang));assert.equal(task.displayPrompt.split('\n').length,5);}
  }
@@ -58,4 +61,14 @@ test('legacy bookmarks preserve Arabic/English and cannot replace an active trai
   assert.equal(target,'student-path.html?lang='+lang);
   target=null;vm.runInNewContext(source,{document:{getElementById:()=>({})},window,URLSearchParams});assert.equal(target,null);
  }
+});
+
+test('official question type cards have distinct accessible presentation without changing grading',()=>{
+ const fs=require('node:fs');
+ const student=fs.readFileSync('assets/student-path.js','utf8');
+ const css=fs.readFileSync('assets/learner-experience.css','utf8');
+ for(const dim of ['recall','understanding','exam_execution'])assert.match(css,new RegExp('stage--'+dim));
+ assert.match(student,/stage--/);
+ assert.match(css,/questionBrief/);
+ assert.match(css,/comparisonStatement/);
 });
