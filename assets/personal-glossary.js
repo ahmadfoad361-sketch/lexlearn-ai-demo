@@ -36,11 +36,15 @@ var APPLY={
  "nonfungible-items":{q:"ما الذي يميز الشيء القيمي؟",a:["تساوي وحداته دومًا دون فرق","اختلاف وحداته في القيمة أو الصفات اختلافًا معتدًا به","تقديره بالوزن فقط"]},
  "abuse-of-right":{q:"أي حالة وردت ضمن الاستعمال غير المشروع للحق؟",a:["استعماله لتحقيق مصلحة مشروعة بلا تعسف","قصد الإضرار بالغير وحده","ممارسته دون ضرر مطلقًا"]}
 };
-var glossaryCache=new Map(),lastSelection="";
+var glossaryCache=new Map(),lastSelection="",popupSequence=0,noticeTimer=null;
 function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
 function tr(ar,en){return root.document&&root.document.documentElement.lang==="en"?en:ar;}
 function normalize(s){return String(s||"").normalize("NFKC").replace(/[ًٌٍَُِّْـ]/g,"").replace(/\s+/g," ").trim();}
-function termKey(s){return "manual-"+normalize(s).slice(0,90);}
+function termKey(s){
+ var canonical=normalize(s).toLocaleLowerCase();
+ var known=TERMS.find(function(t){return normalize(t[1]).toLocaleLowerCase()===canonical;});
+ return known?known[0]:"manual-"+canonical.slice(0,90);
+}
 function isLetter(c){return !!c&&/[\u0621-\u064aA-Za-z]/.test(c);}
 function linkText(article,text){
  var s=String(text||""),terms=TERMS.filter(function(t){return t[2]===Number(article);}),i=0,parts=[];
@@ -74,7 +78,7 @@ function modal(){
  return d;
 }
 function popShow(term,article,source){
- var d=modal();d.innerHTML="<section class='lexGlossaryDialogBody'><div class='lexGlossaryDialogHeader'><b>"+esc(term)+"</b><button type='button' data-close aria-label='"+esc(tr("إغلاق","Close"))+"'>×</button></div><p class='lexGlossarySource'>"+esc(tr("القانون المدني القطري رقم 22 لسنة 2004 • المادة ","Qatar Civil Code, Law 22/2004 • Article "))+article+"</p><p id='lexGlossaryMeaning' aria-live='polite'>"+esc(tr("جارٍ تحميل شرح المصطلح…","Loading a short explanation…"))+"</p><section class='lexGlossaryExample' id='lexGlossaryExample' hidden><strong>"+esc(tr("مثال قانوني للتوضيح","Illustrative legal example"))+"</strong><p id='lexGlossaryExampleText'></p></section><p class='lexGlossarySafety'>"+esc(tr("تبسيط للمذاكرة، ولا يغيّر النص القانوني أو نتيجة الاختبار.","A study aid; it does not alter law text or assessment results."))+"</p><label class='lexPersonalMoment'>"+esc(tr("إيه الموقف اللي خلاك تختار المصطلح؟ (اختياري)","What made you choose this term? (optional)"))+"<textarea id='lexPersonalMoment' maxlength='350' rows='2' placeholder='"+esc(tr("مثال: قابلته في مسألة قانونية","E.g. I saw it in a legal case"))+"'></textarea></label><p role='alert' id='lexGlossaryError'></p><button type='button' class='lexGlossarySave' id='lexGlossarySave' disabled>"+esc(tr("أضف لقاموسي","Save to my dictionary"))+"</button></section>";
+ var d=modal();d.dataset.lexRequest=String(++popupSequence);d.innerHTML="<section class='lexGlossaryDialogBody'><div class='lexGlossaryDialogHeader'><b>"+esc(term)+"</b><button type='button' data-close aria-label='"+esc(tr("إغلاق","Close"))+"'>×</button></div><p class='lexGlossarySource'>"+esc(tr("القانون المدني القطري رقم 22 لسنة 2004 • المادة ","Qatar Civil Code, Law 22/2004 • Article "))+article+"</p><p id='lexGlossaryMeaning' aria-live='polite'>"+esc(tr("جارٍ تحميل شرح المصطلح…","Loading a short explanation…"))+"</p><section class='lexGlossaryExample' id='lexGlossaryExample' hidden><strong>"+esc(tr("مثال قانوني للتوضيح","Illustrative legal example"))+"</strong><p id='lexGlossaryExampleText'></p></section><p class='lexGlossarySafety'>"+esc(tr("تبسيط للمذاكرة، ولا يغيّر النص القانوني أو نتيجة الاختبار.","A study aid; it does not alter law text or assessment results."))+"</p><label class='lexPersonalMoment'>"+esc(tr("إيه الموقف اللي خلاك تختار المصطلح؟ (اختياري)","What made you choose this term? (optional)"))+"<textarea id='lexPersonalMoment' maxlength='350' rows='2' placeholder='"+esc(tr("مثال: قابلته في مسألة قانونية","E.g. I saw it in a legal case"))+"'></textarea></label><p role='alert' id='lexGlossaryError'></p><button type='button' class='lexGlossarySave' id='lexGlossarySave' disabled>"+esc(tr("أضف لقاموسي","Save to my dictionary"))+"</button></section>";
  d.querySelector("[data-close]").onclick=function(){d.close();};
  if(!d.open)d.showModal();
  return d;
@@ -121,17 +125,39 @@ async function save(value,note){
   }
   return false;
  }
- var out=await who.client.from("lex_student_glossary").insert(row);if(out.error&&out.error.code!=="23505")throw out.error;
+ // A manually selected word and curated word may use different keys.
+ var all=await who.client.from("lex_student_glossary").select("term_ar")
+  .eq("student_id",who.id).eq("course_id",COURSE).limit(500);
+ if(all.error)throw all.error;
+ var canonicalName=normalize(row.term_ar).toLocaleLowerCase();
+ if((all.data||[]).some(function(item){return normalize(item.term_ar).toLocaleLowerCase()===canonicalName;}))return false;
+ var out=await who.client.from("lex_student_glossary").insert(row);
+ if(out.error){if(out.error.code==="23505")return false;throw out.error;}
  return true;
+}
+function announceSaved(message){
+ var notice=root.document.getElementById("lexGlossarySaveNotice");
+ if(!notice){
+  notice=root.document.createElement("div");
+  notice.id="lexGlossarySaveNotice";
+  notice.className="lexGlossarySaveNotice";
+  notice.setAttribute("role","status");notice.setAttribute("aria-live","polite");
+  root.document.body.appendChild(notice);
+ }
+ notice.textContent=message;notice.hidden=false;
+ if(noticeTimer&&root.clearTimeout)root.clearTimeout(noticeTimer);
+ if(root.setTimeout)noticeTimer=root.setTimeout(function(){notice.hidden=true;},3500);
 }
 async function openWord(word,article,context,knownKey){
  var term=find(knownKey)||TERMS.find(function(v){return v[1]===word&&v[2]===Number(article);});
  var key=term?term[0]:termKey(word),name=term?label(term):normalize(word);
  if(!name||name.length>120)return;
- var d=popShow(name,article,context),meaning=d.querySelector("#lexGlossaryMeaning"),btn=d.querySelector("#lexGlossarySave"),err=d.querySelector("#lexGlossaryError");
+ var d=popShow(name,article,context),token=d.dataset.lexRequest,
+     isCurrent=function(){return d.open&&d.dataset.lexRequest===token;},
+     meaning=d.querySelector("#lexGlossaryMeaning"),btn=d.querySelector("#lexGlossarySave"),err=d.querySelector("#lexGlossaryError");
  var value={key:key,term:name,article:article,definition_ar:"",definition_en:"",example_ar:"",example_en:"",status:"pending"};
  function showMeaning(){
-  if(!d.open)return;
+  if(!isCurrent())return;
   meaning.textContent=tr(value.definition_ar,value.definition_en||value.definition_ar);
   var exampleBox=d.querySelector("#lexGlossaryExample"),exampleText=d.querySelector("#lexGlossaryExampleText");
   var shownExample=tr(value.example_ar||"",value.example_en||value.example_ar||"");
@@ -147,7 +173,7 @@ async function openWord(word,article,context,knownKey){
   value=await resolveTerm(key,name,article,context,false);
   showMeaning();
  }catch(e){
-  if(!d.open)return;
+  if(!isCurrent())return;
   if(e&&e.message==="ai_consent_needed"){
    meaning.textContent=tr("المصطلح غير موجود في بنك التعريفات المعتمد. يمكنك حفظه الآن أو طلب شرح آلي اختياري.","This term is not in the curated dictionary. Save it now or request an optional AI explanation.");
    var consent=root.document.createElement("p");consent.className="lexGlossarySafety";
@@ -162,7 +188,7 @@ async function openWord(word,article,context,knownKey){
      value=await resolveTerm(key,name,article,context,true);showMeaning();
      btn.disabled=false;btn.textContent=tr("أضف لقاموسي","Save to my dictionary");
     }catch(_){
-     if(!d.open)return;
+     if(!isCurrent())return;
      meaning.textContent=tr("خدمة الشرح الآلي غير متاحة الآن. ما زال بإمكانك حفظ المصطلح للمراجعة لاحقًا.","AI explanation is unavailable now. You can still save the term for later review.");
     }
    };
@@ -170,12 +196,21 @@ async function openWord(word,article,context,knownKey){
    meaning.textContent=tr("تعذّر تحميل الشرح الآن. يمكنك حفظ المصطلح للمراجعة لاحقًا.","Explanation unavailable. You can save the term for later review.");
   }
  }
- if(!d.open)return;
+ if(!isCurrent())return;
  btn.disabled=false;
  btn.onclick=async function(){
   btn.disabled=true;err.textContent="";
-  try{var fresh=await save(value,d.querySelector("#lexPersonalMoment").value);btn.textContent=fresh?tr("✓ تم الحفظ","✓ Saved"):tr("✓ موجود في قاموسك","✓ Already saved");}
-  catch(_){btn.disabled=false;err.textContent=tr("لم يُحفظ المصطلح؛ تحقق من اتصالك أو صلاحية حسابك.","Could not save. Check your connection and account access.");}
+  try{
+   var fresh=await save(value,d.querySelector("#lexPersonalMoment").value);
+   if(!isCurrent())return;
+   d.close();
+   announceSaved(fresh?tr("✓ تمت إضافة المصطلح إلى قاموسك","✓ Term added to your dictionary"):
+     tr("✓ المصطلح موجود بالفعل في قاموسك","✓ Already in your dictionary"));
+  }catch(_){
+   if(!isCurrent())return;
+   btn.disabled=false;
+   err.textContent=tr("لم يُحفظ المصطلح؛ تحقق من اتصالك أو صلاحية حسابك.","Could not save. Check your connection and account access.");
+  }
  };
 }
 function bindArticle(node){
@@ -307,7 +342,7 @@ async function mountPage(){
    });
  }
 }
-var api={terms:TERMS,apply:APPLY,linkText:linkText,normalize:normalize,bindArticle:bindArticle,appendLink:appendLink,mountPage:mountPage};
+var api={terms:TERMS,apply:APPLY,linkText:linkText,normalize:normalize,termKey:termKey,bindArticle:bindArticle,appendLink:appendLink,mountPage:mountPage};
 root.LEX_GLOSSARY=api;
 if(typeof module!=="undefined"&&module.exports)module.exports=api;
 })(typeof window!=="undefined"?window:globalThis);
