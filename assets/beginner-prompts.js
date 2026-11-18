@@ -111,35 +111,39 @@ function prepare(task,lang){
   "From memory, answer about “"+topic+"” ("+ref+").\n1. Write the main rule and the conditions you remember, briefly.\n2. Write three short memory cues.\n3. Explain what each cue helps you remember. You do not need to solve a case.":
   "من ذاكرتك، أجب عن «"+topic+"» ("+ref+").\n1. اكتب القاعدة وأهم شروطها في جمل قصيرة.\n2. اذكر ثلاث كلمات قصيرة تساعدك على تذكّرها.\n3. اكتب معنى كل كلمة. لا يُطلب منك حل واقعة.";
  if(dim==="understanding"&&/^(اشرح قاعدة|Explain the rule on)/.test(raw)){
+  // UI wording alone is neutral; the approved server prompt and rubric remain unchanged.
   var marker=en?"Compare these statements; one is inaccurate:":"عبارتان للمقارنة؛ إحداهما غير دقيقة:";
+  var visibleMarker=en?"Review each statement on its own:":"قيّم كل عبارة على حدة:";
   var at=lines.indexOf(marker);if(at<0||lines.length<at+3)return raw;
   var header=en?"Explain “"+topic+"” ("+ref+") in your own words.":
     "اشرح «"+topic+"» ("+ref+") بأسلوبك.";
   var questions=en?[
    "1. What is the rule? Explain its key conditions briefly.",
-   "2. Read the two statements here. Which is inaccurate? Correct it.",
-   "3. In one or two sentences, explain how the different condition changes the legal outcome."
+   "2. Decide whether each statement is accurate. Explain and correct any error.",
+   "3. In one or two sentences, explain how the legal condition affects the outcome."
   ]:[
    "1. ما معنى القاعدة؟ وضّح أهم شروطها باختصار.",
-   "2. أي العبارتين الآتيتين غير دقيقة؟ صحّحها.",
-   "3. في سطر أو سطرين، وضّح كيف يغيّر الشرط المختلف النتيجة القانونية."
+   "2. هل كل عبارة دقيقة قانونيًا؟ قيّمها منفردة، وعلّل رأيك، وصحّح أي خطأ.",
+   "3. في سطر أو سطرين، وضّح أثر الشرط القانوني على النتيجة."
   ];
   // The comparison belongs immediately after question 2, never after question 3.
-  return [header,questions[0],questions[1],marker].concat(lines.slice(at+1)).concat([questions[2]]).join("\n");
+  return [header,questions[0],questions[1],visibleMarker].concat(lines.slice(at+1)).concat([questions[2]]).join("\n");
  }
  return raw;
 }
 function esc(s){return String(s||"").replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
 function render(text,language){
  var source=String(text||""),lines=source.split(/\r?\n/),en=language==="en";
- var marker=en?"Compare these statements; one is inaccurate:":"عبارتان للمقارنة؛ إحداهما غير دقيقة:";
- var at=lines.indexOf(marker);
+ var legacy=en?"Compare these statements; one is inaccurate:":"عبارتان للمقارنة؛ إحداهما غير دقيقة:";
+ var neutral=en?"Review each statement on its own:":"قيّم كل عبارة على حدة:";
+ var at=lines.indexOf(neutral);if(at<0)at=lines.indexOf(legacy);
  if(at<0||lines.length<at+3)return "<div class='prompt' style='white-space:pre-wrap'>"+esc(source)+"</div>";
+ var marker=lines[at];
  var before=lines.slice(0,at).join("\n"),pair=lines.slice(at+1,at+3),after=lines.slice(at+3).join("\n");
- return "<section class='prompt clearQuestionPrompt'><div style='white-space:pre-wrap'>"+esc(before)+"</div>"+
- "<div class='questionComparison' role='group' aria-label='"+(en?"Two statements to compare":"عبارتان للمقارنة")+"'>"+
+ return "<section class='prompt clearQuestionPrompt'><div class='questionBrief' style='white-space:pre-wrap'>"+esc(before)+"</div>"+
+ "<div class='questionComparison' role='group' aria-label='"+(en?"Evaluate each statement":"تقييم العبارات")+"'>"+
  "<strong>"+esc(marker)+"</strong>"+
- pair.map(function(value,i){return "<p><span class='comparisonNumber'>"+(i+1)+"</span>"+esc(value)+"</p>";}).join("")+
+ pair.map(function(value,i){return "<p class='comparisonStatement'><span class='comparisonNumber'>"+(i+1)+"</span>"+esc(value)+"</p>";}).join("")+
  "</div>"+(after?"<div class='questionFollowup' style='white-space:pre-wrap'>"+esc(after)+"</div>":"")+"</section>";
 }
 root.LEX_BEGINNER_PROMPTS={prepare:prepare,render:render,cases:CASES};
