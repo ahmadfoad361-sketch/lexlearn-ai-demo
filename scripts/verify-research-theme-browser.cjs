@@ -16,7 +16,7 @@ try{for(const lang of ['ar','en'])for(const width of [390,1280])for(const theme 
  const context=await browser.newContext({viewport:{width,height:900}});await context.route('**/*',r=>r.request().url().startsWith('https://unified-fixture.invalid/')?r.fulfill({status:200,contentType:'text/html',body:html}):r.abort());
  const page=await context.newPage();await page.goto('https://unified-fixture.invalid/student-path.html?lang='+lang);
  await page.evaluate(({lang,theme})=>{document.documentElement.lang=lang;document.documentElement.dir=lang==='en'?'ltr':'rtl';localStorage.setItem('lexlearn_learner_theme',theme);},{lang,theme});
- await page.addScriptTag({content:cloud});for(const p of ['learner-theme','legal-study','beginner-prompts','question-style','legal-case-guide','official-diagnostic','student-path'])await page.addScriptTag({content:read('assets/'+p+'.js')});
+ await page.addScriptTag({content:cloud});for(const p of ['learner-theme','legal-study','beginner-prompts','question-style','legal-case-guide','official-diagnostic','comparison-cards','student-path'])await page.addScriptTag({content:read('assets/'+p+'.js')});
  for(const dim of ['recall','understanding','exam']){
   const a=dim==='exam'?Q.examTask(1,'ar'):Q.makeEssay(Q.topic(1),'ar',dim),e=dim==='exam'?Q.examTask(1,'en'):Q.makeEssay(Q.topic(1),'en',dim);
   const task={id:'rights-v1-s1-'+dim,dimension:dim==='exam'?'exam_execution':dim,prompt_ar:a.originalPrompt,prompt_en:e.originalPrompt,title_ar:a.title,title_en:e.title,sources:['qa-civil-2004-art39','qa-civil-2004-art40']};
@@ -28,6 +28,33 @@ try{for(const lang of ['ar','en'])for(const width of [390,1280])for(const theme 
    const prompt=await page.locator(dim==='exam'?'#legalExamGuide':'.questionSteps, .prompt').last().innerText();if(expected!==null)assert.equal(prompt,expected);expected=prompt;
    assert.ok(text.includes(lang==='ar'?'القانون المدني':'Civil Code'));
    assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+2),'horizontal overflow');
+   if(dim==='understanding'&&name==='Sarah fixture'){
+    const card1=page.locator('[data-lex-card-index="1"]');
+    const card2=page.locator('[data-lex-card-index="2"]');
+    const accurate=page.locator('[data-lex-sort-target="accurate"]');
+    const inaccurate=page.locator('[data-lex-sort-target="inaccurate"]');
+    assert.equal(await page.locator('.lexSortableCard').count(),2,'both comparison cards interactive');
+    assert.ok(!text.includes(lang==='ar'?'إحداهما غير دقيقة':'one is inaccurate'),'no one-wrong cue');
+    // Tap works even when the browser cannot drag.
+    await card1.click();await accurate.click();
+    assert.equal(await card1.getAttribute('data-lex-choice'),'accurate','tap classification');
+    // Real browser mouse movement exercises the pointer/drop interaction.
+    const start=await card2.boundingBox(),end=await inaccurate.boundingBox();
+    assert.ok(start&&end,'drag positions available');
+    await page.mouse.move(start.x+start.width/2,start.y+start.height/2);
+    await page.mouse.down();
+    await page.mouse.move(end.x+end.width/2,end.y+end.height/2,{steps:12});
+    await page.mouse.up();
+    assert.equal(await card2.getAttribute('data-lex-choice'),'inaccurate','mouse drag classification');
+    // Move again with keyboard, proving there is no locked answer or hidden correctness.
+    await card2.focus();await page.keyboard.press('Enter');
+    await accurate.focus();await page.keyboard.press('Space');
+    assert.equal(await card2.getAttribute('data-lex-choice'),'accurate','keyboard reclassification');
+    let response=await page.evaluate(lang=>LEX_COMPARISON_CARDS.answer(document.getElementById('studentTrainingApp'),lang),lang);
+    assert.match(response,lang==='ar'?/العبارة 1/:/Statement 1/);
+    assert.match(response,lang==='ar'?/العبارة 2/:/Statement 2/);
+    assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+2),'sortable card viewport overflow');
+   }
    assert.equal(await page.evaluate(()=>document.documentElement.getAttribute('data-learner-theme')),theme);views++;
   }
  }
