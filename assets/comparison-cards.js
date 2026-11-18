@@ -71,10 +71,10 @@ function mount(host,lang){
   return hit&&hit.closest?hit.closest("[data-lex-sort-target]"):null;
  }
  cards.forEach(function(card){
-  card.addEventListener("click",function(){select(card);});
+  card.addEventListener("click",function(e){e.stopPropagation();select(card);});
   card.addEventListener("keydown",function(e){
-   if(e.key==="Enter"||e.key===" "){e.preventDefault();select(card);}
-   if(e.key==="Escape"){selected=null;card.classList.remove("lexSortSelected");}
+   if(e.key==="Enter"||e.key===" "){e.preventDefault();e.stopPropagation();select(card);}
+   if(e.key==="Escape"){e.stopPropagation();selected=null;card.classList.remove("lexSortSelected");}
   });
   card.setAttribute("draggable","true");
   card.addEventListener("dragstart",function(e){
@@ -106,9 +106,9 @@ function mount(host,lang){
   card.addEventListener("pointercancel",function(e){end(e,false);});
  });
  targets.querySelectorAll(".lexSortTarget").forEach(function(zone){
-  zone.addEventListener("click",function(){if(selected)move(selected,zone);});
+  zone.addEventListener("click",function(e){if(e.target!==zone&&!e.target.closest("strong"))return;if(selected)move(selected,zone);});
   zone.addEventListener("keydown",function(e){
-   if(e.key==="Enter"||e.key===" "){e.preventDefault();if(selected)move(selected,zone);}
+   if((e.key==="Enter"||e.key===" ")&&e.target===zone){e.preventDefault();if(selected)move(selected,zone);}
   });
   zone.addEventListener("dragover",function(e){e.preventDefault();if(e.dataTransfer)e.dataTransfer.dropEffect="move";});
   zone.addEventListener("drop",function(e){
