@@ -13,12 +13,12 @@ html{
  --question-accent:#8a1f39;
 }
 html[data-learner-theme="dark"]{
- --question-ink:#f7f4ef;
+ --question-ink:var(--lx-ink,#f9f4ef);
  --question-muted:#d0d9e6;
- --question-border:#718099;
- --question-paper:#1b2a40;
- --question-soft:#263750;
- --question-accent:#ffb1c4;
+ --question-border:var(--lx-border,#70839d);
+ --question-paper:var(--lx-surface,#1e3049);
+ --question-soft:var(--lx-raised,#2b405c);
+ --question-accent:var(--lx-accent-line,#d8718a);
 }
 :where(#officialDiagnostic,#studentPractice,#studentTrainingApp,#officialLevelMount,#showcaseApp,#careerApp,.taskCard){
  --question-line-height:1.95;
@@ -65,7 +65,7 @@ html[data-learner-theme="dark"] :where(
  #studentPractice:has(fieldset)>h2,
  #showcaseApp .stageCard:has(.choices)>h2,
  #showcaseApp .stageCard:has(textarea)>h2
-)::before{background:#ffb1c4;color:#101b2c}
+)::before{background:var(--lx-accent,#e794ab);color:#111d31}
 /* Explanatory boxes and exam prompts are visually separate from citations. */
 :where(
  #studentPractice .prompt,
@@ -214,7 +214,7 @@ html[data-learner-theme="dark"] :where(
 }
 html[data-learner-theme="dark"]
  :where(#studentPractice,#studentTrainingApp,#officialLevelMount,.taskCard,#officialDiagnostic)
- .clearQuestionPrompt>.questionLeadLabel{background:#ffb1c4;color:#101b2c}
+ .clearQuestionPrompt>.questionLeadLabel{background:var(--lx-accent,#e794ab);color:#111d31}
 :where(#studentPractice,#studentTrainingApp,#officialLevelMount,.taskCard,#officialDiagnostic)
  .clearQuestionPrompt .questionBrief{
  font-size:clamp(1.15rem,2vw,1.34rem);
@@ -254,4 +254,9 @@ html[data-learner-theme="dark"]
  border-inline-start:4px solid var(--question-accent);
  border-radius:14px;background:var(--question-soft);
  color:var(--question-ink);font-size:1.14rem;line-height:1.9;
+}
+
+/* Keep native checkbox/radio selection readable in dark question screens. */
+html[data-learner-theme="dark"] :where(#officialDiagnostic .choice,#studentPractice .choice) input{
+ accent-color:var(--lx-accent,#e794ab);
 }
