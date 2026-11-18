@@ -391,3 +391,17 @@ html[data-learner-theme] #studentTrainingApp .stage #adaptiveEssay:focus{
  html[data-learner-theme] #studentTrainingApp .stage{padding:1rem;margin-inline:-.45rem}
  html[data-learner-theme] #studentTrainingApp .stage .comparisonStatement{padding:.75rem}
 }
+
+/* Make the question visually distinct from the supporting instructions. */
+html[data-learner-theme] #studentTrainingApp .questionLeadLabel{
+ display:inline-flex;align-items:center;margin:0 0 1rem;padding:.3rem .85rem;
+ border-radius:7px;background:var(--session-accent,#8a1f39);
+ color:#fff;font-size:.83rem;font-weight:800;line-height:1.5;
+}
+html[data-learner-theme=dark] #studentTrainingApp .questionLeadLabel{
+ background:var(--session-accent,#f1a8bb);color:#111d31;
+}
+html[data-learner-theme] #studentTrainingApp .questionSingle>div{font-size:1.16rem;font-weight:650;line-height:2.05}
+html[data-learner-theme] #studentTrainingApp .questionComparison .comparisonStatement{
+ box-shadow:0 2px 8px #111d310a;
+}
