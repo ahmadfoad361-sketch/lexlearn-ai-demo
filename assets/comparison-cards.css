@@ -1,0 +1,54 @@
+/* Two-statement sorting: drag on touch/mouse or use tap/keyboard. */
+html[data-learner-theme] #studentTrainingApp .lexSortHint{
+ margin:.75rem 0;font-size:.89rem;line-height:1.75;color:var(--lx-muted);
+}
+html[data-learner-theme] #studentTrainingApp .lexComparisonDeck{
+ display:grid;gap:.7rem;margin:.8rem 0;
+}
+html[data-learner-theme] #studentTrainingApp .lexSortableCard{
+ touch-action:none;user-select:none;-webkit-user-select:none;
+ position:relative;z-index:1;cursor:grab;transition:border-color .15s ease,box-shadow .15s ease;
+ overflow-wrap:anywhere;
+}
+html[data-learner-theme] #studentTrainingApp .lexSortableCard.lexSortSelected{
+ border-color:var(--session-accent,#8a1f39);
+ box-shadow:0 0 0 2px var(--session-accent,#8a1f39);
+}
+html[data-learner-theme] #studentTrainingApp .lexSortableCard.lexIsDragging{
+ z-index:80;cursor:grabbing;opacity:.88;transition:none;
+ box-shadow:0 14px 28px #111d3133;
+}
+html[data-learner-theme] #studentTrainingApp .lexSortTargets{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+ gap:1rem;margin:1.15rem 0 0;
+}
+html[data-learner-theme] #studentTrainingApp .lexSortTarget{
+ min-width:0;min-height:118px;
+ padding:.8rem;border:2px dashed var(--lx-border);
+ border-radius:15px;background:var(--lx-raised);
+ cursor:pointer;display:flex;flex-direction:column;gap:.6rem;
+}
+html[data-learner-theme] #studentTrainingApp .lexSortTarget>strong{
+ display:block;color:var(--lx-ink);font-weight:750;line-height:1.65;text-align:center;
+}
+html[data-learner-theme] #studentTrainingApp .lexSortBucket{
+ display:grid;gap:.5rem;min-height:58px;
+}
+html[data-learner-theme] #studentTrainingApp .lexSortBucket:empty:before{
+ content:"↓";display:grid;place-items:center;
+ font-size:1.7rem;opacity:.52;color:var(--lx-muted);
+}
+html[data-learner-theme] #studentTrainingApp .lexSortBucket .lexSortableCard{
+ margin:0;padding:.7rem;font-size:.94rem;cursor:grab;
+}
+html[data-learner-theme] #studentTrainingApp :is(.lexSortTarget,.lexSortableCard):focus-visible{
+ outline:3px solid var(--session-accent,#8a1f39);outline-offset:3px;
+}
+html[data-learner-theme=dark] #studentTrainingApp .lexSortTarget{background:var(--lx-surface);border-color:var(--lx-border)}
+@media(max-width:560px){
+ html[data-learner-theme] #studentTrainingApp .lexSortTargets{grid-template-columns:1fr;gap:.75rem}
+ html[data-learner-theme] #studentTrainingApp .lexSortTarget{min-height:94px}
+}
+@media(prefers-reduced-motion:reduce){
+ html[data-learner-theme] #studentTrainingApp .lexSortableCard{transition:none}
+}
