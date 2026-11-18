@@ -72,3 +72,20 @@ test('official question type cards have distinct accessible presentation without
  assert.match(css,/questionBrief/);
  assert.match(css,/comparisonStatement/);
 });
+
+test('comparison classification is learner-owned, bilingual and passed through existing answer flow',()=>{
+ const sorter=require('../assets/comparison-cards.js');
+ function card(n,choice){return {dataset:{lexCardIndex:String(n),lexChoice:choice}};}
+ const host={querySelectorAll:()=>[card(2,'inaccurate'),card(1,'accurate')]};
+ assert.equal(sorter.answer(host,'ar'),'تقييمي المستقل للعبارات:\nالعبارة 1: دقيقة قانونيًا.\nالعبارة 2: غير دقيقة قانونيًا.');
+ assert.equal(sorter.answer(host,'en'),'My assessment of each statement:\nStatement 1: legally accurate.\nStatement 2: legally inaccurate.');
+ assert.equal(sorter.answer({querySelectorAll:()=>[card(1,''),card(2,'')]},'ar'),'');
+ const source=fs.readFileSync('assets/comparison-cards.js','utf8');
+ assert.match(source,/pointerdown/);assert.match(source,/pointermove/);assert.match(source,/pointerup/);
+ assert.match(source,/dragstart/);assert.match(source,/dragover/);assert.match(source,/keydown/);
+ const page=fs.readFileSync('student-path.html','utf8');
+ assert.match(page,/assets\/comparison-cards.js/);assert.match(page,/assets\/comparison-cards.css/);
+ const student=fs.readFileSync('assets/student-path.js','utf8');
+ assert.match(student,/LEX_COMPARISON_CARDS\.mount/);
+ assert.match(student,/LEX_COMPARISON_CARDS\.answer/);
+});
