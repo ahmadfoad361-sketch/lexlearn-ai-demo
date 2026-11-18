@@ -89,3 +89,24 @@ test('comparison classification is learner-owned, bilingual and passed through e
  assert.match(student,/LEX_COMPARISON_CARDS\.mount/);
  assert.match(student,/LEX_COMPARISON_CARDS\.answer/);
 });
+
+test('all learner question entry points use the same accessible clarity stylesheet',()=>{
+ const pages=['diagnostic.html','student-path.html','program.html','program-en.html',
+  'showcase.html','showcase-en.html','showcase-level1.html','showcase-level1-en.html',
+  'student-practice.html','student-future.html','student-research-pilot.html',
+  'pilot-review.html','pilot-qa.html'];
+ for(const page of pages){
+  const source=fs.readFileSync(page,'utf8');
+  assert.match(source,/assets\/question-clarity\.css/,page);
+ }
+ const css=fs.readFileSync('assets/question-clarity.css','utf8');
+ for(const region of ['#officialDiagnostic','#studentPractice','#studentTrainingApp',
+  '#officialLevelMount','#showcaseApp','#careerApp','.taskCard']){
+  assert.ok(css.includes(region),'missing clarity scope '+region);
+ }
+ assert.match(css,/html\[lang="en"\]/);
+ assert.match(css,/data-learner-theme="dark"/);
+ assert.match(css,/@media\(max-width:600px\)/);
+ assert.match(css,/prefers-reduced-motion/);
+ assert.doesNotMatch(css,/position:\s*absolute[^;]*!important/);
+});
