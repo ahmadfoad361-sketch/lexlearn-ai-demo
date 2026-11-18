@@ -103,3 +103,20 @@ test("bulk enrollment must not invent missing academic placement",()=>{
  assert.ok(!part.includes('g.course_id||"qa-qu-lawc101-rights"'));
  assert.ok(s.includes('!d.year'));
 });
+
+test("reversible selected archive is scoped to chosen group, never deletes student accounts",()=>{
+ const source=fs.readFileSync("assets/admin-archive.js","utf8");
+ const html=fs.readFileSync("admin-archive.html","utf8");
+ assert.ok(!source.includes('action:"delete_student"'));
+ assert.match(source,/chosen:new Set\(\)/);
+ assert.match(source,/state\.selected=e\.target\.value;state\.chosen\.clear\(\)/);
+ assert.match(source,/currentStudents\(\)\.filter\(s=>s\.accountStatus!=="archived"&&state\.chosen\.has\(s\.id\)\)/);
+ assert.match(source,/async function archiveMany\(list,reason\)/);
+ assert.match(source,/await call\("archive_student",s,reason\)/);
+ assert.match(source,/history_preserved!==true/);
+ for(const id of ["archiveSelected","archiveChooseAll","archiveClearSelection","archiveGroup"]){
+  assert.ok(html.includes('id="'+id+'"'),"missing scoped archive control "+id);
+ }
+ assert.ok(html.includes('colspan="5"'));
+ assert.ok(!html.includes('حذف الطلاب المحددين'));
+});
