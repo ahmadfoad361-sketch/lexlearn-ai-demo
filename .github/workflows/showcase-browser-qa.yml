@@ -11,6 +11,8 @@ on:
       - 'assets/research-pilot-theme.css'
       - 'student-research-pilot.html'
       - 'student-path.html'
+      - 'assets/learner-experience.css'
+      - 'assets/question-clarity.css'
       - 'student-future.html'
       - 'assets/learner-extensions.js'
       - 'assets/learner-extensions.css'

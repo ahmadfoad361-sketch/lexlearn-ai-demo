@@ -1,6 +1,6 @@
 /* Learner surfaces only. This stylesheet is deliberately absent from conference.html. */
 html[data-learner-theme]{--lx-bg:#f8f4ee;--lx-surface:#fffdfa;--lx-raised:#f2ece5;--lx-ink:#18253b;--lx-muted:#536176;--lx-border:#cec7c1;--lx-accent:#8a1f39;--lx-good:#20604c;--lx-focus:#8a1f39;--ink:var(--lx-ink);--muted:var(--lx-muted);--paper:var(--lx-surface);--line:var(--lx-border);--paper-ink:var(--lx-ink);--paper-muted:var(--lx-muted)}
-html[data-learner-theme=dark]{--lx-bg:#101b2c;--lx-surface:#1b2a40;--lx-raised:#263750;--lx-ink:#f7f4ef;--lx-muted:#c1ccdd;--lx-border:#718099;--lx-accent:#ffb1c4;--lx-good:#a0e4c1;--lx-focus:#f3d598;--diag-navy:var(--lx-ink);--diag-muted:var(--lx-muted);--diag-border:var(--lx-border);--diag-burgundy:var(--lx-accent)}
+html[data-learner-theme=dark]{--lx-bg:#111d31;--lx-surface:#1e3049;--lx-raised:#2b405c;--lx-ink:#f9f4ef;--lx-muted:#ccd6e5;--lx-border:#70839d;--lx-accent:#e794ab;--lx-accent-line:#d8718a;--lx-good:#a0e4c1;--lx-focus:#e794ab;--diag-navy:var(--lx-ink);--diag-muted:var(--lx-muted);--diag-border:var(--lx-border);--diag-burgundy:var(--lx-accent)}
 html[data-learner-theme] body{background:var(--lx-bg);color:var(--lx-ink);padding-bottom:80px;line-height:1.8}
 html[data-learner-theme] :is(input,textarea,select){background:var(--lx-surface);color:var(--lx-ink);border-color:var(--lx-border);caret-color:var(--lx-accent);font-size:max(16px,1em)}
 html[data-learner-theme] :is(input,textarea)::placeholder{color:var(--lx-muted);opacity:1}
@@ -64,7 +64,7 @@ html[data-learner-theme] :is(.rubricEvidence,.cycleLead,.cycleSmall,.cyclePath,.
 html[data-learner-theme] .loginBrand :is(.en-brand small,.brandTop small){color:#fff!important}
 
 html[data-learner-theme] :is(.legalStudyEyebrow,.legalStudy a,.legalCitation a,.caseEyebrow){color:var(--lx-accent)}
-html[data-learner-theme=dark] .momentRing.memory .ringValue{stroke:#ffb1c4}
+html[data-learner-theme=dark] .momentRing.memory .ringValue{stroke:var(--lx-accent)}
 html[data-learner-theme=dark] .momentRing.meaning .ringValue{stroke:#85d6cc}
 
 html[data-learner-theme] .loginBrand h1{font-family:inherit}
@@ -252,13 +252,14 @@ html[data-learner-theme] {
 }
 html[data-learner-theme=dark] {
   --lx-bg:#111D31;
-  --lx-surface:#1b2a40;
-  --lx-raised:#283a54;
+  --lx-surface:#1e3049;
+  --lx-raised:#2b405c;
   --lx-ink:#F9F4EF;
   --lx-muted:#ccd6e5;
   --lx-border:#70839d;
-  --lx-accent:#f0b6c7;
-  --lx-focus:#f0b6c7;
+  --lx-accent:#e794ab; /* Accessible muted brick for text and selected controls */
+  --lx-accent-line:#d8718a; /* Brand brick edge for decorative borders */
+  --lx-focus:#e794ab;
 }
 html[data-learner-theme] body {font-size:max(16px,1rem);line-height:1.8}
 html[data-learner-theme] :is(.diagHeader,.diagCard,.diagScoreCard,.resultCard,.stageCard,.progressReport,.caseAnswerStep,.taskCard,.reviewCard,.qualityExample,.formCard) {
@@ -281,7 +282,7 @@ html[data-learner-theme] :is(button,.btn,.actionCard,.caseNext,.caseBack,#server
 }
 html[data-learner-theme] :is(input:not([type=checkbox]):not([type=radio]),select,textarea) {font-size:max(16px,1em)}
 html[data-learner-theme] :is(progress,input[type=range]) {accent-color:#8A1F39}
-html[data-learner-theme=dark] :is(progress,input[type=range]) {accent-color:#f0b6c7}
+html[data-learner-theme=dark] :is(progress,input[type=range]) {accent-color:var(--lx-accent)}
 html[data-learner-theme] :is(.diagProgressTrack,.progressLine,.skillMeter) {border-radius:999px;overflow:hidden}
 html[data-learner-theme] :is(.diagCard,.stageCard,.resultCard,.caseAnswerStep) :is(a,button,input,textarea,select):focus-visible {
   outline:3px solid var(--lx-focus);
@@ -344,7 +345,7 @@ html[data-learner-theme] #studentTrainingApp .stage--recall{--session-accent:#36
 html[data-learner-theme] #studentTrainingApp .stage--understanding{--session-accent:#8a1f39}
 html[data-learner-theme] #studentTrainingApp .stage--exam_execution{--session-accent:#9b711e}
 html[data-learner-theme=dark] #studentTrainingApp .stage--recall{--session-accent:#8dc2dc}
-html[data-learner-theme=dark] #studentTrainingApp .stage--understanding{--session-accent:#f1a8bb}
+html[data-learner-theme=dark] #studentTrainingApp .stage--understanding{--session-accent:var(--lx-accent)}
 html[data-learner-theme=dark] #studentTrainingApp .stage--exam_execution{--session-accent:#f1ca80}
 html[data-learner-theme] #studentTrainingApp .stage>h1{margin-top:.2rem}
 html[data-learner-theme] #studentTrainingApp .stage>h2{
@@ -404,4 +405,23 @@ html[data-learner-theme=dark] #studentTrainingApp .questionLeadLabel{
 html[data-learner-theme] #studentTrainingApp .questionSingle>div{font-size:1.16rem;font-weight:650;line-height:2.05}
 html[data-learner-theme] #studentTrainingApp .questionComparison .comparisonStatement{
  box-shadow:0 2px 8px #111d310a;
+}
+
+/* Dark-mode surface depth and brick accents (18 Nov 2026). Light mode unchanged. */
+html[data-learner-theme=dark] :is(.diagHeader,.diagCard,.diagScoreCard,.resultCard,.stageCard,.progressReport,.caseAnswerStep,.taskCard,.reviewCard,.qualityExample,.formCard,.loginCard){
+  border-color:var(--lx-border);
+  box-shadow:0 12px 30px #060e1d52,0 1px 0 #b7c6d50a;
+}
+html[data-learner-theme=dark] :is(.choice:has(input:checked),.caseStep.active,.session.active,.levelCard.complete){
+  border-color:var(--lx-accent-line);
+  box-shadow:0 0 0 1px color-mix(in srgb,var(--lx-accent-line) 32%,transparent);
+}
+html[data-learner-theme=dark] #studentTrainingApp .stage--understanding{
+  border-top-color:var(--lx-accent-line);
+}
+html[data-learner-theme=dark] #studentTrainingApp .stage--understanding>h2{
+  border-inline-start-color:var(--lx-accent-line);
+}
+html[data-learner-theme=dark] #studentTrainingApp .stage .comparisonNumber{
+  color:#111d31; /* Pale badge backgrounds require a dark numeral */
 }
