@@ -387,6 +387,9 @@ async function boot(){
    }
    main+="</section>";
    show(nav()+main);
+   if(next&&next.dimension==="understanding"&&root.LEX_COMPARISON_CARDS){
+    root.LEX_COMPARISON_CARDS.mount(host,lang());
+   }
    if(completed&&root.LEX_CONFIG?.learningExtensionsV1===true&&root.LEX_LEARNER_EXTENSIONS){
     root.LEX_LEARNER_EXTENSIONS.mountReview(host.querySelector("#lexReviewSlot"),{cloud:cloud,uid:uid,session:selected,lang:lang()});
     root.LEX_LEARNER_EXTENSIONS.mountCareerCard(host.querySelector("#lexCareerSlot"),{session:selected,lang:lang()});
@@ -431,6 +434,13 @@ async function boot(){
     answer=String(answer||"").trim();
     var error=host.querySelector("#adaptiveError");
     if(!answer){if(error)error.textContent=t("اكتب إجابة أو اضغط «لا أعرف» للحصول على تلميح.","Write an answer or choose I don\u0027t know for a hint.");return;}
+    // Include card decisions with the learner's own explanation in the same
+    // official answer; no client-side grading or scoring is introduced.
+    if(next&&next.dimension==="understanding"&&root.LEX_COMPARISON_CARDS&&
+      answer!==t("لا أعلم","I don't know")){
+     var cardClassification=root.LEX_COMPARISON_CARDS.answer(host,lang());
+     if(cardClassification)answer=cardClassification+"\n"+answer;
+    }
     busy=true;button.disabled=true;
     if(error)error.textContent=t("جارٍ حفظ إجابتك وتحليلها...","Saving and performing provisional review...");
     var savingView=host.querySelector("#answerSaveProgress");
