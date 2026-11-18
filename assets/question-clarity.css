@@ -27,10 +27,7 @@ html[data-learner-theme="dark"]{
  #officialDiagnostic:has(fieldset) h2,
  #studentPractice:has(fieldset)>h2,
  #showcaseApp .stageCard:has(.choices)>h2,
- #showcaseApp .stageCard:has(textarea)>h2,
- #officialLevelMount .taskCard:has(textarea)>h2,
- .taskCard:has(.options)>h2,
- .taskCard:has(#freeAnswer)>h2
+ #showcaseApp .stageCard:has(textarea)>h2
 ){
  margin:1rem 0 1.15rem;
  padding:clamp(1rem,3vw,1.35rem);
@@ -49,10 +46,7 @@ html[data-learner-theme="dark"]{
  #officialDiagnostic:has(fieldset) h2,
  #studentPractice:has(fieldset)>h2,
  #showcaseApp .stageCard:has(.choices)>h2,
- #showcaseApp .stageCard:has(textarea)>h2,
- #officialLevelMount .taskCard:has(textarea)>h2,
- .taskCard:has(.options)>h2,
- .taskCard:has(#freeAnswer)>h2
+ #showcaseApp .stageCard:has(textarea)>h2
 )::before{
  content:"السؤال";
  display:block;width:max-content;
@@ -64,19 +58,13 @@ html[lang="en"] :where(
  #officialDiagnostic:has(fieldset) h2,
  #studentPractice:has(fieldset)>h2,
  #showcaseApp .stageCard:has(.choices)>h2,
- #showcaseApp .stageCard:has(textarea)>h2,
- #officialLevelMount .taskCard:has(textarea)>h2,
- .taskCard:has(.options)>h2,
- .taskCard:has(#freeAnswer)>h2
+ #showcaseApp .stageCard:has(textarea)>h2
 )::before{content:"QUESTION"}
 html[data-learner-theme="dark"] :where(
  #officialDiagnostic:has(fieldset) h2,
  #studentPractice:has(fieldset)>h2,
  #showcaseApp .stageCard:has(.choices)>h2,
- #showcaseApp .stageCard:has(textarea)>h2,
- #officialLevelMount .taskCard:has(textarea)>h2,
- .taskCard:has(.options)>h2,
- .taskCard:has(#freeAnswer)>h2
+ #showcaseApp .stageCard:has(textarea)>h2
 )::before{background:#ffb1c4;color:#101b2c}
 /* Explanatory boxes and exam prompts are visually separate from citations. */
 :where(
@@ -207,13 +195,63 @@ html[data-learner-theme="dark"] :where(
  :where(
   #officialDiagnostic:has(fieldset) h2,#studentPractice:has(fieldset)>h2,
   #showcaseApp .stageCard:has(.choices)>h2,
-  #showcaseApp .stageCard:has(textarea)>h2,
-  #officialLevelMount .taskCard:has(textarea)>h2,
-  .taskCard:has(.options)>h2,.taskCard:has(#freeAnswer)>h2
+  #showcaseApp .stageCard:has(textarea)>h2
  ){font-size:1.16rem;padding:.9rem;line-height:1.9}
  :where(#officialDiagnostic .choice,#studentPractice .choice,#showcaseApp .stageCard .choices .choice,.taskCard .options .option){min-height:52px;padding:.9rem}
  :where(#studentPractice .prompt,#studentTrainingApp .prompt,#officialLevelMount .prompt,.taskCard .prompt){font-size:1.08rem}
 }
 @media(prefers-reduced-motion:reduce){
  :where(#officialDiagnostic .choice,#studentPractice .choice,#showcaseApp .choice,.taskCard .option){transition:none}
+}
+
+/* Universal essay question hierarchy: stem > instructions > response. */
+:where(#studentPractice,#studentTrainingApp,#officialLevelMount,.taskCard,#officialDiagnostic)
+ .clearQuestionPrompt>.questionLeadLabel{
+ display:inline-flex;align-items:center;max-width:100%;
+ padding:.24rem .8rem;margin:0 0 .9rem;
+ border-radius:7px;background:#8a1f39;color:#fff;
+ font-size:.84rem;font-weight:790;line-height:1.6;
+}
+html[data-learner-theme="dark"]
+ :where(#studentPractice,#studentTrainingApp,#officialLevelMount,.taskCard,#officialDiagnostic)
+ .clearQuestionPrompt>.questionLeadLabel{background:#ffb1c4;color:#101b2c}
+:where(#studentPractice,#studentTrainingApp,#officialLevelMount,.taskCard,#officialDiagnostic)
+ .clearQuestionPrompt .questionBrief{
+ font-size:clamp(1.15rem,2vw,1.34rem);
+ font-weight:775;line-height:1.95;color:var(--question-ink);
+ padding:0 0 .9rem;margin-bottom:.95rem;
+ border-bottom:1px solid var(--question-border);
+}
+:where(#studentPractice,#studentTrainingApp,#officialLevelMount,.taskCard,#officialDiagnostic)
+ .clearQuestionPrompt .questionGuidance{
+ font-size:clamp(.99rem,1.3vw,1.09rem);
+ line-height:2;color:var(--question-muted);
+ border-radius:11px;padding:.65rem .95rem;
+ background:var(--question-paper);
+ border-inline-start:3px solid var(--question-border);
+}
+:where(#studentPractice,#studentTrainingApp,#officialLevelMount,.taskCard,#officialDiagnostic)
+ .clearQuestionPrompt .questionComparison{
+ margin-top:1rem;background:var(--question-paper);
+ border:1px solid var(--question-border);
+ border-inline-start:4px solid var(--question-accent);
+}
+:where(#studentPractice,#studentTrainingApp,#officialLevelMount,.taskCard,#officialDiagnostic)
+ .clearQuestionPrompt .questionFollowup{
+ margin-top:1rem;padding:.9rem 0 0;
+ border-top:1px dashed var(--question-border);
+ color:var(--question-ink);font-weight:670;
+}
+.taskCard:has(.options)>h2,.taskCard:has(#freeAnswer)>h2,
+#officialLevelMount .taskCard:has(textarea)>h2{
+ /* This is the activity title, not the question itself. */
+ padding:0;border:0;background:transparent;
+ box-shadow:none;color:var(--question-ink);font-weight:750;
+}
+.taskCard .lexQuestionPrompt{
+ display:block;margin-block:1rem;
+ padding:1rem 1.2rem;border:1px solid var(--question-border);
+ border-inline-start:4px solid var(--question-accent);
+ border-radius:14px;background:var(--question-soft);
+ color:var(--question-ink);font-size:1.14rem;line-height:1.9;
 }
