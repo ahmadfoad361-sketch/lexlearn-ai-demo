@@ -106,7 +106,7 @@ function mount(host,lang){
   card.addEventListener("pointercancel",function(e){end(e,false);});
  });
  targets.querySelectorAll(".lexSortTarget").forEach(function(zone){
-  zone.addEventListener("click",function(e){if(e.target!==zone&&!e.target.closest("strong"))return;if(selected)move(selected,zone);});
+  zone.addEventListener("click",function(e){if(e.target.closest(".lexSortableCard"))return;if(selected)move(selected,zone);});
   zone.addEventListener("keydown",function(e){
    if((e.key==="Enter"||e.key===" ")&&e.target===zone){e.preventDefault();if(selected)move(selected,zone);}
   });
