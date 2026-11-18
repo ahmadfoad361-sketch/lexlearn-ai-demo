@@ -13,10 +13,17 @@
 <section class="bulkPanel"><h1>أرشفة حسابات الطلاب</h1>
 <p>الأرشفة توقف دخول الطالب وتُخرجه من القوائم النشطة، مع الاحتفاظ بحسابه ومجموعته ودرجاته وكل سجل التدريب. يمكن استعادة الحساب لاحقًا دون حذف بياناته.</p>
 <label>اختيار المجموعة <select id="archiveCohort"><option value="">اختر مجموعة</option></select></label>
-<div class="bulkActions"><button class="btnPrimary" id="archiveGroup" disabled>أرشفة طلاب المجموعة بعد نهاية المقرر</button><span id="archiveCount" role="status"></span></div>
+<div class="bulkActions">
+  <button class="btnPrimary" id="archiveSelected" disabled>أرشفة الطلاب المحددين فقط</button>
+  <button type="button" id="archiveChooseAll" disabled>تحديد جميع طلاب المجموعة</button>
+  <button type="button" id="archiveClearSelection" disabled>إلغاء التحديد</button>
+  <button type="button" id="archiveGroup" disabled>أرشفة المجموعة بأكملها</button>
+  <span id="archiveCount" role="status" aria-live="polite"></span>
+</div>
+<p class="bulkInfo">اختر المجموعة أولًا، ثم ضع علامة أمام الطلاب المراد أرشفتهم. لا يُحذف أي حساب، وكل أرشفة قابلة للاستعادة.</p>
 <p class="bulkDanger">الأرشفة لا تعني الحذف. يُسجل السبب وهوية المشرف في سجل العمليات. الاستعادة تعيد حالة الحساب السابقة، بما فيها الإيقاف إذا كان موقوفًا من قبل.</p>
 </section>
-<section class="bulkPanel"><h2>طلاب المجموعة غير المؤرشفين</h2><div class="tableScroll"><table class="bulkTable"><thead><tr><th>الطالب</th><th>اسم الدخول</th><th>الحالة</th><th>الإجراء</th></tr></thead><tbody id="activeArchiveRows"><tr><td colspan="4">اختر المجموعة</td></tr></tbody></table></div></section>
+<section class="bulkPanel"><h2>طلاب المجموعة غير المؤرشفين</h2><div class="tableScroll"><table class="bulkTable"><thead><tr><th>تحديد</th><th>الطالب</th><th>اسم الدخول</th><th>الحالة</th><th>الإجراء</th></tr></thead><tbody id="activeArchiveRows"><tr><td colspan="5">اختر المجموعة</td></tr></tbody></table></div></section>
 <section class="bulkPanel"><h2>الأرشيف — قابل للاستعادة</h2><p>الطلاب في الأرشيف لا يفقدون بياناتهم أو سجلاتهم الدراسية.</p>
 <div class="tableScroll"><table class="bulkTable"><thead><tr><th>الطالب</th><th>المجموعة الأصلية</th><th>اسم الدخول</th><th>الإجراء</th></tr></thead><tbody id="archivedRows"><tr><td colspan="4">جارٍ التحميل…</td></tr></tbody></table></div></section>
 </main><footer class="bulkFooter">LexLearn · نفهم طريقة تفكيرك، ونبني طريقك.</footer>
