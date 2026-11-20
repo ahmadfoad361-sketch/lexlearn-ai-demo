@@ -191,3 +191,30 @@ test('admin navigation closes on another dropdown, outside pointer, and Escape',
  assert.match(source,/addEventListener\("pointerdown"/);
  assert.match(source,/e\.key==="Escape"/);
 });
+
+
+test('approved dark learning screens use one shared card and CTA language',()=>{
+ const css=fs.readFileSync('assets/question-clarity.css','utf8');
+ assert.match(css,/LexLearn unified dark learner screens/);
+ for(const selector of [
+  '#studentTrainingApp .legalStudy>h2',
+  '#studentTrainingApp .legalStudyEyebrow',
+  '#studentTrainingApp #beginLegalQuestions',
+  '#studentTrainingApp #adaptiveSubmit',
+  '#studentTrainingApp .stage .questionBrief',
+  '#studentTrainingApp .stage .questionGuidance',
+  '#officialDiagnostic #serverNext',
+  '#showcaseApp .stageCard .btn.primary',
+  '#programApp .stage .primary'
+ ])assert.ok(css.includes(selector),'Missing unified dark UI selector: '+selector);
+ for(const page of [
+  'diagnostic.html','student-path.html','program.html','program-en.html',
+  'showcase.html','showcase-en.html','showcase-level1.html','showcase-level1-en.html'
+ ]){
+  const html=fs.readFileSync(page,'utf8');
+  assert.ok(html.includes('assets/question-clarity.css?v=20261120.2'),'Stale question stylesheet: '+page);
+ }
+ const originals=fs.readFileSync('assets/legal-study.js','utf8');
+ assert.match(originals,/function render\(ids,lang\)/);
+ assert.match(originals,/id='beginLegalQuestions'/);
+});
