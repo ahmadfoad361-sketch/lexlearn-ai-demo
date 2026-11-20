@@ -264,7 +264,7 @@ html[data-learner-theme="dark"] :where(#officialDiagnostic .choice,#studentPract
 
 /* LexLearn approved dark question refinement — 2026-11-20.
    Presentation only: no question, saving, scoring, or progression logic changes. */
-html[data-learner-theme="dark"]{
+html[data-learner-theme=dark]{
  --question-dark-track:#0e1826;
  --question-dark-option:#2b405c;
  --question-dark-idle-border:#4b607b;
