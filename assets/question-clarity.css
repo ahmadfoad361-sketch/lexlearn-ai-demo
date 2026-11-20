@@ -295,24 +295,24 @@ html[data-learner-theme="dark"] #officialDiagnostic .diagProgressHeader>span{
 html[data-learner-theme="dark"] :is(.diagHeader,.diagCard,.stageCard,.taskCard){
  border-color:#4b607b;
 }
-html[data-learner-theme="dark"] #officialDiagnostic .choice:not(.good):not(.bad),
-html[data-learner-theme="dark"] #studentPractice .choice:not(.good):not(.bad),
-html[data-learner-theme="dark"] #showcaseApp .stageCard .choices .choice:not(.good):not(.bad),
-html[data-learner-theme="dark"] #programApp .taskCard .options .option:not(.good):not(.bad){
+html[data-learner-theme="dark"] #officialDiagnostic .choice:where(:not(.good):not(.bad)),
+html[data-learner-theme="dark"] #studentPractice .choice:where(:not(.good):not(.bad)),
+html[data-learner-theme="dark"] #showcaseApp .stageCard .choices .choice:where(:not(.good):not(.bad)),
+html[data-learner-theme="dark"] #programApp .taskCard .options .option:where(:not(.good):not(.bad)){
  background:var(--question-dark-option);
  color:#f9f4ef;
  border:1px solid var(--question-dark-idle-border);
  box-shadow:none;
  min-height:54px;
 }
-html[data-learner-theme="dark"] #officialDiagnostic .choice:not(.good):not(.bad):is(:hover,:focus-visible),
-html[data-learner-theme="dark"] #studentPractice .choice:not(.good):not(.bad):is(:hover,:focus-visible),
-html[data-learner-theme="dark"] #showcaseApp .stageCard .choices .choice:not(.good):not(.bad):is(:hover,:focus-visible),
-html[data-learner-theme="dark"] #programApp .taskCard .options .option:not(.good):not(.bad):is(:hover,:focus-visible){
+html[data-learner-theme="dark"] #officialDiagnostic .choice:where(:not(.good):not(.bad)):is(:hover,:focus-visible),
+html[data-learner-theme="dark"] #studentPractice .choice:where(:not(.good):not(.bad)):is(:hover,:focus-visible),
+html[data-learner-theme="dark"] #showcaseApp .stageCard .choices .choice:where(:not(.good):not(.bad)):is(:hover,:focus-visible),
+html[data-learner-theme="dark"] #programApp .taskCard .options .option:where(:not(.good):not(.bad)):is(:hover,:focus-visible){
  border-color:#e794ab;
  box-shadow:0 0 0 2px #d8718a35;
 }
-html[data-learner-theme="dark"] #officialDiagnostic .choice:has(input:checked),
+html[data-learner-theme="dark"] body:has(#officialDiagnostic) #officialDiagnostic.diagCard .choice:has(input:checked),
 html[data-learner-theme="dark"] #studentPractice .choice:has(input:checked),
 html[data-learner-theme="dark"] #showcaseApp .stageCard .choices .choice.selected,
 html[data-learner-theme="dark"] #programApp .taskCard .options .option.selected{
