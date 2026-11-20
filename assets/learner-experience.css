@@ -433,3 +433,33 @@ html[data-learner-theme=dark] :is(.skillStageScorecard,.levelSkillScorecard){
 html[data-learner-theme=dark] :is(.skillStageScorecard .progressSkill,.levelSkillScorecard .levelScoreTile){
  box-shadow:inset 0 1px 0 #ffffff0b;
 }
+
+/* Dark learner question finishing touches — 2026-11-20 */
+/* Retain the recall skill color cue without an overly bright cyan edge. */
+html[data-learner-theme=dark] #studentTrainingApp .stage--recall{
+ --session-accent:#83a9bd;
+}
+/* Keep the hint discoverable, but visibly secondary to the burgundy save CTA. */
+html[data-learner-theme=dark] #studentTrainingApp #adaptiveUnknown{
+ background:#2b405c;
+ color:#f9f4ef;
+ border:1px solid #758ea8;
+ border-radius:12px;
+ box-shadow:0 3px 12px #060e1d33;
+ font-weight:700;
+ min-height:48px;
+}
+html[data-learner-theme=dark] #studentTrainingApp #adaptiveUnknown:hover:not(:disabled){
+ background:#354b68;
+ border-color:#e794ab;
+ box-shadow:0 5px 16px #060e1d3d;
+}
+html[data-learner-theme=dark] #studentTrainingApp #adaptiveUnknown:focus-visible{
+ outline:3px solid #e794ab;
+ outline-offset:3px;
+}
+html[data-learner-theme=dark] #studentTrainingApp #adaptiveUnknown:disabled{
+ opacity:.68;
+ box-shadow:none;
+ cursor:wait;
+}

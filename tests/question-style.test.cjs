@@ -218,3 +218,17 @@ test('approved dark learning screens use one shared card and CTA language',()=>{
  assert.match(originals,/function render\(ids,lang\)/);
  assert.match(originals,/id='beginLegalQuestions'/);
 });
+
+
+test('dark training recall edge and hint button stay subtle but accessible',()=>{
+ const css=fs.readFileSync('assets/learner-experience.css','utf8');
+ const html=fs.readFileSync('student-path.html','utf8');
+ const source=fs.readFileSync('assets/student-path.js','utf8');
+ assert.match(css,/Dark learner question finishing touches — 2026-11-20/);
+ assert.match(css,/html\[data-learner-theme=dark\] #studentTrainingApp \.stage--recall\{\s*--session-accent:#83a9bd;/);
+ assert.match(css,/html\[data-learner-theme=dark\] #studentTrainingApp #adaptiveUnknown\{\s*background:#2b405c;/);
+ assert.match(css,/#adaptiveUnknown:focus-visible\{\s*outline:3px solid #e794ab;/);
+ assert.match(html,/assets\/learner-experience\.css\?v=20261120\.hint1/);
+ assert.match(source,/id='adaptiveUnknown'/);
+ assert.match(source,/id='adaptiveSubmit'/);
+});
