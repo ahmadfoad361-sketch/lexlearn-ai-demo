@@ -402,3 +402,338 @@ html[data-learner-theme="dark"] #programApp .option.bad{
  html[data-learner-theme="dark"] :is(#officialDiagnostic .diagProgressFill,#showcaseApp .progress>i,#programApp .progress>i){transition:none}
 }
 
+/* LexLearn unified dark learner screens — 2026-11-20.
+   Visual-only counterpart to the approved diagnostic mockup.
+   Includes the pre-question law-reading view and the adaptive essay flow.
+   Do not alter legal text, state, assessment, or answers. */
+html[data-learner-theme=dark]{
+ --question-dark-card-border:#4b607b;
+ --question-dark-card:#1e3049;
+ --question-dark-panel:#2b405c;
+ --question-dark-quiet:#d9e4f2;
+ --question-dark-focus:#e794ab;
+ --question-dark-rule:#d8718a;
+ --question-dark-cta-shadow:0 8px 22px #6b163a52,inset 0 1px 0 #ffffff21;
+}
+
+/* The pre-reading page in student-path.html is part of the same question journey.
+   Keep the full approved source provisions visible before starting questions. */
+html[data-learner-theme="dark"] body:has(#studentTrainingApp)>main{
+ background:var(--question-dark-card);
+ border-color:var(--question-dark-card-border);
+ border-radius:20px;
+ box-shadow:0 12px 32px #060e1d52;
+}
+html[data-learner-theme="dark"] #studentTrainingApp .legalStudy{
+ margin:1.15rem 0;
+ min-width:0;
+}
+html[data-learner-theme="dark"] #studentTrainingApp .legalStudyEyebrow{
+ margin:0 0 .55rem;
+ color:#e794ab;
+ font-size:.87rem;
+ font-weight:800;
+}
+html[data-learner-theme="dark"] #studentTrainingApp .legalStudy>h2{
+ margin:.2rem 0 .9rem;
+ padding:clamp(.95rem,2.5vw,1.3rem);
+ background:var(--question-dark-panel);
+ border:1px solid var(--question-dark-card-border);
+ border-inline-start:5px solid var(--question-dark-rule);
+ border-radius:16px;
+ color:#f9f4ef;
+ font-size:clamp(1.25rem,2.15vw,1.5rem);
+ font-weight:780;
+ line-height:1.7;
+}
+html[data-learner-theme="dark"] #studentTrainingApp .legalStudy>p:not(.legalStudyEyebrow){
+ color:var(--question-dark-quiet);
+ font-size:1rem;
+ line-height:1.9;
+ margin:.65rem 0 1.15rem;
+}
+html[data-learner-theme="dark"] :is(#studentTrainingApp,#showcaseApp) .legalStudyArticle{
+ background:var(--question-dark-panel);
+ color:#f9f4ef;
+ border:1px solid var(--question-dark-card-border);
+ border-radius:16px;
+ box-shadow:0 5px 15px #060e1d26;
+ padding:clamp(1rem,3vw,1.4rem);
+ margin:1rem 0;
+ overflow-wrap:anywhere;
+}
+html[data-learner-theme="dark"] :is(#studentTrainingApp,#showcaseApp) .legalStudyArticle blockquote{
+ color:#f9f4ef;
+ line-height:2.05;
+ font-size:clamp(1.02rem,1.5vw,1.15rem);
+ font-weight:450;
+ text-align:start;
+ margin:0;
+}
+html[data-learner-theme="dark"] :is(#studentTrainingApp,#showcaseApp) .legalStudyArticle figcaption{
+ border-top:1px solid var(--question-dark-card-border);
+ padding-top:.8rem;
+ margin-top:1.15rem;
+ color:#e794ab;
+ gap:.5rem 1rem;
+ align-items:center;
+}
+html[data-learner-theme="dark"] :is(#studentTrainingApp,#showcaseApp) .legalStudyArticle figcaption strong{
+ color:#e794ab;
+ font-size:.94rem;
+ line-height:1.85;
+}
+html[data-learner-theme="dark"] :is(#studentTrainingApp,#showcaseApp) .legalStudyArticle figcaption a{
+ color:#f1becd;
+ text-decoration:underline;
+ text-underline-offset:.23em;
+ font-size:.86rem;
+}
+html[data-learner-theme="dark"] :is(#studentTrainingApp,#showcaseApp) .legalStudyArticle figcaption a:hover{
+ color:#ffe5ef;
+}
+html[data-learner-theme="dark"] #studentTrainingApp .legalCitation,
+html[data-learner-theme="dark"] #studentTrainingApp .legalStudy .legalCitation{
+ background:var(--question-dark-panel);
+ color:var(--question-dark-quiet);
+ border:1px solid var(--question-dark-card-border);
+ border-inline-start:4px solid var(--question-dark-rule);
+ border-radius:12px;
+ padding:.8rem 1rem;
+}
+
+/* Match the depth and shape of the approved diagnostic card while preserving
+   the stage-specific recall / understanding / exam accent semantics. */
+html[data-learner-theme="dark"] #studentTrainingApp .stage{
+ background:var(--question-dark-card);
+ border:1px solid var(--question-dark-card-border);
+ border-top:3px solid var(--session-accent,#d8718a);
+ border-radius:18px;
+ box-shadow:0 10px 28px #060e1d40;
+ padding:clamp(1rem,3vw,1.6rem);
+ margin-block:1.2rem;
+}
+html[data-learner-theme="dark"] #studentTrainingApp .stage>h1{
+ color:#f9f4ef;
+ font-size:clamp(1.3rem,2.1vw,1.7rem);
+ line-height:1.65;
+ margin:.5rem 0 1rem;
+}
+html[data-learner-theme="dark"] #studentTrainingApp .stage>h2{
+ background:var(--question-dark-panel);
+ border:1px solid var(--question-dark-card-border);
+ border-inline-start:5px solid var(--session-accent,#d8718a);
+ border-radius:16px;
+ padding:clamp(.9rem,2.5vw,1.2rem);
+ margin:1.2rem 0 1rem;
+ font-size:clamp(1.14rem,1.7vw,1.35rem);
+ line-height:1.85;
+ font-weight:770;
+ color:#f9f4ef;
+}
+html[data-learner-theme="dark"] #studentTrainingApp .stage :is(.prompt,.clearQuestionPrompt){
+ background:var(--question-dark-panel);
+ border:1px solid var(--question-dark-card-border);
+ border-inline-start:5px solid var(--session-accent,#d8718a);
+ border-radius:16px;
+ box-shadow:0 5px 15px #060e1d22;
+ padding:clamp(1rem,3vw,1.4rem);
+ color:#f9f4ef;
+}
+html[data-learner-theme="dark"] #studentTrainingApp .questionLeadLabel{
+ background:transparent;
+ padding:0;
+ border-radius:0;
+ font-size:.8rem;
+ color:#e794ab;
+ margin:0 0 .7rem;
+}
+html[data-learner-theme="dark"] #studentTrainingApp .stage .questionBrief{
+ color:#f9f4ef;
+ font-size:clamp(1.14rem,1.65vw,1.34rem);
+ font-weight:750;
+ line-height:1.95;
+ border-bottom-color:var(--question-dark-card-border);
+}
+html[data-learner-theme="dark"] #studentTrainingApp .stage .questionGuidance{
+ background:var(--question-dark-card);
+ border-inline-start-color:var(--question-dark-card-border);
+ color:var(--question-dark-quiet);
+}
+html[data-learner-theme="dark"] #studentTrainingApp .stage .questionComparison,
+html[data-learner-theme="dark"] #studentTrainingApp .stage .comparisonStatement{
+ border-color:var(--question-dark-card-border);
+ color:#f9f4ef;
+ border-radius:13px;
+}
+html[data-learner-theme="dark"] #studentTrainingApp .stage .questionComparison{
+ background:var(--question-dark-card);
+ border-inline-start:4px solid var(--session-accent,#d8718a);
+}
+html[data-learner-theme="dark"] #studentTrainingApp .stage .comparisonStatement{
+ background:var(--question-dark-panel);
+}
+html[data-learner-theme="dark"] #studentTrainingApp .stage .questionFollowup{
+ border-top-color:var(--question-dark-card-border);
+ color:#f9f4ef;
+}
+html[data-learner-theme="dark"] #studentTrainingApp .stage .taskType{
+ border-color:var(--question-dark-card-border);
+ color:#f9f4ef;
+ background:var(--question-dark-panel);
+}
+html[data-learner-theme="dark"] #studentTrainingApp .stage :is(#adaptiveEssay,#legalCasePart){
+ background:var(--question-dark-card);
+ color:#f9f4ef;
+ border:2px solid var(--question-dark-card-border);
+ border-radius:14px;
+ min-height:160px;
+}
+html[data-learner-theme="dark"] #studentTrainingApp .stage :is(#adaptiveEssay,#legalCasePart):focus-visible{
+ border-color:var(--question-dark-focus);
+ outline:3px solid var(--question-dark-focus);
+ outline-offset:2px;
+}
+html[data-learner-theme="dark"] #studentTrainingApp .learnerWelcome{
+ border:1px solid var(--question-dark-card-border);
+ background:var(--question-dark-card);
+ box-shadow:0 8px 20px #060e1d26;
+ border-radius:18px;
+}
+html[data-learner-theme="dark"] #studentTrainingApp :is(.progressReport,.skillStageScorecard,.levelSkillScorecard){
+ border-color:var(--question-dark-card-border);
+ background:var(--question-dark-card);
+ border-radius:18px;
+}
+html[data-learner-theme="dark"] #studentTrainingApp .skillMeter{
+ background:var(--question-dark-track);
+ box-shadow:inset 0 1px 3px #050d1b9e;
+}
+html[data-learner-theme="dark"] #studentTrainingApp .skillMeter>i{
+ background:linear-gradient(90deg,#b44161,#d8718a);
+}
+
+/* The active question CTA is shared across the diagnostic, the legal reading,
+   essay tasks, level one, and demonstration. No forced styling of back,
+   unknown, retry or auxiliary buttons. */
+html[data-learner-theme="dark"] :is(
+ #studentTrainingApp #beginLegalQuestions,
+ #studentTrainingApp #adaptiveSubmit,
+ #studentTrainingApp #nextSession,
+ #studentTrainingApp .learnerWelcome>a,
+ #officialLevelMount #officialSaveAnswer,
+ #programApp .stage .primary,
+ #showcaseApp .demoStage .btn.primary,
+ #showcaseApp .stageCard .btn.primary,
+ #officialDiagnostic #serverNext
+){
+ background:linear-gradient(145deg,#b44161,#a72e4f);
+ border:1px solid #e794ab;
+ color:#fff;
+ border-radius:12px;
+ box-shadow:var(--question-dark-cta-shadow);
+ font-weight:800;
+ min-height:48px;
+ text-decoration:none;
+}
+html[data-learner-theme="dark"] :is(
+ #studentTrainingApp #beginLegalQuestions,
+ #studentTrainingApp #adaptiveSubmit,
+ #studentTrainingApp #nextSession,
+ #studentTrainingApp .learnerWelcome>a,
+ #officialLevelMount #officialSaveAnswer,
+ #programApp .stage .primary,
+ #showcaseApp .demoStage .btn.primary,
+ #showcaseApp .stageCard .btn.primary,
+ #officialDiagnostic #serverNext
+):hover:not(:disabled){
+ background:linear-gradient(145deg,#bd4c6b,#ad3455);
+ box-shadow:0 10px 24px #6b163a63,inset 0 1px 0 #ffffff2b;
+}
+html[data-learner-theme="dark"] :is(
+ #studentTrainingApp #beginLegalQuestions,
+ #studentTrainingApp #adaptiveSubmit,
+ #studentTrainingApp #nextSession,
+ #officialLevelMount #officialSaveAnswer,
+ #programApp .stage .primary,
+ #showcaseApp .stageCard .btn.primary,
+ #officialDiagnostic #serverNext
+):disabled{
+ box-shadow:none;
+ opacity:.68;
+ cursor:wait;
+}
+
+/* Other practice and preview question surfaces share the same restrained
+   visual separation but keep existing correctness and selection colors. */
+html[data-learner-theme="dark"] :is(
+ #programApp .taskCard,
+ #officialLevelMount .taskCard,
+ #showcaseApp .stageCard
+){
+ border:1px solid var(--question-dark-card-border);
+ background:var(--question-dark-card);
+ border-radius:18px;
+ box-shadow:0 10px 28px #060e1d3d;
+}
+html[data-learner-theme="dark"] :is(
+ #programApp .taskCard .legalBox,
+ #officialLevelMount .taskCard .legalBox,
+ #showcaseApp .stageCard .legalPaper,
+ #showcaseApp .stageCard .legalBox
+){
+ background:var(--question-dark-panel);
+ border:1px solid var(--question-dark-card-border);
+ border-inline-start:4px solid var(--question-dark-rule);
+ border-radius:16px;
+ color:#f9f4ef;
+}
+html[data-learner-theme="dark"] :is(
+ #programApp .stage .progress,
+ #showcaseApp .demoStage .progress,
+ #officialDiagnostic .diagProgressTrack
+){
+ background:var(--question-dark-track);
+}
+html[data-learner-theme="dark"] :is(
+ #programApp .stage .progress>i,
+ #showcaseApp .demoStage .progress>i,
+ #officialDiagnostic .diagProgressFill
+){
+ background:linear-gradient(90deg,#b44161,#d8718a);
+}
+html[data-learner-theme="dark"] #studentTrainingApp :is(
+ .past,.feedback,.nextAdvice
+){
+ background:var(--question-dark-panel);
+ border-color:var(--question-dark-card-border);
+ border-radius:14px;
+ color:#f9f4ef;
+}
+
+/* RTL/LTR stays native to each page and questions remain readable on mobile. */
+@media(max-width:600px){
+ html[data-learner-theme="dark"] body:has(#studentTrainingApp)>main{
+  border-inline:0;
+  border-radius:0;
+  box-shadow:none;
+ }
+ html[data-learner-theme="dark"] #studentTrainingApp .stage{
+  padding:1rem;
+  margin-inline:0;
+ }
+ html[data-learner-theme="dark"] :is(#studentTrainingApp,#showcaseApp) .legalStudyArticle{
+  padding:1rem;
+ }
+ html[data-learner-theme="dark"] #studentTrainingApp .legalStudy>h2{
+  font-size:1.2rem;
+  padding:.9rem;
+ }
+ html[data-learner-theme="dark"] #studentTrainingApp .legalStudyArticle figcaption{
+  flex-direction:column;
+  align-items:flex-start;
+ }
+ html[data-learner-theme="dark"] #studentTrainingApp :is(#beginLegalQuestions,#adaptiveSubmit,#nextSession){
+  max-width:100%;
+ }
+}
