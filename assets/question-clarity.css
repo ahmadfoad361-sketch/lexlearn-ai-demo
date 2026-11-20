@@ -260,3 +260,145 @@ html[data-learner-theme="dark"]
 html[data-learner-theme="dark"] :where(#officialDiagnostic .choice,#studentPractice .choice) input{
  accent-color:var(--lx-accent,#e794ab);
 }
+
+
+/* LexLearn approved dark question refinement — 2026-11-20.
+   Presentation only: no question, saving, scoring, or progression logic changes. */
+html[data-learner-theme=dark]{
+ --question-dark-track:#0e1826;
+ --question-dark-option:#2b405c;
+ --question-dark-idle-border:#4b607b;
+ --question-dark-primary:#b44161;
+}
+
+/* Keep empty progress genuinely dark; only the completed portion catches light. */
+html[data-learner-theme="dark"] #officialDiagnostic .diagProgressTrack,
+html[data-learner-theme="dark"] #showcaseApp .demoStage .progress,
+html[data-learner-theme="dark"] #programApp .stage .progress{
+ background:var(--question-dark-track);
+ box-shadow:inset 0 1px 3px #050d1ba6;
+}
+html[data-learner-theme="dark"] #officialDiagnostic .diagProgressFill,
+html[data-learner-theme="dark"] #showcaseApp .demoStage .progress>i,
+html[data-learner-theme="dark"] #programApp .stage .progress>i{
+ background:linear-gradient(90deg,#b44161,#d8718a);
+ box-shadow:0 0 8px #b4416129;
+}
+html[data-learner-theme="dark"] #officialDiagnostic .diagProgressHeader{
+ font-size:1rem;line-height:1.65;
+}
+html[data-learner-theme="dark"] #officialDiagnostic .diagProgressHeader>span{
+ font-weight:800;letter-spacing:.005em;
+}
+
+/* Fewer competing outlines, but still explicit selectable/touch targets. */
+html[data-learner-theme="dark"] :is(.diagHeader,.diagCard,.stageCard,.taskCard){
+ border-color:#4b607b;
+}
+html[data-learner-theme="dark"] #officialDiagnostic .choice:where(:not(.good):not(.bad)),
+html[data-learner-theme="dark"] #studentPractice .choice:where(:not(.good):not(.bad)),
+html[data-learner-theme="dark"] #showcaseApp .stageCard .choices .choice:where(:not(.good):not(.bad)),
+html[data-learner-theme="dark"] #programApp .taskCard .options .option:where(:not(.good):not(.bad)){
+ background:var(--question-dark-option);
+ color:#f9f4ef;
+ border:1px solid var(--question-dark-idle-border);
+ box-shadow:none;
+ min-height:54px;
+}
+html[data-learner-theme="dark"] #officialDiagnostic .choice:where(:not(.good):not(.bad)):is(:hover,:focus-visible),
+html[data-learner-theme="dark"] #studentPractice .choice:where(:not(.good):not(.bad)):is(:hover,:focus-visible),
+html[data-learner-theme="dark"] #showcaseApp .stageCard .choices .choice:where(:not(.good):not(.bad)):is(:hover,:focus-visible),
+html[data-learner-theme="dark"] #programApp .taskCard .options .option:where(:not(.good):not(.bad)):is(:hover,:focus-visible){
+ border-color:#e794ab;
+ box-shadow:0 0 0 2px #d8718a35;
+}
+html[data-learner-theme="dark"] body:has(#officialDiagnostic) #officialDiagnostic.diagCard .choice:has(input:checked),
+html[data-learner-theme="dark"] #studentPractice .choice:has(input:checked),
+html[data-learner-theme="dark"] #showcaseApp .stageCard .choices .choice.selected,
+html[data-learner-theme="dark"] #programApp .taskCard .options .option.selected{
+ background:#354b68;
+ color:#f9f4ef;
+ border:2px solid #d8718a;
+ box-shadow:0 0 0 2px #d8718a40;
+}
+html[data-learner-theme="dark"] #officialDiagnostic .choice input,
+html[data-learner-theme="dark"] #studentPractice .choice input{
+ accent-color:#e794ab;
+}
+
+/* Make the real question, not a bright capsule label, the reading anchor. */
+html[data-learner-theme="dark"] #officialDiagnostic:has(fieldset)>h2,
+html[data-learner-theme="dark"] #studentPractice:has(fieldset)>h2,
+html[data-learner-theme="dark"] #showcaseApp .stageCard:has(.choices)>h2,
+html[data-learner-theme="dark"] #showcaseApp .stageCard:has(textarea)>h2{
+ background:#2b405c;
+ border-color:#4b607b;
+ border-inline-start:5px solid #d8718a;
+ font-size:clamp(1.18rem,2vw,1.46rem);
+ font-weight:780;
+ line-height:1.9;
+}
+html[data-learner-theme="dark"] #officialDiagnostic:has(fieldset)>h2::before,
+html[data-learner-theme="dark"] #studentPractice:has(fieldset)>h2::before,
+html[data-learner-theme="dark"] #showcaseApp .stageCard:has(.choices)>h2::before,
+html[data-learner-theme="dark"] #showcaseApp .stageCard:has(textarea)>h2::before{
+ background:transparent;
+ color:#e794ab;
+ padding:0;
+ margin:0 0 .35rem;
+ border-radius:0;
+ font-size:.79rem;
+ letter-spacing:0;
+ font-weight:750;
+}
+
+/* One clearly discoverable primary action on the question page. */
+html[data-learner-theme="dark"] :is(
+ #officialDiagnostic #serverNext,
+ #studentPractice button.primary,
+ #studentTrainingApp button.primary,
+ #officialLevelMount #officialSaveAnswer,
+ #showcaseApp .stageCard .btn.primary
+){
+ background:linear-gradient(145deg,#b44161,#a72e4f);
+ color:#fff;
+ border:1px solid #e794ab;
+ border-radius:12px;
+ box-shadow:0 7px 22px #6b163a52,inset 0 1px 0 #ffffff24;
+ font-weight:800;
+}
+html[data-learner-theme="dark"] :is(
+ #officialDiagnostic #serverNext,
+ #studentPractice button.primary,
+ #studentTrainingApp button.primary,
+ #officialLevelMount #officialSaveAnswer,
+ #showcaseApp .stageCard .btn.primary
+):hover:not(:disabled){
+ background:linear-gradient(145deg,#bd4c6b,#ad3455);
+ box-shadow:0 9px 24px #6b163a66,inset 0 1px 0 #ffffff2e;
+}
+html[data-learner-theme="dark"] :is(
+ #officialDiagnostic #serverNext,
+ #studentPractice button.primary,
+ #studentTrainingApp button.primary,
+ #officialLevelMount #officialSaveAnswer,
+ #showcaseApp .stageCard .btn.primary
+):disabled{opacity:.68;cursor:wait;box-shadow:none;}
+
+/* Keep correctness/incorrectness feedback unambiguous in the public demo. */
+html[data-learner-theme="dark"] #showcaseApp .choice.good,
+html[data-learner-theme="dark"] #programApp .option.good{
+ background:#24463e;color:#e1f8e9;border-color:#a0e4c1;
+}
+html[data-learner-theme="dark"] #showcaseApp .choice.bad,
+html[data-learner-theme="dark"] #programApp .option.bad{
+ background:#3d273b;color:#ffb9ca;border-color:#a16c79;
+}
+@media(max-width:600px){
+ html[data-learner-theme="dark"] #officialDiagnostic .diagProgressHeader{font-size:.95rem}
+ html[data-learner-theme="dark"] :is(#officialDiagnostic .choice,#studentPractice .choice,#showcaseApp .stageCard .choice,#programApp .taskCard .option){min-height:52px}
+}
+@media(prefers-reduced-motion:reduce){
+ html[data-learner-theme="dark"] :is(#officialDiagnostic .diagProgressFill,#showcaseApp .progress>i,#programApp .progress>i){transition:none}
+}
+
