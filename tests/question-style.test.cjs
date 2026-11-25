@@ -228,7 +228,7 @@ test('dark training recall edge and hint button stay subtle but accessible',()=>
  assert.match(css,/html\[data-learner-theme=dark\] #studentTrainingApp \.stage--recall\{\s*--session-accent:#83a9bd;/);
  assert.match(css,/html\[data-learner-theme=dark\] #studentTrainingApp #adaptiveUnknown\{\s*background:#2b405c;/);
  assert.match(css,/#adaptiveUnknown:focus-visible\{\s*outline:3px solid #e794ab;/);
- assert.match(html,/assets\/learner-experience\.css\?v=20261120\.hint1/);
+ assert.match(html,/assets\/learner-experience\.css\?v=20261125\.answers1/);
  assert.match(source,/id='adaptiveUnknown'/);
  assert.match(source,/id='adaptiveSubmit'/);
 });
