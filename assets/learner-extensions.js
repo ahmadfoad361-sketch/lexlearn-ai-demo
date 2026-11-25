@@ -26,6 +26,12 @@ function lawContext(task,lang){
   root.LEX_LEGAL_STUDY.context(task&&task.sources||[],lang):
   "<p>"+esc(tr(lang,"القانون المدني القطري رقم (22) لسنة 2004","Qatar Civil Code, Law 22 of 2004"))+"</p>";
 }
+// Source text is exposed only after the integrated retrieval attempt is saved.
+function reviewText(task,lang){
+ var law=root.LEX_LEGAL_STUDY;if(!law||!law.numbers||!law.text)return "";
+ var ns=law.numbers(task&&task.sources||[]);if(!ns.length)return "";
+ return "<details class='lexExtensionCard'><summary>"+tr(lang,"راجع النص القانوني بعد الإجابة","Review the legal text after answering")+"</summary>"+ns.map(function(n){return "<h4>"+tr(lang,"المادة ","Article ")+n+"</h4><blockquote lang='ar' dir='rtl' style='white-space:pre-line'>"+esc(law.text[n])+"</blockquote>";}).join("")+"</details>";
+}
 function textOf(task,lang){if(root.LEX_QUESTION_STYLE)return root.LEX_QUESTION_STYLE.prepare(task,lang);return String(lang==="en"?(task.prompt_en||task.prompt_ar):(task.prompt_ar||task.prompt_en)||"");}
 function visible(node,html){if(node&&node.isConnected)node.innerHTML=html;}
 function note(node,lang){
@@ -52,8 +58,8 @@ async function mountReview(node,opts){
   var question=selected.task,style=root.LEX_QUESTION_STYLE,reviewPrompt=textOf(question,lang);
   visible(node,"<section class='lexExtensionCard' aria-labelledby='lexRecallTitle'><p class='lexExtensionEyebrow'>"+
    tr(lang,"مراجعة ذكية مدمجة","Integrated recall")+"</p><h3 id='lexRecallTitle'>"+
-   tr(lang,"سؤال واحد من اللي اتعلمته","One question from your earlier learning")+"</h3><p>"+
-   tr(lang,"حاول تسترجع المعلومة من ذاكرتك، من غير ما ترجع للإجابة السابقة.","Try retrieving the idea without looking back at your previous answer.")+
+   tr(lang,"سؤال من الموضوعات التي درستها","One question from your earlier learning")+"</h3><p>"+
+   tr(lang,"استرجع المعلومة من ذاكرتك دون الرجوع إلى الإجابة السابقة.","Try retrieving the idea without looking back at your previous answer.")+
    "</p>"+lawContext(question,lang)+"<p class='lexExtensionSourceHint'>"+tr(lang,"حاول الإجابة أولًا من الذاكرة.","Try answering from memory first.")+"</p>"+(style&&style.hasThreeParts(reviewPrompt)?style.answerFields("lexRecallAnswer",lang,4000,reviewPrompt):
    "<div class='lexExtensionPrompt'>"+esc(reviewPrompt)+"</div><label for='lexRecallAnswer'>"+tr(lang,"اكتب ما تتذكره","Write what you remember")+"</label><textarea id='lexRecallAnswer' rows='4' maxlength='4000'></textarea>")+
    "<button type='button' id='lexRecallSave'>"+tr(lang,"احفظ مراجعتي","Save my review")+"</button>"+
@@ -65,7 +71,7 @@ async function mountReview(node,opts){
    var parts=style?style.readAnswer(node,"lexRecallAnswer",lang,4000):{text:textarea.value.trim(),missing:0,tooLong:false},answer=parts.text,status=node.querySelector("#lexRecallStatus");
    if(parts.tooLong){status.textContent=tr(lang,"مجموع الإجابات يتجاوز 4000 حرف.","Combined answers exceed 4,000 characters.");return;}
    if(parts.missing>0&&parts.missing<3&&!root.confirm(tr(lang,"بعض الأسئلة بلا إجابة. هل تريد حفظ الإجابات المتاحة؟","Some questions are unanswered. Save the available answers?")))return;
-   if(answer.length<12){status.textContent=tr(lang,"اكتب فكرة قصيرة من اللي تفتكره، وبعدين احفظها.","Write a short thought from memory, then save it.");return;}
+   if(answer.length<12){status.textContent=tr(lang,"اكتب ما تتذكره في جملة قصيرة ثم احفظ إجابتك.","Write a short thought from memory, then save it.");return;}
    button.disabled=true;status.textContent=tr(lang,"بنحفظ مراجعتك…","Saving your review…");
    try{
     var r=await db.from("lex_retrieval_checks").insert({
@@ -78,7 +84,7 @@ async function mountReview(node,opts){
      if(prior.error||!prior.data)throw new Error("review_save_unconfirmed");
     }
     visible(node,"<section class='lexExtensionCard'><h3>"+tr(lang,"✓ خطوة جديدة في رحلتك","✓ Another step forward")+
-      "</h3><p>"+tr(lang,"أحسنت! استرجعت معلومة قديمة وسجلت مراجعتك. تقدر تكمل الجلسة التالية.","Great work revisiting earlier material. Your review was saved.")+"</p></section>");
+      "</h3><p>"+tr(lang,"تم حفظ محاولة الاسترجاع. قارن ما كتبته بالنص القانوني، وحدد أي شرط أغفلته قبل الجلسة التالية.","Your retrieval attempt is saved. Compare it with the legal text and identify any omitted condition before the next session.")+"</p>"+reviewText(question,lang)+"</section>");
    }catch(_){button.disabled=false;status.textContent=tr(lang,"تقدر تكمل دلوقتي وترجع للمراجعة بعدين.","You can continue now and return to this review later.");}
   };
  }catch(_){node.textContent="";}
