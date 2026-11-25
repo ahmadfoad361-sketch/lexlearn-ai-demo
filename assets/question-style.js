@@ -36,6 +36,10 @@ function prepare(task,language){
   var pair=beginner.clarifyComparison(task.id,lang,raw.split("\n").slice(1));
   return ["اشرح أحكام الرشد والتمييز (المادتان 49–50) بأسلوبك.","1. بيّن سن الرشد، ومتى يكون الشخص عديم التمييز.","2. حدّد لكل عبارة على حدة هل هي دقيقة قانونيًا أم لا، واذكر السبب، وصحّح الخطأ إن وجد.","قيّم كل عبارة على حدة:"].concat(pair).concat(["3. وضّح أثر القضاء باستمرار الولاية أو الوصاية على المال أو بالحجر على أهلية الأداء."]).join("\n");
  }
+ if(lang==="en"&&task.id==="rights-v1-s8-understanding"&&task.dimension==="understanding"&&raw==="Explain majority and discernment under Articles 49–50, including the age of majority, lack of discernment, and the legal effect of judicial continuation of property guardianship/tutorship or interdiction. Identify and correct the inaccurate statement:\nEighteen complete years always suffice even when interdiction has been judicially imposed\nEighteen complete years with no judicial continuation of guardianship/tutorship over property or interdiction"){
+  var pair=beginner.clarifyComparison(task.id,lang,raw.split("\n").slice(1));
+  return ["Explain majority and discernment under Articles 49–50 in your own words.","1. State the age of majority and explain when a person lacks discernment.","2. Decide whether each statement is accurate. Explain and correct any error.","Review each statement on its own:"].concat(pair).concat(["3. Explain the effect of a court decision continuing guardianship or tutorship over property, or imposing interdiction, on capacity to act."]).join("\n");
+ }
  if(["recall","understanding"].includes(task.dimension)&&!knownEssay(raw,task.dimension,lang))return raw;
  var text=beginner?beginner.prepare(task,lang):raw;
  if(task.dimension==="exam_execution"){
