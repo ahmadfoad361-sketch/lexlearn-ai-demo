@@ -73,7 +73,28 @@ function freeDiagnostic(language){return language==="en"?
  "أجب من ذاكرتك بأسلوبك. لا تفتح النص القانوني.\n1. متى تبدأ الشخصية القانونية للإنسان؟\n2. متى تنتهي؟\n3. ماذا تقول المادة 40 من القانون المدني القطري الصادر بالقانون رقم (22) لسنة 2004 عن حقوق الجنين قبل ولادته؟";
 }
 function render(text,language){return beginner.render(text,language);}
-var api=Object.freeze({version:VERSION,policy:policy,prepare:prepare,author:author,diagnostic:diagnostic,freeDiagnostic:freeDiagnostic,render:render});
+// Three numbered prompts share a single server answer, with explicit question boundaries.
+function hasThreeParts(prompt){
+ var numbers=String(prompt||"").split(/\r?\n/).map(function(line){var m=line.match(/^\s*([123١٢٣])[.)]\s+/);return m?("١٢٣".includes(m[1])?String("١٢٣".indexOf(m[1])+1):m[1]):null;}).filter(Boolean);
+ return numbers.join(",")==="1,2,3";
+}
+function answerFields(id,language,limit){
+ if(!/^[A-Za-z][A-Za-z0-9_-]*$/.test(id))throw Error("invalid_answer_field_id");
+ var en=language==="en";
+ return "<div class='lexAnswerParts' role='group' aria-label='"+(en?"Answers to the three questions":"إجابات الأسئلة الثلاثة")+"'>"+[1,2,3].map(function(n){
+  var field=n===1?id:id+"Part"+n;
+  return "<div class='lexAnswerPart'><label for='"+field+"'>"+(en?"Answer to question ":"الإجابة عن السؤال ")+n+"</label><textarea id='"+field+"' data-lex-answer-part='"+n+"' rows='4' maxlength='"+limit+"' placeholder='"+(en?"Write your answer here…":"اكتب إجابتك هنا…")+"'></textarea></div>";
+ }).join("")+"</div>";
+}
+function collectAnswers(host,id,language,limit){
+ var fields=[id,id+"Part2",id+"Part3"].map(function(field){return host.querySelector("#"+field);});
+ if(fields.some(function(f){return !f;}))throw Error("missing_answer_field");
+ var parts=fields.map(function(f){return String(f.value||"").trim();});
+ var missing=parts.filter(function(p){return !p;}).length;
+ var text=parts.map(function(p,i){return p?(i+1)+". "+p:"";}).filter(Boolean).join("\n\n");
+ return {text:text,missing:missing,tooLong:text.length>limit};
+}
+var api=Object.freeze({version:VERSION,policy:policy,prepare:prepare,author:author,diagnostic:diagnostic,freeDiagnostic:freeDiagnostic,render:render,hasThreeParts:hasThreeParts,answerFields:answerFields,collectAnswers:collectAnswers});
 root.LEX_QUESTION_STYLE=api;
 if(typeof module!=="undefined"&&module.exports)module.exports=api;
 })(typeof window!=="undefined"?window:globalThis);
