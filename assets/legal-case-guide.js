@@ -16,16 +16,16 @@ var copy={
       empty:"لم تكتب إجابة لهذا الجزء.",missing:"اكتب إجابتك أو أكمل باقي الخطوات قبل الحفظ.",
       notes:["ما السؤال الذي نريد الإجابة عنه في هذا المثال؟","ماذا يقول النص القانوني عن هذه الحالة؟","كيف يساعدنا النص في فهم ما حدث في المثال؟","ما إجابتك النهائية عن السؤال؟ ولماذا؟"],
       hints:["المسألة تعني السؤال المطلوب حله. اكتبه في جملة واحدة.","القاعدة تعني الحكم أو الشرط الذي قرأته في المادة. اكتبه بأسلوبك.","التطبيق يعني الربط بين ما حدث وشروط المادة. اشرح هذا الربط.","النتيجة هي الإجابة التي وصلت إليها. اكتبها مع سبب قصير."],
-      placeholders:["السؤال القانوني هو...","القاعدة التي أعتمد عليها...","في هذه الواقعة...","إذن... لأن..."],
+      placeholders:["تتمثل المسألة القانونية في...","وفقًا للقاعدة القانونية...","بتطبيق القاعدة على وقائع المسألة، نجد أن...","إذن، نستخلص مما سبق أن..."],
       defaultQuestion:"ما الحكم القانوني الذي تثيره الواقعة؟",
-      guidance:"يمكنك العودة لتعديل أي خطوة. إذا لم تعرف جزءًا، اتركه فارغًا بدل التخمين."},
+      guidance:"يمكنك العودة لتعديل أي خطوة. العبارات داخل مربعات الإجابة إرشادية فقط، ولا يلزم نقلها حرفيًا. إذا لم تعرف جزءًا، اتركه فارغًا بدل التخمين."},
  en:{case:"Case facts",main:"Main question",intro:"Build your legal answer in four short steps, one at a time.",
       step:"Step",of:"of",previous:"Back",next:"Next",review:"Review my answer",
       send:"Save answer and continue",edit:"Edit answer",summary:"Review before saving",
       empty:"No answer for this section.",missing:"Write your answer or complete the remaining steps before saving.",
       notes:["What question do we need to answer in this example?","What does the legal text say about this situation?","How does the text help explain what happened?","What is your final answer, and why?"],
       hints:["The issue is the question to solve. Write it in one sentence.","The rule is the condition or instruction you read in the article. Use your own words.","Application means connecting what happened to the article's conditions. Explain the connection.","The conclusion is the answer you reached. Give a short reason."],
-      placeholders:["The legal issue is...","The rule I rely on is...","Here, the facts show...","Therefore... because..."],
+      placeholders:["The legal issue is...","Under the applicable legal rule...","Applying the rule to the facts...","Therefore, the conclusion is..."],
       defaultQuestion:"What legal question do these facts raise?",
       guidance:"Go back to edit any step. If you're unsure about one part, leave it blank rather than guessing."}
 };
@@ -79,7 +79,7 @@ function mount(host,opts){
    '<div class="caseActions"><button type="button" class="caseBack" id="caseBack">'+esc(c.edit)+'</button>'+
    '<button type="button" class="caseNext" id="caseSubmit">'+esc(c.send)+'</button></div></section>':
    '<section class="caseAnswerStep"><div class="caseStepCount">'+esc(c.step)+' '+(step+1)+' '+esc(c.of)+' 4</div>'+
-   '<h3>'+esc(labels[step])+'</h3><p class="caseHelp">'+esc(c.notes[step])+'</p>'+
+   '<h3>'+esc(labels[step])+'</h3><p class="caseHelp">'+esc(question.sections[["issue","rule","application","conclusion"][step]])+'</p>'+
    '<label class="caseHint" for="legalCasePart">'+esc(c.hints[step])+'</label>'+
    '<textarea id="legalCasePart" maxlength="850" rows="5" placeholder="'+esc(c.placeholders[step])+'">'+esc(draft[step])+'</textarea>'+
    '<div class="caseActions">'+(step>0?'<button type="button" class="caseBack" id="caseBack">'+esc(c.previous)+'</button>':'')+
