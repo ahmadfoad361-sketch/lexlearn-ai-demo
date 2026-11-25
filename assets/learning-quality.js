@@ -89,6 +89,12 @@ function promptHtml(task,escapeHtml){
  if(task.reviewNote)s+="<small class=\"assessmentNote\" role=\"note\">"+escapeHtml(task.reviewNote)+"</small>";
  return s;
 }
+// Use the same presentation adapter for authored multi-part questions in previews and assessments.
+function essayFields(task,escapeHtml,id,lang,limit,fallback){
+ var style=root.LEX_QUESTION_STYLE;
+ if(style&&style.hasThreeParts(task.displayPrompt))return style.answerFields(id,lang,limit,task.displayPrompt)+(task.reviewNote?"<small class='assessmentNote' role='note'>"+escapeHtml(task.reviewNote)+"</small>":"");
+ return promptHtml(task,escapeHtml)+fallback;
+}
 function choice(t,lang,applied){var ar=lang==="ar";return {kind:"core",mode:"mcq",skill:"person",title:t[lang],q:t[(applied?"scenario_":"q_")+lang],opts:t[(applied?"applied_":"opts_")+lang],a:0,dimension:applied?"application":"legal_precision",difficulty:applied?3:2,why:t["rule_"+lang],showText:false};}
 function queue(n,lang,weak,strong,context){
  var t=topic(n),recall=makeEssay(t,lang,"recall"),understanding=makeEssay(t,lang,"understanding"),application=choice(t,lang,true),precision=choice(t,lang,false);
@@ -215,5 +221,5 @@ function diagnosticSummary(answers,recallGrade){
  return {metrics:metrics,choiceIndicators:indicators,weak:confirmed&&gap>=15?ranked[0]:null,profileType:confirmed&&metrics.understanding!=null?(metrics.recall-metrics.understanding>=12?"recall-led":metrics.understanding-metrics.recall>=12?"understanding-led":"balanced"):"insufficient_evidence",pendingRecall:!confirmed};
 }
 function shuffleOptions(t){var a=t.opts.map(function(x,i){return {orig:i,text:x};});for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),v=a[i];a[i]=a[j];a[j]=v;}return a;}
-var api={courseScope:courseScope,articleRef:articleRef,promptHtml:promptHtml,diagnosticSummary:diagnosticSummary,topics:topics,topic:topic,queue:queue,examTask:examTask,assessment:assessment,grade:grade,gradeAsync:gradeAsync,personalPlan:personalPlan,learnerContext:learnerContext,feedback:feedback,labels:labels,makeEssay:makeEssay,choice:choice,shuffleOptions:shuffleOptions,norm:norm};root.LEX_QUALITY=api;if(typeof module!=="undefined")module.exports=api;
+var api={courseScope:courseScope,articleRef:articleRef,promptHtml:promptHtml,essayFields:essayFields,diagnosticSummary:diagnosticSummary,topics:topics,topic:topic,queue:queue,examTask:examTask,assessment:assessment,grade:grade,gradeAsync:gradeAsync,personalPlan:personalPlan,learnerContext:learnerContext,feedback:feedback,labels:labels,makeEssay:makeEssay,choice:choice,shuffleOptions:shuffleOptions,norm:norm};root.LEX_QUALITY=api;if(typeof module!=="undefined")module.exports=api;
 })(typeof window!=="undefined"?window:globalThis);
