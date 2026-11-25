@@ -173,6 +173,10 @@ async function run({en=false,marker,session=true,error,access,consent=true,role,
  const recovered=route.chooseAdaptation(null,[grade('recall',100,5),...evidence.filter(x=>x!==outage)],oldRoute);
  assert.equal(recovered.priority,'understanding');
  assert.equal(recovered.continuity,'saved_evidence');
+ const partialGrade=grade('recall',100,5);partialGrade.evaluation.provider_recovery={started_at:'2026-11-05T10:01:00Z',recovered_at:'2026-11-09T10:00:00Z'};
+ const laterOutage={...outage,session_number:6,submitted_at:'2026-11-06T10:00:00Z'};
+ const partialRows=[laterOutage,partialGrade,grade('understanding',65,4),grade('recall',60,3)];
+ assert.equal(route.chooseAdaptation(null,partialRows,null).priority,'recall','new browser must retain original cohort boundary');
  const blank=route.chooseAdaptation(null,[outage],null);assert.equal(blank.priority,'foundation');assert.equal(blank.skills.recall,null);
  const tasks=[{id:'r',dimension:'recall'},{id:'u',dimension:'understanding'},{id:'e',dimension:'exam_execution'}];
  assert.equal(route.orderedTasks(tasks,[],'understanding')[0].id,'u');
