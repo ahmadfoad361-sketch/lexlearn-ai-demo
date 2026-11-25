@@ -640,6 +640,10 @@ var CLEAR_COMPARISONS={
   ]
  }
 };
+CLEAR_COMPARISONS["rights-v1-s8-understanding"].en.push(
+ ["Eighteen complete years always suffice even when interdiction has been judicially imposed","Reaching eighteen full years is sufficient for full capacity to act, even if a court has imposed interdiction."],
+ ["Eighteen complete years with no judicial continuation of guardianship/tutorship over property or interdiction","A person who reaches eighteen full years has full capacity to act unless a court has continued guardianship or tutorship over their property, or imposed interdiction."]
+);
 function clarifyComparison(id,language,statements){
  var entry=CLEAR_COMPARISONS[id],lang=language==="en"?"en":"ar";
  if(!entry||!Array.isArray(statements)||statements.length!==2)return statements;
@@ -657,8 +661,8 @@ function prepare(task,lang){
  if(!topic||!ref)return raw;
  if(!en&&topic==="الطبيعي والمعنوي")topic="الشخص الطبيعي والشخص المعنوي";
  if(dim==="recall"&&/^(من ذاكرتك، اكتب قاعدة|From memory, write the rule on)/.test(raw))return en?
-  "From memory, answer about “"+topic+"” ("+ref+").\n1. Write the main rule and the conditions you remember, briefly.\n2. Write three short memory cues.\n3. Explain what each cue helps you remember. You do not need to solve a case.":
-  "من ذاكرتك، أجب عن «"+topic+"» ("+ref+").\n1. اكتب القاعدة وأهم شروطها في جمل قصيرة.\n2. اذكر ثلاث كلمات أو عبارات قصيرة تساعدك على تذكّر القاعدة.\n3. اشرح ما يذكّرك به كل مفتاح من عناصر القاعدة. لا يُطلب منك حل واقعة.";
+  "From memory, answer about “"+topic+"” ("+ref+").\n1. Write the elements of the rule and its conditions that you remember, briefly.\n2. Choose three distinct short words or phrases that help you recall the rule.\n3. Explain what each cue helps you remember. You do not need to solve a case.":
+  "من ذاكرتك، أجب عن «"+topic+"» ("+ref+").\n1. اكتب عناصر القاعدة وشروطها التي تتذكرها، في جمل قصيرة.\n2. اختر ثلاث كلمات أو عبارات قصيرة مختلفة تساعدك على تذكّر القاعدة.\n3. اشرح ما يذكّرك به كل مفتاح من عناصر القاعدة. لا يُطلب منك حل واقعة.";
  if(dim==="understanding"&&/^(اشرح قاعدة|Explain the rule on)/.test(raw)){
   // UI wording alone is neutral; the approved server prompt and rubric remain unchanged.
   var marker=en?"Compare these statements; one is inaccurate:":"عبارتان للمقارنة؛ إحداهما غير دقيقة:";
@@ -667,11 +671,11 @@ function prepare(task,lang){
   var header=en?"Explain “"+topic+"” ("+ref+") in your own words.":
     "اشرح «"+topic+"» ("+ref+") بأسلوبك.";
   var questions=en?[
-   "1. What is the rule? Explain its key conditions briefly.",
+   "1. Explain the rule and the meaning of its conditions briefly.",
    "2. Decide whether each statement is accurate. Explain and correct any error.",
    "3. In one or two sentences, explain how the legal condition affects the outcome."
   ]:[
-   "1. ما معنى القاعدة؟ وضّح أهم شروطها باختصار.",
+   "1. اشرح القاعدة ومعنى شروطها باختصار.",
    "2. حدّد لكل عبارة على حدة هل هي دقيقة قانونيًا أم لا، واذكر السبب، وصحّح الخطأ إن وجد.",
    "3. في سطر أو سطرين، وضّح أثر الشرط القانوني على النتيجة."
   ];
