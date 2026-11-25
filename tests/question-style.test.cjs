@@ -232,3 +232,21 @@ test('dark training recall edge and hint button stay subtle but accessible',()=>
  assert.match(source,/id='adaptiveUnknown'/);
  assert.match(source,/id='adaptiveSubmit'/);
 });
+
+
+test('three separate answer fields preserve question boundaries and combined limit',()=>{
+ for(const lang of ['ar','en']){
+  assert.equal(style.hasThreeParts(style.freeDiagnostic(lang)),true);
+  assert.equal(style.hasThreeParts('1. One\n2. Two'),false);
+  assert.equal(style.hasThreeParts('1. One\n2. Two\n3. Three\n3. Four'),false);
+  const html=style.answerFields('answer',lang,2000);
+  assert.equal((html.match(/<textarea/g)||[]).length,3);
+  for(const id of ['answer','answerPart2','answerPart3'])assert.ok(html.includes("for='"+id+"'"));
+  const fields={ '#answer':{value:'first\nsecond line'},'#answerPart2':{value:''},'#answerPart3':{value:'third'} };
+  const host={querySelector:id=>fields[id]};
+  assert.deepEqual(style.collectAnswers(host,'answer',lang,2000),{text:'1. first\nsecond line\n\n3. third',missing:1,tooLong:false});
+  assert.equal(style.collectAnswers(host,'answer',lang,10).tooLong,true);
+  for(const field of Object.values(fields))field.value='';
+  assert.deepEqual(style.collectAnswers(host,'answer',lang,2000),{text:'',missing:3,tooLong:false});
+ }
+});
