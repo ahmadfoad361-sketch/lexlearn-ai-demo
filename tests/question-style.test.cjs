@@ -9,7 +9,7 @@ test('all bilingual authoring tasks default to the common style and retain canon
   assert.equal(task.questionStyle,style.version);assert.ok(task.originalPrompt);assert.ok(task.displayPrompt);count++;
   const clone=structuredClone(task),rubric=task.qualityRubric;
   style.author(task,lang);assert.deepEqual(task,clone);assert.equal(task.qualityRubric,rubric);
-  if(dim==='recall'){assert.match(task.displayPrompt,lang==='ar'?/ثلاث كلمات/:/three short memory cues/);assert.match(task.displayPrompt,/1\..*\n2\..*\n3\./);}
+  if(dim==='recall'){assert.match(task.displayPrompt,lang==='ar'?/ثلاث كلمات أو عبارات قصيرة مختلفة/:/three distinct short words or phrases/);assert.match(task.displayPrompt,/1\..*\n2\..*\n3\./);}
   if(dim==='understanding'){
    const expected=beginner.clarifyComparison('rights-v1-s'+topic.session+'-understanding',lang,task.comparison);
    for(const statement of expected)assert.ok(task.displayPrompt.includes(statement));
@@ -326,4 +326,10 @@ test('the special official majority question keeps every statutory condition and
  assert.match(result,/أثر القضاء باستمرار الولاية أو الوصاية على المال أو بالحجر/);
  assert.match(result,/حتى لو صدر حكم بالحجر/);assert.match(result,/صحّح الخطأ/);
  assert.equal(style.prepare({...task,prompt_ar:raw+'\nشرط إضافي'},'ar'),raw+'\nشرط إضافي');
+});
+
+test('actual English majority variant preserves the judicial exception and independent answer areas',()=>{
+ const raw='Explain majority and discernment under Articles 49–50, including the age of majority, lack of discernment, and the legal effect of judicial continuation of property guardianship/tutorship or interdiction. Identify and correct the inaccurate statement:\nEighteen complete years always suffice even when interdiction has been judicially imposed\nEighteen complete years with no judicial continuation of guardianship/tutorship over property or interdiction';
+ const input={id:'rights-v1-s8-understanding',dimension:'understanding',prompt_en:raw};
+ const out=style.prepare(input,'en');assert.ok(style.hasThreeParts(out));assert.match(out,/when a person lacks discernment/);assert.match(out,/court decision continuing guardianship or tutorship over property/);assert.match(out,/even if a court has imposed interdiction/);assert.equal(style.prepare({...input,prompt_en:raw+'\nAdditional requirement'},'en'),raw+'\nAdditional requirement');
 });
