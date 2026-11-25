@@ -250,3 +250,5 @@ test('three separate answer fields preserve question boundaries and combined lim
   assert.deepEqual(style.collectAnswers(host,'answer',lang,2000),{text:'',missing:3,tooLong:false});
  }
 });
+
+ test('beginner vocabulary includes source-based bilingual definitions and examples',()=>{const glossary=require('../assets/personal-glossary.js');assert.equal(glossary.beginnerTerms.length,30);assert.equal(glossary.terms.length,46);for(const row of glossary.beginnerTerms){assert.equal(row.length,7);assert.ok(row.slice(3).every(v=>v.length>10));assert.ok(row[2]>=39&&row[2]<=63);}assert.equal(new Set(glossary.terms.map(v=>v[0])).size,46);});
