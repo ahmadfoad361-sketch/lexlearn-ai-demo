@@ -565,7 +565,7 @@ async function mountPage(){
   host.innerHTML="<div class='lexDictionaryHero'><span class='lexDictionaryEyebrow'>My Legal Dictionary</span><h1>"+esc(tr("قاموسي القانوني","My Legal Dictionary"))+"</h1><p>"+esc(tr("قاموسك أنت؛ يبدأ فارغًا وتضيف إليه فقط المصطلحات التي تختارها من النص القانوني.","Start with an empty dictionary. Save only the terms you personally choose while reading."))+"</p><div class='lexDictionaryStats'><span><b>"+entries.length+"</b>"+esc(tr("مصطلحًا محفوظًا"," saved terms"))+"</span><span><b>"+entries.filter(due).length+"</b>"+esc(tr("جاهزًا للمراجعة"," due for review"))+"</span></div></div>"+
   "<section class='lexDictionaryToolbar'><label>"+esc(tr("ابحث في قاموسك","Search your terms"))+"<input id='lexDictionarySearch' value='"+esc(filter||"")+"' maxlength='100' placeholder='"+esc(tr("اكتب مصطلحًا…","Search a term…"))+"'></label><button type='button' id='lexDictionaryQuiz' "+(!entries.length?"disabled":"")+">"+esc(tr("اختبر قاموسي","Test my dictionary"))+"</button></section>"+
   "<details class='lexGlossaryExplore'><summary>"+esc(tr("استكشف مصطلحات المقرر","Explore course vocabulary"))+"</summary><label>"+esc(tr("ابحث عن مصطلح جديد","Find a new term"))+"<input id='lexExploreSearch' type='search' maxlength='90'></label><div id='lexExploreResults'></div></details>"+
-  (!entries.length?"<div class='lexDictionaryEmpty'>"+esc(tr("قاموسك فارغ حتى الآن. اقرأ المادة، واختَر بنفسك مصطلحًا ثم اضغط «أضف لقاموسي».","Your dictionary is empty. Choose a term yourself in the legal text, then save it."))+"</div>":
+  (!entries.length?"<div class='lexDictionaryEmpty'>"+esc(tr("قاموسك فارغ حتى الآن. اقرأ المادة، واختَر بنفسك مصطلحًا ثم اضغط «أضف إلى قاموسي».","Your dictionary is empty. Choose a term yourself in the legal text, then save it."))+"</div>":
    "<div class='lexDictionaryGrid'>"+shown.map(function(e){
      var definition=e.definition_ar?(root.document.documentElement.lang==="en"&&e.definition_en?e.definition_en:e.definition_ar):tr("الشرح لم يتوفر بعد، ويمكنك إعادة طلبه من نص المادة.","The explanation is pending. Reopen the legal text to request it.");
      var example=e.example_ar?(root.document.documentElement.lang==="en"&&e.example_en?e.example_en:e.example_ar):"";
@@ -587,10 +587,19 @@ async function mountPage(){
     var term=find(b.dataset.exploreTerm);if(!term)return;
     try{if(!await root.LEX_GLOSSARY_ACCESS.check(root.LEX_CLOUD))return;}catch(_){return;}
     await openWord(term[1],term[2],root.LEX_LEGAL_STUDY?.text?.[term[2]]||"",term[0]);
+    var modal=root.document.getElementById("lexGlossaryDialog");
+    if(modal&&modal.open)modal.addEventListener("close",async function(){
+     try{
+      if(!await root.LEX_GLOSSARY_ACCESS.check(root.LEX_CLOUD))return;
+      var updated=await who.client.from("lex_student_glossary").select("*").eq("student_id",who.id).eq("course_id",COURSE).order("added_at",{ascending:false}).limit(500);
+      if(updated.error)throw updated.error;
+      entries=updated.data||[];renderList("");
+     }catch(_){var hint=host.querySelector(".lexDictionaryHint");if(hint)hint.textContent=tr("حدّث الصفحة لعرض القائمة الجديدة.","Refresh the page to see the updated list.");}
+    },{once:true});
    });
    showTerms();
   }
-  var quiz=host.querySelector("#lexDictionaryQuiz");if(quiz)quiz.onclick=function(){testItems=entries.filter(due).filter(function(e){return !!e.definition_ar&&e.definition_status!=="pending";}).slice(0,12);if(!testItems.length)testItems=entries.filter(function(e){return !!e.definition_ar&&e.definition_status!=="pending";}).slice(0,12);if(!testItems.length){host.querySelector(".lexDictionaryHint").textContent=tr("كل مصطلحاتك تنتظر شرحًا. أعد فتحها من النص القانوني.","All saved terms await explanations.");return;}pos=0;attempt=[];question();};
+  var quiz=host.querySelector("#lexDictionaryQuiz");if(quiz)quiz.onclick=function(){testItems=entries.filter(due).filter(function(e){return !!e.definition_ar&&e.definition_status!=="pending";}).slice(0,12);if(!testItems.length)testItems=entries.filter(function(e){return !!e.definition_ar&&e.definition_status!=="pending";}).slice(0,12);if(!testItems.length){host.querySelector(".lexDictionaryHint").textContent=tr("لا توجد مصطلحات جاهزة للاختبار حاليًا. راجع الشروح المتاحة أو انتظر اعتمادها.","All saved terms await explanations.");return;}pos=0;attempt=[];question();};
  }
  async function record(entry,skill,mode,outcome,optionIndex){
   if(mode==="objective"){
