@@ -1,0 +1,18 @@
+/* Public intro only. The film is removed and paused when assessment begins. */
+.demoWelcome{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);align-items:center;gap:clamp(1rem,2.4vw,2rem);max-width:1280px;margin:1.5rem auto 3rem}
+.demoWelcome>.demoIntro{width:100%;min-width:0;margin:0;min-height:0}
+.demoWelcome>.demoIntro .stageCard{padding:clamp(1.25rem,2.4vw,2rem)}
+.demoIntroActions{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:.75rem;margin:1.5rem 0}
+.demoIntroActions .demoStart,.demoIntroActions .demoWatch{margin:0;min-height:48px;min-width:130px}
+.demoFilm{min-width:0;padding:clamp(1rem,2.3vw,1.6rem);border:1px solid #ddd2cd;border-radius:24px;background:#fffdf9;color:#111d31;box-shadow:0 12px 32px #111d310a;scroll-margin-top:100px}
+.demoFilmHeading h2{margin:.5rem 0;font-size:clamp(1.35rem,2.1vw,1.85rem);line-height:1.4}
+.demoFilmHeading p{margin:.5rem 0 1.2rem;font-size:1rem;line-height:1.7;color:#526074}
+.demoFilm .demoEyebrow{font-size:.9rem;color:#8a1f39}
+.demoFilm video{display:block;width:100%;height:auto;aspect-ratio:16/9;border-radius:14px;background:#111d31}
+.demoFilmNote{margin:1rem 0 0;font-size:.9rem;line-height:1.8;color:#526074}
+html[data-learner-theme="dark"] .demoFilm{background:#142235;color:#f9f4ef;border-color:#33445b;box-shadow:none}
+html[data-learner-theme="dark"] .demoFilmHeading p,html[data-learner-theme="dark"] .demoFilmNote{color:#c3cddd}
+html[data-learner-theme="dark"] .demoFilm .demoEyebrow{color:#e2bb85}
+@media(max-width:900px){.demoWelcome{grid-template-columns:minmax(0,1fr);max-width:760px}.demoFilm{scroll-margin-top:90px}}
+@media(prefers-reduced-motion:reduce){.demoFilm{scroll-behavior:auto}}
+
