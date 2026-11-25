@@ -69,7 +69,7 @@ function startGradingWait(settings){
   if(done)return;
   var grade=phase==="grading";
   title.textContent=english?(grade?"Reviewing your answer":"Saving your answer")+(name?", "+name:""):
-   (name?"يا "+name+"، ":"")+(grade?"بنراجع إجابتك بعناية":"بنحفظ إجابتك");
+   (name?"يا "+name+"، ":"")+(grade?"نراجع إجابتك بعناية":"نحفظ إجابتك");
   lead.textContent=english?(grade?"Preparing your result.":"Confirming your saved work."):
    (grade?"نجهّز نتيجتك.":"نتأكد من حفظ إجابتك.");
  }
@@ -289,7 +289,7 @@ async function boot(){
    if(pendingRows.length&&acceptedAi){
     var stopped=false,refreshing=false,timer=null,checks=0;
     async function readPendingScores(){
-     if(stopped||refreshing||busy||(host.querySelector("textarea")&&host.querySelector("textarea").value.trim()))return false;
+     if(stopped||refreshing||busy||Array.from(host.querySelectorAll("textarea")).some(function(f){return f.value.trim();}))return false;
      refreshing=true;
      try{
       var before=JSON.stringify((data.saved||[]).map(function(v){return [v.item_id,v.evaluation];}));
@@ -340,9 +340,9 @@ async function boot(){
    }
    why+=learningOverview(adaptation);
     if(aiUnavailable)why+="<p role='status'>"+t("تم حفظ الإجابة، لكن التصحيح لم يكتمل. يمكنك إعادة المحاولة.","Your answer was saved, but assessment is incomplete. You can retry.")+"</p>";
-   var completedFeedback=saved.map(function(v,index){
+   var completedFeedback=(next&&next.dimension==="recall"?[]:saved).map(function(v,index){
     var task=(data.tasks||[]).find(function(q){return q.id===v.item_id;});
-    return "<details class='past'"+(v===saved[saved.length-1]?" open":"")+"><summary>"+esc(previousAnswerTitle(v,task))+"</summary>"+lawContext(task&&task.sources)+"<p style='white-space:pre-wrap'>"+esc(v.answer_text)+"</p>"+feedback(v)+(needsAssessment(v)&&acceptedAi&&cloud.gradeTrainingAi?"<button type='button' id='retryGrade"+index+"'>"+t("أعد تصحيح هذه الإجابة","Retry assessment of this answer")+"</button>":"")+"</details>";
+    return "<details class='past lexPastAnswer'><summary>"+esc(previousAnswerTitle(v,task))+" <span class='lexPastTag'>"+t("مكتملة","Completed")+"</span></summary>"+lawContext(task&&task.sources)+"<p style='white-space:pre-wrap'>"+esc(v.answer_text)+"</p>"+feedback(v)+(needsAssessment(v)&&acceptedAi&&cloud.gradeTrainingAi?"<button type='button' id='retryGrade"+index+"'>"+t("أعد تصحيح هذه الإجابة","Retry assessment of this answer")+"</button>":"")+"</details>";
    }).join("");
    var resume=next?"<section class='learnerWelcome'><div><h2>"+t("تدريبك التالي جاهز","Your next practice is ready")+"</h2><p>"+t("إجاباتك السابقة محفوظة؛ أكمل خطوة واحدة الآن.","Your previous answers are saved. Continue one step at a time.")+"</p></div><a href='#currentPractice'>"+t("أكمل تدريبك","Continue practice")+"</a></section>":"";
    var stageKind=next&&["recall","understanding","exam_execution"].includes(next.dimension)?next.dimension:"foundation";
@@ -368,6 +368,7 @@ async function boot(){
     if(root.LEX_LEGAL_STUDY)prompt=root.LEX_LEGAL_STUDY.qualify(prompt,lang());
     var guide=root.LEX_LEGAL_CASE_GUIDE;
     var guided=next.dimension==="exam_execution"&&guide&&guide.parse(prompt,lang());
+    var splitAnswers=!guided&&style&&style.hasThreeParts&&style.hasThreeParts(prompt);
     main+="<h2 id='currentPractice' tabindex='-1'>"+esc((lang()==="en"?next.title_en:next.title_ar)||weakName(next.dimension))+"</h2>"+
       lawContext(next.sources)+"<p class='taskType'>"+t("تدريب على: ","Focus: ")+esc(weakName(next.dimension))+"</p>";
     if(guided){
@@ -378,8 +379,9 @@ async function boot(){
      main+=(style&&style.render?
        style.render(prompt,lang()):
        "<div class='prompt' style='white-space:pre-wrap'>"+esc(prompt)+"</div>")+
+      (splitAnswers?style.answerFields("adaptiveEssay",lang(),4000):
       "<label for='adaptiveEssay'>"+t("اكتب إجابتك القانونية بأسلوبك","Write your legal explanation in your own words")+"</label>"+
-      "<textarea id='adaptiveEssay' rows='7' maxlength='4000' placeholder='"+t("اكتب إجابتك بأسلوبك...","Write your answer in your own words...")+"'></textarea>"+
+      "<textarea id='adaptiveEssay' rows='7' maxlength='4000' placeholder='"+t("اكتب إجابتك بأسلوبك...","Write your answer in your own words...")+"'></textarea>")+
       "<button type='button' id='adaptiveSubmit'>"+t("احفظ الإجابة وحللها ثم انتقل","Save, analyse, and continue")+"</button>";
     }
     main+="<button type='button' id='adaptiveUnknown'>"+t("لا أعرف الإجابة — أعطني تلميحًا","I don't know — give me a hint")+"</button>"+
@@ -441,6 +443,7 @@ async function boot(){
      var cardClassification=root.LEX_COMPARISON_CARDS.answer(host,lang());
      if(cardClassification)answer=cardClassification+"\n"+answer;
     }
+    if(answer.length>4000){if(error)error.textContent=t("مجموع النص والتقييم يتجاوز 4000 حرف. اختصر الإجابة.","The answer and card assessment exceed 4,000 characters. Shorten the response.");return;}
     busy=true;button.disabled=true;
     if(error)error.textContent=t("جارٍ حفظ إجابتك وتحليلها...","Saving and performing provisional review...");
     var savingView=host.querySelector("#answerSaveProgress");
@@ -489,7 +492,12 @@ async function boot(){
    }else if(next){
     var submit=host.querySelector("#adaptiveSubmit");
     if(submit)submit.onclick=function(){
-     return submitAnswer(host.querySelector("#adaptiveEssay").value,this);
+     if(!splitAnswers)return submitAnswer(host.querySelector("#adaptiveEssay").value,this);
+     var parts=style.collectAnswers(host,"adaptiveEssay",lang(),4000);
+     var error=host.querySelector("#adaptiveError");
+     if(parts.tooLong){if(error)error.textContent=t("مجموع الإجابات يتجاوز 4000 حرف. اختصر النص ثم أعد المحاولة.","The combined answers exceed 4,000 characters. Shorten them and retry.");return;}
+     if(parts.missing>0&&parts.missing<3&&!root.confirm(t("بعض الأسئلة بلا إجابة. هل تريد إرسال الإجابات المتاحة؟","Some questions are unanswered. Submit the available answers?")))return;
+     return submitAnswer(parts.text,this);
     };
    }
   }
