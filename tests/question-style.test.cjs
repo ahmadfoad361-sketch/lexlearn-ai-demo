@@ -1,4 +1,5 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
+const beginner=require('../assets/beginner-prompts.js');
 const style=require('../assets/question-style.js'),Q=require('../assets/learning-quality.js'),guide=require('../assets/legal-case-guide.js');
 const topics=Object.values(Q.topics);
 test('all bilingual authoring tasks default to the common style and retain canonical requirements',()=>{
@@ -8,9 +9,12 @@ test('all bilingual authoring tasks default to the common style and retain canon
   assert.equal(task.questionStyle,style.version);assert.ok(task.originalPrompt);assert.ok(task.displayPrompt);count++;
   const clone=structuredClone(task),rubric=task.qualityRubric;
   style.author(task,lang);assert.deepEqual(task,clone);assert.equal(task.qualityRubric,rubric);
-  if(dim==='recall'){assert.match(task.displayPrompt,lang==='ar'?/ثلاث كلمات/:/three short memory cues/);assert.match(task.displayPrompt,/1\..*\n2\..*\n3\./);}
+  if(dim==='recall'){assert.match(task.displayPrompt,lang==='ar'?/ثلاث كلمات أو عبارات قصيرة مختلفة/:/three distinct short words or phrases/);assert.match(task.displayPrompt,/1\..*\n2\..*\n3\./);}
   if(dim==='understanding'){
-   for(const statement of task.comparison)assert.ok(task.displayPrompt.includes(statement));
+   const expected=beginner.clarifyComparison('rights-v1-s'+topic.session+'-understanding',lang,task.comparison);
+   for(const statement of expected)assert.ok(task.displayPrompt.includes(statement));
+   assert.ok(expected.every(x=>x.endsWith('.')));
+   assert.equal(expected.length,task.comparison.length);
    const html=style.render(task.displayPrompt,lang);assert.ok(html.indexOf('questionComparison')<html.indexOf('questionFollowup'));
    assert.match(html,/comparisonStatement/);
    assert.doesNotMatch(task.displayPrompt,lang==='ar'?/إحداهما غير دقيقة|أي العبارتين.*غير دقيقة/:/one is inaccurate|Which is inaccurate/);
@@ -279,3 +283,53 @@ test('three separate answer fields preserve question boundaries and combined lim
  assert.equal(style.readAnswer(host,'draft','en',4000).text,'1. first\n\n3. third');
  style.disableAnswers(host,'draft');assert.ok(Object.values(f).every(x=>x.disabled));
  });
+
+test('clear legal language preserves canonical comparison order, unfamiliar versions and all 24 topic pairs',()=>{
+ for(const topic of topics)for(const lang of ['ar','en']){
+  const task=Q.makeEssay(topic,lang,'understanding'),id='rights-v1-s'+topic.session+'-understanding';
+  const raw=task.comparison.slice(),changed=beginner.clarifyComparison(id,lang,raw);
+  assert.equal(changed.length,2);assert.notDeepEqual(changed,raw);
+  assert.deepEqual(beginner.clarifyComparison(id,lang,raw.slice().reverse()),changed.slice().reverse());
+  assert.deepEqual(beginner.clarifyComparison('unknown',lang,raw),raw);
+  const modified=[raw[0],raw[1]+' EXCEPTION'];
+  assert.deepEqual(beginner.clarifyComparison(id,lang,modified),modified);
+  assert.ok(task.originalPrompt.includes(raw[0]));
+  assert.ok(task.originalPrompt.includes(raw[1]));
+ }
+ const task=Q.makeEssay(Q.topic(14),'ar','understanding');
+ assert.match(task.displayPrompt,/الشخص الطبيعي والشخص المعنوي/);
+ assert.doesNotMatch(task.displayPrompt,/تتحد بداية الشخصية|كل معنوي/);
+ assert.match(task.displayPrompt,/ذمة مالية مستقلة/);
+ const official8=['ثماني عشرة سنة كاملة تكفي لكمال الأهلية ولو صدر حكم بالحجر','بلوغ ثماني عشرة سنة كاملة مع عدم القضاء باستمرار الولاية أو الوصاية على المال أو بالحجر'];
+ const revised8=beginner.clarifyComparison('rights-v1-s8-understanding','ar',official8);
+ assert.match(revised8[0],/حتى لو صدر حكم بالحجر/);
+ assert.match(revised8[1],/ما لم يُقضَ باستمرار الولاية أو الوصاية على ماله أو بالحجر/);
+ const html=style.answerFields('clarity','ar',4000,task.displayPrompt);
+ assert.ok(html.indexOf('questionComparison')<html.indexOf("id='clarityPart2'"));
+ assert.ok(html.indexOf("id='clarityPart2'")<html.indexOf("id='clarityPart3'"));
+});
+test('legal answer starters are optional and conclusion language belongs only in the final step',()=>{
+ const source=fs.readFileSync('assets/legal-case-guide.js','utf8');
+ const arrays=Array.from(source.matchAll(/placeholders:(\[[^\n]+\]),/g)).map(m=>JSON.parse(m[1]));
+ assert.equal(arrays.length,2);
+ for(const arr of arrays){assert.equal(arr.length,4);assert.ok(arr.slice(0,3).every(s=>!/إذن|Therefore/i.test(s)));assert.match(arr[3],/إذن|Therefore/i);}
+ assert.equal(guide.compose(['','','',''],'ar'),'');
+ assert.equal(guide.compose(['مسألة','قاعدة','تطبيق','نتيجة'],'ar'),'المسألة: مسألة\nالقاعدة: قاعدة\nالتطبيق: تطبيق\nالنتيجة: نتيجة');
+});
+
+test('the special official majority question keeps every statutory condition and separate answers',()=>{
+ const raw='اشرح قاعدة «الرشد والتمييز» (المادتان 49–50) بأسلوبك مع بيان سن الرشد، وانعدام التمييز، وأثر القضاء باستمرار الولاية أو الوصاية على المال أو بالحجر. ثم حدد العبارة غير الدقيقة من العبارتين وصححها مع التعليل:\nثماني عشرة سنة كاملة تكفي لكمال الأهلية ولو صدر حكم بالحجر\nبلوغ ثماني عشرة سنة كاملة مع عدم القضاء باستمرار الولاية أو الوصاية على المال أو بالحجر';
+ const task={id:'rights-v1-s8-understanding',dimension:'understanding',prompt_ar:raw};
+ const result=style.prepare(task,'ar');
+ assert.ok(style.hasThreeParts(result));
+ assert.match(result,/سن الرشد/);assert.match(result,/عديم التمييز/);
+ assert.match(result,/أثر القضاء باستمرار الولاية أو الوصاية على المال أو بالحجر/);
+ assert.match(result,/حتى لو صدر حكم بالحجر/);assert.match(result,/صحّح الخطأ/);
+ assert.equal(style.prepare({...task,prompt_ar:raw+'\nشرط إضافي'},'ar'),raw+'\nشرط إضافي');
+});
+
+test('actual English majority variant preserves the judicial exception and independent answer areas',()=>{
+ const raw='Explain majority and discernment under Articles 49–50, including the age of majority, lack of discernment, and the legal effect of judicial continuation of property guardianship/tutorship or interdiction. Identify and correct the inaccurate statement:\nEighteen complete years always suffice even when interdiction has been judicially imposed\nEighteen complete years with no judicial continuation of guardianship/tutorship over property or interdiction';
+ const input={id:'rights-v1-s8-understanding',dimension:'understanding',prompt_en:raw};
+ const out=style.prepare(input,'en');assert.ok(style.hasThreeParts(out));assert.match(out,/when a person lacks discernment/);assert.match(out,/court decision continuing guardianship or tutorship over property/);assert.match(out,/even if a court has imposed interdiction/);assert.equal(style.prepare({...input,prompt_en:raw+'\nAdditional requirement'},'en'),raw+'\nAdditional requirement');
+});
