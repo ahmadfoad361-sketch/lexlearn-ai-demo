@@ -316,3 +316,14 @@ test('legal answer starters are optional and conclusion language belongs only in
  assert.equal(guide.compose(['','','',''],'ar'),'');
  assert.equal(guide.compose(['مسألة','قاعدة','تطبيق','نتيجة'],'ar'),'المسألة: مسألة\nالقاعدة: قاعدة\nالتطبيق: تطبيق\nالنتيجة: نتيجة');
 });
+
+test('the special official majority question keeps every statutory condition and separate answers',()=>{
+ const raw='اشرح قاعدة «الرشد والتمييز» (المادتان 49–50) بأسلوبك مع بيان سن الرشد، وانعدام التمييز، وأثر القضاء باستمرار الولاية أو الوصاية على المال أو بالحجر. ثم حدد العبارة غير الدقيقة من العبارتين وصححها مع التعليل:\nثماني عشرة سنة كاملة تكفي لكمال الأهلية ولو صدر حكم بالحجر\nبلوغ ثماني عشرة سنة كاملة مع عدم القضاء باستمرار الولاية أو الوصاية على المال أو بالحجر';
+ const task={id:'rights-v1-s8-understanding',dimension:'understanding',prompt_ar:raw};
+ const result=style.prepare(task,'ar');
+ assert.ok(style.hasThreeParts(result));
+ assert.match(result,/سن الرشد/);assert.match(result,/عديم التمييز/);
+ assert.match(result,/أثر القضاء باستمرار الولاية أو الوصاية على المال أو بالحجر/);
+ assert.match(result,/حتى لو صدر حكم بالحجر/);assert.match(result,/صحّح الخطأ/);
+ assert.equal(style.prepare({...task,prompt_ar:raw+'\nشرط إضافي'},'ar'),raw+'\nشرط إضافي');
+});
