@@ -159,6 +159,25 @@ async function run({en=false,marker,session=true,error,access,consent=true,role,
   {session_number:1,dimension:'understanding',evaluation:{status:'preliminary_ai',rubric_version:'lexlearn-training-ai-v4',provisional_percent:60}},
   {session_number:2,dimension:'understanding',evaluation:{status:'preliminary_ai',rubric_version:'lexlearn-training-ai-v4',provisional_percent:80}}
  ];
+ const route=trainingContext.LEX_STUDENT_PATH;
+ const grade=(dimension,p,day)=>({session_number:day,dimension,submitted_at:'2026-11-'+String(day).padStart(2,'0')+'T10:00:00Z',evaluation:{status:'preliminary_ai',rubric_version:'lexlearn-training-ai-v4',provisional_percent:p}});
+ const outage={session_number:5,dimension:'recall',submitted_at:'2026-11-05T10:00:00Z',evaluation:{status:'ai_review_required',reason:'provider_quota_exhausted'}};
+ const oldRoute={skills:{recall:40,understanding:80},priority:'recall',status:'preliminary_evidence'};
+ const evidence=[grade('recall',100,8),grade('recall',100,7),outage,grade('understanding',80,4),grade('recall',40,3)];
+ const frozen=route.chooseAdaptation(null,evidence,oldRoute);
+ assert.equal(frozen.priority,'recall');assert.equal(frozen.continuity,'awaiting_recovery');
+ assert.equal(route.chooseAdaptation(null,evidence,null).priority,'recall','first browser visit uses pre-outage evidence');
+ const recovering={...outage,evaluation:{status:'ai_queued',recovery_reason:'provider_quota_exhausted'}};
+ assert.equal(route.recoveryPending(recovering),true);
+ assert.equal(route.chooseAdaptation(null,[recovering,...evidence.filter(x=>x!==outage)],oldRoute).priority,'recall');
+ const recovered=route.chooseAdaptation(null,[grade('recall',100,5),...evidence.filter(x=>x!==outage)],oldRoute);
+ assert.equal(recovered.priority,'understanding');
+ assert.equal(recovered.continuity,'saved_evidence');
+ const blank=route.chooseAdaptation(null,[outage],null);assert.equal(blank.priority,'foundation');assert.equal(blank.skills.recall,null);
+ const tasks=[{id:'r',dimension:'recall'},{id:'u',dimension:'understanding'},{id:'e',dimension:'exam_execution'}];
+ assert.equal(route.orderedTasks(tasks,[],'understanding')[0].id,'u');
+ assert.equal(route.orderedTasks(tasks,[{item_id:'u'}],'understanding')[0].id,'r');
+ assert.equal(tasks[0].id,'r','do not reorder source task array');
  const aggregate=trainingContext.LEX_STUDENT_PATH.progressHtml(rows,2,true);
  assert.match(aggregate,/إجمالي تقدمك حتى الآن/);
  assert.match(aggregate,/70%/);
