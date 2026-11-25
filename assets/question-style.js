@@ -31,6 +31,11 @@ var originalExamSteps={
 function prepare(task,language){
  var lang=language==="en"?"en":"ar",raw=String(task&&task[lang==="en"?"prompt_en":"prompt_ar"]||"");
  if(!task)return raw;
+ // The bank has one independently edited Article 49–50 question. Keep every requirement.
+ if(lang==="ar"&&task.id==="rights-v1-s8-understanding"&&task.dimension==="understanding"&&raw==="اشرح قاعدة «الرشد والتمييز» (المادتان 49–50) بأسلوبك مع بيان سن الرشد، وانعدام التمييز، وأثر القضاء باستمرار الولاية أو الوصاية على المال أو بالحجر. ثم حدد العبارة غير الدقيقة من العبارتين وصححها مع التعليل:\nثماني عشرة سنة كاملة تكفي لكمال الأهلية ولو صدر حكم بالحجر\nبلوغ ثماني عشرة سنة كاملة مع عدم القضاء باستمرار الولاية أو الوصاية على المال أو بالحجر"){
+  var pair=beginner.clarifyComparison(task.id,lang,raw.split("\n").slice(1));
+  return ["اشرح أحكام الرشد والتمييز (المادتان 49–50) بأسلوبك.","1. بيّن سن الرشد، ومتى يكون الشخص عديم التمييز.","2. حدّد لكل عبارة على حدة هل هي دقيقة قانونيًا أم لا، واذكر السبب، وصحّح الخطأ إن وجد.","قيّم كل عبارة على حدة:"].concat(pair).concat(["3. وضّح أثر القضاء باستمرار الولاية أو الوصاية على المال أو بالحجر على أهلية الأداء."]).join("\n");
+ }
  if(["recall","understanding"].includes(task.dimension)&&!knownEssay(raw,task.dimension,lang))return raw;
  var text=beginner?beginner.prepare(task,lang):raw;
  if(task.dimension==="exam_execution"){
