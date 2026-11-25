@@ -73,18 +73,56 @@ function freeDiagnostic(language){return language==="en"?
  "أجب من ذاكرتك بأسلوبك. لا تفتح النص القانوني.\n1. متى تبدأ الشخصية القانونية للإنسان؟\n2. متى تنتهي؟\n3. ماذا تقول المادة 40 من القانون المدني القطري الصادر بالقانون رقم (22) لسنة 2004 عن حقوق الجنين قبل ولادته؟";
 }
 function render(text,language){return beginner.render(text,language);}
-// Three numbered prompts share a single server answer, with explicit question boundaries.
-function hasThreeParts(prompt){
- var numbers=String(prompt||"").split(/\r?\n/).map(function(line){var m=line.match(/^\s*([123١٢٣])[.)]\s+/);return m?("١٢٣".includes(m[1])?String("١٢٣".indexOf(m[1])+1):m[1]):null;}).filter(Boolean);
- return numbers.join(",")==="1,2,3";
+// Presentation only: split a strictly numbered three-part prompt, retaining every line.
+function escapeText(s){return String(s||"").replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
+function splitPrompt(prompt){
+ var head=[],parts=[],current=null;
+ String(prompt||"").split(/\r?\n/).forEach(function(line){
+  var m=line.match(/^\s*([0-9٠-٩]+)[.)]\s+(.*)$/);
+  if(m){var n=Number(m[1].replace(/[٠-٩]/g,function(d){return String("٠١٢٣٤٥٦٧٨٩".indexOf(d));}));current={number:n,lines:[line.trim()]};parts.push(current);}
+  else if(current)current.lines.push(line);
+  else head.push(line);
+ });
+ if(parts.length!==3||parts.some(function(p,i){return p.number!==i+1;}))return null;
+ return {header:head.join("\n"),parts:parts.map(function(p){return p.lines.join("\n");})};
 }
-function answerFields(id,language,limit){
+function hasThreeParts(prompt){return !!splitPrompt(prompt);}
+function answerFields(id,language,limit,prompt){
  if(!/^[A-Za-z][A-Za-z0-9_-]*$/.test(id))throw Error("invalid_answer_field_id");
- var en=language==="en";
- return "<div class='lexAnswerParts' role='group' aria-label='"+(en?"Answers to the three questions":"إجابات الأسئلة الثلاثة")+"'>"+[1,2,3].map(function(n){
-  var field=n===1?id:id+"Part"+n;
-  return "<div class='lexAnswerPart'><label for='"+field+"'>"+(en?"Answer to question ":"الإجابة عن السؤال ")+n+"</label><textarea id='"+field+"' data-lex-answer-part='"+n+"' rows='4' maxlength='"+limit+"' placeholder='"+(en?"Write your answer here…":"اكتب إجابتك هنا…")+"'></textarea></div>";
+ var en=language==="en",parsed=splitPrompt(prompt),out=parsed&&parsed.header.trim()?render(parsed.header,language):"";
+ return out+"<div class='lexAnswerParts' role='group' aria-label='"+(en?"Answers to the three questions":"إجابات الأسئلة الثلاثة")+"'>"+[1,2,3].map(function(n){
+  var field=n===1?id:id+"Part"+n,lines=parsed?parsed.parts[n-1].split("\n"):[],question=lines.shift(),extra=lines.join("\n"),label=question||((en?"Answer to question ":"الإجابة عن السؤال ")+n);
+  // Comparison cards retain the existing renderer and selectors, within their own question.
+  var details=extra.trim()?render(extra,language):"";
+  if(details)details=details.replace(/<span class='questionLeadLabel'>[^<]*<\/span>/,"");
+  return "<div class='lexAnswerPart'><label for='"+field+"' style='white-space:pre-wrap'>"+escapeText(label)+"</label>"+details+"<textarea id='"+field+"' data-lex-answer-part='"+n+"' rows='"+(n===2&&parsed&&/memory cues|كلمات قصيرة/i.test(question)?2:3)+"' maxlength='"+limit+"' placeholder='"+(en?"Write your answer here…":"اكتب إجابتك هنا…")+"'></textarea></div>";
  }).join("")+"</div>";
+}
+function pairedPrompt(prompt,id,language,limit,fallback){
+ return hasThreeParts(prompt)?answerFields(id,language,limit,prompt):render(prompt,language)+fallback;
+}
+function bindAnswerFields(host,id){
+ if(!host||!host.querySelectorAll)return;
+ Array.from(host.querySelectorAll("[data-lex-answer-part]")).filter(function(f){return f.id===id||f.id===id+"Part2"||f.id===id+"Part3";}).forEach(function(f){
+  function resize(){f.style.height="auto";f.style.height=Math.max(f.scrollHeight+2,84)+"px";}
+  f.addEventListener("input",resize);
+ });
+}
+function readAnswer(host,id,language,limit){
+ var field=host.querySelector("#"+id);
+ return host.querySelector("#"+id+"Part2")?collectAnswers(host,id,language,limit):{text:String(field&&field.value||"").trim(),missing:0,tooLong:String(field&&field.value||"").trim().length>limit};
+}
+function restoreAnswers(host,id,text){
+ var value=String(text||""),first=host.querySelector("#"+id);
+ if(!first)return;
+ if(!host.querySelector("#"+id+"Part2")){first.value=value;return;}
+ // Do not guess the boundaries of pre-existing single-text drafts.
+ var marks=Array.from(value.matchAll(/(?:^|\n\n)([123])\. /g));
+ if(!marks.length){first.value=value;return;}
+ marks.forEach(function(m,i){var n=Number(m[1]),f=host.querySelector("#"+(n===1?id:id+"Part"+n));if(f)f.value=value.slice(m.index+m[0].length,i+1<marks.length?marks[i+1].index:value.length);});
+}
+function disableAnswers(host,id){
+ [id,id+"Part2",id+"Part3"].forEach(function(x){var f=host.querySelector("#"+x);if(f)f.disabled=true;});
 }
 function collectAnswers(host,id,language,limit){
  var fields=[id,id+"Part2",id+"Part3"].map(function(field){return host.querySelector("#"+field);});
@@ -94,7 +132,7 @@ function collectAnswers(host,id,language,limit){
  var text=parts.map(function(p,i){return p?(i+1)+". "+p:"";}).filter(Boolean).join("\n\n");
  return {text:text,missing:missing,tooLong:text.length>limit};
 }
-var api=Object.freeze({version:VERSION,policy:policy,prepare:prepare,author:author,diagnostic:diagnostic,freeDiagnostic:freeDiagnostic,render:render,hasThreeParts:hasThreeParts,answerFields:answerFields,collectAnswers:collectAnswers});
+var api=Object.freeze({version:VERSION,policy:policy,prepare:prepare,author:author,diagnostic:diagnostic,freeDiagnostic:freeDiagnostic,render:render,hasThreeParts:hasThreeParts,splitPrompt:splitPrompt,answerFields:answerFields,pairedPrompt:pairedPrompt,bindAnswerFields:bindAnswerFields,readAnswer:readAnswer,restoreAnswers:restoreAnswers,disableAnswers:disableAnswers,collectAnswers:collectAnswers});
 root.LEX_QUESTION_STYLE=api;
 if(typeof module!=="undefined"&&module.exports)module.exports=api;
 })(typeof window!=="undefined"?window:globalThis);

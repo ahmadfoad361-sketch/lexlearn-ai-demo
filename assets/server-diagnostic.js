@@ -147,15 +147,15 @@ async function startUI(){
       "<label class='choice'><input name='selected' type='radio' value='-1'>"+tr("لا أدري (لم يُقَس)","Not sure (not measured)")+"</label></fieldset>";
    }else{
     html+="<h2>"+tr("استرجاع من الذاكرة (اختياري)","Recall from memory (optional)")+"</h2>"+
-      (root.LEX_QUESTION_STYLE?root.LEX_QUESTION_STYLE.render(root.LEX_QUESTION_STYLE.freeDiagnostic(lang()),lang()):
+      (root.LEX_QUESTION_STYLE&&root.LEX_QUESTION_STYLE.answerFields?root.LEX_QUESTION_STYLE.answerFields("ungradedText",lang(),2000,root.LEX_QUESTION_STYLE.freeDiagnostic(lang())):
 "<p>"+tr("اكتب من ذاكرتك: متى تبدأ الشخصية القانونية للإنسان؟ عبّر عن القاعدة بأسلوبك دون الرجوع إلى النص.","From memory, when does a human being’s legal personality begin? State the rule in your own words without consulting the text.")+"</p>"+
-      "<p>"+tr("اكتب أيضًا: متى تنتهي الشخصية القانونية؟ وماذا يقول النص عن حقوق الجنين قبل ولادته (المادة 40 من القانون المدني القطري الصادر بالقانون رقم (22) لسنة 2004)؟ اكتب بجمل قصيرة من ذاكرتك، دون فتح النص.","Also answer: when does legal personality end? What does Article 40 of the Qatar Civil Code, promulgated by Law No. 22 of 2004, say about an unborn child's rights? Use short sentences from memory, without reopening the text.")+"</p>")+
-      (root.LEX_QUESTION_STYLE&&root.LEX_QUESTION_STYLE.answerFields?root.LEX_QUESTION_STYLE.answerFields("ungradedText",lang(),2000):
+      "<p>"+tr("اكتب أيضًا: متى تنتهي الشخصية القانونية؟ وماذا يقول النص عن حقوق الجنين قبل ولادته (المادة 40 من القانون المدني القطري الصادر بالقانون رقم (22) لسنة 2004)؟ اكتب بجمل قصيرة من ذاكرتك، دون فتح النص.","Also answer: when does legal personality end? What does Article 40 of the Qatar Civil Code, promulgated by Law No. 22 of 2004, say about an unborn child's rights? Use short sentences from memory, without reopening the text.")+"</p>"+
       "<textarea id='ungradedText' rows='5' maxlength='2000' aria-label='"+tr("إجابة حرة","Free answer")+"'></textarea>");
    }
    html+="<button id='serverNext'>"+(done?tr("احفظ التقييم واعرض نتيجتي","Save assessment and show my result"):tr("حفظ والانتقال للسؤال التالي","Save and continue"))+"</button>"+
    "<p id='serverError' role='alert'></p>";
    render(html);
+   if(done&&root.LEX_QUESTION_STYLE&&root.LEX_QUESTION_STYLE.bindAnswerFields)root.LEX_QUESTION_STYLE.bindAnswerFields(area,"ungradedText");
    root.document.getElementById("serverNext").onclick=async function(){
     if(saving)return;
     saving=true;this.disabled=true;

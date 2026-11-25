@@ -49,20 +49,22 @@ async function mountReview(node,opts){
   if(prior.error)throw prior.error;
   var selected=reviewSource(prior.data,n);
   if(!selected){node.textContent="";return;}
-  var question=selected.task;
+  var question=selected.task,style=root.LEX_QUESTION_STYLE,reviewPrompt=textOf(question,lang);
   visible(node,"<section class='lexExtensionCard' aria-labelledby='lexRecallTitle'><p class='lexExtensionEyebrow'>"+
    tr(lang,"مراجعة ذكية مدمجة","Integrated recall")+"</p><h3 id='lexRecallTitle'>"+
    tr(lang,"سؤال واحد من اللي اتعلمته","One question from your earlier learning")+"</h3><p>"+
    tr(lang,"حاول تسترجع المعلومة من ذاكرتك، من غير ما ترجع للإجابة السابقة.","Try retrieving the idea without looking back at your previous answer.")+
-   "</p>"+lawContext(question,lang)+"<p class='lexExtensionSourceHint'>"+tr(lang,"حاول الإجابة أولًا من الذاكرة.","Try answering from memory first.")+"</p><div class='lexExtensionPrompt'>"+esc(textOf(question,lang))+"</div>"+
-   "<label for='lexRecallAnswer'>"+tr(lang,"اكتب اللي تفتكره","Write what you remember")+"</label>"+
-   "<textarea id='lexRecallAnswer' rows='4' maxlength='4000'></textarea>"+
+   "</p>"+lawContext(question,lang)+"<p class='lexExtensionSourceHint'>"+tr(lang,"حاول الإجابة أولًا من الذاكرة.","Try answering from memory first.")+"</p>"+(style&&style.hasThreeParts(reviewPrompt)?style.answerFields("lexRecallAnswer",lang,4000,reviewPrompt):
+   "<div class='lexExtensionPrompt'>"+esc(reviewPrompt)+"</div><label for='lexRecallAnswer'>"+tr(lang,"اكتب ما تتذكره","Write what you remember")+"</label><textarea id='lexRecallAnswer' rows='4' maxlength='4000'></textarea>")+
    "<button type='button' id='lexRecallSave'>"+tr(lang,"احفظ مراجعتي","Save my review")+"</button>"+
    "<p class='lexExtensionStatus' id='lexRecallStatus' role='status' aria-live='polite'></p>"+
    "<small>"+tr(lang,"المراجعة اختيارية، ولا تغيّر درجات الجلسات أو نتيجة التشخيص.","Optional and non-credit. Official session scores remain unchanged.")+"</small></section>");
   var button=node.querySelector("#lexRecallSave"),textarea=node.querySelector("#lexRecallAnswer");
+  if(style&&style.bindAnswerFields)style.bindAnswerFields(node,"lexRecallAnswer");
   button.onclick=async function(){
-   var answer=textarea.value.trim(),status=node.querySelector("#lexRecallStatus");
+   var parts=style?style.readAnswer(node,"lexRecallAnswer",lang,4000):{text:textarea.value.trim(),missing:0,tooLong:false},answer=parts.text,status=node.querySelector("#lexRecallStatus");
+   if(parts.tooLong){status.textContent=tr(lang,"مجموع الإجابات يتجاوز 4000 حرف.","Combined answers exceed 4,000 characters.");return;}
+   if(parts.missing>0&&parts.missing<3&&!root.confirm(tr(lang,"بعض الأسئلة بلا إجابة. هل تريد حفظ الإجابات المتاحة؟","Some questions are unanswered. Save the available answers?")))return;
    if(answer.length<12){status.textContent=tr(lang,"اكتب فكرة قصيرة من اللي تفتكره، وبعدين احفظها.","Write a short thought from memory, then save it.");return;}
    button.disabled=true;status.textContent=tr(lang,"بنحفظ مراجعتك…","Saving your review…");
    try{
