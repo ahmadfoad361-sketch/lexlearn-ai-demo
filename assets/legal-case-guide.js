@@ -27,7 +27,7 @@ var copy={
       hints:["The issue is the question to solve. Write it in one sentence.","The rule is the condition or instruction you read in the article. Use your own words.","Application means connecting what happened to the article's conditions. Explain the connection.","The conclusion is the answer you reached. Give a short reason."],
       placeholders:["The legal issue is...","Under the applicable legal rule...","Applying the rule to the facts...","Therefore, the conclusion is..."],
       defaultQuestion:"What legal question do these facts raise?",
-      guidance:"Go back to edit any step. If you're unsure about one part, leave it blank rather than guessing."}
+      guidance:"Go back to edit any step. The suggested sentence starters are optional, not required wording. If you're unsure about one part, leave it blank rather than guessing."}
 };
 function parse(prompt,language){
  var parts={},found=0;
