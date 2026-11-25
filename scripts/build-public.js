@@ -4,14 +4,14 @@ fs.rmSync(out,{recursive:true,force:true});
 fs.mkdirSync(path.join(out,"assets"),{recursive:true});
 
 const pages=[
-  "index.html","conference.html","go/index.html","showcase.html","showcase-level1.html","program.html","diagnostic.html","student-practice.html","student-path.html","student-research-pilot.html","student-profile.html","student-glossary.html","student-future.html","admin-glossaries.html",
+  "index.html","conference.html","go/index.html","showcase.html","supplementary-practice.html","showcase-level1.html","program.html","diagnostic.html","student-practice.html","student-path.html","student-research-pilot.html","student-profile.html","student-glossary.html","student-future.html","admin-glossaries.html",
   "index-en.html","showcase-en.html","showcase-level1-en.html","program-en.html",
   "student-login.html","student-register.html","student.html","student-login-en.html","student-register-en.html","student-en.html",
   "admin-login.html","admin.html","admin-career-audio.html","admin-bulk.html","admin-archive.html","admin-instructors.html","admin-analytics.html","admin-progress.html","admin-research.html","instructor-login.html","instructor.html","references.html","lexlearn-grading-console.html","demo-supervisor.html","pilot-review.html","pilot-qa.html",
   "privacy.html","privacy-en.html","terms.html","terms-en.html","reset-password.html",".nojekyll"
 ];
 const assets=["career-role-cases.js","career-audio.js","admin-career-audio.js",
-"study-coach.js","study-coach.css","study-coach/hero.jpg","study-coach/activity-1.jpg","study-coach/activity-2.jpg","study-coach/activity-3.jpg","study-coach/activity-4.jpg","study-coach/activity-5.jpg",
+"supplementary-practice.js","supplementary-practice.css","study-coach.js","study-coach.css","study-coach/hero.jpg","study-coach/activity-1.jpg","study-coach/activity-2.jpg","study-coach/activity-3.jpg","study-coach/activity-4.jpg","study-coach/activity-5.jpg",
   "academic-picker.js","academic-picker.css",
   "university-brands.js","university-picker-decor.js","card-branding.js","student-identity.js","student-identity.css","student-profile.js","student-card-pdf.js","student-research-entry.js","student-research-pilot.js","qrcode-generator.js","qrcode-generator-LICENSE.txt",
   "session-moments.js","session-moments.css","learner-extensions.js","learner-extensions.css","personal-glossary.js","personal-glossary.css","glossary-access.js","glossary-access.css","research-pilot-inline.css","research-pilot-theme.css","admin-glossaries.js","admin-glossaries.css","grading-wait.js","grading-wait.css","learning-keys.js","learning-keys.css",
@@ -98,7 +98,7 @@ for(const page of pages){
 
 // First-party measurements on public/student pages and authenticated faculty dashboard.
 // Never collect supervisor activity as learner attendance.
-const measuredPages=pages.filter(p=>p.endsWith('.html')&&(!/^(admin|instructor|reset-password|references|lexlearn-grading|demo-supervisor|pilot-|go\/)/.test(p)||p==='instructor.html'));
+const measuredPages=pages.filter(p=>p.endsWith('.html')&&(!/^(admin|instructor|reset-password|references|lexlearn-grading|demo-supervisor|supplementary-practice|pilot-|go\/)/.test(p)||p==='instructor.html'));
 for(const page of measuredPages){
  const full=path.join(out,page);let html=fs.readFileSync(full,'utf8');
  if(!html.includes('assets/lexlearn-config.js'))html=html.replace('</body>','<script src="assets/lexlearn-config.js"></script></body>');
