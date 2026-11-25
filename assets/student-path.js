@@ -118,6 +118,12 @@ function deriveAdaptation(rows,prior){
   else{
    // First visit on this browser during an outage: use only evidence before the oldest held answer.
    var first=Math.min.apply(null,safe.filter(recoveryPending).map(function(r){return Date.parse(r.submitted_at);}).filter(Number.isFinite));
+   var recovered=safe.map(function(r){return {start:Date.parse(r.submitted_at),end:Date.parse(r.evaluation&&r.evaluation.provider_recovery&&r.evaluation.provider_recovery.recovered_at)};}).filter(function(r){return Number.isFinite(r.start)&&Number.isFinite(r.end)&&r.start<=r.end;});
+   for(var i=0;i<recovered.length;i++){
+    var earlier=recovered.filter(function(r){return r.start<first&&r.end>=first;}).map(function(r){return r.start;});
+    if(!earlier.length)break;
+    first=Math.min.apply(null,[first].concat(earlier));
+   }
    var prefix=Number.isFinite(first)?safe.filter(function(r){return Number.isFinite(Date.parse(r.submitted_at))&&Date.parse(r.submitted_at)<first;}):[];
    priority=deriveAdaptation(prefix,null).priority;
   }
