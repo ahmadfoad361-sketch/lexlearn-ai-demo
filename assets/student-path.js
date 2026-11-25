@@ -176,6 +176,22 @@ function stageSkillScorecard(rows,session){
    "</p></section>";
 }
 
+// Research-aligned review uses only confirmed feedback from the existing official grader.
+function targetedReview(ev){
+ if(!confirmedGrade(ev)||!Array.isArray(ev.learning_diagnostics))return "";
+ var available=new Set((Array.isArray(ev.criteria)?ev.criteria:[]).filter(function(c){return typeof c.credit==="number"&&c.credit<1;}).map(function(c){return c.id;}));
+ var actions={
+  rebuild_memory_cues:["اربط مفتاح الحفظ بالشرط أو الأثر القانوني، ثم استرجع القاعدة دون النظر إليها.","Link your memory cue to the legal condition or consequence, then retrieve the rule without looking."],
+  contrast_one_condition:["قارن العبارتين، وحدد الشرط الذي يغيّر الحكم القانوني، وفسّر أثره.","Compare the statements, identify the condition that changes the legal result, and explain its effect."],
+  practice_exam_structure:["أعد ترتيب استدلالك: المسألة، ثم القاعدة، ثم التطبيق، ثم النتيجة.","Reorganize your reasoning: issue, rule, application, then conclusion."],
+  reconstruct_from_memory:["أغلق النص، ثم استرجع عناصر القاعدة وشروطها واستثناءاتها من ذاكرتك.","Close the text, then retrieve the elements, conditions and exceptions from memory."],
+  explain_then_vary_case:["فسّر القاعدة بأسلوبك، ثم تخيّل تغيّر واقعة مؤثرة وراجع أثرها القانوني.","Explain the rule in your own words, then consider how changing a material fact affects the legal result."]
+ };
+ var keys=Array.from(new Set(ev.learning_diagnostics.filter(function(d){return d&&available.has(d.criterion_id)&&Object.prototype.hasOwnProperty.call(actions,d.next_step);}).map(function(d){return d.next_step;})));
+ if(!keys.length)return "";
+ return "<section class='lexTargetedReview'><h3>"+t("خطوتك التالية وفق نتيجة التصحيح","Your next step based on the assessment")+"</h3><ul>"+keys.map(function(k){return "<li>"+esc(t(actions[k][0],actions[k][1]))+"</li>";}).join("")+"</ul><small>"+t("إرشادات للمراجعة مبنية على معايير الإجابة نفسها، دون إضافة درجة.","Review guidance based on the same assessment criteria, without adding a score.")+"</small></section>";
+}
+
 function feedback(item){
  var ev=item&&item.evaluation||{};
  if(heldGrade(item)){
@@ -199,7 +215,7 @@ function feedback(item){
    var state=c.credit===1?t("✓ صحيح","✓ Correct"):c.credit>0?t("◐ صحيح جزئيًا","◐ Partly correct"):t("✗ ناقص أو يحتاج تصحيحًا","✗ Missing or needs correction");
    return "<li class='"+(c.credit===1?"criterionCorrect":c.credit>0?"criterionPartial":"criterionIncorrect")+"'><b>"+esc(state)+" — "+esc(lang()==="en"?c.label_en:c.label_ar)+"</b>"+(c.evidence?"<blockquote>«"+esc(c.evidence)+"»</blockquote>":"")+"<p>"+esc(lang()==="en"?c.explanation_en:c.explanation_ar)+"</p></li>";
   }).join("")+"</ul>":"";
-  return "<div class='feedback' role='status'><b>"+esc(verdict)+": "+esc(noHtmlScore(ev.provisional_percent))+"</b><p style='white-space:pre-wrap'>"+esc(lang()==="en"?ev.feedback_en:ev.feedback_ar)+"</p>"+details+"<small>"+t("تقييم تدريبي أولي.","Preliminary practice assessment.")+"</small></div>";
+  return "<div class='feedback' role='status'><b>"+esc(verdict)+": "+esc(noHtmlScore(ev.provisional_percent))+"</b><p style='white-space:pre-wrap'>"+esc(lang()==="en"?ev.feedback_en:ev.feedback_ar)+"</p>"+details+targetedReview(ev)+"<small>"+t("تقييم تدريبي أولي.","Preliminary practice assessment.")+"</small></div>";
  }
  return "<div class='feedback' role='status'><b>"+t("حُفظت الإجابة — التصحيح غير مكتمل","Answer saved — assessment incomplete")+"</b>"+
  "<p>"+t("لم يكتمل تصحيح الإجابة. يمكنك إعادة المحاولة من الزر أدناه.","Assessment has not finished. You can retry below.")+"</p>"+
