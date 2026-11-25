@@ -475,3 +475,13 @@ html[data-learner-theme] #studentTrainingApp .lexPastAnswer:not([open])>summary{
 html[data-learner-theme] #studentTrainingApp .lexPastAnswer[open]{background:var(--lx-surface);color:var(--lx-ink)}
 .lexPastTag{display:inline-block;font-size:.8em;color:var(--lx-muted,#536176);margin-inline-start:.5em}
 @media(max-width:480px){.lexAnswerPart{padding:12px}.lexAnswerPart textarea{min-height:84px}}
+
+/* Keep each question attached to its own answer, in both directions and themes. */
+.lexAnswerParts{gap:14px;background:transparent;border:0;overflow:visible;margin:14px 0}
+.lexAnswerPart{border:1px solid var(--lx-border,#cec7c1);border-radius:12px;background:var(--lx-surface,#fffdfa);padding:14px;min-width:0}
+.lexAnswerPart+.lexAnswerPart{border-top:1px solid var(--lx-border,#cec7c1)}
+.lexAnswerPart>label{font-size:1.04rem;line-height:1.8;overflow-wrap:anywhere;margin-bottom:10px}
+.lexAnswerPart textarea{margin:0;min-height:84px;max-width:100%;overflow-y:auto}
+.lexAnswerPart .clearQuestionPrompt{background:transparent;box-shadow:none;border:0;padding:0;margin:0}
+.lexAnswerPart .questionComparison{margin:8px 0 14px}
+@media(max-width:480px){.lexAnswerParts{gap:10px}.lexAnswerPart{padding:10px}.lexAnswerPart>label{font-size:1rem}}
