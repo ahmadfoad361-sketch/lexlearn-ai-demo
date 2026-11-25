@@ -973,15 +973,18 @@ function train(){
   chrome('<section class="stage"><div class="progress"><i style="width:'+((state.task+1)/q.length*100)+'%"></i></div><div class="taskCard">'+
     '<span class="kicker">'+(state.repairMode?"جلسة تثبيت • ":"")+'الجلسة '+state.course.session+' • '+esc(meta.title)+' • '+(state.task+1)+' / '+q.length+'</span><h2>'+esc(t.title)+'</h2>'+
     (t.showText?'<div class="legalBox"><small>النص القانوني</small><div>'+esc(t.articleText||TEXT64)+'</div></div>':'')+
-    LEX_QUALITY.promptHtml(t,esc)+input+'<div id="feed"></div></div></section>');
+    (t.mode==="free"?LEX_QUALITY.essayFields(t,esc,"freeAnswer","ar",4000,input.split('<div class="choiceRow">')[0])+input.slice(input.indexOf('<div class="choiceRow">')):LEX_QUALITY.promptHtml(t,esc)+input)+'<div id="feed"></div></div></section>');
   if(t.mode==="free"){
+    if(window.LEX_QUESTION_STYLE)LEX_QUESTION_STYLE.bindAnswerFields(APP,"freeAnswer");
     document.getElementById("checkFree").onclick=async function(){
-      var answer=(document.getElementById("freeAnswer").value||"").trim();
+      var parts=LEX_QUESTION_STYLE.readAnswer(APP,"freeAnswer","ar",4000),answer=parts.text;
+      if(parts.tooLong){document.getElementById("feed").textContent="مجموع الإجابات يتجاوز 4000 حرف.";return;}
+      if(parts.missing>0&&parts.missing<3&&!window.confirm("بعض الأسئلة بلا إجابة. هل تريد إرسال الإجابات المتاحة؟"))return;
       if(!answer){document.getElementById("feed").innerHTML='<div class="notice">اكتب محاولة قصيرة أولًا؛ الهدف أن نحلل بناء إجابتك، لا أن نريك النموذج مباشرة.</div>';return;}
-      document.getElementById("freeAnswer").disabled=true;document.getElementById("checkFree").disabled=true;
+      LEX_QUESTION_STYLE.disableAnswers(APP,"freeAnswer");document.getElementById("checkFree").disabled=true;
       var essay=t.essayProfile?await LEX_QUALITY.gradeAsync(answer,t,"ar",STUDENT_SESSION&&STUDENT_SESSION.cloud?window.LEX_CLOUD:null,COURSE_DB_ID):null;
       var r=essay?{score:essay.overall,pass:essay.overall>=60}:freeRubric(answer,t),semantic=null,merged=null,itemId=taskItemId(t);
-      document.getElementById("freeAnswer").disabled=true;document.getElementById("checkFree").disabled=true;
+      LEX_QUESTION_STYLE.disableAnswers(APP,"freeAnswer");document.getElementById("checkFree").disabled=true;
       document.getElementById("feed").innerHTML='<div class="notice">يتم تحليل الإجابة وفق عناصر المعيار'+(t.essayProfile?" الخاصة بالسؤال؛ المحاور الأخرى لا تُخصم":"")+(itemId&&window.LEX_CLOUD&&LEX_CLOUD.isConfigured&&LEX_CLOUD.isConfigured()?" والمصدر القانوني المعتمد…":"…")+'</div>';
       if(itemId&&window.LEX_CLOUD&&LEX_CLOUD.isConfigured&&LEX_CLOUD.isConfigured()&&STUDENT_SESSION&&STUDENT_SESSION.cloud){
         try{semantic=await LEX_CLOUD.gradeAnswer({course_id:COURSE_DB_ID,item_id:itemId,answer:answer,language:"ar"});}catch(e){semantic=null;}
@@ -1131,12 +1134,14 @@ function assessment(){
   state.taskStartedAt=Date.now();
   if(q.mode==="free"){
     chrome('<section class="stage"><div class="progress"><i style="width:'+((state.task+1)/bank.length*100)+'%"></i></div><div class="taskCard">'+
-      '<span class="kicker">تقييم تحليلي • الأسبوع '+week+' • '+(state.task+1)+' / '+bank.length+'</span><h2>'+esc(q.title||"سؤال مقالي")+'</h2>'+LEX_QUALITY.promptHtml(q,esc)+
-      '<textarea class="textarea essayAssessmentInput" id="assessmentEssay" placeholder="اكتب إجابتك كاملة بطريقتك..."></textarea>'+
+      '<span class="kicker">تقييم تحليلي • الأسبوع '+week+' • '+(state.task+1)+' / '+bank.length+'</span><h2>'+esc(q.title||"سؤال مقالي")+'</h2>'+LEX_QUALITY.essayFields(q,esc,"assessmentEssay","ar",4000,'<textarea class="textarea essayAssessmentInput" id="assessmentEssay" placeholder="اكتب إجابتك كاملة بطريقتك..."></textarea>')+
       '<div class="assessmentNote">اكتب الإجابة وفق الأجزاء المطلوبة أعلاه. لن يظهر نموذج الإجابة أثناء التقييم.</div>'+
       '<div class="choiceRow"><button class="primary" id="submitAssessmentEssay">تسليم الإجابة</button></div></div></section>');
+    if(window.LEX_QUESTION_STYLE)LEX_QUESTION_STYLE.bindAnswerFields(APP,"assessmentEssay");
     document.getElementById("submitAssessmentEssay").onclick=async function(){
-      var answer=(document.getElementById("assessmentEssay").value||"").trim();
+      var parts=LEX_QUESTION_STYLE.readAnswer(APP,"assessmentEssay","ar",4000),answer=parts.text;
+      if(parts.tooLong){document.querySelector(".assessmentNote").textContent="مجموع الإجابات يتجاوز 4000 حرف.";return;}
+      if(parts.missing>0&&parts.missing<3&&!window.confirm("بعض الأسئلة بلا إجابة. هل تريد إرسال الإجابات المتاحة؟"))return;
       if(!answer){
         var old=document.querySelector(".assessmentNote");if(old)old.textContent="اكتب إجابتك أولًا؛ يُراجع السؤال وفق عناصره المطلوبة.";
         return;
