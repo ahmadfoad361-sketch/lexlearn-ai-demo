@@ -27,10 +27,12 @@ if(review){
  box.append(button(t.next,()=>{pos++;stage=0;answers=[];review=false;render();$("practice").scrollIntoView({block:"start"});}));
  return;
 }
- box.append(el("p",phases[stage]||phases[0],"prompt"));
+ const prompt=phases[stage]||phases[0];
+ const comparison=task.skill==="legal_precision"?prompt.split("\n"):null;
+ box.append(el("p",comparison?comparison[0]:prompt,"prompt"));
  const fields=[];const addField=label=>{const l=el("label",label),f=el("textarea");f.maxLength=4000;f.id="practiceAnswer"+fields.length;l.htmlFor=f.id;fields.push(f);box.append(l,f)};
  if(task.skill==="exam_structure"){for(const label of lang==="ar"?["المسألة","القاعدة","التطبيق","النتيجة"]:["Issue","Rule","Application","Conclusion"])addField(label);}
- else if(task.skill==="legal_precision"){addField(lang==="ar"?"العبارة الأولى: الحكم والتعليل":"Statement 1: judgment and reason");addField(lang==="ar"?"العبارة الثانية: الحكم والتعليل":"Statement 2: judgment and reason");}
+ else if(task.skill==="legal_precision"){addField(comparison[1]+" — "+(lang==="ar"?"الحكم والتعليل":"Judgment and reason"));addField(comparison[2]+" — "+(lang==="ar"?"الحكم والتعليل":"Judgment and reason"));}
  else addField(stage===1?t.cues:t.answer);
  const msg=el("p",null,"meta");msg.setAttribute("role","alert");box.append(msg);
  const action=button(task.id===1&&stage===0?t.recall:t.save,()=>{if(!fields.some(f=>f.value.trim())){msg.textContent=t.missing;return;}answers.push(fields.map(f=>f.value.trim()).join("\n\n"));if(task.id===1&&stage===0){stage=1;}else review=true;render();});box.append(action);
