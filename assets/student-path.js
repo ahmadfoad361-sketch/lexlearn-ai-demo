@@ -112,15 +112,25 @@ function deriveAdaptation(rows,prior){
   else if(validAdaptation(prior))skills[d]=prior.skills[d];
  });
  var waiting=safe.some(recoveryPending);
- return {skills:skills,priority:waiting&&validAdaptation(prior)?prior.priority:choosePriority(skills),
+ var priority=choosePriority(skills);
+ if(waiting){
+  if(validAdaptation(prior))priority=prior.priority;
+  else{
+   // First visit on this browser during an outage: use only evidence before the oldest held answer.
+   var first=Math.min.apply(null,safe.filter(recoveryPending).map(function(r){return Date.parse(r.submitted_at);}).filter(Number.isFinite));
+   var prefix=Number.isFinite(first)?safe.filter(function(r){return Number.isFinite(Date.parse(r.submitted_at))&&Date.parse(r.submitted_at)<first;}):[];
+   priority=deriveAdaptation(prefix,null).priority;
+  }
+ }
+ return {skills:skills,priority:priority,
   status:skills.recall===null&&skills.understanding===null?"insufficient_evidence":"preliminary_evidence",
   continuity:waiting?"awaiting_recovery":"saved_evidence"};
 }
 function chooseAdaptation(summary,rows,prior){
  if(!validAdaptation(summary))return deriveAdaptation(rows,prior);
  var next=Object.assign({},summary);
- if((rows||[]).some(recoveryPending)&&validAdaptation(prior)&&summary.continuity!=="awaiting_recovery"){
-  next.priority=prior.priority;next.continuity="awaiting_recovery";
+ if((rows||[]).some(recoveryPending)&&summary.continuity!=="awaiting_recovery"){
+  next.priority=deriveAdaptation(rows,prior).priority;next.continuity="awaiting_recovery";
  }
  return next;
 }
