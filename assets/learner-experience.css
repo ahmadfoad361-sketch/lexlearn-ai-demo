@@ -463,3 +463,15 @@ html[data-learner-theme=dark] #studentTrainingApp #adaptiveUnknown:disabled{
  box-shadow:none;
  cursor:wait;
 }
+
+/* Distinct answer areas and completed-work hierarchy; theme tokens retain legible contrast. */
+.lexAnswerParts{display:grid;gap:0;border:1px solid var(--lx-border,#cec7c1);border-radius:14px;overflow:hidden;margin:16px 0;background:var(--lx-surface,#fffdfa)}
+.lexAnswerPart{padding:14px 16px;min-width:0}
+.lexAnswerPart+.lexAnswerPart{border-top:1px solid var(--lx-border,#cec7c1)}
+.lexAnswerPart label{display:block;font-weight:700;margin:0 0 8px;color:var(--lx-ink,#18253b)}
+.lexAnswerPart textarea{display:block;width:100%;min-height:96px;resize:vertical;box-sizing:border-box;border-radius:8px;font-size:max(16px,1rem);line-height:1.8}
+html[data-learner-theme] #studentTrainingApp .lexPastAnswer:not([open]){background:var(--lx-bg);border-color:var(--lx-border);box-shadow:none}
+html[data-learner-theme] #studentTrainingApp .lexPastAnswer:not([open])>summary{color:var(--lx-muted);font-weight:500}
+html[data-learner-theme] #studentTrainingApp .lexPastAnswer[open]{background:var(--lx-surface);color:var(--lx-ink)}
+.lexPastTag{display:inline-block;font-size:.8em;color:var(--lx-muted,#536176);margin-inline-start:.5em}
+@media(max-width:480px){.lexAnswerPart{padding:12px}.lexAnswerPart textarea{min-height:84px}}
