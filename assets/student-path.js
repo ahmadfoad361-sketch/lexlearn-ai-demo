@@ -89,6 +89,46 @@ function heldGrade(v){
  return ["ai_review_required","review_required","human_review_required","needs_review"].includes(ev.status)&&ev.reason!=="provider_rate_limited";
 }
 function needsAssessment(v){return !pendingGrade(v)&&!heldGrade(v)&&!confirmedGrade(v&&v.evaluation)&&!deterministicZero(v&&v.evaluation);}
+// Presentation-only continuation: never grants access or writes a grade.
+function validAdaptation(value){
+ if(!value||!value.skills||!["recall","understanding","foundation"].includes(value.priority))return false;
+ return ["recall","understanding"].every(function(d){var n=value.skills[d];return n===null||(typeof n==="number"&&Number.isFinite(n)&&n>=0&&n<=100);});
+}
+function choosePriority(skills){
+ var r=skills.recall,u=skills.understanding;
+ return r===null?(u===null?"foundation":"recall"):u===null?"understanding":r<=u?"recall":"understanding";
+}
+function recoveryPending(row){
+ var e=row&&row.evaluation||{};
+ return (["ai_review_required","review_required"].includes(e.status)&&["provider_quota_exhausted","provider_rate_limited","provider_http_401"].includes(e.reason))||
+  (pendingGrade(row)&&["provider_quota_exhausted","provider_rate_limited","provider_http_401"].includes(e.recovery_reason));
+}
+function deriveAdaptation(rows,prior){
+ var skills={recall:null,understanding:null},safe=Array.isArray(rows)?rows:[];
+ ["recall","understanding"].forEach(function(d){
+  var measured=safe.filter(function(r){return r.dimension===d&&(confirmedGrade(r.evaluation)||deterministicZero(r.evaluation));})
+   .sort(function(a,b){return b.session_number-a.session_number||String(b.submitted_at||"").localeCompare(String(a.submitted_at||""));}).slice(0,3);
+  if(measured.length)skills[d]=Math.round(measured.reduce(function(n,r){return n+r.evaluation.provisional_percent;},0)/measured.length);
+  else if(validAdaptation(prior))skills[d]=prior.skills[d];
+ });
+ var waiting=safe.some(recoveryPending);
+ return {skills:skills,priority:waiting&&validAdaptation(prior)?prior.priority:choosePriority(skills),
+  status:skills.recall===null&&skills.understanding===null?"insufficient_evidence":"preliminary_evidence",
+  continuity:waiting?"awaiting_recovery":"saved_evidence"};
+}
+function chooseAdaptation(summary,rows,prior){
+ if(!validAdaptation(summary))return deriveAdaptation(rows,prior);
+ var next=Object.assign({},summary);
+ if((rows||[]).some(recoveryPending)&&validAdaptation(prior)&&summary.continuity!=="awaiting_recovery"){
+  next.priority=prior.priority;next.continuity="awaiting_recovery";
+ }
+ return next;
+}
+function orderedTasks(tasks,saved,priority){
+ return (tasks||[]).filter(function(q){return !byId(saved,q.id);}).sort(function(a,b){
+  return (a.dimension===priority?0:1)-(b.dimension===priority?0:1);
+ });
+}
 function stageSkillSnapshot(rows,session){
  var output={recall:{percent:null,count:0,fresh:false},understanding:{percent:null,count:0,fresh:false}};
  Object.keys(output).forEach(function(dim){
@@ -218,6 +258,15 @@ async function boot(){
   var selected=Number(new URLSearchParams(root.location.search).get("session"));
   if(!Number.isInteger(selected)||selected<1||selected>30||selected>overview.unlocked)selected=overview.unlocked;
   var data=null,busy=false,progressRows=[],historyAvailable=false,adaptation=null,acceptedAi=false,aiUnavailable=false,gradingIssue="",studyRead=false,stopQueueWatch=null,glossaryAllowed=false;
+  // Scope the small, non-authoritative cache to the authenticated learner/course.
+  // Never cache answer text, raw assessment evidence, or grant permission from it.
+  var continuityKey="lexlearn-route-v1:"+COURSE+":"+uid;
+  var sessionPriority=null,sessionRouteKey="";
+  function readRoute(key){try{return JSON.parse(root.sessionStorage.getItem(key)||"null");}catch(_){return null;}}
+  function writeRoute(key,value){try{root.sessionStorage.setItem(key,JSON.stringify(value));}catch(_){}}
+  var lastRoute=readRoute(continuityKey);
+  if(!validAdaptation(lastRoute))lastRoute=null;
+
   async function updateGlossaryAccess(){
    glossaryAllowed=false; // Failed checks are always closed, never guessed from browser state.
    try{
@@ -239,13 +288,27 @@ async function boot(){
    catch(error){gradingIssue=error&&error.code||error&&error.message||"assessment_unavailable";throw error;}
   }
   async function refreshAdaptation(){
-   if(cloud.trainingAiSummary)try{adaptation=await cloud.trainingAiSummary();}catch(_){adaptation=null;}
+   var summary=null;
+   if(cloud.trainingAiSummary)try{summary=await cloud.trainingAiSummary();}catch(_){}
+   adaptation=chooseAdaptation(summary,progressRows,lastRoute);
+   // A failed/empty read cannot erase a verified previous route.
+   if(validAdaptation(adaptation)&&(adaptation.status==="preliminary_evidence"||adaptation.continuity==="awaiting_recovery")){
+    lastRoute={skills:adaptation.skills,priority:adaptation.priority,status:adaptation.status};
+    writeRoute(continuityKey,lastRoute);
+   }
+   // A started session's order stays stable, including a reload in the same tab.
+   // New server evidence changes only the next newly opened session.
+   if(sessionPriority===null){
+    var stored=readRoute(sessionRouteKey);
+    sessionPriority=["recall","understanding","foundation"].includes(stored)?stored:adaptation.priority;
+    writeRoute(sessionRouteKey,sessionPriority);
+   }
   }
   async function loadProgress(){
    progressRows=(data.saved||[]).map(function(x){return Object.assign({},x,{session_number:selected});});historyAvailable=false;
    try{
     var client=cloud.db(),from=1;
-    var response=await client.from("student_training_answers").select("session_number,item_id,dimension,evaluation").eq("user_id",uid).eq("course_id",COURSE).gte("session_number",from).lte("session_number",selected).order("session_number",{ascending:true}).limit(250);
+    var response=await client.from("student_training_answers").select("session_number,item_id,dimension,evaluation,submitted_at").eq("user_id",uid).eq("course_id",COURSE).gte("session_number",from).lte("session_number",selected).order("session_number",{ascending:true}).limit(250);
     if(response.error||!Array.isArray(response.data))return;
     var rowsByTask=new Map();
     progressRows.forEach(function(x){rowsByTask.set(x.session_number+":"+x.item_id,x);});
@@ -276,9 +339,9 @@ async function boot(){
    try{
     var result=await cloud.studentLifecycleRpc("trainingOpen",{courseId:COURSE,session:n});
     if(!result||!result.allowed||!Array.isArray(result.tasks)||!Array.isArray(result.saved))throw Error(result&&result.reason||"invalid_session");
-    selected=n;data=result;studyRead=false;
+    selected=n;data=result;studyRead=false;sessionPriority=null;sessionRouteKey=continuityKey+":session:"+selected;
     // Do not silently regrade saved work on navigation; use explicit retry controls.
-    await refreshAdaptation();await loadProgress();await updateGlossaryAccess();busy=false;render();
+    await loadProgress();await refreshAdaptation();await updateGlossaryAccess();busy=false;render();
    }catch(e){reportError(e);}
   }
   function render(){
@@ -327,18 +390,18 @@ async function boot(){
      return;
     }
    }
-   var saved=data.saved||[],remaining=(data.tasks||[]).filter(function(q){return !byId(saved,q.id);});
-   if(adaptation&&adaptation.priority!=="foundation")remaining.sort(function(a,b){return (a.dimension===adaptation.priority?0:1)-(b.dimension===adaptation.priority?0:1);});
+   var saved=data.saved||[],remaining=orderedTasks(data.tasks,saved,sessionPriority||"foundation");
    var next=remaining[0],completed=data.completed;
    var name=t("الأسبوع ","Week ")+Math.ceil(selected/5)+" · "+programLabels[selected-1];
    var why="";
    if(adaptation&&adaptation.skills){
     why+="<div class='progressSkills'>"+["understanding","recall"].map(function(dim){return "<article class='progressSkill'><h3>"+esc(weakName(dim))+"</h3><strong>"+esc(noHtmlScore(adaptation.skills[dim]))+"</strong></article>";}).join("")+"</div><p>"+
-     (adaptation.priority==="recall"?t("الأولوية الآن للحفظ: استخدم مفاتيح قصيرة، ثم أغلق النص وأعد بناء القاعدة من ذاكرتك.","Recall priority: use brief cues, close the text, then reconstruct the rule."):
-      adaptation.priority==="understanding"?t("الأولوية الآن للفهم: اشرح سبب القاعدة، ثم غيّر شرطًا واحدًا وفسّر أثره على النتيجة.","Understanding priority: explain why the rule works, then change one condition and explain the result."):
+     (sessionPriority==="recall"?t("الأولوية الآن للحفظ: استخدم مفاتيح قصيرة، ثم أغلق النص وأعد بناء القاعدة من ذاكرتك.","Recall priority: use brief cues, close the text, then reconstruct the rule."):
+      sessionPriority==="understanding"?t("الأولوية الآن للفهم: اشرح سبب القاعدة، ثم غيّر شرطًا واحدًا وفسّر أثره على النتيجة.","Understanding priority: explain why the rule works, then change one condition and explain the result."):
       t("نحتاج إجابات أكثر لتحديد الأولوية؛ ابدأ بشرح القاعدة ثم استرجاعها.","More evidence is needed; start by explaining and retrieving the rule."))+"</p>";
    }
    why+=learningOverview(adaptation);
+   if(adaptation&&adaptation.continuity==="awaiting_recovery")why+="<p class='scope' role='status'>"+t("يستمر التدريب وفق آخر مسار موثوق. ستُحدّث أولوية الجلسات القادمة بعد استكمال التصحيح.","Practice continues on your last reliable path. Future session priorities update after assessment recovery.")+"</p>";
     if(aiUnavailable)why+="<p role='status'>"+t("تم حفظ الإجابة، لكن التصحيح لم يكتمل. يمكنك إعادة المحاولة.","Your answer was saved, but assessment is incomplete. You can retry.")+"</p>";
    var completedFeedback=(next&&next.dimension==="recall"?[]:saved).map(function(v,index){
     var task=(data.tasks||[]).find(function(q){return q.id===v.item_id;});
@@ -410,7 +473,7 @@ async function boot(){
     try{var graded=await requestAssessment(v.item_id);aiUnavailable=!graded||!(graded.status==="preliminary_ai"||graded.status==="nonanswer_zero"||graded.status==="queued"||graded.status==="processing");
      var reread=await cloud.studentLifecycleRpc("trainingOpen",{courseId:COURSE,session:selected});
      if(!reread||!reread.allowed||!Array.isArray(reread.saved))throw Error("grade_readback_failed");
-     data=reread;await refreshAdaptation();await loadProgress();busy=false;render();
+     data=reread;await loadProgress();await refreshAdaptation();busy=false;render();
     }catch(_){busy=false;retry.disabled=false;retry.textContent=t("التصحيح غير متاح الآن؛ حاول لاحقًا","Assessment unavailable; retry later");}
     finally{if(wait)wait.finish();}
    };});
@@ -425,7 +488,7 @@ async function boot(){
      if(wait)wait.setStep(i+1,missing.length);
      try{var outcome=await requestAssessment(missing[i].item_id);aiUnavailable=!outcome||!(outcome.status==="preliminary_ai"||outcome.status==="nonanswer_zero"||outcome.status==="queued"||outcome.status==="processing");}catch(_){aiUnavailable=true;}
     }
-    try{var updated=await cloud.studentLifecycleRpc("trainingOpen",{courseId:COURSE,session:selected});if(!updated||!updated.allowed||!Array.isArray(updated.saved))throw Error();data=updated;await refreshAdaptation();await loadProgress();busy=false;render();}
+    try{var updated=await cloud.studentLifecycleRpc("trainingOpen",{courseId:COURSE,session:selected});if(!updated||!updated.allowed||!Array.isArray(updated.saved))throw Error();data=updated;await loadProgress();await refreshAdaptation();busy=false;render();}
     catch(_){busy=false;allRetry.disabled=false;if(note)note.textContent=t("تعذر تحديث النتيجة الآن. أعد المحاولة.","Results could not refresh. Retry.");}
     finally{if(wait)wait.finish();}
    };
@@ -468,7 +531,7 @@ async function boot(){
      }
      var checked=await cloud.studentLifecycleRpc("trainingOpen",{courseId:COURSE,session:selected});
      if(!checked||!checked.allowed||!byId(checked.saved,next.id))throw Error("answer_readback_failed");
-     data=checked;await refreshAdaptation();await loadProgress();await updateGlossaryAccess();
+     data=checked;await loadProgress();await refreshAdaptation();await updateGlossaryAccess();
      if(data.completed){
       var fresh=await cloud.studentLifecycleRpc("trainingOverview",{courseId:COURSE});
       if(fresh&&fresh.allowed)overview=fresh;
@@ -504,7 +567,7 @@ async function boot(){
   await open(selected);
  }catch(e){reportError(e);}
 }
-root.LEX_STUDENT_PATH={mount:boot,noHtmlScore:noHtmlScore,previousAnswerTitle:previousAnswerTitle,progressModel:progressModel,progressHtml:progressHtml,heldGrade:heldGrade,needsAssessment:needsAssessment};
+root.LEX_STUDENT_PATH={mount:boot,noHtmlScore:noHtmlScore,previousAnswerTitle:previousAnswerTitle,progressModel:progressModel,progressHtml:progressHtml,heldGrade:heldGrade,needsAssessment:needsAssessment,chooseAdaptation:chooseAdaptation,deriveAdaptation:deriveAdaptation,orderedTasks:orderedTasks,recoveryPending:recoveryPending};
 if(typeof module!=="undefined"&&module.exports)module.exports=root.LEX_STUDENT_PATH;
 })(typeof window!=="undefined"?window:globalThis);
 
