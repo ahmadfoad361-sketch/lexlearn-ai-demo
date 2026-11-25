@@ -69,7 +69,7 @@ function startGradingWait(settings){
   if(done)return;
   var grade=phase==="grading";
   title.textContent=english?(grade?"Reviewing your answer":"Saving your answer")+(name?", "+name:""):
-   (name?"يا "+name+"، ":"")+(grade?"بنراجع إجابتك بعناية":"بنحفظ إجابتك");
+   (name?"يا "+name+"، ":"")+(grade?"نراجع إجابتك بعناية":"نحفظ إجابتك");
   lead.textContent=english?(grade?"Preparing your result.":"Confirming your saved work."):
    (grade?"نجهّز نتيجتك.":"نتأكد من حفظ إجابتك.");
  }
@@ -89,6 +89,62 @@ function heldGrade(v){
  return ["ai_review_required","review_required","human_review_required","needs_review"].includes(ev.status)&&ev.reason!=="provider_rate_limited";
 }
 function needsAssessment(v){return !pendingGrade(v)&&!heldGrade(v)&&!confirmedGrade(v&&v.evaluation)&&!deterministicZero(v&&v.evaluation);}
+// Presentation-only continuation: never grants access or writes a grade.
+function validAdaptation(value){
+ if(!value||!value.skills||!["recall","understanding","foundation"].includes(value.priority))return false;
+ return ["recall","understanding"].every(function(d){var n=value.skills[d];return n===null||(typeof n==="number"&&Number.isFinite(n)&&n>=0&&n<=100);});
+}
+function choosePriority(skills){
+ var r=skills.recall,u=skills.understanding;
+ return r===null?(u===null?"foundation":"recall"):u===null?"understanding":r<=u?"recall":"understanding";
+}
+function recoveryPending(row){
+ var e=row&&row.evaluation||{};
+ return (["ai_review_required","review_required"].includes(e.status)&&["provider_quota_exhausted","provider_rate_limited","provider_http_401"].includes(e.reason))||
+  (pendingGrade(row)&&["provider_quota_exhausted","provider_rate_limited","provider_http_401"].includes(e.recovery_reason));
+}
+function deriveAdaptation(rows,prior){
+ var skills={recall:null,understanding:null},safe=Array.isArray(rows)?rows:[];
+ ["recall","understanding"].forEach(function(d){
+  var measured=safe.filter(function(r){return r.dimension===d&&(confirmedGrade(r.evaluation)||deterministicZero(r.evaluation));})
+   .sort(function(a,b){return b.session_number-a.session_number||String(b.submitted_at||"").localeCompare(String(a.submitted_at||""));}).slice(0,3);
+  if(measured.length)skills[d]=Math.round(measured.reduce(function(n,r){return n+r.evaluation.provisional_percent;},0)/measured.length);
+  else if(validAdaptation(prior))skills[d]=prior.skills[d];
+ });
+ var waiting=safe.some(recoveryPending);
+ var priority=choosePriority(skills);
+ if(waiting){
+  if(validAdaptation(prior))priority=prior.priority;
+  else{
+   // First visit on this browser during an outage: use only evidence before the oldest held answer.
+   var first=Math.min.apply(null,safe.filter(recoveryPending).map(function(r){return Date.parse(r.submitted_at);}).filter(Number.isFinite));
+   var recovered=safe.map(function(r){return {start:Date.parse(r.submitted_at),end:Date.parse(r.evaluation&&r.evaluation.provider_recovery&&r.evaluation.provider_recovery.recovered_at)};}).filter(function(r){return Number.isFinite(r.start)&&Number.isFinite(r.end)&&r.start<=r.end;});
+   for(var i=0;i<recovered.length;i++){
+    var earlier=recovered.filter(function(r){return r.start<first&&r.end>=first;}).map(function(r){return r.start;});
+    if(!earlier.length)break;
+    first=Math.min.apply(null,[first].concat(earlier));
+   }
+   var prefix=Number.isFinite(first)?safe.filter(function(r){return Number.isFinite(Date.parse(r.submitted_at))&&Date.parse(r.submitted_at)<first;}):[];
+   priority=deriveAdaptation(prefix,null).priority;
+  }
+ }
+ return {skills:skills,priority:priority,
+  status:skills.recall===null&&skills.understanding===null?"insufficient_evidence":"preliminary_evidence",
+  continuity:waiting?"awaiting_recovery":"saved_evidence"};
+}
+function chooseAdaptation(summary,rows,prior){
+ if(!validAdaptation(summary))return deriveAdaptation(rows,prior);
+ var next=Object.assign({},summary);
+ if((rows||[]).some(recoveryPending)&&summary.continuity!=="awaiting_recovery"){
+  next.priority=deriveAdaptation(rows,prior).priority;next.continuity="awaiting_recovery";
+ }
+ return next;
+}
+function orderedTasks(tasks,saved,priority){
+ return (tasks||[]).filter(function(q){return !byId(saved,q.id);}).sort(function(a,b){
+  return (a.dimension===priority?0:1)-(b.dimension===priority?0:1);
+ });
+}
 function stageSkillSnapshot(rows,session){
  var output={recall:{percent:null,count:0,fresh:false},understanding:{percent:null,count:0,fresh:false}};
  Object.keys(output).forEach(function(dim){
@@ -218,6 +274,15 @@ async function boot(){
   var selected=Number(new URLSearchParams(root.location.search).get("session"));
   if(!Number.isInteger(selected)||selected<1||selected>30||selected>overview.unlocked)selected=overview.unlocked;
   var data=null,busy=false,progressRows=[],historyAvailable=false,adaptation=null,acceptedAi=false,aiUnavailable=false,gradingIssue="",studyRead=false,stopQueueWatch=null,glossaryAllowed=false;
+  // Scope the small, non-authoritative cache to the authenticated learner/course.
+  // Never cache answer text, raw assessment evidence, or grant permission from it.
+  var continuityKey="lexlearn-route-v1:"+COURSE+":"+uid;
+  var sessionPriority=null,sessionRouteKey="";
+  function readRoute(key){try{return JSON.parse(root.sessionStorage.getItem(key)||"null");}catch(_){return null;}}
+  function writeRoute(key,value){try{root.sessionStorage.setItem(key,JSON.stringify(value));}catch(_){}}
+  var lastRoute=readRoute(continuityKey);
+  if(!validAdaptation(lastRoute))lastRoute=null;
+
   async function updateGlossaryAccess(){
    glossaryAllowed=false; // Failed checks are always closed, never guessed from browser state.
    try{
@@ -239,13 +304,27 @@ async function boot(){
    catch(error){gradingIssue=error&&error.code||error&&error.message||"assessment_unavailable";throw error;}
   }
   async function refreshAdaptation(){
-   if(cloud.trainingAiSummary)try{adaptation=await cloud.trainingAiSummary();}catch(_){adaptation=null;}
+   var summary=null;
+   if(cloud.trainingAiSummary)try{summary=await cloud.trainingAiSummary();}catch(_){}
+   adaptation=chooseAdaptation(summary,progressRows,lastRoute);
+   // A failed/empty read cannot erase a verified previous route.
+   if(validAdaptation(adaptation)&&(adaptation.status==="preliminary_evidence"||adaptation.continuity==="awaiting_recovery")){
+    lastRoute={skills:adaptation.skills,priority:adaptation.priority,status:adaptation.status};
+    writeRoute(continuityKey,lastRoute);
+   }
+   // A started session's order stays stable, including a reload in the same tab.
+   // New server evidence changes only the next newly opened session.
+   if(sessionPriority===null){
+    var stored=readRoute(sessionRouteKey);
+    sessionPriority=["recall","understanding","foundation"].includes(stored)?stored:adaptation.priority;
+    writeRoute(sessionRouteKey,sessionPriority);
+   }
   }
   async function loadProgress(){
    progressRows=(data.saved||[]).map(function(x){return Object.assign({},x,{session_number:selected});});historyAvailable=false;
    try{
     var client=cloud.db(),from=1;
-    var response=await client.from("student_training_answers").select("session_number,item_id,dimension,evaluation").eq("user_id",uid).eq("course_id",COURSE).gte("session_number",from).lte("session_number",selected).order("session_number",{ascending:true}).limit(250);
+    var response=await client.from("student_training_answers").select("session_number,item_id,dimension,evaluation,submitted_at").eq("user_id",uid).eq("course_id",COURSE).gte("session_number",from).lte("session_number",selected).order("session_number",{ascending:true}).limit(250);
     if(response.error||!Array.isArray(response.data))return;
     var rowsByTask=new Map();
     progressRows.forEach(function(x){rowsByTask.set(x.session_number+":"+x.item_id,x);});
@@ -276,9 +355,9 @@ async function boot(){
    try{
     var result=await cloud.studentLifecycleRpc("trainingOpen",{courseId:COURSE,session:n});
     if(!result||!result.allowed||!Array.isArray(result.tasks)||!Array.isArray(result.saved))throw Error(result&&result.reason||"invalid_session");
-    selected=n;data=result;studyRead=false;
+    selected=n;data=result;studyRead=false;sessionPriority=null;sessionRouteKey=continuityKey+":session:"+selected;
     // Do not silently regrade saved work on navigation; use explicit retry controls.
-    await refreshAdaptation();await loadProgress();await updateGlossaryAccess();busy=false;render();
+    await loadProgress();await refreshAdaptation();await updateGlossaryAccess();busy=false;render();
    }catch(e){reportError(e);}
   }
   function render(){
@@ -289,7 +368,7 @@ async function boot(){
    if(pendingRows.length&&acceptedAi){
     var stopped=false,refreshing=false,timer=null,checks=0;
     async function readPendingScores(){
-     if(stopped||refreshing||busy||(host.querySelector("textarea")&&host.querySelector("textarea").value.trim()))return false;
+     if(stopped||refreshing||busy||Array.from(host.querySelectorAll("textarea")).some(function(f){return f.value.trim();}))return false;
      refreshing=true;
      try{
       var before=JSON.stringify((data.saved||[]).map(function(v){return [v.item_id,v.evaluation];}));
@@ -327,22 +406,22 @@ async function boot(){
      return;
     }
    }
-   var saved=data.saved||[],remaining=(data.tasks||[]).filter(function(q){return !byId(saved,q.id);});
-   if(adaptation&&adaptation.priority!=="foundation")remaining.sort(function(a,b){return (a.dimension===adaptation.priority?0:1)-(b.dimension===adaptation.priority?0:1);});
+   var saved=data.saved||[],remaining=orderedTasks(data.tasks,saved,sessionPriority||"foundation");
    var next=remaining[0],completed=data.completed;
    var name=t("الأسبوع ","Week ")+Math.ceil(selected/5)+" · "+programLabels[selected-1];
    var why="";
    if(adaptation&&adaptation.skills){
     why+="<div class='progressSkills'>"+["understanding","recall"].map(function(dim){return "<article class='progressSkill'><h3>"+esc(weakName(dim))+"</h3><strong>"+esc(noHtmlScore(adaptation.skills[dim]))+"</strong></article>";}).join("")+"</div><p>"+
-     (adaptation.priority==="recall"?t("الأولوية الآن للحفظ: استخدم مفاتيح قصيرة، ثم أغلق النص وأعد بناء القاعدة من ذاكرتك.","Recall priority: use brief cues, close the text, then reconstruct the rule."):
-      adaptation.priority==="understanding"?t("الأولوية الآن للفهم: اشرح سبب القاعدة، ثم غيّر شرطًا واحدًا وفسّر أثره على النتيجة.","Understanding priority: explain why the rule works, then change one condition and explain the result."):
+     (sessionPriority==="recall"?t("الأولوية الآن للحفظ: استخدم مفاتيح قصيرة، ثم أغلق النص وأعد بناء القاعدة من ذاكرتك.","Recall priority: use brief cues, close the text, then reconstruct the rule."):
+      sessionPriority==="understanding"?t("الأولوية الآن للفهم: اشرح سبب القاعدة، ثم غيّر شرطًا واحدًا وفسّر أثره على النتيجة.","Understanding priority: explain why the rule works, then change one condition and explain the result."):
       t("نحتاج إجابات أكثر لتحديد الأولوية؛ ابدأ بشرح القاعدة ثم استرجاعها.","More evidence is needed; start by explaining and retrieving the rule."))+"</p>";
    }
    why+=learningOverview(adaptation);
+   if(adaptation&&adaptation.continuity==="awaiting_recovery")why+="<p class='scope' role='status'>"+t("يستمر التدريب وفق آخر مسار موثوق. ستُحدّث أولوية الجلسات القادمة بعد استكمال التصحيح.","Practice continues on your last reliable path. Future session priorities update after assessment recovery.")+"</p>";
     if(aiUnavailable)why+="<p role='status'>"+t("تم حفظ الإجابة، لكن التصحيح لم يكتمل. يمكنك إعادة المحاولة.","Your answer was saved, but assessment is incomplete. You can retry.")+"</p>";
-   var completedFeedback=saved.map(function(v,index){
+   var completedFeedback=(next&&next.dimension==="recall"?[]:saved).map(function(v,index){
     var task=(data.tasks||[]).find(function(q){return q.id===v.item_id;});
-    return "<details class='past'"+(v===saved[saved.length-1]?" open":"")+"><summary>"+esc(previousAnswerTitle(v,task))+"</summary>"+lawContext(task&&task.sources)+"<p style='white-space:pre-wrap'>"+esc(v.answer_text)+"</p>"+feedback(v)+(needsAssessment(v)&&acceptedAi&&cloud.gradeTrainingAi?"<button type='button' id='retryGrade"+index+"'>"+t("أعد تصحيح هذه الإجابة","Retry assessment of this answer")+"</button>":"")+"</details>";
+    return "<details class='past lexPastAnswer'><summary>"+esc(previousAnswerTitle(v,task))+" <span class='lexPastTag'>"+t("مكتملة","Completed")+"</span></summary>"+lawContext(task&&task.sources)+"<p style='white-space:pre-wrap'>"+esc(v.answer_text)+"</p>"+feedback(v)+(needsAssessment(v)&&acceptedAi&&cloud.gradeTrainingAi?"<button type='button' id='retryGrade"+index+"'>"+t("أعد تصحيح هذه الإجابة","Retry assessment of this answer")+"</button>":"")+"</details>";
    }).join("");
    var resume=next?"<section class='learnerWelcome'><div><h2>"+t("تدريبك التالي جاهز","Your next practice is ready")+"</h2><p>"+t("إجاباتك السابقة محفوظة؛ أكمل خطوة واحدة الآن.","Your previous answers are saved. Continue one step at a time.")+"</p></div><a href='#currentPractice'>"+t("أكمل تدريبك","Continue practice")+"</a></section>":"";
    var stageKind=next&&["recall","understanding","exam_execution"].includes(next.dimension)?next.dimension:"foundation";
@@ -368,6 +447,7 @@ async function boot(){
     if(root.LEX_LEGAL_STUDY)prompt=root.LEX_LEGAL_STUDY.qualify(prompt,lang());
     var guide=root.LEX_LEGAL_CASE_GUIDE;
     var guided=next.dimension==="exam_execution"&&guide&&guide.parse(prompt,lang());
+    var splitAnswers=!guided&&style&&style.hasThreeParts&&style.hasThreeParts(prompt);
     main+="<h2 id='currentPractice' tabindex='-1'>"+esc((lang()==="en"?next.title_en:next.title_ar)||weakName(next.dimension))+"</h2>"+
       lawContext(next.sources)+"<p class='taskType'>"+t("تدريب على: ","Focus: ")+esc(weakName(next.dimension))+"</p>";
     if(guided){
@@ -378,8 +458,9 @@ async function boot(){
      main+=(style&&style.render?
        style.render(prompt,lang()):
        "<div class='prompt' style='white-space:pre-wrap'>"+esc(prompt)+"</div>")+
+      (splitAnswers?style.answerFields("adaptiveEssay",lang(),4000):
       "<label for='adaptiveEssay'>"+t("اكتب إجابتك القانونية بأسلوبك","Write your legal explanation in your own words")+"</label>"+
-      "<textarea id='adaptiveEssay' rows='7' maxlength='4000' placeholder='"+t("اكتب إجابتك بأسلوبك...","Write your answer in your own words...")+"'></textarea>"+
+      "<textarea id='adaptiveEssay' rows='7' maxlength='4000' placeholder='"+t("اكتب إجابتك بأسلوبك...","Write your answer in your own words...")+"'></textarea>")+
       "<button type='button' id='adaptiveSubmit'>"+t("احفظ الإجابة وحللها ثم انتقل","Save, analyse, and continue")+"</button>";
     }
     main+="<button type='button' id='adaptiveUnknown'>"+t("لا أعرف الإجابة — أعطني تلميحًا","I don't know — give me a hint")+"</button>"+
@@ -408,7 +489,7 @@ async function boot(){
     try{var graded=await requestAssessment(v.item_id);aiUnavailable=!graded||!(graded.status==="preliminary_ai"||graded.status==="nonanswer_zero"||graded.status==="queued"||graded.status==="processing");
      var reread=await cloud.studentLifecycleRpc("trainingOpen",{courseId:COURSE,session:selected});
      if(!reread||!reread.allowed||!Array.isArray(reread.saved))throw Error("grade_readback_failed");
-     data=reread;await refreshAdaptation();await loadProgress();busy=false;render();
+     data=reread;await loadProgress();await refreshAdaptation();busy=false;render();
     }catch(_){busy=false;retry.disabled=false;retry.textContent=t("التصحيح غير متاح الآن؛ حاول لاحقًا","Assessment unavailable; retry later");}
     finally{if(wait)wait.finish();}
    };});
@@ -423,7 +504,7 @@ async function boot(){
      if(wait)wait.setStep(i+1,missing.length);
      try{var outcome=await requestAssessment(missing[i].item_id);aiUnavailable=!outcome||!(outcome.status==="preliminary_ai"||outcome.status==="nonanswer_zero"||outcome.status==="queued"||outcome.status==="processing");}catch(_){aiUnavailable=true;}
     }
-    try{var updated=await cloud.studentLifecycleRpc("trainingOpen",{courseId:COURSE,session:selected});if(!updated||!updated.allowed||!Array.isArray(updated.saved))throw Error();data=updated;await refreshAdaptation();await loadProgress();busy=false;render();}
+    try{var updated=await cloud.studentLifecycleRpc("trainingOpen",{courseId:COURSE,session:selected});if(!updated||!updated.allowed||!Array.isArray(updated.saved))throw Error();data=updated;await loadProgress();await refreshAdaptation();busy=false;render();}
     catch(_){busy=false;allRetry.disabled=false;if(note)note.textContent=t("تعذر تحديث النتيجة الآن. أعد المحاولة.","Results could not refresh. Retry.");}
     finally{if(wait)wait.finish();}
    };
@@ -441,6 +522,7 @@ async function boot(){
      var cardClassification=root.LEX_COMPARISON_CARDS.answer(host,lang());
      if(cardClassification)answer=cardClassification+"\n"+answer;
     }
+    if(answer.length>4000){if(error)error.textContent=t("مجموع النص والتقييم يتجاوز 4000 حرف. اختصر الإجابة.","The answer and card assessment exceed 4,000 characters. Shorten the response.");return;}
     busy=true;button.disabled=true;
     if(error)error.textContent=t("جارٍ حفظ إجابتك وتحليلها...","Saving and performing provisional review...");
     var savingView=host.querySelector("#answerSaveProgress");
@@ -465,7 +547,7 @@ async function boot(){
      }
      var checked=await cloud.studentLifecycleRpc("trainingOpen",{courseId:COURSE,session:selected});
      if(!checked||!checked.allowed||!byId(checked.saved,next.id))throw Error("answer_readback_failed");
-     data=checked;await refreshAdaptation();await loadProgress();await updateGlossaryAccess();
+     data=checked;await loadProgress();await refreshAdaptation();await updateGlossaryAccess();
      if(data.completed){
       var fresh=await cloud.studentLifecycleRpc("trainingOverview",{courseId:COURSE});
       if(fresh&&fresh.allowed)overview=fresh;
@@ -489,14 +571,19 @@ async function boot(){
    }else if(next){
     var submit=host.querySelector("#adaptiveSubmit");
     if(submit)submit.onclick=function(){
-     return submitAnswer(host.querySelector("#adaptiveEssay").value,this);
+     if(!splitAnswers)return submitAnswer(host.querySelector("#adaptiveEssay").value,this);
+     var parts=style.collectAnswers(host,"adaptiveEssay",lang(),4000);
+     var error=host.querySelector("#adaptiveError");
+     if(parts.tooLong){if(error)error.textContent=t("مجموع الإجابات يتجاوز 4000 حرف. اختصر النص ثم أعد المحاولة.","The combined answers exceed 4,000 characters. Shorten them and retry.");return;}
+     if(parts.missing>0&&parts.missing<3&&!root.confirm(t("بعض الأسئلة بلا إجابة. هل تريد إرسال الإجابات المتاحة؟","Some questions are unanswered. Submit the available answers?")))return;
+     return submitAnswer(parts.text,this);
     };
    }
   }
   await open(selected);
  }catch(e){reportError(e);}
 }
-root.LEX_STUDENT_PATH={mount:boot,noHtmlScore:noHtmlScore,previousAnswerTitle:previousAnswerTitle,progressModel:progressModel,progressHtml:progressHtml,heldGrade:heldGrade,needsAssessment:needsAssessment};
+root.LEX_STUDENT_PATH={mount:boot,noHtmlScore:noHtmlScore,previousAnswerTitle:previousAnswerTitle,progressModel:progressModel,progressHtml:progressHtml,heldGrade:heldGrade,needsAssessment:needsAssessment,chooseAdaptation:chooseAdaptation,deriveAdaptation:deriveAdaptation,orderedTasks:orderedTasks,recoveryPending:recoveryPending};
 if(typeof module!=="undefined"&&module.exports)module.exports=root.LEX_STUDENT_PATH;
 })(typeof window!=="undefined"?window:globalThis);
 

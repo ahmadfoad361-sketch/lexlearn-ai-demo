@@ -20,6 +20,280 @@ var TERMS=[
  ["nonfungible-items","الأشياء القيمية",60],
  ["abuse-of-right","استعمال الحق غير مشروع",63]
 ];
+// Beginner explanations derived from the displayed course articles; pending academic review, not AI-generated.
+var BEGINNER_TERMS=[
+ [
+  "unborn-child",
+  "الحمل المستكن",
+  40,
+  "الجنين الذي لم يولد بعد. يثبت له في هذه المادة ما لا يحتاج سببه إلى قبول، بشرط تمام ولادته حيًا.",
+  "An unborn child. Under this article, certain rights requiring no acceptance are conditional on live birth.",
+  "قد تثبت للجنين حقوق لا يحتاج سببها إلى قبول، بشرط ولادته حيًا.",
+  "A prenatal right requiring no acceptance may vest subject to live birth."
+ ],
+ [
+  "missing-person",
+  "المفقود",
+  39,
+  "شخص انقطعت أخباره ولا يُعلم على وجه اليقين أحيّ هو أم ميت؛ وتنظم أحواله قوانين خاصة.",
+  "A person whose whereabouts and life status are unknown; special laws govern the case.",
+  "انقطعت أخبار شخص، فلا يُعامل موته على أنه ثابت لمجرد غيابه.",
+  "A person's absence alone does not establish death."
+ ],
+ [
+  "absent-person",
+  "الغائب",
+  39,
+  "شخص غاب عن موطنه؛ تخضع أحكام غيبته للقواعد الخاصة المنظمة لذلك.",
+  "A person absent from their domicile; applicable special rules govern the absence.",
+  "قد يغيب شخص عن بلده مدة طويلة، وتختلف آثاره القانونية بحسب القواعد الخاصة.",
+  "A person may be away from their country for a long period; legal consequences depend on special rules."
+ ],
+ [
+  "habitual-residence",
+  "وجه معتاد",
+  41,
+  "الإقامة على نحو اعتيادي، لا مجرد الوجود العارض في مكان.",
+  "Habitual residence rather than a temporary presence.",
+  "من يقيم عادة في الدوحة لا يتخذ كل مكان يزوره موطنًا لمجرد الزيارة.",
+  "A habitual resident of Doha does not acquire a domicile in every place visited."
+ ],
+ [
+  "minor",
+  "القاصر",
+  43,
+  "من لم يبلغ سن الرشد؛ وتخضع أهليته للأحكام القانونية الخاصة بعمره وحالته.",
+  "A person below the age of majority; capacity is governed by applicable rules.",
+  "الشخص البالغ سبع عشرة سنة لم يبلغ سن الرشد المقررة في المادة 49.",
+  "A seventeen-year-old has not reached the age of majority under Article 49."
+ ],
+ [
+  "interdicted-person",
+  "المحجور عليه",
+  43,
+  "شخص خضعت أهليته لقيود الحجر وفقًا للقانون.",
+  "A person subject to legally imposed restrictions on capacity.",
+  "قد يكون للمحجور عليه موطن خاص بالنسبة إلى الأعمال التي يعده القانون أهلًا لأدائها.",
+  "An interdicted person may have a separate domicile for acts they are legally capable of performing."
+ ],
+ [
+  "legal-representative",
+  "ينوب عن هؤلاء قانوناً",
+  43,
+  "يقوم مقام هؤلاء في الحدود التي يسمح بها القانون.",
+  "Acts as their legal representative within the limits of the law.",
+  "قد يمثل الولي القاصر في التصرفات التي يجيزها القانون.",
+  "A guardian may represent a minor in legally permitted transactions."
+ ],
+ [
+  "compulsory-enforcement",
+  "التنفيذ الجبري",
+  44,
+  "اتخاذ الإجراءات القانونية لإجبار المدين على تنفيذ التزام قابل للتنفيذ وفقًا للقانون.",
+  "Legal procedures to enforce an enforceable obligation compulsorily.",
+  "قد يتخذ الدائن إجراءات التنفيذ وفقًا لسند قابل للتنفيذ.",
+  "A creditor may pursue enforcement under an enforceable instrument."
+ ],
+ [
+  "common-ancestor",
+  "أصل مشترك",
+  45,
+  "شخص تنتسب إليه فروع متعددة من الأسرة.",
+  "An ancestor shared by members of a family.",
+  "الأب أصل مشترك لأبنائه.",
+  "A father is a common ancestor of his children."
+ ],
+ [
+  "descendants",
+  "الفروع",
+  46,
+  "من يتحدرون من شخص، كالأبناء والأحفاد.",
+  "Descendants, such as children and grandchildren.",
+  "الابن فرع لأبيه.",
+  "A son is his father's descendant."
+ ],
+ [
+  "ascendants",
+  "الأصول",
+  46,
+  "من ينتسب إليهم الشخص صعودًا، كالآباء والأجداد.",
+  "Ascendants, such as parents and grandparents.",
+  "الجد من أصول الحفيد.",
+  "A grandfather is an ascendant of a grandchild."
+ ],
+ [
+  "affinity",
+  "المصاهرة",
+  48,
+  "صلة تنشأ بسبب الزواج، وتحدد درجتها بدرجة قرابة الزوج.",
+  "A relationship by marriage, measured by the spouse's degree of kinship.",
+  "تحدد درجة المصاهرة مع قريب الزوج بحسب درجة قرابته للزوج.",
+  "Affinity with a spouse's relative follows that relative's degree of kinship."
+ ],
+ [
+  "majority",
+  "سن الرشد",
+  49,
+  "السن التي يحددها القانون لبلوغ الرشد؛ وهي في المادة 49 ثماني عشرة سنة كاملة، مع مراعاة القيود القانونية.",
+  "The statutory age of majority: eighteen full years under Article 49, subject to legal restrictions.",
+  "من أتم الثامنة عشرة بلغ سن الرشد، مع مراعاة القيود الواردة في المادة.",
+  "A person completing eighteen years reaches majority, subject to the article's restrictions."
+ ],
+ [
+  "legal-acts",
+  "التصرفات القانونية",
+  49,
+  "أعمال إرادية يقصد بها إحداث أثر قانوني، مثل إنشاء حق أو التزام.",
+  "Voluntary acts intended to produce a legal effect, such as creating a right or obligation.",
+  "إبرام عقد بيع مثال على تصرف قانوني.",
+  "Concluding a sale contract is a legal act."
+ ],
+ [
+  "guardianship",
+  "الولاية",
+  49,
+  "سلطة يقررها القانون للولي في حدود معينة لرعاية شؤون من يخضع لولايته.",
+  "Legal authority exercised by a guardian within prescribed limits.",
+  "قد يباشر الولي بعض التصرفات المتعلقة بمال القاصر وفقًا للقانون.",
+  "A guardian may perform certain acts concerning a minor's property under the law."
+ ],
+ [
+  "tutelage",
+  "الوصاية",
+  49,
+  "نظام لحماية مصالح من يحتاج إلى وصي، في حدود ما يقرره القانون.",
+  "A legal arrangement protecting a person through a tutor or guardian within statutory limits.",
+  "قد يعهد إلى وصي بإدارة مال القاصر وفق الضوابط القانونية.",
+  "A tutor may manage a minor's property under legal safeguards."
+ ],
+ [
+  "discernment",
+  "سن التمييز",
+  51,
+  "المرحلة العمرية التي يبدأ معها الاعتداد بقدرة الشخص على التمييز وفق القانون؛ وتعد المادة 50 من لم يكمل السابعة عديم التمييز.",
+  "The age at which legal discernment is recognized; Article 50 treats children under seven as lacking discernment.",
+  "من أتم السابعة ولم يبلغ الرشد يخضع لأحكام ناقصي الأهلية وفق المادة 51.",
+  "A child who has completed seven but not reached majority falls under Article 51."
+ ],
+ [
+  "waqf",
+  "الأوقاف",
+  53,
+  "أموال تخصص لغرض الوقف وفق أحكامه القانونية، ويعدها النص من الأشخاص المعنوية.",
+  "Property dedicated to an endowment under applicable law; this article lists endowments as juristic persons.",
+  "قد يخصص عقار للوقف وفق القانون المنظم له.",
+  "A property may be dedicated as an endowment under applicable law."
+ ],
+ [
+  "natural-person",
+  "الشخص الطبيعي",
+  54,
+  "الإنسان بصفته شخصًا في نظر القانون، تمييزًا له عن الشخص المعنوي.",
+  "A human being recognized as a person in law, distinct from a juristic person.",
+  "الإنسان شخص طبيعي، أما الشركة التي يمنحها القانون الشخصية فهي شخص معنوي.",
+  "A human is a natural person; a legally recognized company is a juristic person."
+ ],
+ [
+  "litigation",
+  "حق التقاضي",
+  54,
+  "حق اللجوء إلى القضاء في الحدود التي يقررها القانون.",
+  "The right to resort to courts within the limits of the law.",
+  "يجوز للشركة ذات الشخصية المعنوية أن تلجأ إلى القضاء وفق القانون.",
+  "A company with legal personality may resort to courts under the law."
+ ],
+ [
+  "possession",
+  "حيازتها",
+  56,
+  "السيطرة الفعلية على شيء في السياق القانوني، ولا يلزم أن تعني ملكيته.",
+  "Factual control over a thing; possession does not necessarily mean ownership.",
+  "قد يحوز المستأجر شيئًا دون أن يكون مالكه.",
+  "A tenant may possess a thing without owning it."
+ ],
+ [
+  "public-benefit",
+  "منفعة عامة",
+  57,
+  "غرض يخدم المصلحة العامة؛ وتخصيص المال له من شروط اعتبار بعض أموال الدولة أموالًا عامة.",
+  "A public-purpose use; dedication to it is a condition for certain state property to qualify as public property.",
+  "الطريق العام مثال على مال مخصص للمنفعة العامة.",
+  "A public road is an example of property dedicated to public use."
+ ],
+ [
+  "attachment",
+  "الحجز عليها",
+  57,
+  "إجراء قانوني يرد على المال في سياق التنفيذ أو التحفظ؛ وتمنع المادة الحجز على الأموال العامة.",
+  "A legal attachment of property in enforcement or preservation; this article prohibits attachment of public property.",
+  "لا يجوز الحجز على مال عام وفق المادة 57.",
+  "Public property cannot be attached under Article 57."
+ ],
+ [
+  "prescription",
+  "التقادم",
+  57,
+  "مرور مدة يحددها القانون قد تترتب عليها آثار قانونية؛ وتمنع المادة تملك الأموال العامة بالتقادم.",
+  "Passage of a statutory period that may have legal effects; public property cannot be acquired by prescription here.",
+  "لا يكتسب شخص ملكية مال عام لمجرد مرور مدة من حيازته.",
+  "Possession over time alone cannot establish ownership of public property."
+ ],
+ [
+  "immovable",
+  "عقار",
+  59,
+  "شيء ثابت في مكانه لا يمكن نقله دون تلف أو تغيير في هيئته، وفق المادة 59.",
+  "A thing fixed in place that cannot be moved without damage or alteration under Article 59.",
+  "الأرض مثال على العقار.",
+  "Land is an example of immovable property."
+ ],
+ [
+  "movable",
+  "منقول",
+  59,
+  "شيء لا يدخل في تعريف العقار، مع مراعاة الأحكام الخاصة كالعقار بالتخصيص.",
+  "A thing outside the definition of immovable property, subject to special rules.",
+  "القلم مثال على المنقول.",
+  "A pen is an example of movable property."
+ ],
+ [
+  "real-right",
+  "حق عيني",
+  59,
+  "حق يرد مباشرة على شيء معين، مثل حق الملكية.",
+  "A right directly over a specific thing, such as ownership.",
+  "حق ملكية أرض حق عيني على عقار.",
+  "Ownership of land is a real right over immovable property."
+ ],
+ [
+  "consumable",
+  "الأشياء الاستهلاكية",
+  61,
+  "أشياء لا يتحقق الانتفاع بها إلا باستهلاكها أو إنفاقها، وفق المادة 61.",
+  "Things that can be used only by consuming or spending them under Article 61.",
+  "الطعام مثال على شيء استهلاكي.",
+  "Food is an example of a consumable thing."
+ ],
+ [
+  "unlawful-interest",
+  "غير مشروعة",
+  63,
+  "وصف للمصلحة المخالفة للقانون في سياق المادة، بما يجعل استعمال الحق غير مشروع في هذه الحالة.",
+  "An interest contrary to law in this context, making the exercise of the right unlawful.",
+  "استعمال حق لتحقيق مصلحة يحظرها القانون يدخل في هذه الحالة.",
+  "Exercising a right to pursue a legally prohibited interest falls within this case."
+ ],
+ [
+  "excessive-harm",
+  "ضرراً فاحشاً غير مألوف",
+  63,
+  "ضرر شديد يتجاوز ما يُعد مألوفًا؛ وهو من حالات الاستعمال غير المشروع المذكورة في المادة.",
+  "Gross and unusual harm, listed by the article as a case of unlawful exercise of a right.",
+  "يُبحث مدى فحش الضرر وعدم مألوفيته بحسب ظروف الواقعة.",
+  "Whether harm is gross and unusual depends on the facts."
+ ]
+];
+BEGINNER_TERMS.forEach(function(v){TERMS.push(v.slice(0,3));});
 var APPLY={
  "collateral-kinship":{q:"أي علاقة تعد قرابة حواشٍ؟",a:["أب وابنه","أخ وأخته","أم وابنتها"]},
  "direct-kinship":{q:"أي علاقة تعد قرابة مباشرة؟",a:["أخ وأخوه","ابن عم وابنة عمه","جد وحفيدته"]},
@@ -78,7 +352,7 @@ function modal(){
  return d;
 }
 function popShow(term,article,source){
- var d=modal();d.dataset.lexRequest=String(++popupSequence);d.innerHTML="<section class='lexGlossaryDialogBody'><div class='lexGlossaryDialogHeader'><b>"+esc(term)+"</b><button type='button' data-close aria-label='"+esc(tr("إغلاق","Close"))+"'>×</button></div><p class='lexGlossarySource'>"+esc(tr("القانون المدني القطري رقم 22 لسنة 2004 • المادة ","Qatar Civil Code, Law 22/2004 • Article "))+article+"</p><p id='lexGlossaryMeaning' aria-live='polite'>"+esc(tr("جارٍ تحميل شرح المصطلح…","Loading a short explanation…"))+"</p><section class='lexGlossaryExample' id='lexGlossaryExample' hidden><strong>"+esc(tr("مثال قانوني للتوضيح","Illustrative legal example"))+"</strong><p id='lexGlossaryExampleText'></p></section><p class='lexGlossarySafety'>"+esc(tr("تبسيط للمذاكرة، ولا يغيّر النص القانوني أو نتيجة الاختبار.","A study aid; it does not alter law text or assessment results."))+"</p><label class='lexPersonalMoment'>"+esc(tr("إيه الموقف اللي خلاك تختار المصطلح؟ (اختياري)","What made you choose this term? (optional)"))+"<textarea id='lexPersonalMoment' maxlength='350' rows='2' placeholder='"+esc(tr("مثال: قابلته في مسألة قانونية","E.g. I saw it in a legal case"))+"'></textarea></label><p role='alert' id='lexGlossaryError'></p><button type='button' class='lexGlossarySave' id='lexGlossarySave' disabled>"+esc(tr("أضف لقاموسي","Save to my dictionary"))+"</button></section>";
+ var d=modal();d.dataset.lexRequest=String(++popupSequence);d.innerHTML="<section class='lexGlossaryDialogBody'><div class='lexGlossaryDialogHeader'><b>"+esc(term)+"</b><button type='button' data-close aria-label='"+esc(tr("إغلاق","Close"))+"'>×</button></div><p class='lexGlossarySource'>"+esc(tr("القانون المدني القطري رقم 22 لسنة 2004 • المادة ","Qatar Civil Code, Law 22/2004 • Article "))+article+"</p><p id='lexGlossaryMeaning' aria-live='polite'>"+esc(tr("جارٍ تحميل شرح المصطلح…","Loading a short explanation…"))+"</p><section class='lexGlossaryExample' id='lexGlossaryExample' hidden><strong>"+esc(tr("مثال قانوني للتوضيح","Illustrative legal example"))+"</strong><p id='lexGlossaryExampleText'></p></section><p class='lexGlossarySafety'>"+esc(tr("شرح مبسّط لأغراض الدراسة، لا يغيّر النص القانوني أو نتيجة الاختبار.","A study aid; it does not alter law text or assessment results."))+"</p><label class='lexPersonalMoment'>"+esc(tr("ما الذي دفعك إلى اختيار هذا المصطلح؟ (اختياري)","What made you choose this term? (optional)"))+"<textarea id='lexPersonalMoment' maxlength='350' rows='2' placeholder='"+esc(tr("مثال: ورد المصطلح في مسألة قانونية","E.g. I saw it in a legal case"))+"'></textarea></label><p role='alert' id='lexGlossaryError'></p><button type='button' class='lexGlossarySave' id='lexGlossarySave' disabled>"+esc(tr("أضف إلى قاموسي","Save to my dictionary"))+"</button></section>";
  d.querySelector("[data-close]").onclick=function(){d.close();};
  if(!d.open)d.showModal();
  return d;
@@ -92,6 +366,11 @@ async function resolveTerm(key,term,article,context,allowAi){
  if(r.error)throw r.error;
  if(r.data){
   var value={key:key,term:r.data.term_ar,article:r.data.source_article,definition_ar:r.data.definition_ar,definition_en:r.data.definition_en,example_ar:r.data.example_ar||"",example_en:r.data.example_en||"",status:"curated"};
+  glossaryCache.set(key,value);return value;
+ }
+ var beginner=BEGINNER_TERMS.find(function(v){return v[0]===key;});
+ if(beginner){
+  var value={key:key,term:beginner[1],article:beginner[2],definition_ar:beginner[3],definition_en:beginner[4],example_ar:beginner[5],example_en:beginner[6],status:"pending",beginnerDraft:true};
   glossaryCache.set(key,value);return value;
  }
  if(!allowAi)throw Error("ai_consent_needed");
@@ -163,6 +442,11 @@ async function openWord(word,article,context,knownKey){
   var shownExample=tr(value.example_ar||"",value.example_en||value.example_ar||"");
   exampleBox.hidden=!shownExample;
   exampleText.textContent=shownExample;
+  if(value.beginnerDraft){
+   var draftNote=root.document.createElement("small");draftNote.className="lexGlossaryAiNote";
+   draftNote.textContent=tr("شرح تعليمي أولي مستند إلى المادة؛ بانتظار المراجعة الأكاديمية.","A preliminary source-based learning explanation, pending academic review.");
+   meaning.appendChild(draftNote);
+  }
   if(value.status==="ai_unverified"){
    var note=root.document.createElement("small");note.className="lexGlossaryAiNote";
    note.textContent=tr("شرح أولي مولّد بالذكاء الاصطناعي؛ راجع النص الأصلي.","AI-generated draft. Check the original legal provision.");
@@ -186,7 +470,7 @@ async function openWord(word,article,context,knownKey){
     aiButton.disabled=true;aiButton.textContent=tr("جارٍ طلب الشرح…","Requesting explanation…");
     try{
      value=await resolveTerm(key,name,article,context,true);showMeaning();
-     btn.disabled=false;btn.textContent=tr("أضف لقاموسي","Save to my dictionary");
+     btn.disabled=false;btn.textContent=tr("أضف إلى قاموسي","Save to my dictionary");
     }catch(_){
      if(!isCurrent())return;
      meaning.textContent=tr("خدمة الشرح الآلي غير متاحة الآن. ما زال بإمكانك حفظ المصطلح للمراجعة لاحقًا.","AI explanation is unavailable now. You can still save the term for later review.");
@@ -215,6 +499,18 @@ async function openWord(word,article,context,knownKey){
 }
 function bindArticle(node){
  if(!node||node.dataset.lexGlossaryBound)return;node.dataset.lexGlossaryBound="1";
+ node.querySelectorAll("figure[data-article]").forEach(function(fig){
+  var block=fig.querySelector("blockquote");if(!block)return;
+  var control=root.document.createElement("button");control.type="button";control.className="lexGlossarySelection";
+  control.textContent=tr("اشرح كلمة أو عبارة أخرى من هذه المادة","Explain another word or phrase from this article");
+  block.after(control);
+  control.onclick=function(){
+   var word=root.prompt(tr("اكتب الكلمة أو العبارة كما وردت في المادة:","Type a word or phrase from this article:"));
+   if(word===null)return;word=normalize(word);
+   if(word.length<2||word.length>90||!normalize(block.textContent).includes(word)){root.alert(tr("اختر كلمة أو عبارة واردة في نص المادة.","Choose a word or phrase that appears in the provision."));return;}
+   openWord(word,Number(fig.dataset.article),block.textContent,termKey(word));
+  };
+ });
  node.addEventListener("click",function(e){
   var b=e.target.closest("[data-lex-term]");if(!b||!node.contains(b))return;
   var fig=b.closest("[data-article]"),number=Number(b.dataset.lexArticle);
@@ -229,8 +525,8 @@ function bindArticle(node){
   lastSelection=word;
   var fig=block.closest("[data-article]"),number=Number(fig&&fig.dataset.article);
   if(!number)return;
-  var old=node.querySelector(".lexGlossarySelection");if(old)old.remove();
-  var control=root.document.createElement("button");control.type="button";control.className="lexGlossarySelection";
+  var old=node.querySelector(".lexGlossarySelectedText");if(old)old.remove();
+  var control=root.document.createElement("button");control.type="button";control.className="lexGlossarySelection lexGlossarySelectedText";
   control.textContent=tr("اشرح «"+word+"» وأضفه لقاموسي","Explain and save “"+word+"”");
   block.after(control);
   control.onclick=function(){control.remove();openWord(word,number,block.textContent,"");};
@@ -268,16 +564,42 @@ async function mountPage(){
   });
   host.innerHTML="<div class='lexDictionaryHero'><span class='lexDictionaryEyebrow'>My Legal Dictionary</span><h1>"+esc(tr("قاموسي القانوني","My Legal Dictionary"))+"</h1><p>"+esc(tr("قاموسك أنت؛ يبدأ فارغًا وتضيف إليه فقط المصطلحات التي تختارها من النص القانوني.","Start with an empty dictionary. Save only the terms you personally choose while reading."))+"</p><div class='lexDictionaryStats'><span><b>"+entries.length+"</b>"+esc(tr("مصطلحًا محفوظًا"," saved terms"))+"</span><span><b>"+entries.filter(due).length+"</b>"+esc(tr("جاهزًا للمراجعة"," due for review"))+"</span></div></div>"+
   "<section class='lexDictionaryToolbar'><label>"+esc(tr("ابحث في قاموسك","Search your terms"))+"<input id='lexDictionarySearch' value='"+esc(filter||"")+"' maxlength='100' placeholder='"+esc(tr("اكتب مصطلحًا…","Search a term…"))+"'></label><button type='button' id='lexDictionaryQuiz' "+(!entries.length?"disabled":"")+">"+esc(tr("اختبر قاموسي","Test my dictionary"))+"</button></section>"+
-  (!entries.length?"<div class='lexDictionaryEmpty'>"+esc(tr("قاموسك فارغ حتى الآن. اقرأ المادة، واختَر بنفسك مصطلحًا ثم اضغط «أضف لقاموسي».","Your dictionary is empty. Choose a term yourself in the legal text, then save it."))+"</div>":
+  "<details class='lexGlossaryExplore'><summary>"+esc(tr("استكشف مصطلحات المقرر","Explore course vocabulary"))+"</summary><label>"+esc(tr("ابحث عن مصطلح جديد","Find a new term"))+"<input id='lexExploreSearch' type='search' maxlength='90'></label><div id='lexExploreResults'></div></details>"+
+  (!entries.length?"<div class='lexDictionaryEmpty'>"+esc(tr("قاموسك فارغ حتى الآن. اقرأ المادة، واختَر بنفسك مصطلحًا ثم اضغط «أضف إلى قاموسي».","Your dictionary is empty. Choose a term yourself in the legal text, then save it."))+"</div>":
    "<div class='lexDictionaryGrid'>"+shown.map(function(e){
      var definition=e.definition_ar?(root.document.documentElement.lang==="en"&&e.definition_en?e.definition_en:e.definition_ar):tr("الشرح لم يتوفر بعد، ويمكنك إعادة طلبه من نص المادة.","The explanation is pending. Reopen the legal text to request it.");
      var example=e.example_ar?(root.document.documentElement.lang==="en"&&e.example_en?e.example_en:e.example_ar):"";
      return "<article class='lexDictionaryCard'><div class='lexDictionaryCardTop'><h2>"+esc(e.term_ar)+"</h2></div><p>"+esc(definition)+"</p>"+(example?"<div class='lexDictionaryExample'><b>"+esc(tr("مثال للتوضيح:","Illustrative example:"))+"</b><p>"+esc(example)+"</p></div>":"")+(e.personal_note?"<div class='lexPersonalMemory'><b>"+esc(tr("ملاحظتي: ","My note: "))+"</b>"+esc(e.personal_note)+"</div>":"")+"<small>"+esc(tr("القانون المدني القطري 22/2004 — المادة ","Qatar Civil Code 22/2004 — Article "))+esc(e.article_number||"—")+" · "+esc(formatDate(e.added_at))+"</small>"+
-       (e.definition_status==="ai_unverified"?"<p class='lexDictionaryCaution'>"+esc(tr("شرح آلي أولي — غير مُراجع أكاديميًا","AI draft — not academically reviewed"))+"</p>":"")+"</article>";
+       (e.definition_status==="ai_unverified"?"<p class='lexDictionaryCaution'>"+esc(tr("شرح آلي أولي — غير مُراجع أكاديميًا","AI draft — not academically reviewed"))+"</p>":e.definition_status==="pending"&&e.definition_ar?"<p class='lexDictionaryCaution'>"+esc(tr("شرح تعليمي أولي — بانتظار المراجعة","Preliminary explanation — pending review"))+"</p>":"")+"</article>";
    }).join("")+"</div>")+
   "<p class='lexDictionaryHint'>"+esc(tr("هذا قاموسك الشخصي؛ لا تُضاف إليه كلمات تلقائيًا. اختبر ما حفظته في الوقت الذي يناسبك.","This is your personal dictionary. Terms are never added automatically. Review whenever you like."))+"</p>";
   var search=host.querySelector("#lexDictionarySearch");if(search)search.oninput=function(){var v=search.value;renderList(v);var newer=host.querySelector("#lexDictionarySearch");newer.focus();newer.setSelectionRange(v.length,v.length);};
-  var quiz=host.querySelector("#lexDictionaryQuiz");if(quiz)quiz.onclick=function(){testItems=entries.filter(due).filter(function(e){return !!e.definition_ar;}).slice(0,12);if(!testItems.length)testItems=entries.filter(function(e){return !!e.definition_ar;}).slice(0,12);if(!testItems.length){host.querySelector(".lexDictionaryHint").textContent=tr("كل مصطلحاتك تنتظر شرحًا. أعد فتحها من النص القانوني.","All saved terms await explanations.");return;}pos=0;attempt=[];question();};
+  var searchNew=host.querySelector("#lexExploreSearch"),resultsNew=host.querySelector("#lexExploreResults");
+  if(searchNew&&resultsNew){
+   function showTerms(){
+    var needle=normalize(searchNew.value).toLocaleLowerCase();
+    var terms=TERMS.filter(function(v){return !needle||normalize(v[1]).toLocaleLowerCase().includes(needle);});
+    resultsNew.innerHTML=terms.map(function(v){return "<button type='button' class='lexGlossarySelection' data-explore-term='"+esc(v[0])+"'>"+esc(v[1])+" · "+esc(tr("المادة ","Article "))+v[2]+"</button>";}).join("")||"<p>"+esc(tr("لا توجد نتائج. يمكنك اختيار أي كلمة من نص المادة.","No matches. You may select another word in the legal text."))+"</p>";
+   }
+   searchNew.addEventListener("input",showTerms);
+   resultsNew.addEventListener("click",async function(e){
+    var b=e.target.closest("[data-explore-term]");if(!b)return;
+    var term=find(b.dataset.exploreTerm);if(!term)return;
+    try{if(!await root.LEX_GLOSSARY_ACCESS.check(root.LEX_CLOUD))return;}catch(_){return;}
+    await openWord(term[1],term[2],root.LEX_LEGAL_STUDY?.text?.[term[2]]||"",term[0]);
+    var modal=root.document.getElementById("lexGlossaryDialog");
+    if(modal&&modal.open)modal.addEventListener("close",async function(){
+     try{
+      if(!await root.LEX_GLOSSARY_ACCESS.check(root.LEX_CLOUD))return;
+      var updated=await who.client.from("lex_student_glossary").select("*").eq("student_id",who.id).eq("course_id",COURSE).order("added_at",{ascending:false}).limit(500);
+      if(updated.error)throw updated.error;
+      entries=updated.data||[];renderList("");
+     }catch(_){var hint=host.querySelector(".lexDictionaryHint");if(hint)hint.textContent=tr("حدّث الصفحة لعرض القائمة الجديدة.","Refresh the page to see the updated list.");}
+    },{once:true});
+   });
+   showTerms();
+  }
+  var quiz=host.querySelector("#lexDictionaryQuiz");if(quiz)quiz.onclick=function(){testItems=entries.filter(due).filter(function(e){return !!e.definition_ar&&e.definition_status!=="pending";}).slice(0,12);if(!testItems.length)testItems=entries.filter(function(e){return !!e.definition_ar&&e.definition_status!=="pending";}).slice(0,12);if(!testItems.length){host.querySelector(".lexDictionaryHint").textContent=tr("لا توجد مصطلحات جاهزة للاختبار حاليًا. راجع الشروح المتاحة أو انتظر اعتمادها.","All saved terms await explanations.");return;}pos=0;attempt=[];question();};
  }
  async function record(entry,skill,mode,outcome,optionIndex){
   if(mode==="objective"){
@@ -327,7 +649,7 @@ async function mountPage(){
  }
  function finish(){
   var reviewed=attempt.filter(function(x){return x.skill==="recall";}).length;
-  host.innerHTML="<section class='lexQuiz lexQuizResult'><span class='lexQuizChip'>"+esc(tr("مراجعة القاموس","Dictionary review"))+"</span><h1>"+esc(tr("خلصت مراجعتك","Review complete"))+"</h1><p>"+esc(tr("راجعت "+reviewed+" مصطلحًا من قاموسك. تقدر ترجع لقاموسك أو تبدأ جلسة جديدة.","You reviewed "+reviewed+" terms. Return to your dictionary or continue learning."))+"</p><button type='button' id='lexQuizEnd'>"+esc(tr("العودة لقاموسي","Back to dictionary"))+"</button></section>";
+  host.innerHTML="<section class='lexQuiz lexQuizResult'><span class='lexQuizChip'>"+esc(tr("مراجعة القاموس","Dictionary review"))+"</span><h1>"+esc(tr("اكتملت المراجعة","Review complete"))+"</h1><p>"+esc(tr("راجعت "+reviewed+" مصطلحًا من قاموسك. يمكنك العودة إلى قاموسك أو بدء جلسة جديدة.","You reviewed "+reviewed+" terms. Return to your dictionary or continue learning."))+"</p><button type='button' id='lexQuizEnd'>"+esc(tr("العودة إلى قاموسي","Back to dictionary"))+"</button></section>";
   host.querySelector("#lexQuizEnd").onclick=function(){renderList("");};
  }
  renderList("");
@@ -342,7 +664,7 @@ async function mountPage(){
    });
  }
 }
-var api={terms:TERMS,apply:APPLY,linkText:linkText,normalize:normalize,termKey:termKey,bindArticle:bindArticle,appendLink:appendLink,mountPage:mountPage};
+var api={terms:TERMS,beginnerTerms:BEGINNER_TERMS,apply:APPLY,linkText:linkText,normalize:normalize,termKey:termKey,bindArticle:bindArticle,appendLink:appendLink,mountPage:mountPage};
 root.LEX_GLOSSARY=api;
 if(typeof module!=="undefined"&&module.exports)module.exports=api;
 })(typeof window!=="undefined"?window:globalThis);

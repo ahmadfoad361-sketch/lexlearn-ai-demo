@@ -7,7 +7,7 @@
     doc.querySelectorAll(".brand, .site-brand, .logo-wrap, .brand-lockup, .brand-mark").forEach(function(el){
       if(el.closest("a,button")||el.querySelector("input,button,a"))return;
       if(!/lexlearn/i.test(el.textContent+" "+(el.querySelector("img")?.getAttribute("alt")||"")+" "+(el.querySelector("img")?.getAttribute("src")||"")))return;
-      var a=doc.createElement("a");a.href=(loc.pathname.includes("/go/")?"../":"")+"index.html";a.className="lexlearn-home-brand";a.style.cssText="display:inline-flex;align-items:center;color:inherit;text-decoration:none";a.setAttribute("aria-label","LexLearn — الصفحة الرئيسية");el.parentNode.insertBefore(a,el);a.appendChild(el);
+      var a=doc.createElement("a");a.href=(loc.pathname.includes("/go/")?"../":"")+(doc.documentElement.lang==="en"?"index-en.html":"index.html");a.className="lexlearn-home-brand";a.style.cssText="display:inline-flex;align-items:center;color:inherit;text-decoration:none";a.setAttribute("aria-label","LexLearn — الصفحة الرئيسية");el.parentNode.insertBefore(a,el);a.appendChild(el);
     });
   }
   if(doc.readyState==="loading")doc.addEventListener("DOMContentLoaded",linkBrands,{once:true});else linkBrands();
@@ -70,8 +70,9 @@
   }
   function internalHistory() {
     try {
-      var prev = new URL(doc.referrer);
-      return prev.origin === loc.origin && prev.pathname !== loc.pathname && !/\/go\/?(?:index\.html)?$/.test(prev.pathname) && window.history.length > 1;
+      var nav=window.navigation,entry=nav&&nav.canGoBack&&nav.entries()[nav.currentEntry.index-1];
+      var prev = new URL(entry&&entry.url?entry.url:doc.referrer);
+      return prev.origin === loc.origin && prev.href !== loc.href && !/\/go\/?(?:index\.html)?$/.test(prev.pathname) && window.history.length > 1;
     } catch (_) { return false; }
   }
   back.addEventListener("click", function () {
@@ -83,7 +84,7 @@
       return;
     }
     if (internalHistory()) { window.history.back(); return; }
-    loc.assign(isStudentPath ? (isArabic() ? "student.html" : "student-en.html") : "conference.html");
+    loc.assign(isStudentPath ? (isArabic() ? "student.html" : "student-en.html") : (isArabic() ? "index.html" : "index-en.html"));
   });
   window.addEventListener("pageshow", closeOverlay);
 

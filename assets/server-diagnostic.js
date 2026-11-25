@@ -150,7 +150,8 @@ async function startUI(){
       (root.LEX_QUESTION_STYLE?root.LEX_QUESTION_STYLE.render(root.LEX_QUESTION_STYLE.freeDiagnostic(lang()),lang()):
 "<p>"+tr("اكتب من ذاكرتك: متى تبدأ الشخصية القانونية للإنسان؟ عبّر عن القاعدة بأسلوبك دون الرجوع إلى النص.","From memory, when does a human being’s legal personality begin? State the rule in your own words without consulting the text.")+"</p>"+
       "<p>"+tr("اكتب أيضًا: متى تنتهي الشخصية القانونية؟ وماذا يقول النص عن حقوق الجنين قبل ولادته (المادة 40 من القانون المدني القطري الصادر بالقانون رقم (22) لسنة 2004)؟ اكتب بجمل قصيرة من ذاكرتك، دون فتح النص.","Also answer: when does legal personality end? What does Article 40 of the Qatar Civil Code, promulgated by Law No. 22 of 2004, say about an unborn child's rights? Use short sentences from memory, without reopening the text.")+"</p>")+
-      "<textarea id='ungradedText' rows='5' maxlength='2000' aria-label='"+tr("إجابة حرة","Free answer")+"'></textarea>";
+      (root.LEX_QUESTION_STYLE&&root.LEX_QUESTION_STYLE.answerFields?root.LEX_QUESTION_STYLE.answerFields("ungradedText",lang(),2000):
+      "<textarea id='ungradedText' rows='5' maxlength='2000' aria-label='"+tr("إجابة حرة","Free answer")+"'></textarea>");
    }
    html+="<button id='serverNext'>"+(done?tr("احفظ التقييم واعرض نتيجتي","Save assessment and show my result"):tr("حفظ والانتقال للسؤال التالي","Save and continue"))+"</button>"+
    "<p id='serverError' role='alert'></p>";
@@ -168,12 +169,16 @@ async function startUI(){
       if(reply.status!=="in_progress"||!Array.isArray(reply.draft)||reply.draft.length!==next.length)throw new Error("draft_not_confirmed");
       answers=reply.draft;idx=answers.length;saving=false;page();
      }else{
-      var aiRequested=!!(root.document.getElementById("ungradedText").value||"").trim()&&acceptedAi;
-      var reply=await cloud.studentLifecycleRpc("complete",{courseId:COURSE_ID,answers:answers,freeText:root.document.getElementById("ungradedText").value||""});
+      var split=root.LEX_QUESTION_STYLE&&root.LEX_QUESTION_STYLE.collectAnswers&&area.querySelector("#ungradedTextPart2");
+      var free=split?root.LEX_QUESTION_STYLE.collectAnswers(area,"ungradedText",lang(),2000):{text:root.document.getElementById("ungradedText").value||"",missing:0,tooLong:false};
+      if(free.tooLong){error.textContent=tr("مجموع الإجابات يتجاوز 2000 حرف. اختصر النص ثم أعد المحاولة.","The combined answers exceed 2,000 characters. Shorten them and retry.");saving=false;this.disabled=false;return;}
+      if(free.missing>0&&free.missing<3&&!root.confirm(tr("بعض الأسئلة بلا إجابة. هل تريد إرسال الإجابات المتاحة؟","Some questions are unanswered. Submit the available answers?"))){saving=false;this.disabled=false;return;}
+      var aiRequested=!!free.text.trim()&&acceptedAi;
+      var reply=await cloud.studentLifecycleRpc("complete",{courseId:COURSE_ID,answers:answers,freeText:free.text});
       if(reply.status!=="completed"||!reply.result||reply.result.source!=="server_finalized_diagnostic"||reply.result.student_id!==student||!reply.training_plan)throw new Error("completion_not_confirmed");
       // Give the optional free recall an internally generated preliminary percentage;
       // if interpretation is inconclusive, preserve pending review rather than invent success.
-      if((root.document.getElementById("ungradedText")&&root.document.getElementById("ungradedText").value||"").trim()){
+      if(free.text.trim()){
        try{await cloud.studentLifecycleRpc("reviewDiagnostic",{courseId:COURSE_ID});}
        catch(e){if(root.console&&root.console.warn)root.console.warn("Provisional diagnostic review pending:",String(e&&e.message||e));}
       }
