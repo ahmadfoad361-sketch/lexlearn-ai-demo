@@ -228,7 +228,7 @@ test('dark training recall edge and hint button stay subtle but accessible',()=>
  assert.match(css,/html\[data-learner-theme=dark\] #studentTrainingApp \.stage--recall\{\s*--session-accent:#83a9bd;/);
  assert.match(css,/html\[data-learner-theme=dark\] #studentTrainingApp #adaptiveUnknown\{\s*background:#2b405c;/);
  assert.match(css,/#adaptiveUnknown:focus-visible\{\s*outline:3px solid #e794ab;/);
- assert.match(html,/assets\/learner-experience\.css\?v=20261125\.answers1/);
+ assert.match(html,/assets\/learner-experience\.css\?v=20261125\.paired1/);
  assert.match(source,/id='adaptiveUnknown'/);
  assert.match(source,/id='adaptiveSubmit'/);
 });
@@ -252,3 +252,30 @@ test('three separate answer fields preserve question boundaries and combined lim
 });
 
  test('beginner vocabulary includes source-based bilingual definitions and examples',()=>{const glossary=require('../assets/personal-glossary.js');assert.equal(glossary.beginnerTerms.length,30);assert.equal(glossary.terms.length,46);for(const row of glossary.beginnerTerms){assert.equal(row.length,7);assert.ok(row.slice(3).every(v=>v.length>10));assert.ok(row[2]>=39&&row[2]<=63);}assert.equal(new Set(glossary.terms.map(v=>v[0])).size,46);});
+
+ test('numbered questions precede their own fields and retain comparison cards and escaping',()=>{
+ const p='Topic <test>\n1. First <unsafe>\n2. Compare\nReview each statement on its own:\nA < B\nC > D\n3. Explain the effect.';
+ const html=style.answerFields('paired','en',4000,p);
+ assert.equal((html.match(/<textarea/g)||[]).length,3);
+ assert.ok(html.indexOf('First &lt;unsafe&gt;')<html.indexOf("id='paired'"));
+ assert.ok(html.indexOf("id='paired'")<html.indexOf('2. Compare'));
+ assert.ok(html.indexOf('2. Compare')<html.indexOf('questionComparison'));
+ assert.ok(html.indexOf('A &lt; B')<html.indexOf("id='pairedPart2'"));
+ assert.ok(html.indexOf("id='pairedPart2'")<html.indexOf('3. Explain'));
+ assert.ok(html.indexOf('3. Explain')<html.indexOf("id='pairedPart3'"));
+ assert.ok(!html.includes('<unsafe>'));
+ assert.equal(style.hasThreeParts('Intro\n١. أول\n٢. ثان\n٣. ثالث'),true);
+ assert.equal(style.hasThreeParts('Intro\n1. A\n2. B\n3. C\n4. D'),false);
+ assert.equal(style.hasThreeParts('Intro\n1. A\n3. C\n2. B'),false);
+ assert.equal(style.hasThreeParts('One question only'),false);
+ for(const lang of ['ar','en']){
+  const output=style.answerFields('diag',lang,2000,style.freeDiagnostic(lang));
+  assert.equal((output.match(/<textarea/g)||[]).length,3);
+  assert.ok(output.indexOf("id='diag'")<output.indexOf('2. '));
+ }
+ const f={ '#draft':{value:''}, '#draftPart2':{value:''}, '#draftPart3':{value:''} },host={querySelector:id=>f[id]};
+ style.restoreAnswers(host,'draft','1. first\n\n3. third');
+ assert.equal(f['#draft'].value,'first');assert.equal(f['#draftPart2'].value,'');assert.equal(f['#draftPart3'].value,'third');
+ assert.equal(style.readAnswer(host,'draft','en',4000).text,'1. first\n\n3. third');
+ style.disableAnswers(host,'draft');assert.ok(Object.values(f).every(x=>x.disabled));
+ });
