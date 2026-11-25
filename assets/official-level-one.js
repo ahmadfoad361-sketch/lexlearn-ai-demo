@@ -129,7 +129,7 @@ async function mount(host,opts){
  function render(){
   if(stopQueueWatch)stopQueueWatch();
   if(cloud.watchGradeJobs)stopQueueWatch=cloud.watchGradeJobs((data.saved||[]).filter(function(v){return v.evaluation?.status==="ai_queued";}).map(function(v){return v.evaluation.queue_job_id;}),async function refreshQueue(){
-   if(gradingBusy||(host.querySelector("textarea")&&host.querySelector("textarea").value.trim())){
+   if(gradingBusy||(Array.from(host.querySelectorAll("textarea")).some(function(f){return f.value.trim();}))){
     stopQueueWatch=cloud.watchGradeJobs((data.saved||[]).filter(function(v){return v.evaluation?.status==="ai_queued";}).map(function(v){return v.evaluation.queue_job_id;}),refreshQueue);return;
    }
    data=await cloud.studentLifecycleRpc("firstLevel",{courseId:COURSE_ID});render();
@@ -165,22 +165,28 @@ async function mount(host,opts){
    wireReviewActions();return;
   }
   var n=completed+1,dim=next.dimension;
-  var q=root.LEX_QUESTION_STYLE?root.LEX_QUESTION_STYLE.prepare(next,lang):(lang==="en"?next.prompt_en:next.prompt_ar);
+  var style=root.LEX_QUESTION_STYLE;
+  var q=style?root.LEX_QUESTION_STYLE.prepare(next,lang):(lang==="en"?next.prompt_en:next.prompt_ar);
   if(!q||q.length<15){
    host.innerHTML="<p role='alert'>"+t("المهمة غير مترجمة أو غير مكتملة.","The lesson question is not available in this language.")+"</p>";return;
   }
   host.innerHTML=summary+previousResults+"<section class='stage'><div class='taskCard'><span class='kicker'>"+t("المهمة ","Task ")+n+" / 3</span>"+
    "<h2>"+esc(lang==="en"?next.title_en:next.title_ar)+"</h2><p>"+esc(adaptiveHint(lang,mode,dim))+"</p>"+
    (root.LEX_LEGAL_STUDY?root.LEX_LEGAL_STUDY.context(next.source_ids||next.sources||[],lang):"")+
+   (style&&style.hasThreeParts(q)?style.answerFields("officialEssayAnswer",lang,12000,q):
    (root.LEX_QUESTION_STYLE?root.LEX_QUESTION_STYLE.render(q,lang):"<div class='legalBox' style='white-space:pre-line'>"+esc(q)+"</div>")+
    "<label for='officialEssayAnswer'>"+t("إجابتك القانونية","Your legal answer")+"</label>"+
-   "<textarea id='officialEssayAnswer' class='textarea' rows='8' maxlength='12000' placeholder='"+t("اكتب إجابتك بأسلوبك…","Write in your own words…")+"' aria-label='"+t("إجابة قانونية حرة","Free legal answer")+"'></textarea>"+
+   "<textarea id='officialEssayAnswer' class='textarea' rows='8' maxlength='12000' placeholder='"+t("اكتب إجابتك بأسلوبك…","Write in your own words…")+"' aria-label='"+t("إجابة قانونية حرة","Free legal answer")+"'></textarea>")+
    "<div class='choiceRow'><button type='button' id='officialSaveAnswer' class='primary'>"+t("حفظ الإجابة والانتقال","Save answer and continue")+"</button></div>"+
    "<p id='officialSaveMessage' role='alert'></p></div></section>";
   wireReviewActions();
+  if(style&&style.bindAnswerFields)style.bindAnswerFields(host,"officialEssayAnswer");
   var button=host.querySelector("#officialSaveAnswer");
   button.onclick=async function(){
-   var v=host.querySelector("#officialEssayAnswer").value.trim();
+   var parts=style?style.readAnswer(host,"officialEssayAnswer",lang,12000):{text:host.querySelector("#officialEssayAnswer").value.trim(),missing:0,tooLong:false};
+   var v=parts.text;
+   if(parts.tooLong){host.querySelector("#officialSaveMessage").textContent=t("مجموع الإجابات يتجاوز 12000 حرف.","Combined answers exceed 12,000 characters.");return;}
+   if(parts.missing>0&&parts.missing<3&&!root.confirm(t("بعض الأسئلة بلا إجابة. هل تريد إرسال الإجابات المتاحة؟","Some questions are unanswered. Submit the available answers?")))return;
    if(v.length<3){host.querySelector("#officialSaveMessage").textContent=t("اكتب إجابة مفهومة أو وضّح أنك لا تعرف.","Write a meaningful answer, or say that you do not know.");return;}
    button.disabled=true;
    try{
