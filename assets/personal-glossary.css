@@ -99,3 +99,5 @@ html[data-learner-theme=dark] :is(.lexGlossaryExample strong,.lexDictionaryExamp
 html[data-learner-theme=dark] .lexGlossarySaveNotice{
  background:#1e3049;color:#bce9d4;border-color:#437967;border-inline-start-color:#a0e4c1;
 }
+
+.lexGlossaryExplore{margin:1rem 0;padding:1rem;border:1px solid var(--lx-border,#cec7c1);border-radius:12px}.lexGlossaryExplore summary{cursor:pointer;font-weight:700}.lexGlossaryExplore label{display:grid;gap:.5rem;margin-top:1rem}.lexGlossaryExplore input{font:inherit;padding:.65rem;border:1px solid var(--lx-border,#cec7c1);border-radius:8px;background:var(--lx-surface,#fffdfa);color:var(--lx-ink,#111d31)}#lexExploreResults{display:flex;gap:.45rem;flex-wrap:wrap;margin-top:.8rem}#lexExploreResults .lexGlossarySelection{margin:0;text-align:start;max-width:100%}
