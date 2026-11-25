@@ -455,10 +455,10 @@ async function boot(){
      // answer goes to the existing server rubric with explicit section headings.
      main+="<div id='legalExamGuide'></div>";
     }else{
-     main+=(style&&style.render?
+     main+=(splitAnswers?"":style&&style.render?
        style.render(prompt,lang()):
        "<div class='prompt' style='white-space:pre-wrap'>"+esc(prompt)+"</div>")+
-      (splitAnswers?style.answerFields("adaptiveEssay",lang(),4000):
+      (splitAnswers?style.answerFields("adaptiveEssay",lang(),4000,prompt):
       "<label for='adaptiveEssay'>"+t("اكتب إجابتك القانونية بأسلوبك","Write your legal explanation in your own words")+"</label>"+
       "<textarea id='adaptiveEssay' rows='7' maxlength='4000' placeholder='"+t("اكتب إجابتك بأسلوبك...","Write your answer in your own words...")+"'></textarea>")+
       "<button type='button' id='adaptiveSubmit'>"+t("احفظ الإجابة وحللها ثم انتقل","Save, analyse, and continue")+"</button>";
@@ -468,6 +468,7 @@ async function boot(){
    }
    main+="</section>";
    show(nav()+main);
+   if(splitAnswers&&style.bindAnswerFields)style.bindAnswerFields(host,"adaptiveEssay");
    if(next&&next.dimension==="understanding"&&root.LEX_COMPARISON_CARDS){
     root.LEX_COMPARISON_CARDS.mount(host,lang());
    }
