@@ -46,7 +46,14 @@ async function run({en=false,marker,session=true,error,access,consent=true,role,
  vm.createContext(glossaryContext);
  vm.runInContext(fs.readFileSync('assets/personal-glossary.js','utf8'),glossaryContext);
  const dictionary=glossaryContext.LEX_GLOSSARY;
- assert.equal(dictionary.terms.length,16);
+ assert.equal(dictionary.terms.length,46);
+ assert.equal(dictionary.beginnerTerms.length,30);
+ assert.equal(new Set(dictionary.terms.map(t=>t[0])).size,46);
+ assert.ok(dictionary.beginnerTerms.every(t=>t.length===7&&t.slice(3).every(v=>typeof v==='string'&&v.length>10)));
+ assert.match(dictionary.linkText(40,'الحمل المستكن أهل لثبوت الحقوق'),/data-lex-term='unborn-child'/);
+ glossaryContext.LEX_GLOSSARY_ACCESS.canShowTerms=()=>false;
+ assert.doesNotMatch(dictionary.linkText(40,'الحمل المستكن'),/data-lex-term/);
+ glossaryContext.LEX_GLOSSARY_ACCESS.canShowTerms=()=>true;
  const legalText='قرابة الحواشي هي الصلة بين من يجمعهم أصل مشترك دون أن يكون أحدهم فرعاً للآخر.';
  const rendered=dictionary.linkText(46,legalText);
  assert.match(rendered,/data-lex-term='collateral-kinship'/);
