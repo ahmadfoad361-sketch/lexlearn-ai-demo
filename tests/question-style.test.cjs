@@ -1,4 +1,5 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
+const beginner=require('../assets/beginner-prompts.js');
 const style=require('../assets/question-style.js'),Q=require('../assets/learning-quality.js'),guide=require('../assets/legal-case-guide.js');
 const topics=Object.values(Q.topics);
 test('all bilingual authoring tasks default to the common style and retain canonical requirements',()=>{
@@ -10,7 +11,10 @@ test('all bilingual authoring tasks default to the common style and retain canon
   style.author(task,lang);assert.deepEqual(task,clone);assert.equal(task.qualityRubric,rubric);
   if(dim==='recall'){assert.match(task.displayPrompt,lang==='ar'?/ثلاث كلمات/:/three short memory cues/);assert.match(task.displayPrompt,/1\..*\n2\..*\n3\./);}
   if(dim==='understanding'){
-   for(const statement of task.comparison)assert.ok(task.displayPrompt.includes(statement));
+   const expected=beginner.clarifyComparison('rights-v1-s'+topic.session+'-understanding',lang,task.comparison);
+   for(const statement of expected)assert.ok(task.displayPrompt.includes(statement));
+   assert.ok(expected.every(x=>x.endsWith('.')));
+   assert.equal(expected.length,task.comparison.length);
    const html=style.render(task.displayPrompt,lang);assert.ok(html.indexOf('questionComparison')<html.indexOf('questionFollowup'));
    assert.match(html,/comparisonStatement/);
    assert.doesNotMatch(task.displayPrompt,lang==='ar'?/إحداهما غير دقيقة|أي العبارتين.*غير دقيقة/:/one is inaccurate|Which is inaccurate/);
@@ -279,3 +283,36 @@ test('three separate answer fields preserve question boundaries and combined lim
  assert.equal(style.readAnswer(host,'draft','en',4000).text,'1. first\n\n3. third');
  style.disableAnswers(host,'draft');assert.ok(Object.values(f).every(x=>x.disabled));
  });
+
+test('clear legal language preserves canonical comparison order, unfamiliar versions and all 24 topic pairs',()=>{
+ for(const topic of topics)for(const lang of ['ar','en']){
+  const task=Q.makeEssay(topic,lang,'understanding'),id='rights-v1-s'+topic.session+'-understanding';
+  const raw=task.comparison.slice(),changed=beginner.clarifyComparison(id,lang,raw);
+  assert.equal(changed.length,2);assert.notDeepEqual(changed,raw);
+  assert.deepEqual(beginner.clarifyComparison(id,lang,raw.slice().reverse()),changed.slice().reverse());
+  assert.deepEqual(beginner.clarifyComparison('unknown',lang,raw),raw);
+  const modified=[raw[0],raw[1]+' EXCEPTION'];
+  assert.deepEqual(beginner.clarifyComparison(id,lang,modified),modified);
+  assert.ok(task.originalPrompt.includes(raw[0]));
+  assert.ok(task.originalPrompt.includes(raw[1]));
+ }
+ const task=Q.makeEssay(Q.topic(14),'ar','understanding');
+ assert.match(task.displayPrompt,/الشخص الطبيعي والشخص المعنوي/);
+ assert.doesNotMatch(task.displayPrompt,/تتحد بداية الشخصية|كل معنوي/);
+ assert.match(task.displayPrompt,/ذمة مالية مستقلة/);
+ const official8=['ثماني عشرة سنة كاملة تكفي لكمال الأهلية ولو صدر حكم بالحجر','بلوغ ثماني عشرة سنة كاملة مع عدم القضاء باستمرار الولاية أو الوصاية على المال أو بالحجر'];
+ const revised8=beginner.clarifyComparison('rights-v1-s8-understanding','ar',official8);
+ assert.match(revised8[0],/حتى لو صدر حكم بالحجر/);
+ assert.match(revised8[1],/ما لم يُقضَ باستمرار الولاية أو الوصاية على ماله أو بالحجر/);
+ const html=style.answerFields('clarity','ar',4000,task.displayPrompt);
+ assert.ok(html.indexOf('questionComparison')<html.indexOf("id='clarityPart2'"));
+ assert.ok(html.indexOf("id='clarityPart2'")<html.indexOf("id='clarityPart3'"));
+});
+test('legal answer starters are optional and conclusion language belongs only in the final step',()=>{
+ const source=fs.readFileSync('assets/legal-case-guide.js','utf8');
+ const arrays=Array.from(source.matchAll(/placeholders:(\[[^\n]+\]),/g)).map(m=>JSON.parse(m[1]));
+ assert.equal(arrays.length,2);
+ for(const arr of arrays){assert.equal(arr.length,4);assert.ok(arr.slice(0,3).every(s=>!/إذن|Therefore/i.test(s)));assert.match(arr[3],/إذن|Therefore/i);}
+ assert.equal(guide.compose(['','','',''],'ar'),'');
+ assert.equal(guide.compose(['مسألة','قاعدة','تطبيق','نتيجة'],'ar'),'المسألة: مسألة\nالقاعدة: قاعدة\nالتطبيق: تطبيق\nالنتيجة: نتيجة');
+});
