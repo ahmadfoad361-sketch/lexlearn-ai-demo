@@ -58,7 +58,8 @@ async function run({en=false,marker,session=true,error,access,consent=true,role,
  const rendered=dictionary.linkText(46,legalText);
  assert.match(rendered,/data-lex-term='collateral-kinship'/);
  assert.match(rendered,/قرابة الحواشي/);
- assert.doesNotMatch(dictionary.linkText(45,legalText),/data-lex-term/);
+ assert.doesNotMatch(dictionary.linkText(45,legalText),/data-lex-term='collateral-kinship'/);
+ assert.match(dictionary.linkText(45,legalText),/data-lex-term='common-ancestor'/);
  assert.match(dictionary.linkText(46,'<script>قرابة الحواشي</script>'),/&lt;script&gt;/);
  assert.match(dictionary.appendLink(),/student-glossary.html\?lang=ar/);
  assert.equal(dictionary.apply['collateral-kinship'].a.length,3);
