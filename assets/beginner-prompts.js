@@ -655,6 +655,7 @@ function prepare(task,lang){
  var topic=en?(lines[0].match(/“([^”]+)”/)||[])[1]:(lines[0].match(/«([^»]+)»/)||[])[1];
  var ref=(lines[0].match(/\(([^)]+)\)/)||[])[1];
  if(!topic||!ref)return raw;
+ if(!en&&topic==="الطبيعي والمعنوي")topic="الشخص الطبيعي والشخص المعنوي";
  if(dim==="recall"&&/^(من ذاكرتك، اكتب قاعدة|From memory, write the rule on)/.test(raw))return en?
   "From memory, answer about “"+topic+"” ("+ref+").\n1. Write the main rule and the conditions you remember, briefly.\n2. Write three short memory cues.\n3. Explain what each cue helps you remember. You do not need to solve a case.":
   "من ذاكرتك، أجب عن «"+topic+"» ("+ref+").\n1. اكتب القاعدة وأهم شروطها في جمل قصيرة.\n2. اذكر ثلاث كلمات أو عبارات قصيرة تساعدك على تذكّر القاعدة.\n3. اشرح ما يذكّرك به كل مفتاح من عناصر القاعدة. لا يُطلب منك حل واقعة.";
