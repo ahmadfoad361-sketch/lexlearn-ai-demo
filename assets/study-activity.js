@@ -4,7 +4,7 @@
 var TYPES=["STUDY_VISIT_START","STUDY_HEARTBEAT","STUDY_VISIT_END","STUDY_BREAK_SHOWN","STUDY_STOP_SHOWN","STUDY_BREAK_STARTED","STUDY_BREAK_COMPLETED","STUDY_BREAK_DISMISSED"];
 var COURSE="qa-qu-lawc101-rights",MAX_ROWS=1500,IDLE=300000;
 function id(){return root.crypto.randomUUID();}
-function safeId(s){return typeof s==="string"&&/^[0-9a-f-]{36}$/i.test(s);}
+function safeId(s){return typeof s==="string"&&/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(s);}
 function createTracker(o){
  var uid=o.uid,db=o.db,clock=o.clock||Date.now,storage=o.storage,makeId=o.makeId||id;
  var key="lexlearn:study-visit:v1:"+uid+":"+COURSE,visit=null,pending=0,firstTick=true,lastWrite=0,stopped=false;
@@ -41,7 +41,14 @@ function createTracker(o){
   pending+=Math.min(15,Math.max(0,Number(delta)||0));
   if(pending>=60||clock()-lastWrite>=60000)flush();
  }
- function event(type,details){if(stopped||!TYPES.includes(type)||type==="STUDY_HEARTBEAT")return;touch();flush();emit(type,details);}
+ function event(type,details){
+  if(stopped||!TYPES.includes(type)||type==="STUDY_HEARTBEAT")return;
+  // An open break can last longer than the active-visit idle timeout.
+  // Keep the break outcome in the original work period, not a fabricated new one.
+  if(visit&&(type==="STUDY_BREAK_STARTED"||type==="STUDY_BREAK_COMPLETED"||type==="STUDY_BREAK_DISMISSED")){visit.last=clock();save();}
+  else touch();
+  flush();emit(type,details);
+ }
  function pagehide(){flush();if(visit)emit("STUDY_VISIT_END",{reason:"pagehide"});}
  function stop(){stopped=true;pending=0;}
  return {active:active,event:event,pagehide:pagehide,stop:stop};
