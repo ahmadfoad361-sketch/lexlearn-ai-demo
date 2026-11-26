@@ -10,6 +10,7 @@ var page=location.pathname.split("/").pop()||"index.html";
 if(!/^[a-z0-9-]+\.html$/.test(page)||/^(admin|reset-password)/.test(page)||page==="instructor-login.html")return;
 var IDLE_MS=5*60*1000,HEARTBEAT_MS=30*1000,MIN_GAP_MS=20*1000;
 var lastInteraction=Date.now(),lastSample=0,inFlight=false;
+var accountPage=/^(student(?:-[a-z0-9-]+)?|diagnostic(?:-[a-z0-9-]+)?|instructor)\.html$/.test(page)&&!/-login\.html$/.test(page);
 function markActivity(){
  var idle=Date.now()-lastInteraction>IDLE_MS;
  lastInteraction=Date.now();
@@ -18,27 +19,29 @@ function markActivity(){
 async function record(ending){
  var now=Date.now(),firstSample=lastSample===0;
  if(inFlight||(!ending&&now-lastSample<MIN_GAP_MS)||(!ending&&document.visibilityState!=="visible")||now-lastInteraction>IDLE_MS)return;
- lastSample=now;inFlight=true;
+ inFlight=true;
  try{
+  var headers={"Content-Type":"application/json",apikey:cfg.supabaseAnonKey},accountId=null;
+  if(window.LEX_CLOUD&&window.LEX_CLOUD.isConfigured()){
+   var current=await window.LEX_CLOUD.db().auth.getSession();
+   if(current.data?.session?.access_token&&current.data.session.user?.id){headers.Authorization="Bearer "+current.data.session.access_token;accountId=current.data.session.user.id;}
+  }
+  if(accountPage&&!accountId)return; // Retry at the next heartbeat; never silently classify a protected page as anonymous.
   var visitor=JSON.parse(localStorage.getItem("lex_activity_visitor")||"null");
   var session=JSON.parse(localStorage.getItem("lex_activity_session")||"null");
   if(!visitor||!visitor.id||!visitor.created||now-visitor.created>90*86400000){
    visitor={id:crypto.randomUUID(),created:now};session=null;
    localStorage.setItem("lex_activity_visitor",JSON.stringify(visitor));
   }
-  if(!session||!session.id||now-session.last>30*60000)session={id:crypto.randomUUID()};
+  if(!session||!session.id||now-session.last>30*60000||session.accountId!==accountId)session={id:crypto.randomUUID(),accountId:accountId};
   session.last=now;localStorage.setItem("lex_activity_session",JSON.stringify(session));
-  var headers={"Content-Type":"application/json",apikey:cfg.supabaseAnonKey};
-  if(window.LEX_CLOUD&&window.LEX_CLOUD.isConfigured()){
-   var current=await window.LEX_CLOUD.db().auth.getSession();
-   if(current.data?.session?.access_token)headers.Authorization="Bearer "+current.data.session.access_token;
-  }
   var eventKind=ending?"end":firstSample?"page":"heartbeat";
-  await fetch(cfg.supabaseUrl+"/functions/v1/site-activity",{
+  var response=await fetch(cfg.supabaseUrl+"/functions/v1/site-activity",{
    method:"POST",headers:headers,
    body:JSON.stringify({event_id:crypto.randomUUID(),visitor_id:visitor.id,session_id:session.id,page:page,event_kind:eventKind}),
    keepalive:true,credentials:"omit",referrerPolicy:"no-referrer"
   });
+  if(response.ok)lastSample=now;
  }catch(_){/* Measurement failures must not interrupt learning. */}
  finally{inFlight=false;}
 }
