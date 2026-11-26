@@ -100,6 +100,14 @@ function optionalReport(data){
  '<p>التجارب: '+esc(choices)+'</p><p>المهنة الأكثر اختيارًا: <b>'+esc(top)+'</b></p>'+
  '<p class="notice">هذه اختيارات تعبر عن اهتمام الطالب فقط؛ لا تقيس الصلاحية لمهنة أو نتيجة تعليمية.</p></section>';
 }
+function comparison(r){
+ const d=r.diagnostic||{},history=gradedStageHistory(r),last=history[history.length-1]||{};
+ const body=["recall","understanding"].map(k=>{
+  const baseline=num(d[k]),latest=num(last[k]),samples=(r.answers||[]).filter(a=>a.dimension===k&&a.evaluation?.status==="preliminary_ai"&&a.evaluation?.rubric_version==="lexlearn-training-ai-v4"&&num(a.evaluation.provisional_percent)!==null&&a.evaluation.provisional_percent>=0&&a.evaluation.provisional_percent<=100).length;
+  return '<tr><th>'+esc(dim(k))+'</th><td>'+score(baseline)+'</td><td>'+score(latest)+'</td><td>'+(baseline===null||latest===null||samples===0?'لا تتوافر بيانات كافية':(latest-baseline>0?'+':'')+Math.round(latest-baseline)+' نقطة مئوية')+'</td><td>'+samples+'</td></tr>';
+ }).join("");
+ return '<h3>مقارنة التشخيص بمؤشرات التدريب الأخيرة</h3><div class="tableScroll"><table class="dataTable"><thead><tr><th>المهارة</th><th>التشخيص</th><th>التدريب الأخير</th><th>الفرق الوصفي</th><th>إجابات مصححة</th></tr></thead><tbody>'+body+'</tbody></table></div><p class="notice">المقارنة وصفية بين أنواع مهام قد تختلف في صعوبتها. لا تُغيّر الدرجات، ولا تُحتسب الإجابات المعلقة صفرًا. إثبات الأثر السببي أو الاعتماد الجامعي يتطلب تحققًا مستقلًا متكافئًا.</p>';
+}
 function renderStudent(r){
  if(!r)return '<section class="panel"><p>اختر طالبًا لاستعراض ملفه.</p></section>';
  const d=r.diagnostic||{},l=r.learning||{};
@@ -107,7 +115,8 @@ function renderStudent(r){
  '<p>'+esc(r.student?.university||"")+' · '+esc(r.student?.faculty||"")+' · '+esc(r.student?.year||"")+'</p>'+
  badges(r)+
  '<h3>خط الأساس عند التشخيص</h3><p>الحفظ: <b>'+score(d.recall)+'</b> · الفهم: <b>'+score(d.understanding)+'</b> · التاريخ: '+esc(tdate(d.completed_at))+'</p>'+
- '<h3>حالة أعمال الطالب</h3><div class="grid three"><div class="metric"><span>إجابات محفوظة</span><strong>'+Number(r.submitted_answers||0)+'</strong></div>'+
+ comparison(r)+
+  '<h3>حالة أعمال الطالب</h3><div class="grid three"><div class="metric"><span>إجابات محفوظة</span><strong>'+Number(r.submitted_answers||0)+'</strong></div>'+
  '<div class="metric"><span>تصحيح آلي بمعيار حالي</span><strong>'+Number(r.ai_graded_answers||0)+'</strong></div>'+
  '<div class="metric"><span>إجابات تنتظر تقييمًا</span><strong>'+Number(r.ungraded_answers||0)+'</strong></div></div>'+
  '<h3>تحليل عناصر الإجابات</h3>'+(typeof window!=='undefined'&&(window.LEX_CONFIG?.cognitiveFingerprintV1===true||window.LEX_CONFIG?.learningExtensionsV1===true)&&window.LEX_COGNITIVE_FINGERPRINT?window.LEX_COGNITIVE_FINGERPRINT.render(l):'')+conceptMap(l)+
@@ -117,7 +126,7 @@ function renderStudent(r){
  '<h3>سجل الإجابات والتصحيح والمعايير</h3>'+
  '<p>تظهر الإجابات والتعليلات كاملة للمشرف المفوض فقط، ولا تُعرض ضمن اللوحة الجماعية.</p>'+
  evidenceRows(r.answers)+
- '<p class="notice">لم يثبت أثر تعليمي نهائي لهذا الطالب بعد. التحقق يحتاج اختبارًا قبليًا وبعديًا متكافئًا ومراجعة بشرية للمقارنة.</p></section>';
+ '<p class="notice">يمكن متابعة اتجاه الأداء الداخلي من التشخيص والتدريب المصحح أعلاه. إثبات الأثر الأكاديمي المستقل يتطلب قياسًا متكافئًا ومراجعة بشرية.</p></section>';
 }
 function stat(title,value,note){
  return '<div class="metric"><span>'+esc(title)+'</span><strong>'+esc(value==null?"غير متاح":String(value))+'</strong><small>'+esc(note||"")+'</small></div>';
