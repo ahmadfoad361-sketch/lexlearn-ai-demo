@@ -118,7 +118,7 @@ function shell(body){
  '<details class="adminNavGroup" '+(["grading","content"].includes(state.tab)?"open":"")+'><summary>التعلم والتقارير</summary><div class="adminNavItems">'+
  '<button data-tab="grading" class="'+(state.tab==="grading"?"active":"")+'">تصحيح التدريب</button>'+
  '<button data-tab="content" class="'+(state.tab==="content"?"active":"")+'">اعتماد المحتوى</button>'+
- '<a href="admin-progress.html">تدرّج الحفظ والفهم</a><a href="admin-glossaries.html">قواميس الطلاب</a>'+
+ '<a href="admin-progress.html">تدرّج الحفظ والفهم</a><a href="admin-glossaries.html">قواميس الطلاب</a><a href="admin-career-audio.html">الميول والتجارب المهنية</a>'+
  '<a href="pilot-review.html">مراجعة التدريب</a>'+
  '<button type="button" id="openAnalytics">حضور الطلاب والأساتذة</button>'+
  '<a href="demo-supervisor.html">نتائج الديمو</a></div></details>'+
