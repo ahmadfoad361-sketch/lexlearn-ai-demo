@@ -40,7 +40,8 @@ async function showSessions(id,label,sessionPage){
   document.getElementById("sessionsClose").onclick=()=>{slot.innerHTML="";};
   document.getElementById("sessionsPrev").onclick=()=>showSessions(id,label,sessionPage-1);
   document.getElementById("sessionsNext").onclick=()=>showSessions(id,label,sessionPage+1);
-  slot.scrollIntoView({block:"nearest",behavior:"smooth"});
+  if(window.LEX_STUDY_ACTIVITY){var activity=document.createElement("section");activity.className="panel";var heading=document.createElement("h3");heading.textContent="نشاط التدريب والاستراحات (للطلاب)";activity.appendChild(heading);var body=document.createElement("div");activity.appendChild(body);slot.appendChild(activity);window.LEX_STUDY_ACTIVITY.loadInto(body,id,Number(period.value),LEX_CLOUD);}
+   slot.scrollIntoView({block:"nearest",behavior:"smooth"});
  }catch(_){
   slot.innerHTML='<section class="panel"><p>تعذر عرض سجل الجلسات؛ لم نعرض بيانات غير مؤكدة.</p><button class="secondary" id="sessionsClose">إغلاق</button></section>';
   document.getElementById("sessionsClose").onclick=()=>{slot.innerHTML="";};

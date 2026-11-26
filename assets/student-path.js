@@ -570,6 +570,7 @@ async function boot(){
       if(fresh&&fresh.allowed)overview=fresh;
      }
      busy=false;render();
+     if(!data.completed&&root.LEX_STUDY_COACH){if(wait)wait.finish();root.LEX_STUDY_COACH.offerAtBoundary({learnerId:uid,go:function(){}});}
      if(data.completed&&root.LEX_STUDY_COACH)root.LEX_STUDY_COACH.recordCompleted(uid,selected);
      if(data.completed&&root.LEX_SESSION_MOMENTS)root.LEX_SESSION_MOMENTS.show(selected,lang(),uid+":"+COURSE+":"+selected,momentData(progressRows,selected));
      if(data.completed&&selected%5===0&&overview.completed_count>=selected&&root.LEX_MOMENTS)root.LEX_MOMENTS.celebrate((root.document.querySelector&&root.document.querySelector(".sessionMomentDialog[open]"))||host,uid+":"+COURSE+":"+selected);

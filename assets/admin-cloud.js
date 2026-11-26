@@ -114,17 +114,17 @@ function shell(body){
  '<button data-tab="cohorts" class="'+(state.tab==="cohorts"?"active":"")+'">المجموعات</button>'+'<a href="admin-bulk.html">إنشاء حسابات جماعية</a><a href="admin-archive.html">الأرشيف</a></div></details>'+
  '<details class="adminNavGroup"><summary>الأساتذة والجامعات</summary><div class="adminNavItems">'+
  '<a href="admin-instructors.html">حسابات أساتذة الجامعات</a>'+
- '<a href="references.html">الجامعات والمراجع الأكاديمية</a></div></details>'+
+ '<a href="references.html">الجامعات والمراجع ومصادر الذكاء الاصطناعي</a></div></details>'+
  '<details class="adminNavGroup" '+(["grading","content"].includes(state.tab)?"open":"")+'><summary>التعلم والتقارير</summary><div class="adminNavItems">'+
  '<button data-tab="grading" class="'+(state.tab==="grading"?"active":"")+'">تصحيح التدريب</button>'+
  '<button data-tab="content" class="'+(state.tab==="content"?"active":"")+'">اعتماد المحتوى</button>'+
- '<a href="admin-progress.html">تدرّج الحفظ والفهم</a><a href="admin-glossaries.html">قواميس الطلاب</a>'+
+ '<a href="admin-progress.html">تدرّج الحفظ والفهم</a><a href="admin-glossaries.html">قواميس الطلاب</a><a href="admin-career-audio.html">الميول والتجارب المهنية</a>'+
  '<a href="pilot-review.html">مراجعة التدريب</a>'+
  '<button type="button" id="openAnalytics">حضور الطلاب والأساتذة</button>'+
  '<a href="demo-supervisor.html">نتائج الديمو</a></div></details>'+
  '<details class="adminNavGroup" '+(state.tab==="audit"?"open":"")+'><summary>إدارة المنصة</summary><div class="adminNavItems">'+
  '<button data-tab="audit" class="'+(state.tab==="audit"?"active":"")+'">سجل العمليات</button>'+
- '<a href="references.html">تغذية الذكاء الاصطناعي</a>'+
+ ''+
  '<a href="admin-research.html">مختبر الأبحاث والأسئلة التكيفية</a></div></details></nav>'+
  '<div class="topActions"><span class="topLink">● لوحة مركزية</span><a class="topLink" href="admin-instructors.html">الأساتذة الجامعيون</a>'+
  '<a class="topLink" href="index.html">عرض الموقع</a>'+
@@ -133,6 +133,7 @@ function shell(body){
  var analyticsLink=document.getElementById("openAnalytics");if(analyticsLink)analyticsLink.onclick=function(){location.href="admin-analytics.html";};
  var lo=document.getElementById("logout");if(lo)lo.onclick=async function(){await LEX_CLOUD.signOut();localStorage.removeItem(SKEY);location.replace("admin-login.html");};
  bind();
+  if(window.LEX_STUDY_ACTIVITY&&["owner","admin"].includes(state.staffRole)){var studyNode=APP.querySelector("[data-study-activity]");if(studyNode)window.LEX_STUDY_ACTIVITY.loadInto(studyNode,studyNode.dataset.studyActivity,30,LEX_CLOUD);}
  if(window.LEX_ACADEMIC_PICKER){LEX_ACADEMIC_PICKER.remember(state.students.concat(state.cohorts,state.instructorAssignments||[]));LEX_ACADEMIC_PICKER.mountAll(APP);}
 }
 function kpis(){
@@ -285,7 +286,7 @@ function detail(v){
  (advice.plan?'<div class="recommend appliedPlan" style="margin-top:10px"><b>ما يطبقه LexLearn فعليًا في الجلسات التالية</b><span>'+esc(advice.plan.method)+'<br><small>'+esc((advice.plan.tasks||[]).join(" • "))+'</small></span></div>':'')+
  (advice.essay?'<div class="recommend" style="margin-top:10px"><b>تحليل آخر إجابة مقالية</b><span>'+esc(advice.essay.style||"—")+' — '+esc(advice.essay.note||"")+'</span></div>':'')+
  (advice.essay&&advice.essay.answer?'<details class="recommend"><summary>إجابة الطالب وأدلة المعيار</summary><p style="white-space:pre-wrap">'+esc(advice.essay.answer)+'</p><ul>'+(advice.essay.checks||[]).map(function(c){return '<li>'+esc(c.label)+' — '+(c.matched?'ظهر مؤشر: '+esc(c.evidence):'يحتاج مراجعة')+'</li>';}).join('')+'</ul><small>فحص أولي؛ اعتماد صحة الإجابة للمشرف. راجع النفي والاستثناء وصحة ربط القاعدة بالوقائع، حتى لو ظهرت جميع الكلمات المطلوبة.</small></details>':'')+
- '</section></div></details>'+officialSteps(v)+essayAttempts(v)+
+ '</section></div></details>'+(["owner","admin"].includes(state.staffRole)?'<section class="panel"><h3>سجل العمل والاستراحات</h3><p>نشاط التدريب التقديري خلال آخر 30 يومًا، مستقل عن الجلسات المنهجية ودرجات الطالب.</p><div data-study-activity="'+esc(s.id)+'" aria-live="polite"></div></section>':"")+officialSteps(v)+essayAttempts(v)+
  '<section class="twoCols"><div class="panel"><h3>التقدم</h3><div class="progressWrap"><div class="progressLine"><i style="width:'+Math.round(v.completed/30*100)+'%"></i></div><b>'+v.completed+'/30</b></div><p>الجلسة الحالية: '+v.session+' • '+(v.course.completedProgram?"البرنامج مكتمل":"البرنامج مستمر")+'</p><div class="recommend"><b>التدخل المقترح</b><span>'+esc(modelText(v))+'</span></div></div>'+
  '<div class="panel studentManagement"><h3>إدارة حساب الطالب</h3><p class="managementHint">إيقاف مؤقت أو تعطيل دون حذف نتائج التدريب. يمكنك استخراج ملف PDF أو نص كامل للتوثيق قبل أي حذف نهائي.</p><div class="accountState '+(s.accountStatus||"active")+'">حالة الحساب: '+({"active":"نشط","paused":"موقوف مؤقتًا","disabled":"معطّل","pending":"التسجيل لم يكتمل"}[s.accountStatus||"active"]||"غير محددة")+'</div><div class="adminActions"><button class="reportBtn" data-report="'+s.id+'">'+ico("audit")+' تصدير ملف الطالب / PDF</button><button data-reset="'+s.id+'">'+ico("key")+' إصدار كلمة مرور بديلة</button>'+(s.accountStatus!=="paused"&&s.active!==false?'<button data-set-status="paused" data-user="'+s.id+'">إيقاف مؤقت</button>':'')+(s.accountStatus!=="disabled"?'<button data-set-status="disabled" data-user="'+s.id+'">تعطيل الحساب</button>':'')+(s.active===false?'<button data-set-status="active" data-user="'+s.id+'">'+(s.accountStatus==="pending"?"تفعيل حساب الطالب":"إعادة التفعيل")+'</button>':'')+'<button data-unlock="'+s.id+'">فتح الأسبوع التالي</button><button data-repair="'+s.id+'">جلسة تثبيت</button>'+(["owner","admin"].indexOf(state.staffRole)>=0?'<button class="deleteStudentButton" data-delete-student="'+s.id+'">حذف الحساب نهائيًا</button>':'')+'</div></div></section>'+
  '<section class="panel evidence"><h3>لماذا اتخذ النظام هذا القرار؟</h3><div class="evidenceGrid">'+["recall","understanding","application","legal_precision","retention","exam"].map(function(k){var a=axes[k];return '<div><b>'+label(k)+'</b><span>'+(a?("تقدير "+a.value+"% • عدم يقين ±"+a.uncertainty+" • اتجاه "+(a.trend>0?"+":"")+a.trend):v.official&&v.m[k]!==null?"مؤشر مسجل: "+Math.round(v.m[k])+"% — من التشخيص أو التصحيح المحفوظ":"لا توجد أدلة كافية بعد")+'</span></div>';}).join("")+'</div></section>';

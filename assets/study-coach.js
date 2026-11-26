@@ -1,9 +1,11 @@
-/* LexLearn Smart Study Coach — Local break reminders, no Supabase writes. */
+/* LexLearn Smart Study Coach — Optional reminders; separate descriptive activity events, never grading. */
 (function(root){'use strict';
 var enabled=new URLSearchParams(root.location.search).get('coach_preview')!=='0';
 var learner='',language='ar',inited=false,overlay=null,onContinue=null,clockId=0,dialogWasOpen=false,lastFocus=null;
 var TAB='coach-'+Math.random().toString(36).slice(2),STORAGE='lexlearn:study-coach-preview:v1:';
-var lastInteraction=Date.now(),lastTick=Date.now();
+var lastInteraction=Date.now(),lastTick=Date.now(),activity=null,promptId=null,breakId=null;
+function track(type,extra){if(activity)try{activity.event(type,extra);}catch(_){}}
+function eventId(){try{return root.crypto.randomUUID();}catch(_){return null;}}
 var soundContext=null,soundWasPrimed=false,soundMaster=null,ringTimer=0,ringStopTimer=0;
 function stopRinging(){
  if(ringTimer){root.clearInterval(ringTimer);ringTimer=0;}
@@ -67,11 +69,12 @@ function markInteraction(){lastInteraction=now();}
 function canAccumulate(){return !root.document.hidden&&root.document.hasFocus()&&now()-lastInteraction<rules.idleGraceMs&&!dialogWasOpen;}
 function tick(){if(!enabled||!inited||!learner)return;var t=now(),delta=Math.max(0,Math.min(15,(t-lastTick)/1000));lastTick=t;if(!canAccumulate())return;
 var leaseKey=key()+':lease',lease=read(leaseKey);if(lease&&lease.until>t&&lease.tab!==TAB)return;
-write(leaseKey,{tab:TAB,until:t+22000});var s=state();s.activeSeconds=Math.min(86400,s.activeSeconds+delta);save(s);}
+write(leaseKey,{tab:TAB,until:t+22000});var s=state();s.activeSeconds=Math.min(86400,s.activeSeconds+delta);save(s);if(activity)try{activity.active(delta);}catch(_){}}
 function init(o){if(!enabled||!o||!o.learnerId)return;var id=String(o.learnerId);if(learner===id&&inited)return;learner=id;language=o.language==='en'?'en':'ar';inited=true;lastInteraction=now();lastTick=now();
+if(activity)activity.stop();activity=null;try{var n=root.navigator||{};if(root.LEX_STUDY_ACTIVITY&&root.crypto&&root.crypto.randomUUID&&!n.webdriver&&n.doNotTrack!=='1'&&root.doNotTrack!=='1'&&!n.globalPrivacyControl&&root.LEX_CLOUD){activity=root.LEX_STUDY_ACTIVITY.createTracker({uid:id,db:root.LEX_CLOUD.db(),storage:root.sessionStorage});}}catch(_){}
 ['pointerdown','keydown','scroll','touchstart'].forEach(function(ev){root.document.addEventListener(ev,markInteraction,{passive:true});});
 root.document.addEventListener('visibilitychange',function(){lastTick=now();markInteraction();if(!root.document.hidden&&overlay&&state().breakEnds>0)updateClock();});
-root.addEventListener('focus',function(){lastTick=now();markInteraction();});root.addEventListener('pagehide',tick);root.setInterval(tick,15000);}
+root.addEventListener('focus',function(){lastTick=now();markInteraction();});root.addEventListener('pagehide',function(){tick();if(activity)try{activity.pagehide();}catch(_){}var k=key()+':lease',l=read(k);if(l&&l.tab===TAB)write(k,{tab:TAB,until:0});});root.setInterval(tick,15000);}
 function recordCompleted(id,n){if(!enabled||!inited||id!==learner)return;n=Number(n);if(!Number.isInteger(n)||n<1||n>30)return;var s=state();if(s.completed.indexOf(n)<0){s.completed.push(n);save(s);}}
 function threshold(){if(!enabled||!inited||!learner||dialogWasOpen||root.document.hidden)return null;
 var s=state();if(s.muted||s.closed>=2||s.shown>=rules.maxDailyMessages||s.silentUntil>now()||s.breakEnds>now())return null;
@@ -97,20 +100,20 @@ overlay.addEventListener('click',function(e){var el=e.target.closest('button');i
 if(el.hasAttribute('data-activity')){overlay.querySelectorAll('[data-activity]').forEach(function(b){b.setAttribute('aria-pressed',String(el===b));});return;}
 if(el.hasAttribute('data-minutes')){overlay.querySelectorAll('[data-minutes]').forEach(function(b){b.setAttribute('aria-pressed',String(el===b));});updateStart();return;}
 switch(el.getAttribute('data-action')){case 'close':dismiss(false);break;case 'continue':dismiss(true);break;
-case 'mute':var s=state();s.muted=true;save(s);hide();break;
+case 'mute':var s=state();s.muted=true;save(s);track('STUDY_BREAK_DISMISSED',{prompt_id:promptId,break_id:breakId,reason:'mute'});hide();break;
 case 'start':startBreak();break;}});
 dlg.addEventListener('keydown',function(e){if(e.key==='Escape'){e.preventDefault();dismiss(false);return;}if(e.key==='Tab'){var bs=[].slice.call(dlg.querySelectorAll('button:not([disabled])'));var i=bs.indexOf(root.document.activeElement);
 if(e.shiftKey&&i===0){e.preventDefault();bs[bs.length-1].focus();}else if(!e.shiftKey&&i===bs.length-1){e.preventDefault();bs[0].focus();}}});}
 function show(kind,go){mount();var s=state();s.shown++;s.silentUntil=now()+rules.continueSilenceMs;save(s);onContinue=go;dialogWasOpen=true;lastFocus=root.document.activeElement;
 overlay.querySelector('#llCoachTitle').textContent=kind==='stop'?tr('قد يكون هذا وقتًا مناسبًا للاكتفاء اليوم','Consider ending your study for today'):tr('وقت مناسب لاستراحة قصيرة','A good time for a short break');
 overlay.querySelector('#llCoachDesc').textContent=kind==='stop'?tr('يمكنك المتابعة إن أحببت، أو العودة إلى التدريب لاحقًا.','You can continue if you wish, or return to your training later.'):tr('خُذ استراحة قصيرة، ثم عُد عندما تكون مستعدًا.','Take a short break, then return when you are ready.');
-overlay.querySelector('#llCoachClock').hidden=true;overlay.querySelector('#llCoachAnnouncement').textContent='';overlay.querySelector('[data-action=start]').disabled=false;overlay.querySelector('[data-action=continue]').textContent=tr('سأكمل الآن','Continue now');overlay.hidden=false;root.document.body.classList.add('ll-coach-open');updateStart();overlay.querySelector('.ll-coach-dialog').focus();}
+overlay.querySelector('#llCoachClock').hidden=true;overlay.querySelector('#llCoachAnnouncement').textContent='';overlay.querySelector('[data-action=start]').disabled=false;overlay.querySelector('[data-action=continue]').textContent=tr('سأكمل الآن','Continue now');overlay.hidden=false;promptId=eventId();breakId=null;track(kind==='stop'?'STUDY_STOP_SHOWN':'STUDY_BREAK_SHOWN',{prompt_id:promptId});root.document.body.classList.add('ll-coach-open');updateStart();overlay.querySelector('.ll-coach-dialog').focus();}
 function hide(){if(!overlay)return;stopRinging();var pending=state();if(pending.breakEnds>0){pending.breakEnds=0;save(pending);}if(clockId){root.clearInterval(clockId);clockId=0;}dialogWasOpen=false;overlay.hidden=true;root.document.body.classList.remove('ll-coach-open');if(clockId&&state().breakEnds<=0){root.clearInterval(clockId);clockId=0;}if(lastFocus&&lastFocus.isConnected)lastFocus.focus();onContinue=null;}
-function dismiss(navigate){var s=state();if(navigate)s.silentUntil=now()+rules.continueSilenceMs;else{s.closed++;if(s.closed>=2)s.muted=true;}save(s);var fn=onContinue;hide();if(navigate&&typeof fn==='function')fn();}
-function startBreak(){primeSound();var s=state();s.breakEnds=now()+mins()*60000;save(s);overlay.querySelector('[data-action=start]').disabled=true;overlay.querySelector('#llCoachClock').hidden=false;
+function dismiss(navigate){var s=state();if(s.breakEnds>now()||!breakId)track('STUDY_BREAK_DISMISSED',{prompt_id:promptId,break_id:breakId,reason:navigate?'continue':'close'});if(navigate)s.silentUntil=now()+rules.continueSilenceMs;else{s.closed++;if(s.closed>=2)s.muted=true;}save(s);var fn=onContinue;hide();if(navigate&&typeof fn==='function')fn();}
+function startBreak(){primeSound();var s=state();s.breakEnds=now()+mins()*60000;save(s);breakId=eventId();track('STUDY_BREAK_STARTED',{prompt_id:promptId,break_id:breakId,planned_minutes:mins()});overlay.querySelector('[data-action=start]').disabled=true;overlay.querySelector('#llCoachClock').hidden=false;
 overlay.querySelector('#llCoachAnnouncement').textContent=tr('بدأت الاستراحة','Your break has started');if(clockId)root.clearInterval(clockId);updateClock();clockId=root.setInterval(updateClock,1000);}
 function updateClock(){var s=state(),rem=Math.max(0,Math.ceil((s.breakEnds-now())/1000));var el=overlay.querySelector('#llCoachClock');el.textContent=String(Math.floor(rem/60)).padStart(2,'0')+':'+String(rem%60).padStart(2,'0');
-if(rem<=0&&s.breakEnds>0){s.breakEnds=0;save(s);root.clearInterval(clockId);clockId=0;startRinging();overlay.querySelector('#llCoachAnnouncement').textContent=tr('انتهت الاستراحة. يمكنك المتابعة عندما تكون مستعدًا.','Break finished. Continue when you are ready.');overlay.querySelector('[data-action=start]').disabled=false;overlay.querySelector('[data-action=start]').textContent=tr('ابدأ استراحة أخرى','Start another break');overlay.querySelector('[data-action=continue]').textContent=tr('العودة للتدريب','Return to training');}}
+if(rem<=0&&s.breakEnds>0){s.breakEnds=0;save(s);track('STUDY_BREAK_COMPLETED',{prompt_id:promptId,break_id:breakId});root.clearInterval(clockId);clockId=0;startRinging();overlay.querySelector('#llCoachAnnouncement').textContent=tr('انتهت الاستراحة. يمكنك المتابعة عندما تكون مستعدًا.','Break finished. Continue when you are ready.');overlay.querySelector('[data-action=start]').disabled=false;overlay.querySelector('[data-action=start]').textContent=tr('ابدأ استراحة أخرى','Start another break');overlay.querySelector('[data-action=continue]').textContent=tr('العودة للتدريب','Return to training');}}
 function offerAtBoundary(o){if(!enabled||!inited||!o||o.learnerId!==learner)return false;var k=threshold();if(!k)return false;show(k,o.go);return true;}
 root.LEX_STUDY_COACH={init:init,recordCompleted:recordCompleted,offerAtBoundary:offerAtBoundary,isMobileDevice:isMobileDevice,enabled:enabled,getDebugSummary:function(){if(!enabled)return null;var s=state();return {activeSeconds:Math.round(s.activeSeconds),sessions:s.completed.length,shown:s.shown,closed:s.closed,muted:s.muted};}};
 })(window);
