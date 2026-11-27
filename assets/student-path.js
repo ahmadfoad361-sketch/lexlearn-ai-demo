@@ -252,9 +252,10 @@ function examSummary(rows,session){
 // Session-only detail, collapsed by default.
 function progressHtml(rows,session,historyAvailable){
  var m=progressModel(rows,session);
- var title=m.checkpoint?t("تفاصيل مراجعة الأسبوع","Week checkpoint details"):t("تفاصيل نتيجة الجلسة","Session assessment details");
+ var title=t("تفاصيل نتيجة الجلسة","Session assessment details");
+ var weekly=m.checkpoint&&historyAvailable?"<h3>"+t("ملخص الأسبوع ","Week summary ")+m.level+"</h3><p class='scope'>"+t("متوسط الإجابات المقيمة في هذا الأسبوع فقط.","Average of assessed answers in this week only.")+"</p>"+["recall","understanding"].map(function(dim){var w=(rows||[]).filter(function(r){return r.dimension===dim&&r.session_number>=session-4&&r.session_number<=session&&(confirmedGrade(r.evaluation)||deterministicZero(r.evaluation));});return "<p><b>"+esc(weakName(dim))+"</b> · "+esc(w.length?noHtmlScore(windowPercent(w)):t("لم يُقَس بعد","Not measured yet"))+" · "+w.length+" "+t("إجابة مقيمة","assessed answers")+"</p>";}).join(""):"";
  return "<details class='progressReport sessionResultDetails'><summary>"+esc(title)+"</summary><p class='scope'>"+t("هذه نتائج أسئلة الجلسة فقط وليست مؤشر مستواك الحالي.","These are task results for this session only, not your current level indicator.")+"</p>"+
- m.skills.map(function(x){return "<p><b>"+esc(weakName(x.dimension))+"</b> · "+esc(x.current.score===null?t("لم يُقَس بعد","Not measured yet"):noHtmlScore(x.current.score))+" ("+x.current.assessed+" / "+x.current.total+")</p>";}).join("")+examSummary(rows,session)+"</details>";
+ m.skills.map(function(x){return "<p><b>"+esc(weakName(x.dimension))+"</b> · "+esc(x.current.score===null?t("لم يُقَس بعد","Not measured yet"):noHtmlScore(x.current.score))+" ("+x.current.assessed+" / "+x.current.total+")</p>";}).join("")+examSummary(rows,session)+weekly+"</details>";
 }
 function momentData(rows,session){
  var data={kind:session%5===0?"level":"session",level:Math.ceil(session/5),session:session};
@@ -417,7 +418,8 @@ async function boot(){
    var next=remaining[0],completed=data.completed;
    var name=t("الأسبوع ","Week ")+Math.ceil(selected/5)+" · "+programLabels[selected-1];
    var why="";
-   why+=unifiedProgressHtml(progressDisplay(adaptation,progressRows,selected,historyAvailable,selected===overview.unlocked,saved,data.tasks.length,sessionPriority),!completed,selected===overview.unlocked);
+   var currentView=selected===overview.unlocked||(completed&&selected===overview.completed_count);
+   why+=unifiedProgressHtml(progressDisplay(adaptation,progressRows,selected,historyAvailable,currentView,saved,data.tasks.length,sessionPriority),!completed,currentView);
    why+=learningOverview(adaptation);
    if(adaptation&&adaptation.continuity==="awaiting_recovery")why+="<p class='scope' role='status'>"+t("يستمر التدريب وفق آخر مسار موثوق. ستُحدّث أولوية الجلسات القادمة بعد استكمال التصحيح.","Practice continues on your last reliable path. Future session priorities update after assessment recovery.")+"</p>";
     if(aiUnavailable)why+="<p role='status'>"+t("تم حفظ الإجابة، لكن التصحيح لم يكتمل. يمكنك إعادة المحاولة.","Your answer was saved, but assessment is incomplete. You can retry.")+"</p>";
