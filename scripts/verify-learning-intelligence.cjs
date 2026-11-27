@@ -27,7 +27,7 @@ const page=context.learningOverview({
 assert.ok(!page.includes("&lt;script&gt;")&&!page.includes("<script>"),"student does not receive untrusted criterion labels");
 assert.ok(!page.includes("progress max='100' value='50'"),"staff-only criterion details are not displayed");
 assert.ok(!page.includes("جلسة 1: 70%"),"session-by-session history is staff-only");
-assert.ok(page.includes("ملخص الحفظ والفهم الإجمالي"),"student gets only aggregate learning guidance");
+assert.ok(page.includes("مؤشر الحفظ والفهم الحالي"),"student gets only aggregate learning guidance");
 assert.ok(page.includes("أجوبة")===false);
 console.log("Learning intelligence panel: PASS");
 
@@ -67,30 +67,29 @@ console.log("Admin detailed and aggregate evidence dashboard: PASS");
 
 
 {
- const chunk=text.slice(text.indexOf("function stageSkillSnapshot("),text.indexOf("\nfunction feedback(item)",text.indexOf("function stageSkillSnapshot(")));
- assert.ok(chunk.includes("function stageSkillScorecard"),"scorecard is attached after each stage");
- const sc={t:a=>a,weakName:x=>x==="recall"?"الحفظ":"الفهم",esc:x=>String(x),noHtmlScore:x=>Math.round(x)+"%",
-  confirmedGrade:e=>e?.status==="preliminary_ai"&&e?.rubric_version==="lexlearn-training-ai-v4"&&Number.isFinite(e.provisional_percent),
-  deterministicZero:e=>e?.status==="nonanswer_zero"&&e?.provisional_percent===0};
- vm.createContext(sc);vm.runInContext(chunk,sc);
- const row=(session_number,dimension,score,status="preliminary_ai")=>({session_number,dimension,submitted_at:"2026-11-02",evaluation:{status,rubric_version:"lexlearn-training-ai-v4",provisional_percent:score}});
- const rows=[row(1,"recall",90),row(1,"understanding",70),row(2,"recall",60),row(3,"recall",30),
-  row(4,"recall",80),row(4,"understanding",99,"ai_review_required"),row(5,"understanding",50)];
- let stage=sc.stageSkillSnapshot(rows,2);
- assert.equal(stage.recall.percent,75);
- assert.equal(stage.understanding.percent,70);
- assert.equal(stage.understanding.fresh,false);
- stage=sc.stageSkillSnapshot(rows,4);
- assert.equal(stage.recall.percent,65); // cumulative mean across all confirmed sessions
- assert.equal(stage.understanding.percent,70);
- assert.ok(!stage.understanding.fresh);
- stage=sc.stageSkillSnapshot(rows,5);
- assert.equal(stage.understanding.percent,60);
- const empty=sc.stageSkillSnapshot([row(1,"recall",90)],1);
- assert.equal(empty.understanding.percent,null);
- const html=sc.stageSkillScorecard([row(1,"recall",90)],1);
- assert.ok(html.includes("90%")&&html.includes("لم يُقَس بعد"));
- console.log("Continuous post-assessment skill percentages: PASS");
+const ctx={document:{getElementById:()=>null},location:{search:'?lang=ar'},URLSearchParams};ctx.window=ctx;vm.createContext(ctx);vm.runInContext(text,ctx);
+const api=ctx.LEX_STUDENT_PATH;
+const grade=n=>({status:'preliminary_ai',rubric_version:'lexlearn-training-ai-v4',provisional_percent:n});
+const row=(dimension,session_number,n)=>({dimension,session_number,evaluation:grade(n),submitted_at:'2026-11-'+String(session_number+1).padStart(2,'0')});
+const rows=[row('recall',1,10),row('recall',2,20),row('recall',3,30),row('recall',4,70),row('understanding',1,10),row('understanding',2,20),row('understanding',3,30),row('understanding',4,31)];
+const saved=rows.filter(r=>r.session_number===4),adaptation=api.deriveAdaptation(rows,null);
+const make=(over={})=>api.progressDisplay(over.adaptation||adaptation,over.rows||rows,4,over.history!==false,over.current!==false,over.saved||saved,over.total??2,'recall');
+let m=make();assert.deepEqual(Array.from(m.dimensions,x=>x.value),[40,27]);assert.deepEqual(Array.from(m.dimensions,x=>x.delta),[20,7]);assert.equal(m.assessed,2);assert.equal(m.sessionPriority,'recall');assert.equal(m.nextPriority,'understanding');
+let html=api.unifiedProgressHtml(m,true,true);assert.equal((html.match(/40%/g)||[]).length,1);assert.equal((html.match(/27%/g)||[]).length,1);assert.ok(html.includes('تركيز هذه الجلسة'));assert.ok(html.includes('فسّر شروط القاعدة'));
+assert.ok(api.progressHtml(rows,4,true).startsWith('<details'));assert.ok(!api.progressHtml(rows,4,true).includes(" open"));
+assert.deepEqual(Array.from(make({history:false}).dimensions,x=>x.delta),[null,null]);assert.deepEqual(Array.from(make({current:false}).dimensions,x=>x.delta),[null,null]);assert.deepEqual(Array.from(make({total:3}).dimensions,x=>x.delta),[null,null]);
+assert.deepEqual(Array.from(make({adaptation:{...adaptation,continuity:'awaiting_recovery'}}).dimensions,x=>x.delta),[null,null]);
+const pending={dimension:'recall',session_number:4,evaluation:{status:'ai_queued',queue_job_id:'fixture'}};
+m=make({saved:[saved[1],pending],rows:[...rows,pending]});assert.equal(m.assessed,1);assert.equal(m.other,1);assert.deepEqual(Array.from(m.dimensions,x=>x.delta),[null,null]);
+const duplicate={dimension:'exam_execution',session_number:4,evaluation:{status:'review_required',reason:'duplicate_question_no_new_evidence',review_disposition:'closed_without_new_score',provisional_percent:null}};
+m=make({saved:[...saved,duplicate],total:3});assert.equal(m.excluded,1);assert.equal(m.assessed,2);assert.equal(m.other,0);assert.equal(api.needsAssessment(duplicate),false);assert.equal(api.heldGrade(duplicate),false);
+const zero={dimension:'recall',session_number:4,evaluation:{status:'nonanswer_zero',provisional_percent:0}};
+assert.equal(make({saved:[zero,saved[1]]}).assessed,2);
+assert.equal(make({saved:[{evaluation:{status:'preliminary_internal',provisional_percent:90}},saved[1]]}).other,1);
+m=make({adaptation:{skills:{recall:null,understanding:null},priority:'foundation'}});assert.ok(api.unifiedProgressHtml(m,false,true).includes('لم يُقَس بعد'));
+ctx.location.search='?lang=en';html=api.unifiedProgressHtml(make(),true,true);assert.ok(html.includes('Your current practice level'));assert.ok(html.includes('This session\'s focus'));assert.ok(html.includes('Your next step'));assert.ok(api.progressHtml(rows,5,true).includes('Week summary'));
+console.log('Student progress presentation checks passed.');
+
 }
 {
  const first=fs.readFileSync("assets/official-level-one.js","utf8");
@@ -145,7 +144,7 @@ console.log("Admin detailed and aggregate evidence dashboard: PASS");
  const ctx={document:{getElementById:()=>null},location:{search:"?lang=ar"},URLSearchParams};
  ctx.window=ctx;vm.createContext(ctx);vm.runInContext(fs.readFileSync("assets/student-path.js","utf8"),ctx);
  const source=fs.readFileSync("assets/student-path.js","utf8");
- const guards=source.slice(source.indexOf("function confirmedGrade("),source.indexOf("function stageSkillSnapshot("));
+ const guards=source.slice(source.indexOf("function confirmedGrade("),source.indexOf("function recentSkillWindow("));
  const g={};vm.createContext(g);vm.runInContext(guards,g);
  const graded=percent=>({status:"preliminary_ai",rubric_version:"lexlearn-training-ai-v4",provisional_percent:percent});
  assert.ok(g.pendingGrade({evaluation:{status:"ai_queued",queue_job_id:"synthetic-job"}}));
