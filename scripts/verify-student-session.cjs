@@ -182,9 +182,12 @@ async function run({en=false,marker,session=true,error,access,consent=true,role,
  assert.equal(route.orderedTasks(tasks,[],'understanding')[0].id,'u');
  assert.equal(route.orderedTasks(tasks,[{item_id:'u'}],'understanding')[0].id,'r');
  assert.equal(tasks[0].id,'r','do not reorder source task array');
- const aggregate=trainingContext.LEX_STUDENT_PATH.progressHtml(rows,2,true);
- assert.match(aggregate,/إجمالي تقدمك حتى الآن/);
+ const aggregate=route.unifiedProgressHtml(route.progressDisplay(route.deriveAdaptation(rows,null),rows,2,true,true,rows.filter(r=>r.session_number===2),2,'recall'),false,true);
+ assert.match(aggregate,/مستواك التدريبي الحالي/);
  assert.match(aggregate,/70%/);
+ assert.equal((aggregate.match(/70%/g)||[]).length,2,'two distinct skills with equal scores, not a second card');
+ const detail=route.progressHtml(rows,2,true);
+ assert.match(detail,/^<details/);assert.match(detail,/100%/);assert.match(detail,/80%/);assert.doesNotMatch(detail,/70%/);
  assert.doesNotMatch(aggregate,/سجل نتائج الجلسات|Session evidence history|جلسة 1:|جلسة 2:/);
  assert.doesNotMatch(fs.readFileSync('assets/student-path.js','utf8'),/سجل نتائج الجلسات|Session evidence history/);
  const adminSource=fs.readFileSync('assets/admin-progress.js','utf8');
