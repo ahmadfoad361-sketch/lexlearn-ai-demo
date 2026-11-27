@@ -20,8 +20,8 @@ function learningOverview(adaptation){
  // Individual criterion evidence and per-session history belong to the staff report.
  if(!adaptation||!adaptation.learning||adaptation.learning.status!=="provisional_learning_map")return "";
  return "<p class='scope'>"+t(
-  "واصل التدريب خطوة بخطوة. يظهر لك ملخص الحفظ والفهم الإجمالي؛ أما سجل الجلسات والتحليل التفصيلي فيتابعه المشرف.",
-  "Keep learning step by step. Your overall recall and understanding summary is shown here; detailed session evidence remains with your supervisor."
+  "واصل التدريب خطوة بخطوة. يظهر لك مؤشر الحفظ والفهم الحالي؛ أما سجل الجلسات والتحليل التفصيلي فيتابعه المشرف.",
+  "Keep learning step by step. Your current recall and understanding indicator is shown here; detailed session evidence remains with your supervisor."
  )+"</p>";
 }
 
@@ -84,11 +84,13 @@ function deterministicZero(ev){return !!(ev&&ev.status==="nonanswer_zero"&&ev.pr
 function queuedGrade(v){return !!(v&&v.evaluation&&v.evaluation.status==="ai_queued"&&v.evaluation.queue_job_id);}
 function pendingGrade(v){return !!(v&&v.evaluation&&["ai_queued","ai_pending","ai_verification_pending","queued","processing"].includes(v.evaluation.status));}
 // Preserve the server's bounded 429 retry; never re-bill uncertain responses.
+function closedWithoutScore(v){var e=v&&v.evaluation||{};return e.review_disposition==='closed_without_new_score'&&e.reason==='duplicate_question_no_new_evidence'&&e.provisional_percent===null;}
 function heldGrade(v){
+ if(closedWithoutScore(v))return false;
  var ev=v&&v.evaluation||{};
  return ["ai_review_required","review_required","human_review_required","needs_review"].includes(ev.status)&&ev.reason!=="provider_rate_limited";
 }
-function needsAssessment(v){return !pendingGrade(v)&&!heldGrade(v)&&!confirmedGrade(v&&v.evaluation)&&!deterministicZero(v&&v.evaluation);}
+function needsAssessment(v){return !closedWithoutScore(v)&&!pendingGrade(v)&&!heldGrade(v)&&!confirmedGrade(v&&v.evaluation)&&!deterministicZero(v&&v.evaluation);}
 // Presentation-only continuation: never grants access or writes a grade.
 function validAdaptation(value){
  if(!value||!value.skills||!["recall","understanding","foundation"].includes(value.priority))return false;
@@ -145,37 +147,42 @@ function orderedTasks(tasks,saved,priority){
   return (a.dimension===priority?0:1)-(b.dimension===priority?0:1);
  });
 }
-function stageSkillSnapshot(rows,session){
- var output={recall:{percent:null,count:0,fresh:false},understanding:{percent:null,count:0,fresh:false}};
- Object.keys(output).forEach(function(dim){
-  var matches=(rows||[]).filter(function(r){return r&&r.dimension===dim&&Number.isInteger(r.session_number)&&r.session_number<=session&&r.session_number>=1&&(confirmedGrade(r.evaluation)||deterministicZero(r.evaluation));})
-   .sort(function(a,b){return b.session_number-a.session_number||String(b.submitted_at||"").localeCompare(String(a.submitted_at||""));});
-  var latest=matches;
-  if(latest.length){
-   output[dim].percent=Math.round(latest.reduce(function(sum,r){return sum+r.evaluation.provisional_percent;},0)/latest.length);
-   output[dim].count=latest.length;
-   output[dim].fresh=matches.some(function(r){return r.session_number===session;});
-  }
+// Presentation only: same recent-three definition as the adaptive route.
+function recentSkillWindow(rows,dim,through){
+ return (rows||[]).filter(function(r){return r&&r.dimension===dim&&Number.isInteger(r.session_number)&&r.session_number>=1&&r.session_number<=through&&(confirmedGrade(r.evaluation)||deterministicZero(r.evaluation));}).sort(function(a,b){return b.session_number-a.session_number||String(b.submitted_at||"").localeCompare(String(a.submitted_at||""));}).slice(0,3);
+}
+function windowPercent(rows){return rows.length?Math.round(rows.reduce(function(n,r){return n+r.evaluation.provisional_percent;},0)/rows.length):null;}
+function progressDisplay(adaptation,rows,session,historyAvailable,isCurrent,saved,taskCount,sessionPriority){
+ var skills=validAdaptation(adaptation)?adaptation.skills:{recall:null,understanding:null};
+ var waiting=adaptation&&adaptation.continuity==="awaiting_recovery";
+ var assessed=(saved||[]).filter(function(r){return confirmedGrade(r.evaluation)||deterministicZero(r.evaluation);}).length;
+ var excluded=(saved||[]).filter(closedWithoutScore).length;
+ var other=(saved||[]).length-assessed-excluded,complete=assessed+excluded===taskCount&&other===0;
+ var dimensions=["recall","understanding"].map(function(dim){
+  var latest=recentSkillWindow(rows,dim,session),previous=recentSkillWindow(rows,dim,session-1),value=skills[dim],delta=null;
+  // Compare complete windows only; no cached, historical, or unresolved comparisons.
+  if(historyAvailable&&isCurrent&&!waiting&&complete&&latest.length===3&&previous.length===3&&latest.some(function(r){return r.session_number===session;})&&windowPercent(latest)===value&&!(rows||[]).some(function(r){return r.dimension===dim&&(pendingGrade(r)||heldGrade(r)||needsAssessment(r));}))delta=value-windowPercent(previous);
+  return {dim:dim,value:value,delta:delta};
  });
- return output;
+ return {dimensions:dimensions,assessed:assessed,excluded:excluded,other:other,taskCount:taskCount,waiting:!!waiting,sessionPriority:sessionPriority,nextPriority:validAdaptation(adaptation)?adaptation.priority:"foundation",complete:complete};
 }
-function stageSkillScorecard(rows,session){
- var scores=stageSkillSnapshot(rows,session);
- return "<section class='skillStageScorecard' role='status' aria-live='polite'><h3>"+
-   t("مقياس الحفظ والفهم بعد التصحيح","Recall and understanding after assessment")+"</h3>"+
-   "<div class='progressSkills'>"+["recall","understanding"].map(function(dim){
-    var v=scores[dim],has=v.percent!==null;
-    return "<article class='progressSkill'><h4>"+esc(weakName(dim))+"</h4><strong>"+
-      esc(has?noHtmlScore(v.percent):t("لم يُقَس بعد","Not measured yet"))+"</strong>"+
-      "<small>"+(has?(v.fresh?t("مُحدّث بتصحيح هذه الجلسة","Updated by this session"):
-      t("آخر قياس محفوظ سابقًا","Latest saved earlier measurement"))+
-      " · "+t("إجابات مصححة إجمالًا: ","Total assessed answers: ")+v.count:
-      t("لم يكتمل قياس هذه المهارة؛ أعد تصحيح الإجابة المحفوظة عند توفرها","This skill has no completed assessment; retry its saved answer when available"))+"</small></article>";
-   }).join("")+"</div><p class='scope'>"+
-   t("كل نسبة هي متوسط جميع الإجابات المصححة والمعتمدة لهذه المهارة حتى الآن، دون احتساب الإجابات المعلقة صفرًا. تفاصيل كل جلسة متاحة للمشرف.","Each percentage averages all reliably assessed answers for that skill so far; pending assessments are never treated as zero. Session-by-session detail is reserved for staff.")+
-   "</p></section>";
+function priorityAdvice(priority){
+ return priority==="recall"?t("استرجع القاعدة من ذاكرتك باستخدام مفاتيح قصيرة.","Recall the rule from memory using brief cues."):priority==="understanding"?t("فسّر شروط القاعدة وغيّر شرطًا واحدًا لتوضيح أثره.","Explain the rule conditions and vary one condition to show its effect."):t("ابدأ بشرح القاعدة ثم استرجاعها.","Begin by explaining the rule, then retrieve it.");
 }
-
+function unifiedProgressHtml(model,showFocus,isCurrent){
+ var visual=root.LEX_MOMENTS;
+ return "<section class='skillStageScorecard unifiedStudentProgress' role='status' aria-live='polite'><h2>"+t(isCurrent?"مستواك التدريبي الحالي":"آخر مؤشر تدريبي متاح",isCurrent?"Your current practice level":"Latest available practice indicator")+"</h2><p class='scope'>"+t("مؤشر المسار التكيفي وفق أحدث ثلاث إجابات مقيمة لكل مهارة عند توفرها. ليس درجة جامعية.","Adaptive path indicator based on the latest three assessed answers per skill when available. Not a university grade.")+"</p>"+
+ "<div class='progressSkills'>"+model.dimensions.map(function(d){
+ var delta=d.delta===null?"":"<small class='scoreChange'>"+esc(d.delta===0?t("دون تغير عن المؤشر السابق","No change from previous indicator"):t("التغير عن المؤشر السابق: ","Change from previous indicator: ")+(d.delta>0?"+":"")+d.delta+t(" نقطة مئوية"," percentage points"))+"</small>";
+ return "<article class='progressSkill'><h3>"+esc(weakName(d.dim))+"</h3>"+(visual&&d.value!==null?visual.ring(d.value,d.dim):"")+"<strong>"+esc(d.value===null?t("لم يُقَس بعد","Not measured yet"):noHtmlScore(d.value))+"</strong>"+delta+"</article>";
+ }).join("")+"</div>"+
+ (model.dimensions.some(function(d){return d.delta!==null;})?"<small class='scope'>"+t("التغير في المؤشر وصفي، وقد يتأثر باستكمال تصحيح سابق؛ لا يثبت وحده تحسن التعلم.","Indicator change is descriptive and may reflect recovered assessments; it does not by itself establish learning gain.")+"</small>":"")+
+ "<div class='sessionAssessmentSummary'><h3>"+t("نتيجة هذه الجلسة","This session's assessment")+"</h3><p>"+esc(t("تم تقييم ","Assessed ")+model.assessed+" / "+model.taskCount+t(" إجابات"," answers"))+"</p>"+
+ (model.excluded?"<small>"+esc(t("محاولات مكررة مغلقة دون درجة: ","Repeated attempts closed without a score: ")+model.excluded)+"</small>":"")+
+ (model.other?"<small>"+esc(t("إجابات غير مقيمة بعد: ","Answers not reliably assessed yet: ")+model.other)+"</small>":"")+"</div>"+
+ (showFocus?"<p class='scope'>"+t("تركيز هذه الجلسة: ","This session's focus: ")+esc(weakName(model.sessionPriority))+" · "+esc(priorityAdvice(model.sessionPriority))+"</p>":"")+
+ (isCurrent?"<p class='nextAdvice'><b>"+t("خطوتك القادمة: ","Your next step: ")+"</b>"+esc(priorityAdvice(model.nextPriority))+"</p>":"")+"</section>";
+}
 // Research-aligned review uses only confirmed feedback from the existing official grader.
 function targetedReview(ev){
  if(!confirmedGrade(ev)||!Array.isArray(ev.learning_diagnostics))return "";
@@ -194,6 +201,7 @@ function targetedReview(ev){
 
 function feedback(item){
  var ev=item&&item.evaluation||{};
+ if(closedWithoutScore(item))return "<div class='feedback' role='status'><b>"+t("محاولة مكررة — دون درجة جديدة","Repeated attempt — no new score")+"</b><p>"+esc(lang()==="en"?ev.feedback_en:ev.feedback_ar)+"</p></div>";
  if(heldGrade(item)){
   var quota=ev.reason==="provider_quota_exhausted";
   return "<div class='feedback' role='status'><b>"+t("إجابتك محفوظة — التصحيح غير مكتمل","Answer saved — assessment incomplete")+"</b><p>"+
@@ -241,29 +249,12 @@ function examSummary(rows,session){
  var values=entries.filter(function(r){return confirmedGrade(r.evaluation)||deterministicZero(r.evaluation);}).map(function(r){return r.evaluation.provisional_percent;}).filter(function(v){return typeof v==="number"&&Number.isFinite(v)&&v>=0&&v<=100;});
  return "<p class='examSummary'><b>"+t("بناء الإجابة والتطبيق في هذه الجلسة: ","Answer structure and application in this session: ")+(values.length?noHtmlScore(values.reduce(function(a,b){return a+b;},0)/values.length):entries.some(pendingGrade)?t("جارٍ التصحيح","Assessment in progress"):t("التصحيح غير مكتمل","Assessment incomplete"))+"</b><br><small>"+t("هذه نتيجة سؤال التطبيق، وتُعرض منفصلة عن الحفظ والفهم.","This is the application question result, shown separately from recall and understanding.")+"</small></p>";
 }
+// Session-only detail, collapsed by default.
 function progressHtml(rows,session,historyAvailable){
- var m=progressModel(rows,session),overall=stageSkillSnapshot(rows,session),visual=root.LEX_MOMENTS;
- var pending=(rows||[]).some(function(r){return r&&r.session_number<=session&&pendingGrade(r);});
- var card={kind:m.checkpoint?"level":"session",level:m.level,session:session,recall:overall.recall.percent,understanding:overall.understanding.percent};
- return "<section class='progressReport' aria-label='"+t("ملخص إجمالي تقدمك","Overall progress summary")+"'><h2>"+
-   t("إجمالي تقدمك حتى الآن","Your overall progress so far")+"</h2>"+
-   (visual?visual.completion(card,lang()):"")+
-   "<p class='completionState'>✓ "+t("اكتملت هذه الجلسة وحُفظت إجاباتك. هذه النسب ملخص تدريباتك المصححة حتى الآن.",
-     "This session is complete and your answers are saved. These scores summarize all reliably assessed training to date.")+"</p>"+
-   "<div class='progressSkills'>"+["recall","understanding"].map(function(dim){
-     var v=overall[dim],label=weakName(dim);
-     return "<article class='progressSkill'><h3>"+esc(label)+"</h3>"+
-       (visual&&v.percent!==null?visual.ring(v.percent,dim):"")+
-       "<strong class='"+(v.percent!==null?"":"assessmentMissing")+"'>"+
-       esc(v.percent===null?t("لم يُقَس بعد","Not measured yet"):noHtmlScore(v.percent))+"</strong>"+
-       "<p>"+t("إجمالي الإجابات المصححة: ","Total assessed answers: ")+v.count+"</p></article>";
-   }).join("")+"</div>"+
-   (pending?"<p role='status'>"+t("بعض الإجابات ما زالت جارٍ التصحيح؛ لم تُحسب ضمن الإجمالي ولن تُعامل كصفر.","Some answers are still being assessed; they are excluded from the total rather than treated as zero.")+"</p>":"")+
-   "<p class='nextAdvice'>"+t("خطوتك القادمة: استرجع القاعدة بكلماتك ثم جرّب تطبيقها على واقعة جديدة.",
-     "Next: recall the rule in your own words and apply it to a new legal scenario.")+"</p>"+
-   "<small>"+t("هذه مؤشرات تدريبية إجمالية وليست درجات جامعية. يحتفظ المشرف بسجل النتائج التفصيلي للجلسات.",
-     "These are aggregate practice indicators, not university grades. The detailed session record is available to authorized staff.")+"</small>"+
-   "</section>";
+ var m=progressModel(rows,session);
+ var title=m.checkpoint?t("تفاصيل مراجعة الأسبوع","Week checkpoint details"):t("تفاصيل نتيجة الجلسة","Session assessment details");
+ return "<details class='progressReport sessionResultDetails'><summary>"+esc(title)+"</summary><p class='scope'>"+t("هذه نتائج أسئلة الجلسة فقط وليست مؤشر مستواك الحالي.","These are task results for this session only, not your current level indicator.")+"</p>"+
+ m.skills.map(function(x){return "<p><b>"+esc(weakName(x.dimension))+"</b> · "+esc(x.current.score===null?t("لم يُقَس بعد","Not measured yet"):noHtmlScore(x.current.score))+" ("+x.current.assessed+" / "+x.current.total+")</p>";}).join("")+examSummary(rows,session)+"</details>";
 }
 function momentData(rows,session){
  var data={kind:session%5===0?"level":"session",level:Math.ceil(session/5),session:session};
@@ -426,12 +417,7 @@ async function boot(){
    var next=remaining[0],completed=data.completed;
    var name=t("الأسبوع ","Week ")+Math.ceil(selected/5)+" · "+programLabels[selected-1];
    var why="";
-   if(adaptation&&adaptation.skills){
-    why+="<div class='progressSkills'>"+["understanding","recall"].map(function(dim){return "<article class='progressSkill'><h3>"+esc(weakName(dim))+"</h3><strong>"+esc(noHtmlScore(adaptation.skills[dim]))+"</strong></article>";}).join("")+"</div><p>"+
-     (sessionPriority==="recall"?t("الأولوية الآن للحفظ: استخدم مفاتيح قصيرة، ثم أغلق النص وأعد بناء القاعدة من ذاكرتك.","Recall priority: use brief cues, close the text, then reconstruct the rule."):
-      sessionPriority==="understanding"?t("الأولوية الآن للفهم: اشرح سبب القاعدة، ثم غيّر شرطًا واحدًا وفسّر أثره على النتيجة.","Understanding priority: explain why the rule works, then change one condition and explain the result."):
-      t("نحتاج إجابات أكثر لتحديد الأولوية؛ ابدأ بشرح القاعدة ثم استرجاعها.","More evidence is needed; start by explaining and retrieving the rule."))+"</p>";
-   }
+   why+=unifiedProgressHtml(progressDisplay(adaptation,progressRows,selected,historyAvailable,selected===overview.unlocked,saved,data.tasks.length,sessionPriority),!completed,selected===overview.unlocked);
    why+=learningOverview(adaptation);
    if(adaptation&&adaptation.continuity==="awaiting_recovery")why+="<p class='scope' role='status'>"+t("يستمر التدريب وفق آخر مسار موثوق. ستُحدّث أولوية الجلسات القادمة بعد استكمال التصحيح.","Practice continues on your last reliable path. Future session priorities update after assessment recovery.")+"</p>";
     if(aiUnavailable)why+="<p role='status'>"+t("تم حفظ الإجابة، لكن التصحيح لم يكتمل. يمكنك إعادة المحاولة.","Your answer was saved, but assessment is incomplete. You can retry.")+"</p>";
@@ -444,7 +430,7 @@ async function boot(){
     // Distinguish task types visually; assessment fields and progression stay unchanged.
     var main=resume+"<section class='stage stage--"+stageKind+"'>"+lawNumberRail(data.tasks,lang())+"<h1>"+esc(name)+"</h1>"+why+
     "<p>"+t("أُرسلت ","Saved ")+saved.length+" / "+data.tasks.length+t(" إجابات محفوظة في حسابك."," answers to your account.")+"</p>"+
-    completedFeedback+(saved.length?stageSkillScorecard(progressRows,selected):"");
+    completedFeedback;
    if(saved.some(heldGrade))main+="<p class='assessmentRecovery' role='status'>"+t("هناك إجابات محفوظة تنتظر استكمال التصحيح بأمان. لم تُحتسب صفرًا، فلا تعِد إرسالها.","Saved answers await safe recovery. No zero was issued; do not resubmit.")+"</p>";
    if(pendingRows.length&&acceptedAi)main+="<p class='assessmentRecovery' role='status'>"+t("التصحيح جارٍ في الخلفية. لا حاجة لإعادة إرسال الإجابات.","Assessment continues in the background. Do not resubmit answers.")+" <button type='button' id='refreshGradesNow'>"+t("تحديث النسب الآن","Refresh percentages now")+"</button></p>";
    if(completed){
@@ -600,7 +586,7 @@ async function boot(){
   await open(selected);
  }catch(e){reportError(e);}
 }
-root.LEX_STUDENT_PATH={mount:boot,noHtmlScore:noHtmlScore,previousAnswerTitle:previousAnswerTitle,progressModel:progressModel,progressHtml:progressHtml,heldGrade:heldGrade,needsAssessment:needsAssessment,chooseAdaptation:chooseAdaptation,deriveAdaptation:deriveAdaptation,orderedTasks:orderedTasks,recoveryPending:recoveryPending};
+root.LEX_STUDENT_PATH={mount:boot,noHtmlScore:noHtmlScore,previousAnswerTitle:previousAnswerTitle,progressModel:progressModel,progressHtml:progressHtml,progressDisplay:progressDisplay,unifiedProgressHtml:unifiedProgressHtml,closedWithoutScore:closedWithoutScore,heldGrade:heldGrade,needsAssessment:needsAssessment,chooseAdaptation:chooseAdaptation,deriveAdaptation:deriveAdaptation,orderedTasks:orderedTasks,recoveryPending:recoveryPending};
 if(typeof module!=="undefined"&&module.exports)module.exports=root.LEX_STUDENT_PATH;
 })(typeof window!=="undefined"?window:globalThis);
 
