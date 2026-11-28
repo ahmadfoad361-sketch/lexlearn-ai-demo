@@ -76,10 +76,10 @@ function mount(host,lang){
    if(e.key==="Enter"||e.key===" "){e.preventDefault();e.stopPropagation();select(card);}
    if(e.key==="Escape"){e.stopPropagation();selected=null;card.classList.remove("lexSortSelected");}
   });
-  card.setAttribute("draggable","true");
+  // A single pointer-based drag avoids native HTML drag cancelling pointer capture.
+  card.setAttribute("draggable","false");
   card.addEventListener("dragstart",function(e){
-   select(card);
-   if(e.dataTransfer){e.dataTransfer.setData("text/plain",card.dataset.lexCardIndex);e.dataTransfer.effectAllowed="move";}
+   e.preventDefault();
   });
   card.addEventListener("pointerdown",function(e){
    if(e.button!=null&&e.button!==0)return;
