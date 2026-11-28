@@ -216,7 +216,8 @@ test('approved dark learning screens use one shared card and CTA language',()=>{
   'showcase.html','showcase-en.html','showcase-level1.html','showcase-level1-en.html'
  ]){
   const html=fs.readFileSync(page,'utf8');
-  assert.ok(html.includes('assets/question-clarity.css?v=20261120.2'),'Stale question stylesheet: '+page);
+  const version=page==='student-path.html'?'20261128.official-layouts2':'20261120.2';
+  assert.ok(html.includes('assets/question-clarity.css?v='+version),'Stale question stylesheet: '+page);
  }
  const originals=fs.readFileSync('assets/legal-study.js','utf8');
  assert.match(originals,/function render\(ids,lang\)/);
