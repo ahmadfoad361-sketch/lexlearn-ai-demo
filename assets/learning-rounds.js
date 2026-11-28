@@ -37,7 +37,7 @@ function variants(items){
  var out=[],seen={};
  (Array.isArray(items)?items:[]).forEach(function(item){
   if(!item||!item.id||!Array.isArray(item.sources)||!item.sources.length)return;
-  function add(kind){if(!seen[kind]){out.push({kind:kind,item:item});seen[kind]=true;}}
+  function add(kind){var key=item.id+":"+kind;if(!seen[key]){out.push({kind:kind,item:item});seen[key]=true;}}
   if(item.dimension==="recall"&&item.rule_ar&&item.rule_en)add("recall");
   if(item.dimension==="understanding"&&item.rule_ar&&item.rule_en){
    add("explain");
@@ -124,8 +124,10 @@ async function mountPractice(node,o){
    var chosen=options[o.session%options.length],role="none",currentLevel="none",recommended=supportLevel(chosen.item.confirmed_history),attemptId=id(),saved=false,draft="",choice="",busy=false,helpByItem={};
    options.forEach(function(v){if(v.item.help_opened)helpByItem[v.item.id]="hint";});
    function helpLevel(){return helpByItem[chosen.item.id]||"none";}
-   var names=options.map(function(v){return kindName(v.kind,o.lang);});
+   var kindCounts={};options.forEach(function(v){kindCounts[v.kind]=(kindCounts[v.kind]||0)+1;});
+   var names=options.map(function(v,n){return kindName(v.kind,o.lang)+(kindCounts[v.kind]>1?" · "+(field(v.item,"title",o.lang)||tr(o.lang,"السؤال ","Question ")+(n+1)):"");});
    function remember(){var a=body.querySelector("textarea");if(a)draft=a.value;var checked=body.querySelector("input[name=roundChoice]:checked");if(checked)choice=checked.value;}
+   function setBusy(value,freezeAnswer){busy=value;body.querySelectorAll("button").forEach(function(b){b.disabled=value;});body.querySelectorAll("input,textarea").forEach(function(a){a.disabled=value&&!!freezeAnswer;});}
    function render(){
     body.innerHTML="<p>"+tr(o.lang,"جرّب شكلًا مختلفًا للسؤال نفسه أو للمهارة نفسها. هذه محاولة تدريبية لا تغيّر درجات الجلسة.","Try another format for the same question or skill. This practice does not change session scores.")+"</p>"+
      "<div class='roundTaskKinds' role='group' aria-label='"+tr(o.lang,"نوع المهمة","Task format")+"'>"+options.map(function(v,n){return "<button type='button' data-round-kind='"+n+"' aria-pressed='"+(chosen===v)+"'>"+esc(names[n])+"</button>";}).join("")+"</div>"+
@@ -139,11 +141,12 @@ async function mountPractice(node,o){
      "<p class='roundAssistanceLabel'>"+(helpLevel()==="none"?tr(o.lang,"محاولة دون فتح المساعدة هنا · خارج الدرجة الرسمية","No help opened here · outside the official score"):tr(o.lang,"محاولة بمساعدة · لا تُعد قياسًا مستقلًا","Assisted attempt · not an independent measure"))+"</p>"+
      "<button type='button' data-round-save>"+tr(o.lang,"احفظ المحاولة وراجع الفكرة","Save attempt and review")+"</button><p class='roundPracticeStatus' role='status' aria-live='polite'></p>";
     if(choice!==""){var input=body.querySelector("input[value='"+choice+"']");if(input)input.checked=true;}
-    body.querySelectorAll("[data-round-kind]").forEach(function(b){b.onclick=function(){remember();if(draft.trim()||choice!==""){body.querySelector(".roundPracticeStatus").textContent=tr(o.lang,"احفظ محاولتك الحالية أولًا قبل تغيير نوع المهمة.","Save this attempt before changing the task format.");return;}chosen=options[Number(b.dataset.roundKind)];recommended=supportLevel(chosen.item.confirmed_history);currentLevel="none";role="none";attemptId=id();render();};});
-    body.querySelectorAll("[data-round-role]").forEach(function(b){b.onclick=function(){remember();if(draft.trim()){body.querySelector(".roundPracticeStatus").textContent=tr(o.lang,"احفظ محاولتك قبل تغيير المنظور.","Save this attempt before changing perspective.");return;}role=b.dataset.roundRole;render();};});
-    body.querySelector("[data-round-help]").onclick=async function(){if(busy)return;remember();busy=true;
-     var status=body.querySelector(".roundPracticeStatus"),ok=await event(o,"support_opened",{itemId:chosen.item.id},true);
-     busy=false;if(!ok){status.textContent=tr(o.lang,"لم يتأكد تسجيل المساعدة. يمكنك المحاولة دونها أو العودة لاحقًا.","Help could not be recorded. You can try without it or return later.");return;}
+    body.querySelectorAll("[data-round-kind]").forEach(function(b){b.onclick=function(){if(busy)return;remember();if(draft.trim()||choice!==""){body.querySelector(".roundPracticeStatus").textContent=tr(o.lang,"احفظ محاولتك الحالية أولًا قبل تغيير نوع المهمة.","Save this attempt before changing the task format.");return;}chosen=options[Number(b.dataset.roundKind)];recommended=supportLevel(chosen.item.confirmed_history);currentLevel="none";role="none";attemptId=id();render();};});
+    body.querySelectorAll("[data-round-role]").forEach(function(b){b.onclick=function(){if(busy)return;remember();if(draft.trim()){body.querySelector(".roundPracticeStatus").textContent=tr(o.lang,"احفظ محاولتك قبل تغيير المنظور.","Save this attempt before changing perspective.");return;}role=b.dataset.roundRole;render();};});
+    body.querySelector("[data-round-help]").onclick=async function(){if(busy)return;remember();setBusy(true,false);
+     var status=body.querySelector(".roundPracticeStatus");status.textContent=tr(o.lang,"جارٍ فتح المساعدة…","Opening help…");
+     var ok=await event(o,"support_opened",{itemId:chosen.item.id},true);
+     remember();setBusy(false);if(!ok){status.textContent=tr(o.lang,"لم يتأكد تسجيل المساعدة. يمكنك المحاولة دونها أو العودة لاحقًا.","Help could not be recorded. You can try without it or return later.");return;}
      currentLevel=currentLevel==="none"?(recommended==="none"?"hint":recommended):currentLevel==="hint"?"example":"hint";
      var rank={none:0,hint:1,partial:2,example:3};if(rank[currentLevel]>rank[helpLevel()])helpByItem[chosen.item.id]=currentLevel;render();
     };
@@ -155,7 +158,8 @@ async function mountPractice(node,o){
     var answer=chosen.kind==="classify"&&choice!==""?String(Number(choice)+1)+": "+statements[Number(choice)]:draft.trim();
     if(answer.length<2||answer.length>4000){status.textContent=tr(o.lang,"اكتب إجابة قصيرة أو اختر عبارة أولًا.","Write a short answer or choose a statement first.");return;}
     if(!attemptId){status.textContent=tr(o.lang,"تعذر بدء الحفظ على هذا المتصفح.","Saving is unavailable in this browser.");return;}
-    busy=true;body.querySelector("[data-round-save]").disabled=true;
+    setBusy(true,true);
+    status.textContent=tr(o.lang,"جارٍ حفظ محاولتك…","Saving your practice…");
     try{
      var row={id:attemptId,student_id:o.uid,course_id:COURSE,after_session:o.session,source_item_id:chosen.item.id,task_kind:chosen.kind,role_choice:role,support_level:helpLevel(),assisted:helpLevel()!=="none",answer_text:answer};
      var write=await o.cloud.db().from("lex_learning_practice").insert(row).select("id,measurement_kind").maybeSingle();
@@ -165,8 +169,8 @@ async function mountPractice(node,o){
      body.innerHTML="<p role='status'><b>"+tr(o.lang,"حُفظت محاولتك التدريبية.","Your practice attempt is saved.")+"</b></p>"+context(chosen.item,o.lang)+
       "<p>"+tr(o.lang,"قارن فكرتك بالقاعدة والنتيجة المعتمدتين. لا تصدر نسبة من هذه المحاولة.","Compare your reasoning with the approved rule and outcome. This attempt does not issue a percentage.")+"</p>"+
       model(chosen.item,"example",o.lang)+"<p class='roundAssistanceLabel'>"+(helpLevel()==="none"?tr(o.lang,"المساعدة ظهرت بعد حفظ الإجابة.","Help was shown after saving your answer."):tr(o.lang,"المحاولة محفوظة بوصفها محاولة بمساعدة.","Saved as an assisted attempt."))+"</p>";
-    }catch(_){status.textContent=tr(o.lang,"لم يتأكد الحفظ. إجابتك باقية هنا؛ حاول مجددًا عند عودة الاتصال.","Saving is unconfirmed. Your answer stays here; try again when connected.");body.querySelector("[data-round-save]").disabled=false;}
-    finally{busy=false;}
+    }catch(_){status.textContent=tr(o.lang,"لم يتأكد الحفظ. إجابتك باقية هنا؛ حاول مجددًا عند عودة الاتصال.","Saving is unconfirmed. Your answer stays here; try again when connected.");}
+    finally{setBusy(false);}
    }
    render();
   }catch(_){body.innerHTML="<p>"+tr(o.lang,"التدريب الإضافي غير متاح الآن. إجابات الجلسة محفوظة ويمكنك متابعة رحلتك.","Extra practice is unavailable now. Your session answers remain saved and you can continue.")+"</p>";}

@@ -19,6 +19,13 @@ test('only complete bilingual approved formats are offered',()=>{
  assert.deepEqual(flow.variants([{...comparison,inaccurate_ar:['غير مطابق']}]).map(x=>x.kind),['explain']);
  assert.deepEqual(flow.variants([{...base,sources:[],dimension:'recall'}]),[]);
 });
+test('a four-topic review retains tasks sharing a format but not a topic',()=>{
+ const first={...base,id:'review-first',dimension:'recall'};
+ const fourth={...base,id:'review-fourth',dimension:'recall',title_ar:'الموضوع الرابع',title_en:'Fourth review topic'};
+ const options=flow.variants([first,{...base,id:'review-second',dimension:'understanding'},{...base,id:'review-third',dimension:'exam_execution'},fourth,first]);
+ assert.deepEqual(options.filter(x=>x.kind==='recall').map(x=>x.item.id),['review-first','review-fourth']);
+ assert.equal(new Set(options.map(x=>x.item.id)).size,4);
+});
 test('career perspective preserves facts and keeps the original available',()=>{
  const v={kind:'application',item:base};
  for(const lang of ['ar','en'])for(const role of ['none','judge','lawyer','professor']){
