@@ -27,13 +27,13 @@ async function main(){
     if(!k)return {error:"no_state"};
     const s=JSON.parse(localStorage.getItem(k));s.activeSeconds=1900;localStorage.setItem(k,JSON.stringify(s));
     window.__continued=false;
-    return {sessions:c.getDebugSummary().sessions,offered:c.offerAtBoundary({learnerId:"synthetic",go(){window.__continued=true}}),mobile:c.isMobileDevice()};
+    return {sessions:c.getDebugSummary().sessions,offered:c.openBreak({learnerId:"synthetic"}),mobile:c.isMobileDevice()};
    });
    assert.equal(evidence.error,undefined);assert.equal(evidence.sessions,1);
    assert.equal(evidence.offered,true);assert.equal(evidence.mobile,conf.lang==="ar");
    assert.equal(await p.locator("#llCoachOverlay").isVisible(),true);
    await p.locator('[data-action="continue"]').click();
-   assert.equal(await p.evaluate(()=>window.__continued),true);
+   assert.equal(await p.evaluate(()=>window.__continued),false);
    assert.equal(await p.locator("#llCoachOverlay").isVisible(),false);
    assert.deepEqual(errors,[]);
    await ctx.close();

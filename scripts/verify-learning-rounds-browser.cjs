@@ -1,0 +1,50 @@
+'use strict';
+const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),http=require('node:http'),{chromium}=require('playwright');
+const ROOT=path.resolve(__dirname,'..');
+const item={id:'synthetic-exam',dimension:'exam_execution',sources:['qa-civil-2004-art49'],title_ar:'واقعة تدريب اصطناعية',title_en:'Synthetic practice facts',prompt_ar:'الواقعة: عمره عشرون عامًا.\nالسؤال: بيّن أثر السن.',prompt_en:'Facts: The person is twenty.\nQuestion: Explain the significance of age.',rule_ar:'هذه قاعدة اصطناعية لاختبار الواجهة.',rule_en:'This is a synthetic rule for interface QA.',outcome_ar:'هذه نتيجة اصطناعية لاختبار الحفظ.',outcome_en:'This is a synthetic outcome for saving QA.',confirmed_history:[]};
+const variants=[{...item,id:'synthetic-recall',dimension:'recall'},{...item,id:'synthetic-understanding',dimension:'understanding',comparison_ar:['عبارة أولى','عبارة ثانية'],comparison_en:['First statement','Second statement'],inaccurate_ar:['عبارة ثانية']},item];
+const setup=`window.LEX_CONFIG={learningRoundsV1:true};window.__mode={};window.__events=[];window.__practice={};window.__attempts=0;window.__rpc=0;window.__items=${JSON.stringify(variants)};
+window.__cloud={db:()=>({rpc:async()=>{window.__rpc++;return {data:{allowed:true,items:window.__items}};},from:table=>({insert:row=>({select:()=>({maybeSingle:async()=>{
+if(table==='lex_learning_events'){if(window.__mode.eventFail)return {error:{code:'offline'}};window.__events.push(row);return {data:{id:row.id}};}
+if(table!=='lex_learning_practice')throw Error('Unexpected official write');window.__attempts++;if(window.__practice[row.id])return {error:{code:'23505'}};window.__practice[row.id]=row;if(window.__mode.lostAck){window.__mode.lostAck=false;return {error:{code:'network'}};}return {data:{id:row.id,measurement_kind:'practice'}};}})}),select:()=>{const q={eq:()=>q,maybeSingle:async()=>{const r=Object.values(window.__practice)[0];return {data:r?{id:r.id,measurement_kind:'practice'}:null};}};return q;}})})};
+window.__opts={cloud:window.__cloud,uid:'synthetic-only',session:1,lang:document.documentElement.lang,data:{allowed:true,completed:false,tasks:[{},{},{}],saved:[{}]},hasDraft:()=>!!document.querySelector('#officialDraft').value};`;
+async function main(){
+ const server=http.createServer((req,res)=>{
+  const p=path.resolve(ROOT,'.'+decodeURIComponent(new URL(req.url,'http://local').pathname));
+  if(!p.startsWith(ROOT+path.sep)){res.writeHead(403);return res.end();}
+  try{const data=fs.readFileSync(p);res.setHeader('content-type',p.endsWith('.css')?'text/css':p.endsWith('.js')?'text/javascript':'text/html');res.end(data);}catch(_){res.writeHead(404);res.end();}
+ });await new Promise(r=>server.listen(0,'127.0.0.1',r));const base='http://127.0.0.1:'+server.address().port;
+ let browser;
+ try{
+  browser=await chromium.launch({headless:true,...(process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH?{executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH}:{}),args:['--no-sandbox']});
+  for(const lang of ['ar','en'])for(const dark of [false,true]){
+   const ctx=await browser.newContext({viewport:{width:lang==='ar'?390:1180,height:850},reducedMotion:'reduce'}),p=await ctx.newPage(),errors=[];p.on('pageerror',e=>errors.push(String(e)));
+   await ctx.route('**/*',route=>{
+    const u=new URL(route.request().url());if(u.origin!==base)return route.abort('blockedbyclient');
+    if(u.pathname==='/rounds-qa.html')return route.fulfill({contentType:'text/html',body:'<!doctype html><html lang="'+lang+'" dir="'+(lang==='ar'?'rtl':'ltr')+'"'+(dark?' data-learner-theme="dark"':'')+'><head><meta charset="utf-8"><link rel="stylesheet" href="/assets/learner-experience.css"><link rel="stylesheet" href="/assets/study-coach.css"><link rel="stylesheet" href="/assets/legal-study.css"><link rel="stylesheet" href="/assets/learning-rounds.css"></head><body style="margin:0;padding:12px;box-sizing:border-box;font:16px/1.6 system-ui"><main id="studentTrainingApp"><textarea id="officialDraft"></textarea><div id="round"></div><div id="practice"></div></main><script>'+setup+'</script><script src="/assets/legal-study.js"></script><script src="/assets/legal-case-guide.js"></script><script src="/assets/study-coach.js"></script><script src="/assets/session-moments.js"></script><script src="/assets/learning-rounds.js"></script></body></html>'});return route.continue();
+   });
+   await p.goto(base+'/rounds-qa.html');
+   await p.evaluate(()=>{LEX_STUDY_COACH.init({learnerId:__opts.uid,language:__opts.lang});LEX_LEARNING_ROUNDS.mountRound(document.querySelector('#round'),__opts);LEX_LEARNING_ROUNDS.mountPractice(document.querySelector('#practice'),__opts);});
+   assert.equal(await p.locator('#practice details').count(),0);assert.equal(await p.evaluate(()=>__rpc),0);
+   await p.locator('#officialDraft').fill('unsaved synthetic answer');await p.locator('[data-round-pause]').click();assert.equal(await p.locator('.roundPause').isVisible(),false);assert.ok((await p.locator('.roundStatus').innerText()).length>0);
+   await p.locator('[data-round-break]').click();assert.equal(await p.locator('#llCoachOverlay').isVisible(),true);await p.locator('[data-action=continue]').click();assert.equal(await p.locator('#officialDraft').inputValue(),'unsaved synthetic answer');
+   assert.equal(await p.evaluate(()=>LEX_STUDY_COACH.offerAtBoundary({learnerId:__opts.uid})),false);
+   await p.locator('#officialDraft').fill('');await p.locator('[data-round-pause]').click();assert.equal(await p.locator('.roundPause').isVisible(),true);
+   await p.evaluate(()=>{__opts.data.completed=true;LEX_LEARNING_ROUNDS.mountPractice(document.querySelector('#practice'),__opts);});
+   assert.equal(await p.evaluate(()=>__rpc),0);await p.locator('#practice>details>summary').click();await p.waitForSelector('[data-round-kind]');assert.equal(await p.evaluate(()=>__rpc),1);
+   await p.locator('[data-round-kind="4"]').click();assert.equal(await p.locator('[data-round-role]').count(),4);await p.locator('[data-round-role=professor]').click();assert.ok((await p.locator('.roundTaskPrompt').innerText()).includes(lang==='ar'?'أستاذ':'professor'));
+   await p.evaluate(()=>__mode.eventFail=true);await p.locator('[data-round-help]').click();assert.equal(await p.locator('.roundModel').count(),0);
+   await p.evaluate(()=>__mode.eventFail=false);await p.locator('[data-round-help]').click();assert.equal(await p.locator('.roundModel').count(),1);
+   await p.locator('[data-round-help]').click();await p.locator('#roundPracticeAnswer').fill('synthetic assisted draft');await p.locator('[data-round-kind="0"]').click();assert.equal(await p.locator('#roundPracticeAnswer').inputValue(),'synthetic assisted draft');
+   await p.evaluate(()=>__mode.lostAck=true);await p.locator('[data-round-save]').click();assert.equal(await p.locator('#roundPracticeAnswer').inputValue(),'synthetic assisted draft');await p.locator('[data-round-save]').click();
+   await p.waitForFunction(()=>document.querySelector('#practice b')&&document.querySelector('#practice b').textContent.length>0);
+   assert.equal(await p.evaluate(()=>Object.keys(__practice).length),1);assert.equal(await p.evaluate(()=>Object.values(__practice)[0].assisted),true);assert.equal(await p.evaluate(()=>Object.values(__practice)[0].support_level),'example');
+   await p.locator('#officialDraft').focus();assert.equal(await p.evaluate(()=>LEX_SESSION_MOMENTS.show(1,__opts.lang,'synthetic:'+__opts.lang+':'+document.documentElement.dataset.learnerTheme)),true);assert.equal(await p.locator('#officialDraft').evaluate(e=>e===document.activeElement),true);assert.equal(await p.locator('.sessionMomentNotice button').count(),0);
+   assert.equal(await p.evaluate(()=>LEX_SESSION_MOMENTS.show(1,__opts.lang,'synthetic:'+__opts.lang+':'+document.documentElement.dataset.learnerTheme)),false);
+   assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true);assert.deepEqual(errors,[]);
+   await ctx.close();
+  }
+  console.log('PASS: AR/EN light/dark; saved-only rounds; draft safety; explicit breaks; no automatic modal; optional task formats and careers; help confirmation; cumulative assistance; lost-ack idempotency; quiet focus-safe notice; no horizontal overflow or external network.');
+ }finally{server.closeAllConnections();server.close();if(browser)await browser.close();}
+}
+main().catch(e=>{console.error(e);process.exitCode=1;});

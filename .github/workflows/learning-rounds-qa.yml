@@ -1,0 +1,28 @@
+name: Learning rounds and optional practice QA
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  learning-rounds:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Verify adaptive help and unchanged assessment contracts
+        run: node --test tests/learning-rounds.test.cjs tests/question-style.test.cjs tests/learner-extensions.test.cjs tests/career-audio-simple-consent.test.cjs
+      - name: Install test-only browser
+        run: |
+          npm install --no-save --no-package-lock --ignore-scripts playwright@1.58.2
+          if command -v google-chrome >/dev/null 2>&1; then
+            echo "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=$(command -v google-chrome)" >> "$GITHUB_ENV"
+          else
+            npx playwright install --with-deps chromium
+          fi
+      - name: Verify AR and EN, draft safety, explicit breaks and no extra official score
+        run: node scripts/verify-learning-rounds-browser.cjs

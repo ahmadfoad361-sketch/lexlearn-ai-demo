@@ -285,12 +285,18 @@ async function boot(){
   // Scope the small, non-authoritative cache to the authenticated learner/course.
   // Never cache answer text, raw assessment evidence, or grant permission from it.
   var continuityKey="lexlearn-route-v1:"+COURSE+":"+uid;
-  var sessionPriority=null,sessionRouteKey="";
+  var sessionPriority=null,sessionRouteKey="",hintedItems=new Set();
+  var learningRounds=root.LEX_LEARNING_ROUNDS;
+  function roundOptions(){return {cloud:cloud,uid:uid,session:selected,lang:lang(),data:data,hasDraft:function(){return Array.from(host.querySelectorAll("textarea")).some(function(a){return String(a.value||"").trim().length>0;});}};}
   function readRoute(key){try{return JSON.parse(root.sessionStorage.getItem(key)||"null");}catch(_){return null;}}
   function writeRoute(key,value){try{root.sessionStorage.setItem(key,JSON.stringify(value));}catch(_){}}
   var lastRoute=readRoute(continuityKey);
   if(!validAdaptation(lastRoute))lastRoute=null;
 
+  async function loadAssistanceLabels(){
+   if(!learningRounds||!learningRounds.enabled())return;
+   try{var r=await cloud.db().from("lex_learning_events").select("item_id").eq("student_id",uid).eq("course_id",COURSE).eq("session_number",selected).eq("event_type","hint_shown").limit(100);if(!r.error)(r.data||[]).forEach(function(x){if(x.item_id)hintedItems.add(x.item_id);});}catch(_){}
+  }
   async function updateGlossaryAccess(){
    glossaryAllowed=false; // Failed checks are always closed, never guessed from browser state.
    try{
@@ -425,21 +431,22 @@ async function boot(){
     if(aiUnavailable)why+="<p role='status'>"+t("تم حفظ الإجابة، لكن التصحيح لم يكتمل. يمكنك إعادة المحاولة.","Your answer was saved, but assessment is incomplete. You can retry.")+"</p>";
    var completedFeedback=(next&&next.dimension==="recall"?[]:saved).map(function(v,index){
     var task=(data.tasks||[]).find(function(q){return q.id===v.item_id;});
-    return "<details class='past lexPastAnswer'><summary>"+esc(previousAnswerTitle(v,task))+" <span class='lexPastTag'>"+t("مكتملة","Completed")+"</span></summary>"+lawContext(task&&task.sources)+"<p style='white-space:pre-wrap'>"+esc(v.answer_text)+"</p>"+feedback(v)+(needsAssessment(v)&&acceptedAi&&cloud.gradeTrainingAi?"<button type='button' id='retryGrade"+index+"'>"+t("أعد تصحيح هذه الإجابة","Retry assessment of this answer")+"</button>":"")+"</details>";
+    return "<details class='past lexPastAnswer'><summary>"+(hintedItems.has(v.item_id)?"<span class='roundAssistanceLabel'>"+t("محاولة بمساعدة · ","Assisted attempt · ")+"</span>":"")+esc(previousAnswerTitle(v,task))+" <span class='lexPastTag'>"+t("مكتملة","Completed")+"</span></summary>"+lawContext(task&&task.sources)+"<p style='white-space:pre-wrap'>"+esc(v.answer_text)+"</p>"+feedback(v)+(needsAssessment(v)&&acceptedAi&&cloud.gradeTrainingAi?"<button type='button' id='retryGrade"+index+"'>"+t("أعد تصحيح هذه الإجابة","Retry assessment of this answer")+"</button>":"")+"</details>";
    }).join("");
    var resume=next?"<section class='learnerWelcome'><div><h2>"+t("تدريبك التالي جاهز","Your next practice is ready")+"</h2><p>"+t("إجاباتك السابقة محفوظة؛ أكمل خطوة واحدة الآن.","Your previous answers are saved. Continue one step at a time.")+"</p></div><a href='#currentPractice'>"+t("أكمل تدريبك","Continue practice")+"</a></section>":"";
    var stageKind=next&&["recall","understanding","exam_execution"].includes(next.dimension)?next.dimension:"foundation";
     // Distinguish task types visually; assessment fields and progression stay unchanged.
-    var main=resume+"<section class='stage stage--"+stageKind+"'>"+lawNumberRail(data.tasks,lang())+"<h1>"+esc(name)+"</h1>"+why+
+    var main="<div id='learningRoundSlot'></div>"+resume+"<section class='stage stage--"+stageKind+"'>"+lawNumberRail(data.tasks,lang())+"<h1>"+esc(name)+"</h1>"+why+
     "<p>"+t("أُرسلت ","Saved ")+saved.length+" / "+data.tasks.length+t(" إجابات محفوظة في حسابك."," answers to your account.")+"</p>"+
     completedFeedback;
    if(saved.some(heldGrade))main+="<p class='assessmentRecovery' role='status'>"+t("هناك إجابات محفوظة تنتظر استكمال التصحيح بأمان. لم تُحتسب صفرًا، فلا تعِد إرسالها.","Saved answers await safe recovery. No zero was issued; do not resubmit.")+"</p>";
    if(pendingRows.length&&acceptedAi)main+="<p class='assessmentRecovery' role='status'>"+t("التصحيح جارٍ في الخلفية. لا حاجة لإعادة إرسال الإجابات.","Assessment continues in the background. Do not resubmit answers.")+" <button type='button' id='refreshGradesNow'>"+t("تحديث النسب الآن","Refresh percentages now")+"</button></p>";
    if(completed){
     main+=progressHtml(progressRows,selected,historyAvailable);
+    if(learningRounds&&learningRounds.enabled())main+="<div id='learningPracticeSlot'></div>";
     // Non-credit recall and role challenges are shown only AFTER official session completion.
     if(root.LEX_CONFIG?.learningExtensionsV1===true&&root.LEX_LEARNER_EXTENSIONS&&root.LEX_LEARNER_EXTENSIONS.eligibleReview(selected))main+="<div id='lexReviewSlot'></div>";
-    if(root.LEX_CONFIG?.learningExtensionsV1===true&&root.LEX_LEARNER_EXTENSIONS&&root.LEX_LEARNER_EXTENSIONS.isMilestone(selected))main+="<div id='lexCareerSlot'></div>";
+    if(root.LEX_CONFIG?.learningExtensionsV1===true&&root.LEX_LEARNER_EXTENSIONS&&root.LEX_LEARNER_EXTENSIONS.isMilestone(selected)&&!(learningRounds&&learningRounds.enabled()))main+="<div id='lexCareerSlot'></div>";
     if(saved.some(needsAssessment)&&acceptedAi&&cloud.gradeTrainingAi)main+="<div class='assessmentRecovery' role='status'><p>"+gradingMessage()+"</p><button type='button' id='retrySessionGrades'>"+t("أعد تصحيح إجابات الجلسة","Retry session assessment")+"</button><p id='sessionGradeStatus' aria-live='polite'></p></div>";
     main+="<h2>"+t("اكتملت تدريبات الجلسة","Practice session completed")+"</h2>"+
     "<p>"+t("إجاباتك محفوظة. يمكنك متابعة الجلسة التالية.","Your answers are saved. You can continue to the next session.")+"</p>"+
@@ -472,6 +479,7 @@ async function boot(){
    }
    main+="</section>";
    show(nav()+main);
+   if(learningRounds&&learningRounds.enabled()){learningRounds.mountRound(host.querySelector("#learningRoundSlot"),roundOptions());if(completed)learningRounds.mountPractice(host.querySelector("#learningPracticeSlot"),roundOptions());}
    if(splitAnswers&&style.bindAnswerFields)style.bindAnswerFields(host,"adaptiveEssay");
    if(next&&next.dimension==="understanding"&&root.LEX_COMPARISON_CARDS){
     root.LEX_COMPARISON_CARDS.mount(host,lang());
@@ -538,6 +546,11 @@ async function boot(){
     try{
      var v=await cloud.studentLifecycleRpc("trainingSubmit",{courseId:COURSE,session:selected,itemId:next.id,answer:answer});
      if(v&&v.status==="hint_required"){
+      if(learningRounds&&learningRounds.enabled()){
+       var hintLogged=await learningRounds.event(roundOptions(),'hint_shown',{itemId:next.id},true);
+       if(!hintLogged){if(savingView)savingView.innerHTML='';if(error)error.textContent=t('تعذر فتح التلميح الآن. يمكنك متابعة الإجابة أو العودة لاحقًا.','The hint cannot open now. You can continue answering or return later.');busy=false;button.disabled=false;return;}
+       hintedItems.add(next.id);
+      }
       if(savingView)savingView.innerHTML="";
       if(error)error.textContent=String((lang()==="en"?v.hint_en:v.hint_ar)||t("ابدأ بأحد شروط القاعدة وحاول مرة ثانية.","Start with one rule condition and try again."));
       busy=false;button.disabled=false;return;
@@ -552,6 +565,7 @@ async function boot(){
      }
      var checked=await cloud.studentLifecycleRpc("trainingOpen",{courseId:COURSE,session:selected});
      if(!checked||!checked.allowed||!byId(checked.saved,next.id))throw Error("answer_readback_failed");
+     if(learningRounds&&learningRounds.enabled())await learningRounds.event(roundOptions(),'answer_saved',{itemId:next.id});
      data=checked;await loadProgress();await refreshAdaptation();await updateGlossaryAccess();
      if(data.completed){
       var fresh=await cloud.studentLifecycleRpc("trainingOverview",{courseId:COURSE});
@@ -585,6 +599,7 @@ async function boot(){
     };
    }
   }
+  await loadAssistanceLabels();
   await open(selected);
  }catch(e){reportError(e);}
 }

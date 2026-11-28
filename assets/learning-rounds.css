@@ -1,0 +1,14 @@
+.learningRound,.learningPractice{border:1px solid var(--lx-border,#ded7d1);border-radius:14px;background:var(--lx-surface,#fff);color:var(--lx-ink,#111d31);padding:1rem;margin:1rem 0;min-width:0}
+.learningRound h2{font-size:1.15rem;margin:.2rem 0}.learningRound p{margin:.3rem 0}.roundEyebrow{font-size:.78rem;color:var(--lx-muted,#596579)}.roundActions,.roundTaskKinds,.roundRoles,.roundReasons{display:flex;gap:.5rem;flex-wrap:wrap;margin:.75rem 0}
+.learningRound button,.learningPractice .roundTaskKinds button,.learningPractice .roundRoles button,.learningPractice [data-round-help],.roundReasons button{font:inherit;font-size:.9rem;line-height:1.5;min-height:44px;padding:.5rem .8rem;background:var(--lx-raised,#f9f4ef);color:var(--lx-ink,#111d31);border:1px solid var(--lx-border,#b9bcc5);border-radius:9px}
+.learningPractice [aria-pressed=true],.roundReasons [aria-pressed=true]{border-color:var(--lx-accent,#8a1f39)!important;box-shadow:inset 0 0 0 1px var(--lx-accent,#8a1f39)}
+.learningPractice summary{cursor:pointer;font-weight:700;min-height:30px}.roundPracticeBody{padding-top:.6rem}.roundPracticeBody h3{font-size:1.05rem}.roundPracticeBody h4{font-size:.95rem;margin:.8rem 0 .2rem}.roundTaskPrompt,.roundModel{padding:1rem;border-radius:10px;background:var(--lx-raised,#f9f4ef);margin:.7rem 0}.roundModel{border-inline-start:3px solid var(--lx-accent,#8a1f39)}
+.roundStatement{padding:.55rem;border:1px solid var(--lx-border,#d8d1cb);border-radius:8px;margin:.5rem 0}.roundStatement label{display:flex;gap:.6rem;align-items:flex-start}.roundStatement input{flex:0 0 auto;margin-top:.5rem}
+.roundOriginal{margin:.6rem 0}.roundOriginal summary{font-size:.85rem;font-weight:500}.roundAssistanceLabel,.roundStatus,.roundPracticeStatus{font-size:.85rem;line-height:1.7}.roundAssistanceLabel{color:var(--lx-muted,#596579)}
+.roundPause{border-top:1px solid var(--lx-border,#d8d1cb);padding-top:.6rem}.roundPause[hidden]{display:none}.roundLeave{display:inline-block;padding:.5rem 0;color:var(--lx-accent,#8a1f39);font-weight:700}.learningPractice textarea{min-height:100px}
+.sessionMomentNotice{position:relative;max-width:960px;box-sizing:border-box;margin:.65rem auto;padding:.65rem 1rem;border-inline-start:3px solid #8a1f39;background:#f9f4ef;color:#111d31;border-radius:8px;font:inherit;line-height:1.6;pointer-events:none}
+html[data-learner-theme=dark] .sessionMomentNotice{background:#1c2b42;color:#f8f0e9;border-color:#c98296}
+.learningRound :is(a,button):focus-visible,.learningPractice :is(button,summary,input,textarea):focus-visible{outline:3px solid var(--lx-accent,#8a1f39);outline-offset:3px}
+@media(max-width:600px){.learningRound,.learningPractice{padding:.8rem}.roundActions button{flex:1}.roundTaskKinds button,.roundRoles button{flex:1 1 40%}}
+@media(prefers-reduced-motion:reduce){.sessionMomentNotice{animation:none!important;transition:none!important}}
+
