@@ -737,3 +737,65 @@ html[data-learner-theme="dark"] #studentTrainingApp :is(
   max-width:100%;
  }
 }
+
+/* Official adaptive question layouts v2 — presentation only.
+   Existing task dimensions and renderers determine layout; no new evidence,
+   prompts, hints, answer options, fields, scores or route decisions. */
+html[data-learner-theme] #studentTrainingApp .stage--recall :is(.prompt,.clearQuestionPrompt){
+ background:transparent;border:0;box-shadow:none;padding:.35rem 0;
+}
+html[data-learner-theme] #studentTrainingApp .stage--recall .questionBrief{
+ font-size:clamp(1.2rem,2.2vw,1.55rem);border-bottom:0;padding-bottom:.4rem;
+}
+html[data-learner-theme] #studentTrainingApp .stage--recall .lexAnswerParts{
+ gap:0;border:0;background:transparent;overflow:visible;
+}
+html[data-learner-theme] #studentTrainingApp .stage--recall .lexAnswerPart{
+ border:0;border-radius:0;background:transparent;padding:1.1rem 0;
+}
+html[data-learner-theme] #studentTrainingApp .stage--recall .lexAnswerPart+.lexAnswerPart{
+ border-top:1px solid var(--lx-border);
+}
+html[data-learner-theme] #studentTrainingApp .stage--recall .lexAnswerPart textarea{
+ border-radius:4px 4px 12px 12px;border-width:0 0 2px;
+ background:var(--lx-raised);min-height:96px;
+}
+html[data-learner-theme] #studentTrainingApp .stage--recall .lexAnswerPart textarea:focus-visible{
+ outline:3px solid var(--lx-focus);outline-offset:3px;
+}
+html[data-learner-theme] #studentTrainingApp .stage--understanding .lexAnswerPart:has(.questionComparison){
+ border:0;border-radius:0;background:transparent;padding-inline:0;
+}
+html[data-learner-theme] #studentTrainingApp .stage--understanding .questionComparison{
+ border:0;background:transparent;padding:0;
+}
+html[data-learner-theme] #studentTrainingApp .stage--understanding .lexComparisonDeck{
+ grid-template-columns:repeat(2,minmax(0,1fr));align-items:stretch;gap:.8rem;
+}
+html[data-learner-theme] #studentTrainingApp .stage--understanding .lexComparisonDeck .comparisonStatement{
+ margin:0;min-width:0;min-height:88px;display:block;
+ border-block-start:3px solid var(--session-accent);box-shadow:none;
+}
+html[data-learner-theme] #studentTrainingApp .stage--understanding .lexSortTargets{gap:.75rem}
+html[data-learner-theme] #studentTrainingApp .stage--understanding .lexSortTarget{border-radius:8px}
+html[data-learner-theme] #studentTrainingApp .stage--exam_execution .legalCaseGuide{
+ display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:1rem;align-items:start;
+}
+html[data-learner-theme] #studentTrainingApp .stage--exam_execution .legalCaseGuide>:is(.caseIntro,.caseSteps,.caseAnswerStep,.caseStatus){
+ grid-column:1/-1;margin:0;
+}
+html[data-learner-theme] #studentTrainingApp .stage--exam_execution .caseFacts{
+ border-radius:10px;border-inline-start:4px solid var(--session-accent);margin:0;min-width:0;
+}
+html[data-learner-theme] #studentTrainingApp .stage--exam_execution .caseMainQuestion{
+ margin:0;min-width:0;border-radius:14px;
+}
+html[data-learner-theme] #studentTrainingApp .stage--exam_execution .caseSteps{gap:.35rem}
+html[data-learner-theme] #studentTrainingApp .stage--exam_execution .caseAnswerStep{border-radius:10px;box-shadow:none}
+@media(max-width:600px){
+ html[data-learner-theme] #studentTrainingApp .stage--understanding .lexComparisonDeck,
+ html[data-learner-theme] #studentTrainingApp .stage--exam_execution .legalCaseGuide{
+  grid-template-columns:minmax(0,1fr);
+ }
+ html[data-learner-theme] #studentTrainingApp .stage--understanding .lexComparisonDeck .comparisonStatement{min-height:0}
+}

@@ -21,9 +21,46 @@ async function main(){
    const ctx=await browser.newContext({viewport:{width:lang==='ar'?390:1180,height:850},reducedMotion:'reduce'}),p=await ctx.newPage(),errors=[];p.on('pageerror',e=>errors.push(String(e)));
    await ctx.route('**/*',route=>{
     const u=new URL(route.request().url());if(u.origin!==base)return route.abort('blockedbyclient');
-    if(u.pathname==='/rounds-qa.html')return route.fulfill({contentType:'text/html',body:'<!doctype html><html lang="'+lang+'" dir="'+(lang==='ar'?'rtl':'ltr')+'"'+(dark?' data-learner-theme="dark"':'')+'><head><meta charset="utf-8"><link rel="stylesheet" href="/assets/learner-experience.css"><link rel="stylesheet" href="/assets/study-coach.css"><link rel="stylesheet" href="/assets/legal-study.css"><link rel="stylesheet" href="/assets/learning-rounds.css"></head><body style="margin:0;padding:12px;box-sizing:border-box;font:16px/1.6 system-ui"><main id="studentTrainingApp"><textarea id="officialDraft"></textarea><div id="round"></div><div id="practice"></div></main><script>'+setup+'</script><script src="/assets/legal-study.js"></script><script src="/assets/legal-case-guide.js"></script><script src="/assets/study-coach.js"></script><script src="/assets/session-moments.js"></script><script src="/assets/learning-rounds.js"></script></body></html>'});return route.continue();
+    if(u.pathname==='/rounds-qa.html')return route.fulfill({contentType:'text/html',body:'<!doctype html><html lang="'+lang+'" dir="'+(lang==='ar'?'rtl':'ltr')+'"'+(dark?' data-learner-theme="dark"':' data-learner-theme="light"')+'><head><meta charset="utf-8"><link rel="stylesheet" href="/assets/learner-experience.css"><link rel="stylesheet" href="/assets/study-coach.css"><link rel="stylesheet" href="/assets/legal-study.css"><link rel="stylesheet" href="/assets/learning-rounds.css"><link rel="stylesheet" href="/assets/comparison-cards.css"><link rel="stylesheet" href="/assets/legal-case-guide.css"><link rel="stylesheet" href="/assets/question-clarity.css"></head><body style="margin:0;padding:12px;box-sizing:border-box;font:16px/1.6 system-ui"><main id="studentTrainingApp"><textarea id="officialDraft"></textarea><div id="round"></div><div id="practice"></div></main><script>'+setup+'</script><script src="/assets/legal-study.js"></script><script src="/assets/legal-case-guide.js"></script><script src="/assets/study-coach.js"></script><script src="/assets/session-moments.js"></script><script src="/assets/learning-rounds.js"></script><script src="/assets/beginner-prompts.js"></script><script src="/assets/question-style.js"></script><script src="/assets/comparison-cards.js"></script></body></html>'});return route.continue();
    });
    await p.goto(base+'/rounds-qa.html');
+   // Use the existing official renderers with synthetic prompts; no academic writes.
+   await p.evaluate(()=>{
+    const en=document.documentElement.lang==='en',lang=en?'en':'ar';
+    const host=document.createElement('section');host.id='layoutFixture';host.className='stage stage--recall';document.querySelector('#studentTrainingApp').appendChild(host);
+    const prompt=en?'Recall a synthetic rule.\n1. Write its elements.\n2. Give memory cues.\n3. Explain each cue.':'استدع قاعدة افتراضية.\n1. اكتب عناصرها.\n2. اذكر مفاتيح الحفظ.\n3. اشرح كل مفتاح.';
+    host.innerHTML=LEX_QUESTION_STYLE.answerFields('adaptiveEssay',lang,4000,prompt);
+   });
+   assert.equal(await p.locator('#layoutFixture textarea').count(),3);
+   assert.equal(await p.locator('#layoutFixture .lexAnswerPart').first().evaluate(e=>getComputedStyle(e).borderTopWidth),'0px');
+   for(const [n,id] of ['adaptiveEssay','adaptiveEssayPart2','adaptiveEssayPart3'].entries())await p.locator('#'+id).fill('synthetic '+(n+1));
+   assert.equal(await p.evaluate(()=>LEX_QUESTION_STYLE.collectAnswers(document.querySelector('#layoutFixture'),'adaptiveEssay',document.documentElement.lang,4000).text),'1. synthetic 1\n\n2. synthetic 2\n\n3. synthetic 3');
+   await p.evaluate(()=>{
+    const en=document.documentElement.lang==='en',host=document.querySelector('#layoutFixture');
+    host.className='stage stage--understanding';
+    const prompt=en?'Compare synthetic statements.\nReview each statement on its own:\nStatement one.\nStatement two.':'قارن عبارتين افتراضيتين.\nقيّم كل عبارة على حدة:\nالعبارة الأولى.\nالعبارة الثانية.';
+    host.innerHTML=LEX_QUESTION_STYLE.render(prompt,document.documentElement.lang)+'<textarea id="adaptiveEssay"></textarea>';
+    LEX_COMPARISON_CARDS.mount(host,document.documentElement.lang);
+   });
+   assert.equal(await p.locator('#layoutFixture .lexComparisonDeck .comparisonStatement').count(),2);
+   assert.equal(await p.locator('#layoutFixture .lexComparisonDeck').evaluate(e=>getComputedStyle(e).gridTemplateColumns.split(' ').length),lang==='ar'?1:2);
+   await p.locator('#layoutFixture [data-lex-card-index="1"]').focus();
+   await p.keyboard.press('Enter');
+   await p.locator('#layoutFixture [data-lex-sort-target="accurate"]').focus();
+   await p.keyboard.press('Enter');
+   assert.equal(await p.locator('#layoutFixture [data-lex-card-index="1"]').getAttribute('data-lex-choice'),'accurate');
+   await p.evaluate(()=>{
+    const en=document.documentElement.lang==='en',host=document.querySelector('#layoutFixture');host.className='stage stage--exam_execution';
+    const prompt=en?'Facts: Synthetic facts. What is the question?\nIssue: State the issue.\nRule: State the rule.\nApplication: Apply it.\nConclusion: Conclude.':'الواقعة: واقعة افتراضية. ما السؤال؟\nالمسألة: اكتب المسألة.\nالقاعدة: اكتب القاعدة.\nالتطبيق: طبقها.\nالنتيجة: اذكر النتيجة.';
+    LEX_LEGAL_CASE_GUIDE.mount(host,{prompt,language:document.documentElement.lang,onSubmit:()=>{}});
+   });
+   assert.equal(await p.locator('#layoutFixture .caseFacts').count(),1);
+   assert.equal(await p.locator('#layoutFixture .legalCaseGuide').evaluate(e=>getComputedStyle(e).gridTemplateColumns.split(' ').length),lang==='ar'?1:2);
+   await p.locator('#legalCasePart').fill('synthetic issue');await p.locator('#caseNext').click();await p.locator('#caseBack').click();
+   assert.equal(await p.locator('#legalCasePart').inputValue(),'synthetic issue');
+   assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true);
+   await p.evaluate(()=>document.querySelector('#layoutFixture').remove());
+
    await p.evaluate(()=>{LEX_STUDY_COACH.init({learnerId:__opts.uid,language:__opts.lang});LEX_LEARNING_ROUNDS.mountRound(document.querySelector('#round'),__opts);LEX_LEARNING_ROUNDS.mountPractice(document.querySelector('#practice'),__opts);});
    assert.equal(await p.locator('#practice details').count(),0);assert.equal(await p.evaluate(()=>__rpc),0);
    await p.locator('#officialDraft').fill('unsaved synthetic answer');await p.locator('[data-round-pause]').click();assert.equal(await p.locator('.roundPause').isVisible(),false);assert.ok((await p.locator('.roundStatus').innerText()).length>0);

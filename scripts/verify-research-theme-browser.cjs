@@ -50,8 +50,12 @@ try{for(const lang of ['ar','en'])for(const width of [390,1280])for(const theme 
      assert.notEqual(filled.filledTitle,'rgb(249, 244, 239)','occupied bucket label uses accessible muted brick');
     }
     // Real browser mouse movement exercises the pointer/drop interaction.
+    // Locate the visible card and target after scrolling, rather than dragging to an offscreen coordinate.
+    await page.evaluate(()=>{const a=document.querySelector('[data-lex-card-index="2"]').getBoundingClientRect(),b=document.querySelector('[data-lex-sort-target="inaccurate"]').getBoundingClientRect();window.scrollBy(0,(a.top+a.height/2+b.top+b.height/2)/2-innerHeight/2);});
     const start=await card2.boundingBox(),end=await inaccurate.boundingBox();
     assert.ok(start&&end,'drag positions available');
+    assert.ok(start.y+start.height/2>=0&&start.y+start.height/2<900,'card visible during drag');
+    assert.ok(end.y+end.height/2>=0&&end.y+end.height/2<900,'target visible during drag');
     await page.mouse.move(start.x+start.width/2,start.y+start.height/2);
     await page.mouse.down();
     await page.mouse.move(end.x+end.width/2,end.y+end.height/2,{steps:12});
