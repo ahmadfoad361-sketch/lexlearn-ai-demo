@@ -38,19 +38,15 @@ function render(n,lang,context){var p=forSession(n,context);if(!p)return "";var 
 }
 function show(n,lang,key,context){
  if(!valid(n)||!key||seen.has(key)||!root.document||!root.document.body)return false;
- var storageKey='lex_session_moment_v1_'+key;
+ var storageKey='lex_session_moment_v2_'+key;
  try{if(root.sessionStorage&&root.sessionStorage.getItem(storageKey))return false;}catch(_){}
- var dialog=root.document.createElement('dialog');if(typeof dialog.showModal!=="function")return false;
- var en=lang==="en",previous=root.document.activeElement,timer,finished=false;
- dialog.className='sessionMomentDialog';dialog.setAttribute('aria-label',en?'Session '+n+' completed':'اكتملت الجلسة '+n);
- dialog.innerHTML=render(n,lang,context)+"<button type='button' class='sessionMomentContinue'>"+(en?"View my session summary":"عرض ملخص الجلسة")+"</button>";
- function finish(){if(finished)return;finished=true;if(timer)root.clearTimeout(timer);if(dialog.open)dialog.close();dialog.remove();if(previous&&previous.isConnected&&previous.focus)previous.focus({preventScroll:true});}
- dialog.addEventListener('close',finish);dialog.addEventListener('cancel',finish);
- dialog.querySelector('.sessionMomentContinue').onclick=finish;
- root.document.body.appendChild(dialog);dialog.showModal();seen.add(key);
+ var notice=root.document.createElement('div');notice.className='sessionMomentNotice';
+ notice.setAttribute('role','status');notice.setAttribute('aria-live','polite');
+ notice.textContent=lang==='en'?'Session '+n+' answers saved. Continue when you are ready.':'حُفظت إجابات الجلسة '+n+'. تابع عندما تكون مستعدًا.';
+ var host=root.document.getElementById&&root.document.getElementById('studentTrainingApp');
+ (host||root.document.body).appendChild(notice);seen.add(key);
  try{if(root.sessionStorage)root.sessionStorage.setItem(storageKey,'1');}catch(_){}
- // Learners can continue immediately; the concise encouragement remains in their session report.
- timer=root.setTimeout(finish,8000);return true;
+ root.setTimeout(function(){notice.remove();},3800);return true;
 }
 var api={sources:sources,phrases:phrases,forSession:forSession,render:render,show:show};root.LEX_SESSION_MOMENTS=api;
 if(typeof module!=="undefined"&&module.exports)module.exports=api;

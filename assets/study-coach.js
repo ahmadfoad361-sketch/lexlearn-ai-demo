@@ -3,7 +3,8 @@
 var enabled=new URLSearchParams(root.location.search).get('coach_preview')!=='0';
 var learner='',language='ar',inited=false,overlay=null,onContinue=null,clockId=0,dialogWasOpen=false,lastFocus=null;
 var TAB='coach-'+Math.random().toString(36).slice(2),STORAGE='lexlearn:study-coach-preview:v1:';
-var lastInteraction=Date.now(),lastTick=Date.now();
+var lastInteraction=Date.now(),lastTick=Date.now(),onBreakEvent=null;
+function breakEvent(type){try{if(onBreakEvent)onBreakEvent(type);}catch(_){} }
 var soundContext=null,soundWasPrimed=false,soundMaster=null,ringTimer=0,ringStopTimer=0;
 function stopRinging(){
  if(ringTimer){root.clearInterval(ringTimer);ringTimer=0;}
@@ -105,12 +106,14 @@ function show(kind,go){mount();var s=state();s.shown++;s.silentUntil=now()+rules
 overlay.querySelector('#llCoachTitle').textContent=kind==='stop'?tr('قد يكون هذا وقتًا مناسبًا للاكتفاء اليوم','Consider ending your study for today'):tr('وقت مناسب لاستراحة قصيرة','A good time for a short break');
 overlay.querySelector('#llCoachDesc').textContent=kind==='stop'?tr('يمكنك المتابعة إن أحببت، أو العودة إلى التدريب لاحقًا.','You can continue if you wish, or return to your training later.'):tr('خُذ استراحة قصيرة، ثم عُد عندما تكون مستعدًا.','Take a short break, then return when you are ready.');
 overlay.querySelector('#llCoachClock').hidden=true;overlay.querySelector('#llCoachAnnouncement').textContent='';overlay.querySelector('[data-action=start]').disabled=false;overlay.querySelector('[data-action=continue]').textContent=tr('سأكمل الآن','Continue now');overlay.hidden=false;root.document.body.classList.add('ll-coach-open');updateStart();overlay.querySelector('.ll-coach-dialog').focus();}
-function hide(){if(!overlay)return;stopRinging();var pending=state();if(pending.breakEnds>0){pending.breakEnds=0;save(pending);}if(clockId){root.clearInterval(clockId);clockId=0;}dialogWasOpen=false;overlay.hidden=true;root.document.body.classList.remove('ll-coach-open');if(clockId&&state().breakEnds<=0){root.clearInterval(clockId);clockId=0;}if(lastFocus&&lastFocus.isConnected)lastFocus.focus();onContinue=null;}
+function hide(){if(!overlay)return;stopRinging();var pending=state();if(pending.breakEnds>0){breakEvent('break_cancelled');pending.breakEnds=0;save(pending);}onBreakEvent=null;if(clockId){root.clearInterval(clockId);clockId=0;}dialogWasOpen=false;overlay.hidden=true;root.document.body.classList.remove('ll-coach-open');if(clockId&&state().breakEnds<=0){root.clearInterval(clockId);clockId=0;}if(lastFocus&&lastFocus.isConnected)lastFocus.focus();onContinue=null;}
 function dismiss(navigate){var s=state();if(navigate)s.silentUntil=now()+rules.continueSilenceMs;else{s.closed++;if(s.closed>=2)s.muted=true;}save(s);var fn=onContinue;hide();if(navigate&&typeof fn==='function')fn();}
-function startBreak(){primeSound();var s=state();s.breakEnds=now()+mins()*60000;save(s);overlay.querySelector('[data-action=start]').disabled=true;overlay.querySelector('#llCoachClock').hidden=false;
+function startBreak(){breakEvent('break_started');primeSound();var s=state();s.breakEnds=now()+mins()*60000;save(s);overlay.querySelector('[data-action=start]').disabled=true;overlay.querySelector('#llCoachClock').hidden=false;
 overlay.querySelector('#llCoachAnnouncement').textContent=tr('بدأت الاستراحة','Your break has started');if(clockId)root.clearInterval(clockId);updateClock();clockId=root.setInterval(updateClock,1000);}
 function updateClock(){var s=state(),rem=Math.max(0,Math.ceil((s.breakEnds-now())/1000));var el=overlay.querySelector('#llCoachClock');el.textContent=String(Math.floor(rem/60)).padStart(2,'0')+':'+String(rem%60).padStart(2,'0');
-if(rem<=0&&s.breakEnds>0){s.breakEnds=0;save(s);root.clearInterval(clockId);clockId=0;startRinging();overlay.querySelector('#llCoachAnnouncement').textContent=tr('انتهت الاستراحة. يمكنك المتابعة عندما تكون مستعدًا.','Break finished. Continue when you are ready.');overlay.querySelector('[data-action=start]').disabled=false;overlay.querySelector('[data-action=start]').textContent=tr('ابدأ استراحة أخرى','Start another break');overlay.querySelector('[data-action=continue]').textContent=tr('العودة للتدريب','Return to training');}}
-function offerAtBoundary(o){if(!enabled||!inited||!o||o.learnerId!==learner)return false;var k=threshold();if(!k)return false;show(k,o.go);return true;}
-root.LEX_STUDY_COACH={init:init,recordCompleted:recordCompleted,offerAtBoundary:offerAtBoundary,isMobileDevice:isMobileDevice,enabled:enabled,getDebugSummary:function(){if(!enabled)return null;var s=state();return {activeSeconds:Math.round(s.activeSeconds),sessions:s.completed.length,shown:s.shown,closed:s.closed,muted:s.muted};}};
+if(rem<=0&&s.breakEnds>0){breakEvent('break_finished');s.breakEnds=0;save(s);root.clearInterval(clockId);clockId=0;startRinging();overlay.querySelector('#llCoachAnnouncement').textContent=tr('انتهت الاستراحة. يمكنك المتابعة عندما تكون مستعدًا.','Break finished. Continue when you are ready.');overlay.querySelector('[data-action=start]').disabled=false;overlay.querySelector('[data-action=start]').textContent=tr('ابدأ استراحة أخرى','Start another break');overlay.querySelector('[data-action=continue]').textContent=tr('العودة للتدريب','Return to training');}}
+// Thresholds produce inline advice; navigation never opens a surprise dialog.
+function offerAtBoundary(){return false;}
+function openBreak(o){if(!enabled||!inited||!o||o.learnerId!==learner||dialogWasOpen)return false;onBreakEvent=typeof o.onEvent==='function'?o.onEvent:null;show('break',null);return true;}
+root.LEX_STUDY_COACH={init:init,recordCompleted:recordCompleted,offerAtBoundary:offerAtBoundary,openBreak:openBreak,advice:threshold,isMobileDevice:isMobileDevice,enabled:enabled,getDebugSummary:function(){if(!enabled)return null;var s=state();return {activeSeconds:Math.round(s.activeSeconds),sessions:s.completed.length,shown:s.shown,closed:s.closed,muted:s.muted};}};
 })(window);
